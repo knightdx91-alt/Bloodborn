@@ -37,6 +37,13 @@ Platforms: full 3D, crossplay — PC, Xbox, PlayStation, Switch.
 - **Succession Trial:** an open seat is claimed via an arena
   **free-for-all among qualified grandmasters — any combat goes**
   (§5.4).
+- **Server model:** medium worlds — ~5–10k characters, ~1–2k peak
+  concurrent per world. Scarcity and fame stay personal.
+- **Ordinary death is zone-scaled.** Towns/spoke roads: durability hit
+  only. Wedges: carried goods (materials, coin) also drop where you
+  fell, recoverable. **Equipped gear never drops outside war.** The
+  death ladder: ordinary death < war loss (1 equipped piece) <
+  demigod realm (everything, forever).
 
 ---
 
@@ -346,9 +353,12 @@ Rejected: legacy-inheritance perks and relic drops — the reward is
   fishing?) are good handheld-mode loops.
 
 ## Open questions
-- [ ] Death *below* the demigod realm: what does ordinary death cost?
-- [ ] How many players per world/shard? Wars and town councils need a
-      real number to design against.
+- [ ] Ordinary death details: durability hit size; timer before
+      dropped goods in the wedges despawn or become open loot;
+      respawn points (nearest town? bound shrine?).
+- [ ] Character transfers between worlds: likely forbidden (they break
+      Ascendant uniqueness and lineage) — or allowed with titles and
+      lineage stripped?
 - [ ] Setting/tone: the name **Bloodborn** — gothic? dark fantasy?
       how dark? (Brothels and blood-gods on the page suggest mature
       rating; confirm M-rating comfort.)

@@ -24,6 +24,8 @@ Status tracker for the big structural decisions. Detail lives in
 | L13 | Death reward | Sainthood + the Monument (remembrance, not power transfer) |
 | L14 | Demigod boundary | No living demigod in the mortal world; arena summons AI echoes of dead ones |
 | L15 | Platforms | Full 3D, crossplay: PC, Xbox, PlayStation, Switch |
+| L16 | Server model | Medium worlds: ~5–10k characters, ~1–2k peak concurrent. Big enough for a real economy; small enough that Ascendants and master crafters are known names |
+| L17 | Ordinary death | Zone-scaled. Towns/spoke roads: durability hit only. Wedges: carried goods (materials, coin) also drop where you fell, recoverable. Equipped gear never drops outside war. Death ladder: ordinary < war (1 equipped piece) < demigod realm (everything) |
 
 ---
 
@@ -31,26 +33,16 @@ Status tracker for the big structural decisions. Detail lives in
 
 Ordered by how much everything else depends on them.
 
-### P1. Server & population model 🔴 decide first
-How many players share a world? One megaserver with tech tricks, or
-many smaller shards?
-- **Why first:** it sets the value of literally every scarce thing we've
-  designed — "one Ascendant per spell *per server*," war sizes, town
-  council seats, how long the magic secret holds, economy depth.
-- Key questions: target concurrent players per world; sharding/layering
-  tech; can characters transfer (transfers would break Ascendant
-  uniqueness and lineage meaning)?
+### ~~P1. Server & population model~~ ✅ LOCKED → L16
+Medium worlds. Remaining sub-questions: character transfer policy
+(transfers threaten Ascendant uniqueness and lineage — likely
+forbidden, or titles/lineage stripped on transfer); respawn points.
 
-### P2. Ordinary death 🔴 decide first
-What does dying cost in the mortal world?
-- **Why first:** permadeath upstairs only reads as heavy against a
-  known baseline; war equipment-loss needs to sit *above* normal death
-  severity, not below it.
-- Key questions: drop nothing / drop carried loot / gear damage on
-  death? respawn where? death in the wedges vs in town? any XP or
-  skill cost?
+### ~~P2. Ordinary death~~ ✅ LOCKED → L17
+Zone-scaled. Remaining sub-questions: exact durability hit size;
+recovery timer on dropped goods before they despawn/become lootable.
 
-### P3. Progression model 🟠
+### P3. Progression model 🔴 now first in queue
 The notes say "max level" exists — but what is a level here?
 - Spells are quested (not leveled), spell tiers are per-spell, crafting
   is skill-based. So what does the *character level* govern — health/
@@ -114,8 +106,7 @@ Structure of large-scale wars.
 
 ## Suggested working order
 
-1. **P1 + P2 together** — population and ordinary death are the two
-   numbers every other system is priced in.
+1. ~~P1 + P2~~ ✅ done (2026-07-26)
 2. **P3** — progression, because "max level" gates the endgame.
 3. **P4** — lore sprint: name the towns, the faiths, the world.
 4. **P5 + P7** — war and social structure as one conversation.
