@@ -30,9 +30,13 @@ Platforms: full 3D, crossplay — PC, Xbox, PlayStation, Switch.
   Novice → Adept → Expert → Master → Grandmaster → Ascendant (§5.4).
 - **Ascendants:** one Ascendant per spell per server; one Ascendancy
   per character. Offered at Grandmaster; declining grants a permanent
-  extra teaching slot in that spell. The slot frees only on the
-  holder's permadeath in the demigod realm, with a server-wide
+  extra teaching slot in that spell. The slot frees on the holder's
+  permadeath in the demigod realm — or lapses after **30 real-world
+  days** without the account logging in — with a server-wide
   announcement (§5.4).
+- **Succession Trial:** an open seat is claimed via an arena
+  **free-for-all among qualified grandmasters — any combat goes**
+  (§5.4).
 
 ---
 
@@ -239,10 +243,26 @@ faith. Magic is **found**.
   Declining one spell's offer does not block later offers from other
   spells. The fork is power vs. legacy: become the spell's singular
   embodiment, or become its greatest teacher.
-- **Succession:** the Ascendancy frees **only** when the holder dies
-  their permadeath in the demigod realm. A **server-wide announcement**
-  fires — *"The Ascendant of Fireball has fallen"* — and the seat is
-  open for another grandmaster to claim.
+- **Succession:** the Ascendancy frees when the holder dies their
+  permadeath in the demigod realm, **or lapses after 30 real-world
+  days without the account logging in** (DECIDED — prevents dead
+  accounts locking seats forever). Either way a **server-wide
+  announcement** fires — *"The Ascendant of Fireball has fallen"* /
+  *"...has forsaken the flame"* — and the seat opens.
+- **The Succession Trial (DECIDED):** an open seat is claimed through
+  an **open trial in the arena — a free-for-all among all qualified
+  grandmasters who enter, any combat goes.** Weapons, spells, gear,
+  mounts, dirty tricks — anything the arena walls can hold. Last one
+  standing takes the seat.
+  - Scheduled with lead time after the announcement so claimants can
+    travel, prepare, and the server can gather to watch.
+  - Arena rules still apply on stakes: it's sport — no equipment loss,
+    no death. The prize is the seat itself.
+  - Natural headline betting event (§4): odds on every claimant.
+  - If exactly one grandmaster enters, they claim by walkover — but
+    the ceremony still happens in the arena, witnessed.
+  - If no one qualifies or enters, the seat stays open and the trial
+    re-fires when a new grandmaster emerges.
 - Emergent drama: since permadeath exists only upstairs, grandmasters
   who covet a held Ascendancy cannot take it in the mortal world. They
   can wait — or ascend themselves and hunt the Ascendant in the
@@ -343,14 +363,12 @@ Rejected: legacy-inheritance perks and relic drops — the reward is
 - [ ] Teaching numbers: disciple slots per spell (working: 3–5),
       dismissal cooldown length, rank-up XP size, daily trickle cap,
       and whether tithe XP alone can reach the final mastery rank.
-- [ ] Ascendant claiming: when a seat opens, is it first grandmaster
-      to complete a claiming rite, or a contest/trial if several want
-      it?
 - [ ] Ascendant powers: what exactly the "true form" of a spell is,
       per spell — and the balance line that keeps declining viable.
-- [ ] Dormant Ascendants: a holder who quits the game locks the seat
-      forever. Inactivity lapse (e.g., seat released after N days
-      offline)? Needs an answer before launch.
+- [ ] Succession Trial details: how much lead time after the
+      announcement; can the crowd's own Ascendants/echoes appear at
+      the ceremony; team-ups in the free-for-all are inevitable — rule
+      them legal (politics!) or discourage them?
 - [ ] Naming collision: "Ascendant" (spell seat) vs "Ascension" (the
       demigod gate). Thematically linked, mechanically different —
       keep the echo deliberately, or rename one (Incarnate? Avatar?)
