@@ -28,6 +28,8 @@ Status tracker for the big structural decisions. Detail lives in
 | L17 | Ordinary death | Zone-scaled. Towns/spoke roads: durability hit only. Wedges: carried goods (materials, coin) also drop where you fell, recoverable. Equipped gear never drops outside war. Death ladder: ordinary < war (1 equipped piece) < demigod realm (everything) |
 | L18 | Progression | Classless, skill-by-use. Every proficiency is a skill grown through use; "level" = total across skills; magic skills invisible until awakening. "Max level" = capping a defined skill set (definition TBD) |
 | L19 | Power curve | Moderate vertical: veterans usually win clean, but a skilled newcomer threatens a careless one and can always escape |
+| L20 | Tone | M-rated grounded dark, low-magic medieval |
+| L21 | Lore | Godsgrave cosmology adopted as working canon (`lore.md`): the god's blood explains respawn, regional materials, monsters, awakening, and permadeath; four faiths; six named towns; Bloodborn = the awakened; legality varies by town/faith; anyone is awakenable; secret canon in §9 |
 
 ---
 
@@ -50,15 +52,10 @@ sub-questions: which skills count toward the "max level" ascension
 gate; per-skill caps and total-cap structure; anti-AFK-grind design
 (meaningful-use XP rules, as with spell trickle).
 
-### P4. Setting, tone & lore 🟠
-The name **Bloodborn**, how dark, and the world's identity.
-- Key questions: M-rating confirmed (brothels, blood-faiths, gambling
-  are on the founding page)? What are the six towns — names,
-  specialties, cultures? What are the religious factions — how many,
-  what do they worship, why do their gates lead to a demigod realm?
-  Why is the world a wheel? What *is* the demigod realm,
-  cosmologically?
-- Dependencies: none — can run in parallel with everything.
+### ~~P4. Setting, tone & lore~~ ✅ LOCKED → L20, L21
+Working canon in `lore.md`. Remaining sub-questions: final naming
+pass; the enemy's nature (§9); how much each faith questline glimpses
+of the secret canon.
 
 ### P5. War & territory 🟡
 Structure of large-scale wars.
@@ -106,7 +103,7 @@ Structure of large-scale wars.
 
 1. ~~P1 + P2~~ ✅ done (2026-07-26)
 2. ~~P3~~ ✅ done (2026-07-26)
-3. **P4** — lore sprint: name the towns, the faiths, the world.
-4. **P5 + P7** — war and social structure as one conversation.
+3. ~~P4~~ ✅ done (2026-07-26) — working canon in `lore.md`
+4. **P5 + P7** — war and social structure as one conversation. ← next
 5. **P6 + P9** — economy and business model as one conversation.
 6. **P8, P10** — content models once the skeleton stands.

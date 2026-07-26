@@ -1,8 +1,8 @@
-# Bloodborn — Lore Proposal (v1, for reaction)
+# Bloodborn — Lore (working canon v1)
 
-STATUS: **PROPOSAL.** Nothing here is locked. Every name is a
-placeholder to be kept, twisted, or thrown out. Tone dials (locked):
-M-rated grounded dark, low-magic medieval.
+STATUS: **WORKING CANON** (adopted 2026-07-26). Names remain open to
+polish, but the structures below are the basis for content design.
+Tone dials (locked): M-rated grounded dark, low-magic medieval.
 
 ---
 
@@ -131,16 +131,58 @@ what waits at the deepest layer, is P10's conversation — but the
 proposal is: advancement inward = descending *toward the heart*, and
 whatever is at the heart is the game's final mystery.
 
+## 8. Resolved lore decisions (2026-07-26)
+
+- **Names:** placeholders adopted as working names. Rename freely
+  before any public material; content design proceeds with these.
+- **Anyone is awakenable.** No chosen bloodline. The blood is in the
+  land and in everyone; awakening is a matter of experience, not
+  birthright. (This is also the Open Vein's whole argument — and it
+  happens to be true.) Mechanically: every character can find magic;
+  none is promised it.
+- **Bloodborn legality varies by town and faith (DECIDED).** Awakening
+  outside sanctioned rite is *blasphemy* under Silent Heart doctrine —
+  in towns where the Church dominates, an exposed mage risks arrest or
+  worse. The texture per faction:
+  - **Silent Heart:** unlicensed quickening is sacrilege. Turn
+    yourself in for "consecration" — or be hunted.
+  - **Red Vigil:** doesn't care about doctrine; cares about weapons.
+    Exposed mages get an offer: serve the watch, and the Vigil's
+    shield covers you.
+  - **Gleaners:** hide hedge-mages quietly, as they always have.
+  - **Open Vein:** open sanctuary. The one door always open — and
+    walking through it marks you politically.
+  - Early-mage gameplay is therefore *social stealth*: hide it, sell
+    it, or choose whose protection to live under.
+
+## 9. Secret canon — what actually happened (SPOILERS, internal only)
+
+Decided now so content can be written coherently. Never stated
+outright in-game before the deepest P10 content.
+
+**All four faiths are right.**
+
+The god *chose* to die (Silent Heart) — because something was coming
+that it could not defeat awake (Red Vigil: there *is* an enemy, and
+the Vigil's paranoia is justified). Its death was not an ending but a
+transformation: the body became a seal, the blood a living ward
+soaked into the world (Gleaners: it dreams — the heart still beats at
+the bottom of the Godsgrave). And a seal made of blood needs blood to
+hold: the quickening is the god's ongoing recruitment (Open Vein: the
+blood really does belong to everyone).
+
+Implications:
+- The demigod realm is the inside of the seal. Advancing inward =
+  descending toward the **Heart**. Every demigod's permadeath *feeds
+  the seal* — "when you die you get something" runs both ways: the
+  world gets something too. The Interred are, unknowingly, the ward's
+  maintenance.
+- What waits at the Heart, what the enemy is, and what a player-god
+  in the pantheon actually does to the seal — reserved for P10.
+  Expansion hook: the seal weakening.
+
 ## Open lore questions
-- [ ] Keep/replace the placeholder names (towns, faiths, Godsgrave)?
-- [ ] What actually killed the god — do *we* decide now (secret canon)
-      or leave it unresolved even internally until P10?
-- [ ] Are awakened players (Bloodborn) *criminal* by default in some
-      towns? Legal texture per town could drive early-mage gameplay
-      (hiding, faith protection, Open Vein sanctuary).
-- [ ] Player character origin: are all PCs subtly blood-touched from
-      birth (justifying respawn + awakening potential), or is anyone
-      awakenable?
-- [ ] Sixth faith / faith-per-town symmetry: four faiths is the
-      proposal — is asymmetry (4 faiths, 6 towns) a feature or should
-      they align?
+- [ ] Final naming pass before any public-facing material.
+- [ ] The enemy: nature, name, and whether launch content ever shows
+      its fingerprints (recommend: rare, deniable traces only).
+- [ ] How much of §9 the four faith questlines each glimpse.
