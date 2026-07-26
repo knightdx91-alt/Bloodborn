@@ -21,6 +21,11 @@ Platforms: full 3D, crossplay — PC, Xbox, PlayStation, Switch.
   **echo of a dead one** (see §7).
 - **Magic is a secret.** Players are not told magic exists. It is
   discovered in the world (see §5).
+- **Durability = repair/wear (§2.6), not BotW-style breakage.** Weapons
+  never shatter mid-fight; they wear down and need crafter repair.
+- **Teaching is capped and rewarded.** Masters have limited disciple
+  slots (freed on graduation) and earn spell XP from their disciples'
+  progress (see §5.3).
 
 ---
 
@@ -175,6 +180,43 @@ faith. Magic is **found**.
 - Teaching is a gameplay session (ritual/lesson), not a menu click —
   and teaching a never-awakened player *is* their awakening: masters
   can initiate, which makes early mages genuinely powerful figures.
+
+**Disciple slots (DECIDED — cap exists; numbers TBD)**
+- A master has a limited number of **active disciple slots** per spell
+  (working number: 3–5).
+- A slot frees when the disciple **graduates** — reaches mastery in
+  that spell themselves. A master's throughput is gated by student
+  diligence, so masters select students carefully: tryouts, trial
+  periods, waiting lists. Academies get real hierarchy for free.
+- A disciple learns a given spell from **one** master — that master is
+  their lineage for that spell. (Different spells from different
+  masters is fine.)
+- Dismissing a disciple is possible but the slot stays locked for a
+  cooldown — prevents churn-teaching through bodies.
+- Caps also throttle how fast magic spreads on a fresh server, which
+  protects the secret (§5.1).
+
+**Lineage XP (DECIDED — masters earn from disciples; tuning TBD)**
+- Masters gain spell XP from their disciples' progress with the taught
+  spell. Weighting designed against alt/AFK farming:
+  - **Rank-ups pay big.** A chunky XP award each time a disciple ranks
+    the spell up. Un-farmable — ranks per disciple are finite. Fires as
+    a felt moment: *"somewhere, your disciple grew stronger."*
+  - **Use pays a trickle.** Small XP per meaningful cast (combat,
+    quests — not casting at a rock), with diminishing returns per
+    disciple per day.
+- Aligned incentives: scarce slots + XP-paying students = masters
+  recruit talented, active players, not warm bodies.
+- Open tuning question: can tithe XP alone carry a master to the top
+  rank, or is personal casting required for the final rank?
+
+**Lineage as world history**
+- Every spell has a **genealogy**: discoverer → their disciples → the
+  whole tree. Spell founders are recorded on the Monument (§7).
+- When a master ascends and dies in the demigod realm, their lineage
+  is what survives them — remembrance, not power, same as Sainthood.
+- Extinction risk (§5.2) becomes visible: a spell with three living
+  casters and no active masters is a spell the server can lose.
 - Lost/forbidden spells found only in the world or taught by the last
   living master — if all masters die in the demigod zone, the spell can
   literally go extinct until rediscovered. Knowledge scarcity with real
@@ -254,7 +296,9 @@ Rejected: legacy-inheritance perks and relic drops — the reward is
 - [ ] Crafting minigame depth vs accessibility — how much can a casual
       player enjoy without mastering it?
 - [ ] BotW-style combat in an MMO: how do we handle latency for
-      parry/dodge timing, and does gear-durability à la BotW exist here
-      or does repair/wear (§2.6) replace it?
+      parry/dodge timing? (Durability resolved: repair/wear, §2.6.)
+- [ ] Teaching numbers: disciple slots per spell (working: 3–5),
+      dismissal cooldown length, rank-up XP size, daily trickle cap,
+      and whether tithe XP alone can reach the final mastery rank.
 - [ ] How long should the magic secret realistically hold on a fresh
       server, and is there a "season 1 mystery" plan for launch?
