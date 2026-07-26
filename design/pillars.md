@@ -32,6 +32,8 @@ Status tracker for the big structural decisions. Detail lives in
 | L21 | Lore | Godsgrave cosmology adopted as working canon (`lore.md`): the god's blood explains respawn, regional materials, monsters, awakening, and permadeath; four faiths; six named towns; Bloodborn = the awakened; anyone is awakenable; secret canon in §9 |
 | L22 | Magic is myth | The NPC world believes mages are folklore. Public wonder is institutional miracle only. No anti-sorcery law — officially sorcery doesn't exist; exposure means mobs and secret institutions (Office of the Lamp / Vigil high circle / Open Vein inner circle), not trials. Succession Trials convene in the Veiled Ring (hidden night circuit); academies operate behind fronts |
 | L23 | Living history | Each server writes its own permanent history through player-advanced epochs. The Revelation Arc (`lore.md` §10): Myth → Whispers → Unveiling (the myth-breaker is named on the Monument, once per server) → Scouring → Wonder. Epochs are cheap to represent: dialogue, laws, faction posture, set-piece transitions — not rebuilt maps |
+| L24 | Social structures | Charters, not guilds (`war-society.md`): Companies (war), Houses (economy), Orders (faith), Circles (secret, unregistered); fellowships for casual groups; town councils remain place-based |
+| L25 | War | Wars are staked contracts over seasonal *rights* (resources, roads, town grants), never town conquest. Declared with lead time, escrowed stakes, enrollment-only war rules, scheduled battles; enrolled war dead drop 1 equipped piece on the field (L11). Bystanders untouched |
 
 ---
 
@@ -59,13 +61,9 @@ Working canon in `lore.md`. Remaining sub-questions: final naming
 pass; the enemy's nature (§9); how much each faith questline glimpses
 of the secret canon.
 
-### P5. War & territory 🟡
-Structure of large-scale wars.
-- Who declares war on whom — towns? factions? guilds? What's actually
-  won — wedge resource rights? town tax control? How often, what
-  scale, how do defenders prepare? Mercenary contracts?
-- Dependencies: P1 (population sets war scale), P7 (who the social
-  actors are).
+### ~~P5. War & territory~~ ✅ LOCKED → L25
+`war-society.md`. Remaining: tuning numbers, battle formats, epoch
+interactions.
 
 ### P6. Economy fundamentals 🟡
 - One currency or several? Global auction house vs local-only markets
@@ -74,11 +72,10 @@ Structure of large-scale wars.
   Bank/storage rules?
 - Dependencies: P1, P5; business model (P9) looms over it.
 
-### P7. Social structures 🟡
-- Are guilds a formal system, or do player structures emerge from what
-  we already have (town councils, academies, mercenary companies,
-  religious orders)? Formal guilds might be redundant — or the glue.
-- Dependencies: P5 (war needs declared sides).
+### ~~P7. Social structures~~ ✅ LOCKED → L24
+`war-society.md`. Charters (Company/House/Order/Circle) +
+fellowships + councils. Remaining: charter creation costs, roster
+caps, Circle exposure mechanics.
 
 ### P8. PvE & content model 🟢
 - What's the moment-to-moment PvE: open-world monsters in the wedges,
@@ -106,6 +103,6 @@ Structure of large-scale wars.
 1. ~~P1 + P2~~ ✅ done (2026-07-26)
 2. ~~P3~~ ✅ done (2026-07-26)
 3. ~~P4~~ ✅ done (2026-07-26) — working canon in `lore.md`
-4. **P5 + P7** — war and social structure as one conversation. ← next
-5. **P6 + P9** — economy and business model as one conversation.
+4. ~~P5 + P7~~ ✅ done (2026-07-26) — `war-society.md`
+5. **P6 + P9** — economy and business model as one conversation. ← next
 6. **P8, P10** — content models once the skeleton stands.
