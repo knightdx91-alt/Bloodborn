@@ -175,6 +175,14 @@ creation, no mana bar, no spell tab, no magic in trailers or store
 copy. The world at first presentation is martial: steel, horses, coin,
 faith. Magic is **found**.
 
+And inside the fiction, magic is a **myth** (see `lore.md`): the NPC
+world believes mages are fireside stories. Public wonder exists but is
+institutional — shrine-respawns and church rites are *miracles of the
+god*, implying nothing about people wielding power. There is no law
+against sorcery because officially it doesn't exist; an exposed mage
+faces mobs ("blood-warped!") and the quiet attention of secret
+institutions, not a courtroom.
+
 - **Awakening, not unlocking.** Somewhere in the world are quiet
   anomalies — a shrine that hums, a stain that doesn't wash out, an NPC
   who says something that only later makes sense. Following one far
@@ -201,7 +209,10 @@ faith. Magic is **found**.
 ### 5.3 Mastered and taught
 - **Spell mastery ranks** through use. At mastery, you can become a
   **trainer** and teach that spell to others **[core]** — for a fee you
-  set. Academies as player businesses in training halls (§3).
+  set. Academies as player businesses in training halls (§3) — but
+  because magic is publicly a myth, an academy operates **behind a
+  front**: a bindery, a bathhouse, a fencing school. The signage says
+  one thing; the cellar says another.
 - Teaching is a gameplay session (ritual/lesson), not a menu click —
   and teaching a never-awakened player *is* their awakening: masters
   can initiate, which makes early mages genuinely powerful figures.
@@ -269,10 +280,15 @@ faith. Magic is **found**.
   mounts, dirty tricks — anything the arena walls can hold. Last one
   standing takes the seat.
   - Scheduled with lead time after the announcement so claimants can
-    travel, prepare, and the server can gather to watch.
+    travel, prepare, and those who know can gather to watch.
+  - **Venue: the Veiled Ring** — the arena after dark, off the books
+    (`lore.md` §6). Magic being publicly a myth, the Trial can't be a
+    daytime spectacle; it's the biggest night of the hidden circuit.
+    Mechanics unchanged.
   - Arena rules still apply on stakes: it's sport — no equipment loss,
     no death. The prize is the seat itself.
-  - Natural headline betting event (§4): odds on every claimant.
+  - Betting runs through underground books (§4): odds on every
+    claimant, wagers taken from those in the know.
   - If exactly one grandmaster enters, they claim by walkover — but
     the ceremony still happens in the arena, witnessed.
   - If no one qualifies or enters, the seat stays open and the trial

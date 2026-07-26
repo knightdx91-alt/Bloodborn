@@ -29,7 +29,8 @@ Status tracker for the big structural decisions. Detail lives in
 | L18 | Progression | Classless, skill-by-use. Every proficiency is a skill grown through use; "level" = total across skills; magic skills invisible until awakening. "Max level" = capping a defined skill set (definition TBD) |
 | L19 | Power curve | Moderate vertical: veterans usually win clean, but a skilled newcomer threatens a careless one and can always escape |
 | L20 | Tone | M-rated grounded dark, low-magic medieval |
-| L21 | Lore | Godsgrave cosmology adopted as working canon (`lore.md`): the god's blood explains respawn, regional materials, monsters, awakening, and permadeath; four faiths; six named towns; Bloodborn = the awakened; legality varies by town/faith; anyone is awakenable; secret canon in §9 |
+| L21 | Lore | Godsgrave cosmology adopted as working canon (`lore.md`): the god's blood explains respawn, regional materials, monsters, awakening, and permadeath; four faiths; six named towns; Bloodborn = the awakened; anyone is awakenable; secret canon in §9 |
+| L22 | Magic is myth | The NPC world believes mages are folklore. Public wonder is institutional miracle only. No anti-sorcery law — officially sorcery doesn't exist; exposure means mobs and secret institutions (Office of the Lamp / Vigil high circle / Open Vein inner circle), not trials. Succession Trials convene in the Veiled Ring (hidden night circuit); academies operate behind fronts |
 
 ---
 
