@@ -231,14 +231,55 @@ Implications:
   in the pantheon actually does to the seal — reserved for P10.
   Expansion hook: the seal weakening.
 
+## 10. Living history — the world evolves (DECIDED 2026-07-26)
+
+**Each server writes its own history.** The world is not a static
+backdrop with player stories on top; the NPC world moves through
+**epochs**, advanced by what players actually do, one-way and
+permanent per server. Two servers a year after launch should be
+recognizably different worlds.
+
+### The Revelation Arc (the magic myth erodes — by design)
+Proposed epochs; thresholds TBD:
+
+1. **The Age of Myth** — launch state. Nobody believes. The Lamp
+   erases quietly; the Vein whispers; taverns tell stories.
+2. **The Age of Whispers** — enough witnessed castings, survivors,
+   and pamphlets accumulate. NPC dialogue shifts: the stories get
+   *specific*. The Lamp works overtime; prices on rumors rise.
+3. **The Unveiling** — a single undeniable public act of magic tips
+   the server over. Crucially: **the server remembers who.** The
+   player who breaks the myth is named on the Monument forever —
+   whether they meant to do it or not. (The biggest fame event in the
+   game, and it can only ever happen once per server.)
+4. **The Scouring** — the institutions surface. The Lamp goes from
+   secret erasure to open inquisition; *now* anti-sorcery law exists,
+   town by town; the Vigil recruits openly; the Vein comes up from
+   the cellars. Being a mage stops being a secret and becomes a
+   *side*.
+5. **The Age of Wonder** — acknowledgment. Academies hang real signs.
+   The world's texture changes: wards on gates, mage-priced
+   contracts, children pointing. What was myth is now politics.
+
+### Beyond magic
+The same spine carries everything else that accumulates:
+- War outcomes permanently reshape wedge ownership and town fortunes.
+- The Monument, sainthoods, spell genealogies, Ascendant successions
+  — all server-specific history already.
+- The secret canon's long arc (§9 — the seal weakening) is dosed per
+  epoch: late-age servers start seeing the enemy's fingerprints.
+
+### Scope honesty
+Epochs must be **cheap to represent**: dialogue banks, law flags,
+faction postures, a handful of set-piece events per transition — not
+six rebuilt maps. The world *feels* different because NPCs talk, price,
+and police differently, not because geometry changed.
+
 ## Open lore questions
 - [ ] Final naming pass before any public-facing material.
 - [ ] The enemy: nature, name, and whether launch content ever shows
       its fingerprints (recommend: rare, deniable traces only).
 - [ ] How much of §9 the four faith questlines each glimpse.
-- [ ] The revelation arc: as player mages multiply, does the NPC
-      world *ever* officially acknowledge magic (server-history
-      epochs: Age of Myth → first undeniable public casting → ?), or
-      does the Office of the Lamp hold the line forever? Recommend
-      designing the erosion as a slow, server-driven arc rather than
-      pretending player behavior won't strain the myth.
+- [ ] Epoch thresholds: what exactly advances a server from one age
+      to the next (see §10) — witnessed castings? awakened count?
+      a named player act?
