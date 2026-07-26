@@ -26,6 +26,8 @@ Status tracker for the big structural decisions. Detail lives in
 | L15 | Platforms | Full 3D, crossplay: PC, Xbox, PlayStation, Switch |
 | L16 | Server model | Medium worlds: ~5–10k characters, ~1–2k peak concurrent. Big enough for a real economy; small enough that Ascendants and master crafters are known names |
 | L17 | Ordinary death | Zone-scaled. Towns/spoke roads: durability hit only. Wedges: carried goods (materials, coin) also drop where you fell, recoverable. Equipped gear never drops outside war. Death ladder: ordinary < war (1 equipped piece) < demigod realm (everything) |
+| L18 | Progression | Classless, skill-by-use. Every proficiency is a skill grown through use; "level" = total across skills; magic skills invisible until awakening. "Max level" = capping a defined skill set (definition TBD) |
+| L19 | Power curve | Moderate vertical: veterans usually win clean, but a skilled newcomer threatens a careless one and can always escape |
 
 ---
 
@@ -42,15 +44,11 @@ forbidden, or titles/lineage stripped on transfer); respawn points.
 Zone-scaled. Remaining sub-questions: exact durability hit size;
 recovery timer on dropped goods before they despawn/become lootable.
 
-### P3. Progression model 🔴 now first in queue
-The notes say "max level" exists — but what is a level here?
-- Spells are quested (not leveled), spell tiers are per-spell, crafting
-  is skill-based. So what does the *character level* govern — health/
-  stamina? weapon proficiencies? Is it classless skill-by-use
-  (Runescape/UO-style) with "max level" meaning all-caps, or a
-  conventional XP level?
-- Hidden magic (L7) already rules out class selection at creation.
-- Dependencies: P2 (death costs), L12 (max level gates ascension).
+### ~~P3. Progression model~~ ✅ LOCKED → L18, L19
+Classless skill-by-use, moderate vertical power curve. Remaining
+sub-questions: which skills count toward the "max level" ascension
+gate; per-skill caps and total-cap structure; anti-AFK-grind design
+(meaningful-use XP rules, as with spell trickle).
 
 ### P4. Setting, tone & lore 🟠
 The name **Bloodborn**, how dark, and the world's identity.
@@ -107,7 +105,7 @@ Structure of large-scale wars.
 ## Suggested working order
 
 1. ~~P1 + P2~~ ✅ done (2026-07-26)
-2. **P3** — progression, because "max level" gates the endgame.
+2. ~~P3~~ ✅ done (2026-07-26)
 3. **P4** — lore sprint: name the towns, the faiths, the world.
 4. **P5 + P7** — war and social structure as one conversation.
 5. **P6 + P9** — economy and business model as one conversation.

@@ -44,6 +44,13 @@ Platforms: full 3D, crossplay — PC, Xbox, PlayStation, Switch.
   fell, recoverable. **Equipped gear never drops outside war.** The
   death ladder: ordinary death < war loss (1 equipped piece) <
   demigod realm (everything, forever).
+- **Progression: classless, skill-by-use.** Every proficiency (swords,
+  riding, smithing, each spell) is a skill grown through meaningful
+  use. "Level" = total across skills; "max level" (the ascension gate)
+  = capping a defined skill set, TBD. Magic skills don't appear on the
+  sheet until awakening — the secret is structural.
+- **Power curve: moderate vertical.** Veterans usually win clean; a
+  skilled newcomer can threaten a careless one and can always escape.
 
 ---
 
