@@ -374,6 +374,9 @@ Rejected: legacy-inheritance perks and relic drops — the reward is
   scenes (arena, wars) for it early or it will hurt later.
 - Low-intensity session types (shopkeeping, betting, spectating,
   fishing?) are good handheld-mode loops.
+- **Companion mobile app (L31):** the asynchronous layer — shop
+  ledgers and pricing, commission bids, rumor mill, Monument feed,
+  war declarations, arena odds. Never gameplay-critical.
 
 ## Open questions
 - [ ] Ordinary death details: durability hit size; timer before

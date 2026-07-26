@@ -31,6 +31,10 @@ are the primary way goods reach buyers:
 - **Commissions:** buyers post commission orders (a winter coat,
   wolf-lined, before the war window opens); crafters bid. The order
   book is where crafting careers start.
+- **Companion app (L31):** shop ledgers, restock orders, price
+  changes, and commission bids are manageable from the mobile
+  companion — the asynchronous half of shopkeeping. Read-and-manage
+  only; nothing gameplay-critical lives there.
 
 ## 3. Markets are local — goods must travel
 

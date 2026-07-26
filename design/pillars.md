@@ -39,6 +39,7 @@ Status tracker for the big structural decisions. Detail lives in
 | L28 | Travel | No fast travel, no teleportation, no recall/summon. Mounts are the speed system; hands-free coaches/barges are the convenience layer; compact Wheel keeps distances felt-not-dreaded. Exceptions: shrine respawn, the ascension gate (`economy.md` §3.5) |
 | L29 | PvE & content | No instanced PvE (`content.md`): shared contested delves around blood poolings; monster ecology with cull pressure and named horrors; quests = handcrafted mystery chains + world-state contract boards + rumor as discovery. No quest markers |
 | L30 | The Interior | Demigod realm (`demigod-realm.md`): four descending rings (Skin/Veins/Marrow/Heart); kills yield carried ichor, descent costs ichor offerings; no crafting or repair inside — entropy guarantees every demigod's final fight; the Heart grants the truth and pantheon godhood with a named server-visible mark |
+| L31 | Companion app | Optional mobile companion for the asynchronous life: shop ledgers/restock/prices, commission bids, rumor mill, Monument feed, war declarations, arena odds. Never gameplay-critical — the shopkeeper's evening glance, not a second job |
 
 ---
 
@@ -102,8 +103,9 @@ true-forms inside, low-population feel, mortal scrying.
 5. ~~P6 + P9~~ ✅ done (2026-07-26) — `economy.md`
 6. ~~P8, P10~~ ✅ done (2026-07-26) — `content.md`, `demigod-realm.md`
 
-**All ten structural pillars are locked (30 decisions).** What remains
-is tuning (numbers marked TBD throughout), a naming polish pass, and
-the next phase: defining a vertical slice — the smallest playable
-proof of the loop (one town + its wedge + capitol district, crafting
-pipeline, a delve, a war, an awakening).
+**All ten structural pillars are locked (31 decisions).** The
+one-page distillation is `vision.md`. What remains is tuning (numbers
+marked TBD throughout), a naming polish pass, and the next phase:
+defining a vertical slice — the smallest playable proof of the loop
+(one town + its wedge + capitol district, crafting pipeline, a delve,
+a war, an awakening).
