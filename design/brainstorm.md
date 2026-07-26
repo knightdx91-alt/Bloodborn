@@ -26,6 +26,13 @@ Platforms: full 3D, crossplay — PC, Xbox, PlayStation, Switch.
 - **Teaching is capped and rewarded.** Masters have limited disciple
   slots (freed on graduation) and earn spell XP from their disciples'
   progress (see §5.3).
+- **Spell tiers exist; teaching unlocks at Master.** Working ladder:
+  Novice → Adept → Expert → Master → Grandmaster → Ascendant (§5.4).
+- **Ascendants:** one Ascendant per spell per server; one Ascendancy
+  per character. Offered at Grandmaster; declining grants a permanent
+  extra teaching slot in that spell. The slot frees only on the
+  holder's permadeath in the demigod realm, with a server-wide
+  announcement (§5.4).
 
 ---
 
@@ -210,6 +217,42 @@ faith. Magic is **found**.
 - Open tuning question: can tithe XP alone carry a master to the top
   rank, or is personal casting required for the final rank?
 
+### 5.4 Tiers and Ascendants (DECIDED — structure; tuning TBD)
+
+**The ladder:** Novice → Adept → Expert → Master → Grandmaster →
+**Ascendant**, per spell.
+
+- **Master** is where teaching unlocks — you can only teach a spell
+  you have mastered. A disciple *graduates* (freeing their slot, §5.3)
+  when they reach Master themselves.
+- **Grandmaster** sits above Master. Proposed requirement: deep
+  personal use **plus** graduated disciples — a grandmaster has proven
+  both power and lineage. (Numbers TBD.)
+
+**The Ascendant**
+- On reaching Grandmaster of a spell, the character is **offered
+  Ascendancy** of that spell.
+- **One Ascendant per spell per server. One Ascendancy per character**
+  — accepting Fireball forecloses ever being Ascendant of anything
+  else.
+- **Declining grants a permanent extra teaching slot** in that spell.
+  Declining one spell's offer does not block later offers from other
+  spells. The fork is power vs. legacy: become the spell's singular
+  embodiment, or become its greatest teacher.
+- **Succession:** the Ascendancy frees **only** when the holder dies
+  their permadeath in the demigod realm. A **server-wide announcement**
+  fires — *"The Ascendant of Fireball has fallen"* — and the seat is
+  open for another grandmaster to claim.
+- Emergent drama: since permadeath exists only upstairs, grandmasters
+  who covet a held Ascendancy cannot take it in the mortal world. They
+  can wait — or ascend themselves and hunt the Ascendant in the
+  demigod realm. Ascendant-hunting becomes a career.
+- What Ascendancy *grants* (proposals, TBD): an empowered or unique
+  "true form" of the spell, distinct visuals every witness recognizes,
+  their name attached to the spell in-world, a seat/shrine in the mage
+  quarter. Should be meaningful but not so strong that declining is
+  irrational — the extra teaching slot must be a real alternative.
+
 **Lineage as world history**
 - Every spell has a **genealogy**: discoverer → their disciples → the
   whole tree. Spell founders are recorded on the Monument (§7).
@@ -300,5 +343,17 @@ Rejected: legacy-inheritance perks and relic drops — the reward is
 - [ ] Teaching numbers: disciple slots per spell (working: 3–5),
       dismissal cooldown length, rank-up XP size, daily trickle cap,
       and whether tithe XP alone can reach the final mastery rank.
+- [ ] Ascendant claiming: when a seat opens, is it first grandmaster
+      to complete a claiming rite, or a contest/trial if several want
+      it?
+- [ ] Ascendant powers: what exactly the "true form" of a spell is,
+      per spell — and the balance line that keeps declining viable.
+- [ ] Dormant Ascendants: a holder who quits the game locks the seat
+      forever. Inactivity lapse (e.g., seat released after N days
+      offline)? Needs an answer before launch.
+- [ ] Naming collision: "Ascendant" (spell seat) vs "Ascension" (the
+      demigod gate). Thematically linked, mechanically different —
+      keep the echo deliberately, or rename one (Incarnate? Avatar?)
+      to avoid confusing players.
 - [ ] How long should the magic secret realistically hold on a fresh
       server, and is there a "season 1 mystery" plan for launch?
