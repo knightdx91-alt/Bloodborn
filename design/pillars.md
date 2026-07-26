@@ -33,7 +33,9 @@ Status tracker for the big structural decisions. Detail lives in
 | L22 | Magic is myth | The NPC world believes mages are folklore. Public wonder is institutional miracle only. No anti-sorcery law — officially sorcery doesn't exist; exposure means mobs and secret institutions (Office of the Lamp / Vigil high circle / Open Vein inner circle), not trials. Succession Trials convene in the Veiled Ring (hidden night circuit); academies operate behind fronts |
 | L23 | Living history | Each server writes its own permanent history through player-advanced epochs. The Revelation Arc (`lore.md` §10): Myth → Whispers → Unveiling (the myth-breaker is named on the Monument, once per server) → Scouring → Wonder. Epochs are cheap to represent: dialogue, laws, faction posture, set-piece transitions — not rebuilt maps |
 | L24 | Social structures | Charters, not guilds (`war-society.md`): Companies (war), Houses (economy), Orders (faith), Circles (secret, unregistered); fellowships for casual groups; town councils remain place-based |
-| L25 | War | Wars are staked contracts over seasonal *rights* (resources, roads, town grants), never town conquest. Declared with lead time, escrowed stakes, enrollment-only war rules, scheduled battles; enrolled war dead drop 1 equipped piece on the field (L11). Bystanders untouched |
+| L25 | War | Wars are staked contracts over seasonal *rights* (resources, roads, town grants), never town conquest. Declared with lead time, escrowed stakes, enrollment-only war rules, scheduled battles; enrolled war dead drop 1 equipped piece on the field (L11). Bystanders untouched. Circles can covertly fund wars, at exposure risk |
+| L26 | Economy | Player-driven (`economy.md`): NPCs never sell finished goods; player shops in rented/owned buildings are the retail layer (NPC staff, ledgers, commissions); local market boards only — no global AH, no item mail, goods physically travel (caravans/arbitrage); single currency with hard NPC sinks; shadow economy through Circles |
+| L27 | Business model | Buy-to-play + paid expansions. No pay-for-power, no purchasable goods a crafter could make, no cosmetic gear shop (gear appearance = crafter prestige). Sparse account flair only; RMT enforcement planned from day one |
 
 ---
 
@@ -65,12 +67,9 @@ of the secret canon.
 `war-society.md`. Remaining: tuning numbers, battle formats, epoch
 interactions.
 
-### P6. Economy fundamentals 🟡
-- One currency or several? Global auction house vs local-only markets
-  (local markets + caravan trade fits the Wheel; global AH kills trade
-  runs)? Gold sinks (property upkeep, betting rake, repair fees)?
-  Bank/storage rules?
-- Dependencies: P1, P5; business model (P9) looms over it.
+### ~~P6. Economy fundamentals~~ ✅ LOCKED → L26
+`economy.md`. Remaining: currency naming, rent/tax/wage numbers,
+commission escrow, warehouse robbery scope.
 
 ### ~~P7. Social structures~~ ✅ LOCKED → L24
 `war-society.md`. Charters (Company/House/Order/Circle) +
@@ -84,11 +83,9 @@ caps, Circle exposure mechanics.
   Monster-capture for the arena?
 - Dependencies: P4 (lore drives content).
 
-### P9. Business model 🟢 (but don't sleep on it)
-- Buy-to-play / sub / F2P+cosmetics? Constrains economy design hard
-  (RMT pressure on a player-driven economy is real). No pay-for-power
-  is presumably a given in a game about earned scarcity.
-- Dependencies: informs P6; needs deciding before economy tuning.
+### ~~P9. Business model~~ ✅ LOCKED → L27
+`economy.md` §7. Remaining: expansion cadence/pricing after the
+vertical slice.
 
 ### P10. Demigod realm structure 🟢
 - How many areas past the gate? What "advance to new area by kills"
@@ -104,5 +101,5 @@ caps, Circle exposure mechanics.
 2. ~~P3~~ ✅ done (2026-07-26)
 3. ~~P4~~ ✅ done (2026-07-26) — working canon in `lore.md`
 4. ~~P5 + P7~~ ✅ done (2026-07-26) — `war-society.md`
-5. **P6 + P9** — economy and business model as one conversation. ← next
-6. **P8, P10** — content models once the skeleton stands.
+5. ~~P6 + P9~~ ✅ done (2026-07-26) — `economy.md`
+6. **P8, P10** — content models (PvE/quests + demigod realm). ← last two

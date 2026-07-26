@@ -104,8 +104,13 @@ right, fought in scheduled battles, with stakes posted up front.**
 ## Open tuning questions
 - [ ] Season length; war-window length; lead time; enrollment caps.
 - [ ] Stake sizing: flat, or scaled to the right's income?
-- [ ] Can Circles covertly fund wars (shadow-war texture) — and can a
-      war expose a Circle?
+- [x] **Circles CAN covertly fund wars (DECIDED 2026-07-26).** A war's
+      escrow can be staked through intermediaries, hiding the true
+      buyer. The risk: shadow money leaves trails — a badly lost war,
+      a captured paymaster, or a bought informant can **expose the
+      Circle**, converting its hidden assets and roster into public
+      knowledge (catastrophic in Myth/Whispers epochs; merely
+      dangerous later). Exposure mechanics TBD.
 - [ ] Battle format details: objective types per right type;
       time-of-day scheduling across time zones.
 - [ ] Epoch interactions: do Scouring-age wars gain new casus types
