@@ -37,6 +37,8 @@ Status tracker for the big structural decisions. Detail lives in
 | L26 | Economy | Player-driven (`economy.md`): NPCs never sell finished goods; player shops in rented/owned buildings are the retail layer (NPC staff, ledgers, commissions); local market boards only — no global AH, no item mail, goods physically travel (caravans/arbitrage); single currency with hard NPC sinks; shadow economy through Circles |
 | L27 | Business model | Buy-to-play + paid expansions. No pay-for-power, no purchasable goods a crafter could make, no cosmetic gear shop (gear appearance = crafter prestige). Sparse account flair only; RMT enforcement planned from day one |
 | L28 | Travel | No fast travel, no teleportation, no recall/summon. Mounts are the speed system; hands-free coaches/barges are the convenience layer; compact Wheel keeps distances felt-not-dreaded. Exceptions: shrine respawn, the ascension gate (`economy.md` §3.5) |
+| L29 | PvE & content | No instanced PvE (`content.md`): shared contested delves around blood poolings; monster ecology with cull pressure and named horrors; quests = handcrafted mystery chains + world-state contract boards + rumor as discovery. No quest markers |
+| L30 | The Interior | Demigod realm (`demigod-realm.md`): four descending rings (Skin/Veins/Marrow/Heart); kills yield carried ichor, descent costs ichor offerings; no crafting or repair inside — entropy guarantees every demigod's final fight; the Heart grants the truth and pantheon godhood with a named server-visible mark |
 
 ---
 
@@ -77,22 +79,17 @@ commission escrow, warehouse robbery scope.
 fellowships + councils. Remaining: charter creation costs, roster
 caps, Circle exposure mechanics.
 
-### P8. PvE & content model 🟢
-- What's the moment-to-moment PvE: open-world monsters in the wedges,
-  dungeons, world bosses? Quest design philosophy (the awakening
-  quests set a high bar — handcrafted mystery vs repeatable content)?
-  Monster-capture for the arena?
-- Dependencies: P4 (lore drives content).
+### ~~P8. PvE & content model~~ ✅ LOCKED → L29
+`content.md`. Remaining: delve counts, named-horror generation,
+rumor data model, group scaling without instancing.
 
 ### ~~P9. Business model~~ ✅ LOCKED → L27
 `economy.md` §7. Remaining: expansion cadence/pricing after the
 vertical slice.
 
-### P10. Demigod realm structure 🟢
-- How many areas past the gate? What "advance to new area by kills"
-  means concretely (kill count? trophies?). What's at the end — the
-  final area, godhood, pantheon effects? How demigod combat differs.
-- Dependencies: P3 (what ascending characters bring with them).
+### ~~P10. Demigod realm structure~~ ✅ LOCKED → L30
+`demigod-realm.md`. Remaining: ring/offering tuning, Ascendant
+true-forms inside, low-population feel, mortal scrying.
 
 ---
 
@@ -103,4 +100,10 @@ vertical slice.
 3. ~~P4~~ ✅ done (2026-07-26) — working canon in `lore.md`
 4. ~~P5 + P7~~ ✅ done (2026-07-26) — `war-society.md`
 5. ~~P6 + P9~~ ✅ done (2026-07-26) — `economy.md`
-6. **P8, P10** — content models (PvE/quests + demigod realm). ← last two
+6. ~~P8, P10~~ ✅ done (2026-07-26) — `content.md`, `demigod-realm.md`
+
+**All ten structural pillars are locked (30 decisions).** What remains
+is tuning (numbers marked TBD throughout), a naming polish pass, and
+the next phase: defining a vertical slice — the smallest playable
+proof of the loop (one town + its wedge + capitol district, crafting
+pipeline, a delve, a war, an awakening).
