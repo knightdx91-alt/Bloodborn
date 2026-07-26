@@ -36,6 +36,7 @@ Status tracker for the big structural decisions. Detail lives in
 | L25 | War | Wars are staked contracts over seasonal *rights* (resources, roads, town grants), never town conquest. Declared with lead time, escrowed stakes, enrollment-only war rules, scheduled battles; enrolled war dead drop 1 equipped piece on the field (L11). Bystanders untouched. Circles can covertly fund wars, at exposure risk |
 | L26 | Economy | Player-driven (`economy.md`): NPCs never sell finished goods; player shops in rented/owned buildings are the retail layer (NPC staff, ledgers, commissions); local market boards only — no global AH, no item mail, goods physically travel (caravans/arbitrage); single currency with hard NPC sinks; shadow economy through Circles |
 | L27 | Business model | Buy-to-play + paid expansions. No pay-for-power, no purchasable goods a crafter could make, no cosmetic gear shop (gear appearance = crafter prestige). Sparse account flair only; RMT enforcement planned from day one |
+| L28 | Travel | No fast travel, no teleportation, no recall/summon. Mounts are the speed system; hands-free coaches/barges are the convenience layer; compact Wheel keeps distances felt-not-dreaded. Exceptions: shrine respawn, the ascension gate (`economy.md` §3.5) |
 
 ---
 

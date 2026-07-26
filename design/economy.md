@@ -47,6 +47,30 @@ abstract; **items are physical** — no mail, no teleporting goods.
 - The capitol's Concourse is the deep market — highest volume, highest
   stall fees — but still local: goods must get there.
 
+### 3.5 No fast travel, no teleportation (DECIDED 2026-07-26)
+People are as physical as goods — player teleportation with inventory
+would *be* item mail, so it doesn't exist. The rules:
+
+- **No instant travel of any kind.** No waypoints, no recall/
+  hearthstone (an escape teleport would gut caravan raids and war
+  retreats), no summon-to-friend.
+- **Mounts are the fast travel** — speed is bred, bought, and losable,
+  not a menu option. Stables, way-inns, and coaching are player
+  businesses.
+- **Hands-free travel is the convenience layer:** coaches and river
+  barges (player- or NPC-run) carry you in real time while semi-AFK —
+  manage shop ledgers, plan commissions, chat while the wagon rolls.
+  Not instant; just not hands-on. This is the session-friction answer
+  for console/handheld play.
+- **Tuning target:** a spoke ride on a decent horse is minutes, not
+  tens of minutes. The Wheel is compact by design; distance should be
+  felt, never dreaded.
+- **Sanctioned exceptions:** shrine knitting-back on death
+  (involuntary, tithed, lore-sanctioned) and the one-way ascension
+  gate. If magic ever touches travel, it's a near-mythical late-epoch
+  rarity — flesh only, no cargo — making a portal-caster a famous
+  institution, not a UI feature. Default: doesn't exist.
+
 ## 4. Coin — one currency, real sinks
 
 - Single currency: **marks** (placeholder name). Letters of credit at
