@@ -264,7 +264,7 @@ Proposed epochs; thresholds TBD:
 ### Beyond magic
 The same spine carries everything else that accumulates:
 - War outcomes permanently reshape wedge ownership and town fortunes.
-- The Monument, sainthoods, spell genealogies, Ascendant successions
+- The Monument, sainthoods, spell genealogies, Incarnate successions
   — all server-specific history already.
 - The secret canon's long arc (§9 — the seal weakening) is dosed per
   epoch: late-age servers start seeing the enemy's fingerprints.

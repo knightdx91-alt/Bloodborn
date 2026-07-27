@@ -29,7 +29,7 @@ someone close a wound with a word — or do it yourself — and learn
 the story is true, and that three secret institutions hunt everyone
 who learns it. Spells are found, mastered, and taught person to
 person; every spell on the server traces to whoever discovered it;
-one living Ascendant may embody each spell, and their seat changes
+one living Incarnate may embody each spell, and their seat changes
 hands in a midnight arena free-for-all.
 
 At the top of the longest climb, the faithful may pass the one gate

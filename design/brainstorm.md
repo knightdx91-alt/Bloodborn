@@ -27,8 +27,8 @@ Platforms: full 3D, crossplay — PC, Xbox, PlayStation, Switch.
   slots (freed on graduation) and earn spell XP from their disciples'
   progress (see §5.3).
 - **Spell tiers exist; teaching unlocks at Master.** Working ladder:
-  Novice → Adept → Expert → Master → Grandmaster → Ascendant (§5.4).
-- **Ascendants:** one Ascendant per spell per server; one Ascendancy
+  Novice → Adept → Expert → Master → Grandmaster → Incarnate (§5.4).
+- **Incarnates:** one Incarnate per spell per server; one Incarnation
   per character. Offered at Grandmaster; declining grants a permanent
   extra teaching slot in that spell. The slot frees on the holder's
   permadeath in the demigod realm — or lapses after **30 real-world
@@ -246,10 +246,10 @@ institutions, not a courtroom.
 - Open tuning question: can tithe XP alone carry a master to the top
   rank, or is personal casting required for the final rank?
 
-### 5.4 Tiers and Ascendants (DECIDED — structure; tuning TBD)
+### 5.4 Tiers and Incarnates (DECIDED — structure; tuning TBD)
 
 **The ladder:** Novice → Adept → Expert → Master → Grandmaster →
-**Ascendant**, per spell.
+**Incarnate**, per spell.
 
 - **Master** is where teaching unlocks — you can only teach a spell
   you have mastered. A disciple *graduates* (freeing their slot, §5.3)
@@ -258,21 +258,21 @@ institutions, not a courtroom.
   personal use **plus** graduated disciples — a grandmaster has proven
   both power and lineage. (Numbers TBD.)
 
-**The Ascendant**
+**The Incarnate**
 - On reaching Grandmaster of a spell, the character is **offered
-  Ascendancy** of that spell.
-- **One Ascendant per spell per server. One Ascendancy per character**
-  — accepting Fireball forecloses ever being Ascendant of anything
+  Incarnation** of that spell.
+- **One Incarnate per spell per server. One Incarnation per character**
+  — accepting Fireball forecloses ever being Incarnate of anything
   else.
 - **Declining grants a permanent extra teaching slot** in that spell.
   Declining one spell's offer does not block later offers from other
   spells. The fork is power vs. legacy: become the spell's singular
   embodiment, or become its greatest teacher.
-- **Succession:** the Ascendancy frees when the holder dies their
+- **Succession:** the Incarnation frees when the holder dies their
   permadeath in the demigod realm, **or lapses after 30 real-world
   days without the account logging in** (DECIDED — prevents dead
   accounts locking seats forever). Either way a **server-wide
-  announcement** fires — *"The Ascendant of Fireball has fallen"* /
+  announcement** fires — *"The Incarnate of Fireball has fallen"* /
   *"...has forsaken the flame"* — and the seat opens.
 - **The Succession Trial (DECIDED):** an open seat is claimed through
   an **open trial in the arena — a free-for-all among all qualified
@@ -294,10 +294,10 @@ institutions, not a courtroom.
   - If no one qualifies or enters, the seat stays open and the trial
     re-fires when a new grandmaster emerges.
 - Emergent drama: since permadeath exists only upstairs, grandmasters
-  who covet a held Ascendancy cannot take it in the mortal world. They
-  can wait — or ascend themselves and hunt the Ascendant in the
-  demigod realm. Ascendant-hunting becomes a career.
-- What Ascendancy *grants* (proposals, TBD): an empowered or unique
+  who covet a held Incarnation cannot take it in the mortal world. They
+  can wait — or ascend themselves and hunt the Incarnate in the
+  demigod realm. Incarnate-hunting becomes a career.
+- What Incarnation *grants* (proposals, TBD): an empowered or unique
   "true form" of the spell, distinct visuals every witness recognizes,
   their name attached to the spell in-world, a seat/shrine in the mage
   quarter. Should be meaningful but not so strong that declining is
@@ -383,15 +383,12 @@ Rejected: legacy-inheritance perks and relic drops — the reward is
       equipped; wedge cargo owner-locked ~10 min, then open loot,
       despawn ~1 hour; respawn at bound blood-shrine.
 - [ ] Character transfers between worlds: likely forbidden (they break
-      Ascendant uniqueness and lineage) — or allowed with titles and
+      Incarnate uniqueness and lineage) — or allowed with titles and
       lineage stripped?
-- [ ] Setting/tone: the name **Bloodborn** — gothic? dark fantasy?
-      how dark? (Brothels and blood-gods on the page suggest mature
-      rating; confirm M-rating comfort.)
-- [ ] Classless (skill-based, spells are things you learn) vs classed?
-      Notes lean classless; hidden magic (§5.1) almost requires
-      classless — a mage class on the character screen would spoil the
-      secret.
+- [x] Setting/tone → resolved by **L20** (M-rated grounded dark,
+      low-magic medieval).
+- [x] Classless vs classed → resolved by **L18** (classless,
+      skill-by-use; magic skills hidden until awakening).
 - [ ] Crafting minigame depth vs accessibility — how much can a casual
       player enjoy without mastering it?
 - [ ] BotW-style combat in an MMO: how do we handle latency for
@@ -399,15 +396,16 @@ Rejected: legacy-inheritance perks and relic drops — the reward is
 - [ ] Teaching numbers: disciple slots per spell (working: 3–5),
       dismissal cooldown length, rank-up XP size, daily trickle cap,
       and whether tithe XP alone can reach the final mastery rank.
-- [ ] Ascendant powers: what exactly the "true form" of a spell is,
+- [ ] Incarnate powers: what exactly the "true form" of a spell is,
       per spell — and the balance line that keeps declining viable.
 - [ ] Succession Trial details: how much lead time after the
-      announcement; can the crowd's own Ascendants/echoes appear at
+      announcement; can the crowd's own Incarnates/echoes appear at
       the ceremony; team-ups in the free-for-all are inevitable — rule
       them legal (politics!) or discourage them?
-- [ ] Naming collision: "Ascendant" (spell seat) vs "Ascension" (the
-      demigod gate). Thematically linked, mechanically different —
-      keep the echo deliberately, or rename one (Incarnate? Avatar?)
-      to avoid confusing players.
+- [x] Naming collision → **RESOLVED**: the spell seat is the
+      **Incarnate** (the spell made flesh); "Ascension"/"Ascendant"
+      now refers only to the demigod gate. Renamed throughout the
+      docs. In-world line: *"Incarnates embody the god's blood;
+      the Ascended leave the world."*
 - [ ] How long should the magic secret realistically hold on a fresh
       server, and is there a "season 1 mystery" plan for launch?

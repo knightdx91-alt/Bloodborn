@@ -50,7 +50,7 @@ degrades (L3) and cannot be restored — only scavenged from the dead.
 - Every demigod is on a clock made of their own equipment. Camping
   the Skin forever isn't viable; the realm grinds everyone toward
   their final fight.
-- This keeps Ascendant seats (L10), sainthoods, and Monument lines
+- This keeps Incarnate seats (L10), sainthoods, and Monument lines
   cycling without any artificial timer. Entropy is the timer.
 - Alliances are legal and unenforceable — pacts, betrayals, and
   shared descents are the realm's politics. Any combat goes.
@@ -81,7 +81,7 @@ vertical (L19) holds even here.
 
 ## Open tuning questions
 - [ ] Ring sizes and gate offering costs; ichor values per kill class.
-- [ ] Do Ascendant spell-seats confer anything unique inside (their
+- [ ] Do Incarnate spell-seats confer anything unique inside (their
       true-form spell at full terror?) — likely yes, tuned carefully.
 - [ ] Population floor: what the Skin feels like on a server where
       few have ascended yet (deep-warped creature pressure fills the

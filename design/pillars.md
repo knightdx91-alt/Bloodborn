@@ -16,15 +16,15 @@ Status tracker for the big structural decisions. Detail lives in
 | L5 | Property | Buy buildings or rights; player businesses; town councils |
 | L6 | Arena | PvP + PvM, player betting, no-stakes sport; echo bouts; Succession Trials |
 | L7 | Magic secrecy | Hidden system — discovered in-world, no magic in presentation |
-| L8 | Spell tiers | Novice → Adept → Expert → Master → Grandmaster → Ascendant |
+| L8 | Spell tiers | Novice → Adept → Expert → Master → Grandmaster → Incarnate |
 | L9 | Teaching | Unlocks at Master; capped disciple slots freed on graduation; lineage XP (big on rank-ups, trickle on use) |
-| L10 | Ascendants | One per spell per server; one per character; decline = +1 teaching slot; 30-day lapse; arena free-for-all Succession Trial |
+| L10 | Incarnates | One per spell per server; one per character; decline = +1 teaching slot; 30-day lapse; arena free-for-all Succession Trial |
 | L11 | War stakes | Losers drop 1 random equipped piece |
 | L12 | Endgame | Faction max rep + max level → one-way ascension → permadeath demigod realm; advance only by kills |
 | L13 | Death reward | Sainthood + the Monument (remembrance, not power transfer) |
 | L14 | Demigod boundary | No living demigod in the mortal world; arena summons AI echoes of dead ones |
 | L15 | Platforms | Full 3D, crossplay: PC, Xbox, PlayStation, Switch |
-| L16 | Server model | Medium worlds: ~5–10k characters, ~1–2k peak concurrent. Big enough for a real economy; small enough that Ascendants and master crafters are known names |
+| L16 | Server model | Medium worlds: ~5–10k characters, ~1–2k peak concurrent. Big enough for a real economy; small enough that Incarnates and master crafters are known names |
 | L17 | Ordinary death | Zone-scaled. Towns/spoke roads: durability hit only. Wedges: carried goods (materials, coin) also drop where you fell, recoverable. Equipped gear never drops outside war. Death ladder: ordinary < war (1 equipped piece) < demigod realm (everything) |
 | L18 | Progression | Classless, skill-by-use. Every proficiency is a skill grown through use; "level" = total across skills; magic skills invisible until awakening. "Max level" = capping a defined skill set (definition TBD) |
 | L19 | Power curve | Moderate vertical: veterans usually win clean, but a skilled newcomer threatens a careless one and can always escape |
@@ -50,7 +50,7 @@ Ordered by how much everything else depends on them.
 
 ### ~~P1. Server & population model~~ ✅ LOCKED → L16
 Medium worlds. Remaining sub-questions: character transfer policy
-(transfers threaten Ascendant uniqueness and lineage — likely
+(transfers threaten Incarnate uniqueness and lineage — likely
 forbidden, or titles/lineage stripped on transfer); respawn points.
 
 ### ~~P2. Ordinary death~~ ✅ LOCKED → L17
@@ -90,7 +90,7 @@ rumor data model, group scaling without instancing.
 vertical slice.
 
 ### ~~P10. Demigod realm structure~~ ✅ LOCKED → L30
-`demigod-realm.md`. Remaining: ring/offering tuning, Ascendant
+`demigod-realm.md`. Remaining: ring/offering tuning, Incarnate
 true-forms inside, low-population feel, mortal scrying.
 
 ---
