@@ -379,9 +379,9 @@ Rejected: legacy-inheritance perks and relic drops — the reward is
   war declarations, arena odds. Never gameplay-critical.
 
 ## Open questions
-- [ ] Ordinary death details: durability hit size; timer before
-      dropped goods in the wedges despawn or become open loot;
-      respawn points (nearest town? bound shrine?).
+- [x] Ordinary death details → **L32**: ~10% durability on all
+      equipped; wedge cargo owner-locked ~10 min, then open loot,
+      despawn ~1 hour; respawn at bound blood-shrine.
 - [ ] Character transfers between worlds: likely forbidden (they break
       Ascendant uniqueness and lineage) — or allowed with titles and
       lineage stripped?
