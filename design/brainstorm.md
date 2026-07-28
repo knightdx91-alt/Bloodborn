@@ -397,8 +397,10 @@ Rejected: legacy-inheritance perks and relic drops — the reward is
       Grandmaster; 7-day dismissal cooldown (graduation frees
       instantly); lineage XP counts fully up to Grandmaster and stops
       there; daily trickle capped at ≈1 hour of own practice.
-- [ ] Incarnate powers: what exactly the "true form" of a spell is,
-      per spell — and the balance line that keeps declining viable.
+- [x] Incarnate powers → **L34**: true form = one broken rule per
+      spell + a visible bodily tell; never a numeric tier. Seat is
+      fame + risk; declining is quiet power. (Per-spell rule-break
+      list is content work, not design.)
 - [ ] Succession Trial details: how much lead time after the
       announcement; can the crowd's own Incarnates/echoes appear at
       the ceremony; team-ups in the free-for-all are inevitable — rule

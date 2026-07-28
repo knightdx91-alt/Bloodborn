@@ -42,6 +42,7 @@ Status tracker for the big structural decisions. Detail lives in
 | L31 | Companion app | Optional mobile companion for the asynchronous life: shop ledgers/restock/prices, commission bids, rumor mill, Monument feed, war declarations, arena odds. Never gameplay-critical — the shopkeeper's evening glance, not a second job |
 | L32 | Ordinary death details | Extends L17. Durability hit: ~10% on all equipped gear, every death. Wedge cargo drop: owner-only grace ~10 min, then open loot; despawns ~1 hour untouched. Respawn: bound blood-shrine (bind at any shrine; the god's blood knits you back at the one you chose) |
 | L33 | Teaching numbers | Extends L9. Disciple slots: 3 per spell at Master, +1 at Grandmaster (stacks with the decline-the-seat +1). Dismissal cooldown: 7 real days (graduation frees the slot instantly). Lineage XP counts fully up to Grandmaster and stops there — the Incarnate seat is never XP, only the Trial. Daily trickle cap: a full roster's passive XP ≈ 1 hour of own practice; rank-up windfalls are the real prize |
+| L34 | Incarnate true forms | The true form breaks one rule the base spell obeys (true Fireball needs no line of sight; true Mending works on the recently dead) AND marks the body with a visible tell readable by folklore-literate observers. Never a numeric tier — a Grandmaster's cast stays equal in raw power. Seat = fame + risk (announced, Monument-tracked, huntable, marked, locked out of other seats); decline = quiet power (anonymity, all seats stay open, +1 teaching slot) |
 
 ---
 
