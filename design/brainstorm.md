@@ -393,9 +393,10 @@ Rejected: legacy-inheritance perks and relic drops — the reward is
       player enjoy without mastering it?
 - [ ] BotW-style combat in an MMO: how do we handle latency for
       parry/dodge timing? (Durability resolved: repair/wear, §2.6.)
-- [ ] Teaching numbers: disciple slots per spell (working: 3–5),
-      dismissal cooldown length, rank-up XP size, daily trickle cap,
-      and whether tithe XP alone can reach the final mastery rank.
+- [x] Teaching numbers → **L33**: 3 slots at Master, +1 at
+      Grandmaster; 7-day dismissal cooldown (graduation frees
+      instantly); lineage XP counts fully up to Grandmaster and stops
+      there; daily trickle capped at ≈1 hour of own practice.
 - [ ] Incarnate powers: what exactly the "true form" of a spell is,
       per spell — and the balance line that keeps declining viable.
 - [ ] Succession Trial details: how much lead time after the

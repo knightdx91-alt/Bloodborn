@@ -41,6 +41,7 @@ Status tracker for the big structural decisions. Detail lives in
 | L30 | The Interior | Demigod realm (`demigod-realm.md`): four descending rings (Skin/Veins/Marrow/Heart); kills yield carried ichor, descent costs ichor offerings; no crafting or repair inside — entropy guarantees every demigod's final fight; the Heart grants the truth and pantheon godhood with a named server-visible mark |
 | L31 | Companion app | Optional mobile companion for the asynchronous life: shop ledgers/restock/prices, commission bids, rumor mill, Monument feed, war declarations, arena odds. Never gameplay-critical — the shopkeeper's evening glance, not a second job |
 | L32 | Ordinary death details | Extends L17. Durability hit: ~10% on all equipped gear, every death. Wedge cargo drop: owner-only grace ~10 min, then open loot; despawns ~1 hour untouched. Respawn: bound blood-shrine (bind at any shrine; the god's blood knits you back at the one you chose) |
+| L33 | Teaching numbers | Extends L9. Disciple slots: 3 per spell at Master, +1 at Grandmaster (stacks with the decline-the-seat +1). Dismissal cooldown: 7 real days (graduation frees the slot instantly). Lineage XP counts fully up to Grandmaster and stops there — the Incarnate seat is never XP, only the Trial. Daily trickle cap: a full roster's passive XP ≈ 1 hour of own practice; rank-up windfalls are the real prize |
 
 ---
 
