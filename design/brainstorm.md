@@ -410,5 +410,8 @@ Rejected: legacy-inheritance perks and relic drops — the reward is
       now refers only to the demigod gate. Renamed throughout the
       docs. In-world line: *"Incarnates embody the god's blood;
       the Ascended leave the world."*
-- [ ] How long should the magic secret realistically hold on a fresh
-      server, and is there a "season 1 mystery" plan for launch?
+- [x] Magic secret / season 1 → **L36**: the *information* secret is
+      expected to break at internet speed; the *mechanical* climb is
+      what's paced. Awakening gated by seeded, server-throttled
+      events; total marketing silence; layered secrets so wikis go
+      stale against each server's own history.
