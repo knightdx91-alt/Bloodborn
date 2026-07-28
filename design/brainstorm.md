@@ -390,10 +390,10 @@ Rejected: legacy-inheritance perks and relic drops — the reward is
       low-magic medieval).
 - [x] Classless vs classed → resolved by **L18** (classless,
       skill-by-use; magic skills hidden until awakening).
-- [ ] Crafting minigame depth vs accessibility — how much can a casual
-      player enjoy without mastering it?
-- [ ] BotW-style combat in an MMO: how do we handle latency for
-      parry/dodge timing? (Durability resolved: repair/wear, §2.6.)
+- [x] Crafting depth vs accessibility → **L38**: depth in the
+      ceiling, not the floor; no stage hard-fails a patient beginner.
+- [x] Combat latency → **L39**: favor-the-defender netcode +
+      animation-commitment readability; vertical-slice gate.
 - [x] Teaching numbers → **L33**: 3 slots at Master, +1 at
       Grandmaster; 7-day dismissal cooldown (graduation frees
       instantly); lineage XP counts fully up to Grandmaster and stops
