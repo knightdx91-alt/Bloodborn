@@ -401,10 +401,10 @@ Rejected: legacy-inheritance perks and relic drops — the reward is
       spell + a visible bodily tell; never a numeric tier. Seat is
       fame + risk; declining is quiet power. (Per-spell rule-break
       list is content work, not design.)
-- [ ] Succession Trial details: how much lead time after the
-      announcement; can the crowd's own Incarnates/echoes appear at
-      the ceremony; team-ups in the free-for-all are inevitable — rule
-      them legal (politics!) or discourage them?
+- [x] Succession Trial details → **L35**: 3-day lead, midnight
+      Trial in the Veiled Ring; team-ups legal, one winner (betrayal
+      by design); awakened-only crowd with shadow-book betting;
+      living Incarnates spectate only; echoes barred.
 - [x] Naming collision → **RESOLVED**: the spell seat is the
       **Incarnate** (the spell made flesh); "Ascension"/"Ascendant"
       now refers only to the demigod gate. Renamed throughout the
