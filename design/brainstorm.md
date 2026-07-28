@@ -271,9 +271,15 @@ institutions, not a courtroom.
 - **Succession:** the Incarnation frees when the holder dies their
   permadeath in the demigod realm, **or lapses after 30 real-world
   days without the account logging in** (DECIDED — prevents dead
-  accounts locking seats forever). Either way a **server-wide
-  announcement** fires — *"The Incarnate of Fireball has fallen"* /
-  *"...has forsaken the flame"* — and the seat opens.
+  accounts locking seats forever). **Regency (DECIDED, L10):** each
+  holder may once pre-declare an absence, holding the seat up to 60
+  days — the pressure stays, the hospital-stay cruelty goes. Either
+  way a **server-wide announcement** fires — *"The Incarnate of
+  Fireball has fallen"* / *"...has forsaken the flame"* — and the
+  seat opens. **The announcement's surface form is epoch-gated
+  (L10):** pre-Unveiling it reaches only the awakened (dreams,
+  marked coins, word through the Circles); the public merely hears
+  a famous duelist has died. Post-Unveiling, it's news.
 - **The Succession Trial (DECIDED):** an open seat is claimed through
   an **open trial in the arena — a free-for-all among all qualified
   grandmasters who enter, any combat goes.** Weapons, spells, gear,

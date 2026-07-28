@@ -73,6 +73,8 @@ glance, not a raid scheduler.
 
 ---
 
-*Everything above is locked design — 31 decisions in
-`design/pillars.md`; systems detail in the companion docs. Next
-phase: naming polish and the vertical slice.*
+*Everything above is locked design — 39 decisions in
+`design/pillars.md`; systems detail in the companion docs;
+feasibility & simulation review in `design/feasibility-review.md`
+(verdict: design PASS; staged production plan). Next phase: naming
+polish and the vertical slice.*

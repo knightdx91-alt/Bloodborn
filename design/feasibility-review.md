@@ -242,7 +242,7 @@ If the funding reality is smaller, the honest staged path is:
 
 **Top five actions coming out of this pass:**
 1. Resolve T2 (Switch battle ceiling) before slice combat design.
-2. Add the casual awakening guard rail (§2.1) to L36's detail.
-3. Add Incarnate regency (§2.4) to L10's detail.
-4. Epoch-gate the Trial announcement surface (§4.2).
+2. ~~Add the casual awakening guard rail (§2.1) to L36's detail.~~ DONE 2026-07-28.
+3. ~~Add Incarnate regency (§2.4) to L10's detail.~~ DONE 2026-07-28.
+4. ~~Epoch-gate the Trial announcement surface (§4.2).~~ DONE 2026-07-28 (L10).
 5. Prototype contested-delve pressure (§4.3) alongside the slice.
