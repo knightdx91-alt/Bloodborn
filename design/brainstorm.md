@@ -382,9 +382,10 @@ Rejected: legacy-inheritance perks and relic drops — the reward is
 - [x] Ordinary death details → **L32**: ~10% durability on all
       equipped; wedge cargo owner-locked ~10 min, then open loot,
       despawn ~1 hour; respawn at bound blood-shrine.
-- [ ] Character transfers between worlds: likely forbidden (they break
-      Incarnate uniqueness and lineage) — or allowed with titles and
-      lineage stripped?
+- [x] Character transfers → **L37**: forbidden. Rebirth instead —
+      fresh start elsewhere keeping only account flair; the old world
+      keeps an epitaph line. Covers dying servers and friend-chasing
+      without breaking lineage or the Monument.
 - [x] Setting/tone → resolved by **L20** (M-rated grounded dark,
       low-magic medieval).
 - [x] Classless vs classed → resolved by **L18** (classless,
