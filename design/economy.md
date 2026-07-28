@@ -128,5 +128,17 @@ leaves trails; exposure is the price of losing.
 - [ ] Commission escrow rules; dispute handling.
 - [ ] Warehouse robbery: full system (war objective? Circle heist?) or
       flavor-only at launch?
-- [ ] Insurance as a House product: moral hazard tuning.
+- [ ] Insurance as a House product: moral hazard tuning. **Constraint
+      from `feasibility-review.md` §2.6:** claims must key off what
+      the server can prove (the death event, the looters' identities
+      are all recorded) — otherwise insure-and-"lose"-it fraud with a
+      friendly bandit is trivial.
 - [ ] Expansion cadence and price points (post-vertical-slice call).
+- [ ] **RMT enforcement must explicitly cover the Veiled Ring's
+      shadow book** (`feasibility-review.md` §2.6) — unlicensed
+      betting on Succession Trials is a real-money laundering vector.
+- [ ] Shrine tithe scaling by distance from the death site — closes
+      the bind-far-and-die slow-teleport edge case (§4.1).
+- [ ] Coin faucet curve by epoch: early-server deflation is the
+      likelier failure than inflation (§3.2) — start generous,
+      tighten as wealth accumulates.

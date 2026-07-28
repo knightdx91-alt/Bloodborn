@@ -8,7 +8,7 @@ Platforms: full 3D, crossplay — PC, Xbox, PlayStation, Switch.
 
 ---
 
-## 0. Decisions locked so far (2026-07-26)
+## 0. Decisions locked so far (2026-07-26 → 07-28)
 
 - **Combat:** real-time action combat, Breath of the Wild feel — physical,
   readable, no tab-targeting.
@@ -51,6 +51,31 @@ Platforms: full 3D, crossplay — PC, Xbox, PlayStation, Switch.
   sheet until awakening — the secret is structural.
 - **Power curve: moderate vertical.** Veterans usually win clean; a
   skilled newcomer can threaten a careless one and can always escape.
+
+### Added 2026-07-27/28 (the open-questions sweep, L32–L39)
+
+- **Ordinary death numbers (L32):** ~10% durability on all equipped
+  per death; wedge cargo owner-locked ~10 min, then open loot,
+  despawning ~1 hour; respawn at a **bound blood-shrine**.
+- **Teaching numbers (L33):** 3 disciple slots at Master, +1 at
+  Grandmaster; 7-day dismissal cooldown (graduation frees the slot
+  instantly); lineage XP counts to Grandmaster and stops; daily
+  trickle capped at ≈1 hour of own practice.
+- **The spell seat is the Incarnate**, not the Ascendant —
+  "Ascension" now belongs solely to the demigod gate.
+- **Incarnate true forms (L34):** each breaks one rule the base
+  spell obeys *and* marks the body with a visible tell. Never a
+  numeric tier. Seat = fame + risk; declining = quiet power.
+- **Succession Trial (L35):** 3-day lead, midnight, Veiled Ring;
+  team-ups legal but one winner; awakened-only crowd, echoes barred.
+- **Season 1 mystery (L36):** awakening gated by seeded,
+  server-throttled events with a guaranteed slow path for casuals;
+  total marketing silence; layered secrets.
+- **No transfers (L37):** rebirth instead — fresh start elsewhere,
+  an epitaph line left behind.
+- **Crafting floor (L38)** and **combat netcode stance (L39)** —
+  depth in the ceiling not the floor; favor-the-defender netcode as
+  a vertical-slice gate.
 
 ---
 
@@ -385,6 +410,10 @@ Rejected: legacy-inheritance perks and relic drops — the reward is
   war declarations, arena odds. Never gameplay-critical.
 
 ## Open questions
+
+**All closed as of 2026-07-28.** Kept below as the decision trail.
+New questions raised by the feasibility pass live in
+`feasibility-review.md` §5 and the per-doc "open tuning questions".
 - [x] Ordinary death details → **L32**: ~10% durability on all
       equipped; wedge cargo owner-locked ~10 min, then open loot,
       despawn ~1 hour; respawn at bound blood-shrine.

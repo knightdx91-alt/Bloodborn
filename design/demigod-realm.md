@@ -82,7 +82,10 @@ vertical (L19) holds even here.
 ## Open tuning questions
 - [ ] Ring sizes and gate offering costs; ichor values per kill class.
 - [ ] Do Incarnate spell-seats confer anything unique inside (their
-      true-form spell at full terror?) — likely yes, tuned carefully.
+      L34 true-form at full terror?) — likely yes, tuned carefully.
+      Note the tension: L34 holds true forms to rule-breaks rather
+      than numeric tiers, so any escalation inside should break a
+      *bigger* rule, not multiply damage.
 - [ ] Population floor: what the Skin feels like on a server where
       few have ascended yet (deep-warped creature pressure fills the
       quiet?).

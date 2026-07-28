@@ -55,14 +55,15 @@ Status tracker for the big structural decisions. Detail lives in
 
 Ordered by how much everything else depends on them.
 
-### ~~P1. Server & population model~~ ✅ LOCKED → L16
-Medium worlds. Remaining sub-questions: character transfer policy
-(transfers threaten Incarnate uniqueness and lineage — likely
-forbidden, or titles/lineage stripped on transfer); respawn points.
+### ~~P1. Server & population model~~ ✅ LOCKED → L16, L37
+Medium worlds; transfers forbidden, rebirth instead. Remaining:
+launch-surge plan (more worlds, never bigger — see
+`feasibility-review.md` §3.1).
 
-### ~~P2. Ordinary death~~ ✅ LOCKED → L17
-Zone-scaled. Remaining sub-questions: exact durability hit size;
-recovery timer on dropped goods before they despawn/become lootable.
+### ~~P2. Ordinary death~~ ✅ LOCKED → L17, L32
+Zone-scaled; ~10% durability, cargo grace→open loot→despawn, bound
+shrine respawn. Remaining: tithe scaling by distance (closes the
+bind-and-die slow-teleport edge case, `feasibility-review.md` §4.1).
 
 ### ~~P3. Progression model~~ ✅ LOCKED → L18, L19
 Classless skill-by-use, moderate vertical power curve. Remaining
@@ -90,15 +91,17 @@ caps, Circle exposure mechanics.
 
 ### ~~P8. PvE & content model~~ ✅ LOCKED → L29
 `content.md`. Remaining: delve counts, named-horror generation,
-rumor data model, group scaling without instancing.
+rumor data model, and — flagged highest-stakes open question in the
+design (`feasibility-review.md` §4.3) — contested-delve pressure at
+floor population. Prototype alongside the slice; paper won't answer it.
 
 ### ~~P9. Business model~~ ✅ LOCKED → L27
 `economy.md` §7. Remaining: expansion cadence/pricing after the
 vertical slice.
 
 ### ~~P10. Demigod realm structure~~ ✅ LOCKED → L30
-`demigod-realm.md`. Remaining: ring/offering tuning, Incarnate
-true-forms inside, low-population feel, mortal scrying.
+`demigod-realm.md`. Remaining: ring/offering tuning, whether L34
+true-forms escalate inside, low-population feel, mortal scrying.
 
 ---
 
@@ -110,10 +113,25 @@ true-forms inside, low-population feel, mortal scrying.
 4. ~~P5 + P7~~ ✅ done (2026-07-26) — `war-society.md`
 5. ~~P6 + P9~~ ✅ done (2026-07-26) — `economy.md`
 6. ~~P8, P10~~ ✅ done (2026-07-26) — `content.md`, `demigod-realm.md`
+7. ~~Open-questions sweep~~ ✅ done (2026-07-27/28) — L32–L39 closed
+   every remaining question in `brainstorm.md`
+8. ~~Feasibility & simulation pass~~ ✅ done (2026-07-28) —
+   `feasibility-review.md`; guard rails folded back into L10 and L36
 
-**All ten structural pillars are locked (31 decisions).** The
-one-page distillation is `vision.md`. What remains is tuning (numbers
-marked TBD throughout), a naming polish pass, and the next phase:
-defining a vertical slice — the smallest playable proof of the loop
-(one town + its wedge + capitol district, crafting pipeline, a delve,
-a war, an awakening).
+**All ten structural pillars are locked (39 decisions), and the
+brainstorm's open-questions list is empty.** The one-page
+distillation is `vision.md`; the build-and-play sanity check is
+`feasibility-review.md` (design PASS; production PASS at AAA scale
+or via the staged path in §5).
+
+### Next phase
+
+1. **Naming polish** — currency ("marks" is placeholder), the six
+   town names, "the Interior," spell naming conventions.
+2. **Vertical slice** — the smallest playable proof of the loop: one
+   town + its wedge, one crafting pipeline to mastery, combat vs. a
+   few monster types at real MMO latency (the L39 gate), one hidden
+   awakening end-to-end.
+3. **Two prototype-shaped risks to answer inside the slice**:
+   the Switch battle ceiling (`feasibility-review.md` T2) and
+   contested-delve pressure (§4.3).

@@ -68,9 +68,26 @@ cap the climb — the Grave. Skill-by-use (L18) means the "content" of
 leveling is just *doing the life*; the game never hands you a
 theme-park rail, because the Wheel itself is the ride.
 
+## 5. Echoes and the myth (clarification, 2026-07-28)
+
+Arena echoes of dead demigods (L14) are public spectacle — ascension
+and the faiths are public knowledge, so the echo itself spoils
+nothing. **But a pre-Unveiling echo must never cast**: if the crowd
+watches a legend throw fire, the myth dies in the cheapest possible
+way. Echoes of spell-carrying demigods fight their martial repertoire
+only until the epoch turns; after the Unveiling, the full echo is
+part of the wonder. (`feasibility-review.md` §4.3.)
+
 ## Open tuning questions
 - [ ] Delve count/size at launch per wedge; respawn ecology pacing.
 - [ ] Named-horror generation rules and trait pools.
 - [ ] Rumor system data model (epoch + history + noise mixing).
-- [ ] Group scaling in deep delves without instancing (soft caps?
-      chokepoint design?).
+- [ ] **Group scaling in deep delves without instancing (soft caps?
+      chokepoint design?) — flagged in `feasibility-review.md` §4.3
+      as the highest-stakes unanswered question in the design.**
+      Contested shared PvE at 150–300 concurrent per region produced
+      both EVE's best stories and Archeage's worst days. Prototype
+      alongside the vertical slice; paper answers won't hold.
+- [ ] At least one slow, reliable awakening chain (rumor or faith
+      questline) completable at casual pace — the L36 guard rail
+      lands here as content work.

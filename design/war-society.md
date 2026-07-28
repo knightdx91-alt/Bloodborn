@@ -111,7 +111,12 @@ right, fought in scheduled battles, with stakes posted up front.**
       Circle**, converting its hidden assets and roster into public
       knowledge (catastrophic in Myth/Whispers epochs; merely
       dangerous later). Exposure mechanics TBD.
-- [ ] Battle format details: objective types per right type;
-      time-of-day scheduling across time zones.
+- [ ] Battle format details: objective types per right type.
+      **Time-of-day scheduling across time zones is required for the
+      vertical slice** (`feasibility-review.md` §2.3) — negotiate the
+      battle window at declaration, alongside enrollment caps.
+- [ ] **Enrollment cap ceiling depends on the Switch crowd budget**
+      (`feasibility-review.md` T2). 150v150 is aspirational; design
+      battle objectives so they still read at 60v60.
 - [ ] Epoch interactions: do Scouring-age wars gain new casus types
       (mage-hunts, sanctuary defense)?
