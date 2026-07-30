@@ -4,9 +4,10 @@ A large-scale, cross-platform 3D MMORPG (PC, Xbox, PlayStation,
 Switch — one shared world, full crossplay) where the world keeps the
 score. Buy-to-play. M-rated grounded dark fantasy.
 
-**Status:** design phase complete — 39 locked decisions, all ten
-structural pillars closed, feasibility reviewed. Next: naming polish
-and the vertical slice.
+**Status:** 39 locked decisions, the original ten structural pillars
+closed, feasibility reviewed. One new open pillar — **P11, living
+NPCs** (free-form voice dialogue, `brainstorm.md` §9). Next: naming
+polish and the vertical slice.
 
 ---
 

@@ -409,9 +409,215 @@ Rejected: legacy-inheritance perks and relic drops — the reward is
   ledgers and pricing, commission bids, rumor mill, Monument feed,
   war declarations, arena odds. Never gameplay-critical.
 
+## 9. Living NPCs — free-form voice dialogue **[new pillar, 2026-07-30]**
+
+The pitch: **no dialogue trees.** You walk up to an NPC, hold a
+button, and *talk* — out loud, in your own words — and they answer in
+their own voice. No wheel, no numbered options, no "1. Tell me about
+the war."
+
+This is not a separate feature from "choices change the world." It is
+the cheapest possible **display layer** for world state, which is
+exactly the bet `lore.md` §11 already makes: *epochs must be cheap to
+represent — dialogue, laws, faction posture, not rebuilt maps.* Voice
+NPCs are how the world tells you what you did, out loud, in its own
+words.
+
+### 9.1 The pipeline and its budget
+
+Mic → speech-to-text → retrieval → model → text-to-speech → audio.
+
+- **Latency is the whole game.** Alive under ~800ms to first audio;
+  broken past ~1.5s. Budget it like netcode (L39), not like a
+  chatbot: streaming STT, streaming TTS, no retrieval round-trip per
+  turn.
+- **Cost at MMO scale is the real gate**, not quality. 3,000
+  concurrent players at one NPC turn per ~90s is ~33 inferences/sec,
+  forever, on a buy-to-play game with no sub (L27). Survive it by
+  tiering:
+  - **Barks / crowd** — no model at all. Authored lines, epoch-
+    filtered. ~95% of NPC speech volume.
+  - **Ambient named NPCs** (the innkeeper, the dock foreman, the
+    woman who always sits by the shrine) — small model, tight
+    prompt, heavy caching.
+  - **Story-bearing NPCs** (quest chains, faction seats, the Office
+    of the Lamp contact) — the good model, rate-limited, rare.
+- **Scope: ~40–80 truly conversational NPCs across six towns**, not
+  thousands. Rarity is a feature. If everyone talks, nobody is
+  memorable.
+
+### 9.2 Speech is free; action is typed **[the load-bearing rule]**
+
+The failure mode that kills projects like this: the model happily
+promises things the game cannot do.
+
+**The model never mutates world state.** It emits an intent from a
+whitelist — `offer_contract(id)`, `share_rumor(topic)`, `refuse`,
+`set_disposition(-1)`, `none` — and the game validates that intent
+against what that NPC is actually authorized to do right now.
+
+Anything binding (coin, commission, contract, enrollment, war escrow)
+routes into a normal confirm panel. **You talk your way into the
+deal; you still click to sign it.** This also gives console/text
+parity, an audit trail, and softlock immunity on required quest
+beats.
+
+### 9.3 What actually makes them feel alive
+
+Not fluency — fluency is table stakes, and every LLM NPC in the
+industry sounds like the same eager assistant.
+
+- **Knowledge boundaries.** Each NPC has a *what I could plausibly
+  know* set: their town, trade, faith, the current epoch, and rumors
+  that have physically reached them. Nothing teleports (L28) — and
+  neither does information. An NPC who doesn't know is more
+  convincing than one who knows everything.
+- **Memory that is small and lossy.** 3–5 remembered facts per player
+  per NPC, decaying. *"You're the one who bought the bad steel off
+  Corran."* Not a transcript.
+- **Gossip diffusion.** What you say becomes a rumor object with a
+  source, a decay timer, and **distortion**. It travels at caravan
+  speed. Three towns over it is wrong in an interesting way. Plugs
+  straight into the rumor layer in `content.md` §3.
+- **They don't have to like you.** Disposition, refusal, boredom,
+  contempt. An NPC allowed to end the conversation and walk off is
+  worth ten that aren't — and is also the best moderation tool on
+  this list (§9.6).
+- **Voice cards, not one house style.** Per-NPC diction, cadence,
+  verbal tics, an anti-pattern budget (no "Ah, traveler!", no
+  restating your own question back at you). Accent families by town.
+- **Sell it with the body.** Head turns toward whoever is speaking,
+  eyes flicking to an eavesdropper, a shopkeeper leaning in to lower
+  their voice. Cheap animation does more for *alive* than model
+  quality does.
+
+### 9.4 Proximity conversation **[the MMO-only prize]**
+
+Console headset attach rate is high — players already own mics
+because they already talk to each other. So assume most players can
+speak, and design **voice-first, with full-fidelity text as the
+fallback** (§9.7).
+
+That makes it realistic to ask the real question: **nearby players
+hear your side of an NPC conversation.**
+
+- **Overheard speech is a rumor source.** Someone standing nearby now
+  knows what you asked the drover, and carries it at caravan speed
+  like everything else. Taverns become genuine information markets —
+  not because we built a rumor UI, but because that is where people
+  are standing when they talk. The no-global-AH stance (L26) gets a
+  sibling: no global channel for the things that matter.
+- **NPCs are bystanders too — this is the big one.** Say the wrong
+  thing loudly in a crowded square during **Myth** and it is not a
+  flag check: someone *heard* you. The Office of the Lamp doesn't try
+  you — officially sorcery doesn't exist (L22) — it just starts
+  paying attention. Exposure stops being a stat and becomes a place
+  you were careless in. Speak quietly, in the right room, to the
+  right person: taught with no tutorial.
+- **Public speech is a commitment.** An NPC weighs what you said in
+  front of forty people differently from what you whispered. Promise
+  a town seat something in the open, break it, and they remember the
+  audience as well as the promise.
+- **Multi-party is the prize and the hard part.** A Company's
+  officers negotiating war stakes with a town seat — three players,
+  one NPC, everyone talking. No MMO has that scene. Needs speaker
+  diarization, turn-taking, and an NPC that addresses people by name
+  and tracks who said what. Cap it (3–4 speakers) and scope it to a
+  specific NPC class (faction seats, contract-givers); everything
+  else is one-on-one with an audience.
+
+### 9.5 Audio routing **[unglamorous, non-negotiable]**
+
+The friction on console is not hardware — it is that the player's mic
+is already committed to a party or Discord.
+
+- **Push-to-talk on a dedicated NPC bind. Never open mic.** Hold to
+  speak, local capture only.
+- While transmitting to an NPC you are **not** transmitting to
+  proximity or party, and vice versa. Visible on-screen channel state
+  at all times.
+- Open-mic VAD would feed party chatter, background TV and roommates
+  into the model as player input — which makes NPCs look *stupid*,
+  which is worse than mute.
+- Console bind: held bumper, or stick-click while in conversation
+  range.
+
+### 9.6 Risks
+
+- **The L22 landmine.** Free-form voice is genuinely dangerous to the
+  best secret in the game — day one someone asks a priest "are mages
+  real, is the god actually dead." **Hard rule: secret canon lives
+  outside the retrievable corpus entirely, per epoch.** Not
+  "instructed not to say" — *not present*. During **Myth**, a working
+  mage is not in any NPC's knowledge set; they have only folklore,
+  discomfort, superstition. During **Whispers**, a few go quiet and
+  change the subject. After the **Unveiling**, they name the
+  myth-breaker. Players will detect the epoch turning *by how people
+  talk*, before any patch note says so. That is L23 living history
+  delivered for pennies.
+- **Abuse.** Players will jailbreak, harass, and farm clips.
+  Moderation on input *and* output, plus an **in-fiction failure
+  mode** — the NPC gets confused and turns away, never "I can't help
+  with that."
+- **Griefing proximity.** Someone will stand beside your quest-giver
+  shouting nonsense. In-fiction mitigations: conversation ownership
+  (initiator holds the floor), disposition drops toward the
+  interloper and *not* toward you, NPCs that turn away and stop
+  talking. Hard-mute proximity during anything with stakes (Circle
+  contacts, the Lamp, anything touching L22) — secrets leaking
+  because a stranger stood nearby is fantastic fiction right up until
+  it is a grief tool.
+- **STT fairness is first-class, not polish.** If voice is the
+  primary path, an NPC that understands one accent and not another is
+  a broken game for a chunk of the players. Budget real evaluation
+  against accent-diverse audio, early.
+- **Uncanny sameness** is the quiet killer — and it is a writing
+  problem, not a model problem (§9.3, voice cards).
+
+### 9.7 Accessibility & parity
+
+Text input is mandatory and full-fidelity through the same pipeline —
+but it is the fallback, not co-equal billing. The genuine can't-speak
+population is sharper than "console vs PC": Switch handheld and
+anyone playing in a shared or public space, speech-impaired players,
+and non-native speakers who read the language comfortably but won't
+speak it to a machine that may not parse them.
+
+Designing voice-first changes the tuning: lean into interruption,
+hesitation, and NPCs reacting to *how* you said something.
+
+### 9.8 Vertical-slice gate
+
+One town. Six voice NPCs. One rumor that provably travels to the next
+town **wrong**. One epoch flip that visibly changes what all six of
+them say. If that demo gives people chills, the pillar is real —
+if it doesn't, cut to authored barks and lose nothing else.
+
 ## Open questions
 
-**All closed as of 2026-07-28.** Kept below as the decision trail.
+**Reopened 2026-07-30 by §9 (living NPCs).** The pillar itself is not
+locked; these are the calls to settle before the slice.
+- [ ] **Proximity audibility default.** Leaning: audible at short
+      range, per-player mutable, hard-muted during stakes
+      conversations. Alternative: private by default (everyone uses
+      it, but the best MMO-only scenes never happen).
+- [ ] **Multi-party scope.** Which NPC classes accept 3–4 speakers,
+      and does diarization survive console mic quality?
+- [ ] **Model tiering boundaries.** Where exactly the bark / ambient
+      / story-bearing lines fall, and the per-turn cost ceiling a
+      buy-to-play game can carry in perpetuity (L27).
+- [ ] **Gossip distortion: authored or generated?** Authored
+      distortion tables are safe and repetitive; generated
+      distortion is alive and can invent canon it shouldn't.
+- [ ] **Is disposition visible to the player?** A number kills the
+      illusion; nothing at all makes NPC coldness feel like a bug.
+- [ ] **Where the intent whitelist ends** — how much can be
+      negotiated by voice before it must become a confirm panel
+      (§9.2).
+
+---
+
+**Everything below closed as of 2026-07-28.** Kept as the decision trail.
 New questions raised by the feasibility pass live in
 `feasibility-review.md` §5 and the per-doc "open tuning questions".
 - [x] Ordinary death details → **L32**: ~10% durability on all

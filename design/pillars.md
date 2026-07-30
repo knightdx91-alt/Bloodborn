@@ -103,6 +103,30 @@ vertical slice.
 `demigod-realm.md`. Remaining: ring/offering tuning, whether L34
 true-forms escalate inside, low-population feel, mortal scrying.
 
+### P11. Living NPCs — free-form voice dialogue 🔶 OPEN (2026-07-30)
+`brainstorm.md` §9. No dialogue trees: you hold a button and talk out
+loud; NPCs answer in their own voice. Treated as the **display layer
+for world state** — the cheapest way to make epochs (L23) and player
+choices legible, and the delivery mechanism for the magic secret's
+epoch gating (L22).
+
+Shape that already feels settled: **speech is free, action is typed**
+(the model emits whitelisted intents, never mutates state; binding
+deals route to a confirm panel); three model tiers with ~40–80 truly
+conversational NPCs; small lossy per-NPC memory; gossip diffusion at
+caravan speed (L28); push-to-talk on a dedicated bind, never open mic;
+proximity conversation where bystanders — players *and NPCs* — overhear;
+voice-first with full-fidelity text parity.
+
+Open before it can lock: proximity audibility default, multi-party
+scope, model tiering + per-turn cost ceiling against L27, authored vs.
+generated gossip distortion, whether disposition is visible, and where
+the intent whitelist ends. Full list at the bottom of `brainstorm.md`.
+
+Slice gate (§9.8): one town, six voice NPCs, one rumor that provably
+arrives *wrong* in the next town, one epoch flip that visibly changes
+what all six say.
+
 ---
 
 ## Suggested working order
@@ -118,8 +142,11 @@ true-forms escalate inside, low-population feel, mortal scrying.
 8. ~~Feasibility & simulation pass~~ ✅ done (2026-07-28) —
    `feasibility-review.md`; guard rails folded back into L10 and L36
 
-**All ten structural pillars are locked (39 decisions), and the
-brainstorm's open-questions list is empty.** The one-page
+9. **Living NPCs raised as P11** (2026-07-30) — `brainstorm.md` §9;
+   open, six questions to settle, slice gate defined.
+
+**The original ten structural pillars are locked (39 decisions).** P11
+(living NPCs) is new and open — the first addition since the sweep. The one-page
 distillation is `vision.md`; the build-and-play sanity check is
 `feasibility-review.md` (design PASS; production PASS at AAA scale
 or via the staged path in §5).
@@ -135,3 +162,6 @@ or via the staged path in §5).
 3. **Two prototype-shaped risks to answer inside the slice**:
    the Switch battle ceiling (`feasibility-review.md` T2) and
    contested-delve pressure (§4.3).
+4. **Settle P11's six open questions**, then prototype the living-NPC
+   gate (`brainstorm.md` §9.8) alongside the slice — latency, cost per
+   turn, and STT across accents are all things paper won't answer.
