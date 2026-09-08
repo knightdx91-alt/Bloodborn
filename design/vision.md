@@ -61,27 +61,45 @@ legends.
 5. **History is real** — living epochs, named legends, a monument
    that never forgets, and an ending players can actually reach.
 
-## Played on anything, tended from anywhere
+## How it plays
 
-BotW-style real-time action combat, controller-first, on all four
-platforms in one shared world. The **companion app** covers the
-asynchronous life: check your shop's ledgers and restock orders,
-adjust prices, answer commission bids, read the rumor mill and the
-Monument feed, follow war declarations and arena odds. Never
-gameplay-critical, never a second job — the shopkeeper's evening
-glance, not a raid scheduler.
+**Real-time action combat, aimed by hand.** Five cutting arcs and a
+thrust, chosen freely — you decide where the blow goes, and where it
+goes decides which piece of their harness fails. Every attack is a
+commitment neither of you can take back. Guards must match the arc, and
+**there is no indicator telling you which way they are holding**: you
+read it off the body, the way you read whether they are tiring. A
+sword-arm can give out from a day of parrying. A helm can be ruined by
+someone who kept coming overhead, and everyone can see that it has.
+
+**Almost nothing is on the screen.** No minimap — maps are things
+people make and sell, wrong in the places their maker never went. No
+quest markers; directions are spoken in landmarks. No stat sheets: what
+you can tell about a piece of steel depends on how much you know about
+steel, and that is a skill like any other. The world carries the
+information, and you are looking at the world.
+
+## Tended from anywhere
+
+The **companion app** covers the asynchronous life: check your shop's
+ledgers and restock orders, adjust prices, answer commission bids, read
+the rumor mill and the Monument feed, follow war declarations and arena
+odds. Never gameplay-critical, never a second job — the shopkeeper's
+evening glance, not a raid scheduler.
 
 ---
 
 *Everything above is locked design — 87 decisions in
-`design/pillars.md`; systems detail in the companion docs;
-feasibility & simulation review in `design/feasibility-review.md`
-(verdict: design PASS; staged production plan). Next phase: naming
-polish and the vertical slice.*
+`design/pillars.md`, with systems detail in the companion docs and much
+of it implemented and tested in `sim/`. Feasibility and simulation
+review in `design/feasibility-review.md` (verdict: design PASS; staged
+production plan), which predates most of those decisions and is owed a
+second pass. Next phase: trademark clearance, hardware, and the
+combat prototype.*
 
-*Two pillars are partly locked and still open, and are deliberately
-not pitched above: **P11** (living NPCs — free-form voice dialogue)
-and **P12** (the Incarnate marks and the Age of Gods). One question
-inside P11 — the per-turn cost of conversational NPCs — is a live
-collision with the buy-to-play line in this document, and may yet
-change it.*
+*Two things are deliberately not pitched above. **P11** (living NPCs —
+free-form voice dialogue) is locked except for two prototype questions,
+and one of them, the per-turn cost of conversational NPCs, is a live
+collision with the buy-to-play line in this document and may yet change
+it. **P12** (the Incarnate marks and the Age of Gods) is a secret the
+pitch should not spend.*

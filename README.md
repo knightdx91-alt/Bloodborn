@@ -17,11 +17,14 @@ still open: **P11, living NPCs** (free-form voice dialogue,
 sigil that outlives the character, and the Age of Gods it eventually
 opens, `brainstorm.md` §10).
 
-**Next:** trademark clearance on the title, then **Stage 1** of
-[`design/tech.md`](design/tech.md) §6 — single-player combat in Unity,
-from a character controller to a working parry. It is the road to the
-L39 gate ([`design/combat.md`](design/combat.md) §9), the one result
-that can kill or confirm the whole project.
+**The design side is complete** — every structural question is locked
+and every document that was missing has been written. What remains is
+not design: trademark clearance on the title, hardware that can run
+Unity, and then **Stage 1** of [`design/tech.md`](design/tech.md) §6 —
+single-player combat, from a character controller to a working parry.
+That is the road to the L39 gate
+([`design/combat.md`](design/combat.md) §9), the one result that can
+kill or confirm the whole project.
 
 ⚠️ **One open question now reaches the business model:** P11's
 per-turn inference cost against L27's buy-to-play lock. Subscription
@@ -38,7 +41,7 @@ things stand, what's next, and what can be done without a laptop.
 | Doc | What it is |
 |-----|-----------|
 | [`design/vision.md`](design/vision.md) | **Start here.** The one-page pitch and the five promises. |
-| [`design/pillars.md`](design/pillars.md) | The decision log — all 87 locks (L1–L87), pillar status, the next-phase plan, and the list of docs still to write. The map to everything else. |
+| [`design/pillars.md`](design/pillars.md) | The decision log — all 87 locks (L1–L87), pillar status, and the next-phase plan. The map to everything else. |
 | [`design/feasibility-review.md`](design/feasibility-review.md) | Build-and-play sanity check: developer risk register, six player-archetype simulations, systemic stress tests, verdict and staged production path. |
 | [`sim/`](sim/) | The rules of the game as engine-free C#, with tests. Runs anywhere; the zone servers will run this same code. |
 | [`design/art-audio.md`](design/art-audio.md) | Art as the interface: what must read at a glance, why the look lives in the treatment rather than the assets, and what audio carries that the eye cannot. |

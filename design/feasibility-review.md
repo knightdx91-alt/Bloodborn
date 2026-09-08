@@ -19,9 +19,15 @@ needs a guard rail or a prototype proof.
 > a feasibility pass. Two of them raise new questions this document
 > does not cover: L46 (always-audible proximity voice) has moderation
 > and console-certification surface, and P11's per-turn inference cost
-> is an open collision with L27. A second review pass is owed once P11
-> and P12 finish locking. `combat.md`, `tech.md` and `naming.md` also
-> postdate this review and have not been through a feasibility pass.
+> is an open collision with L27. **Nine documents postdate this review
+> entirely** — `combat.md`, `tech.md`, `naming.md`, `crafting.md`,
+> `onboarding.md`, `moderation.md`, `liveops.md`, `interface.md` and
+> `art-audio.md` — along with the `sim/` library that implements and
+> tests much of it. **A second feasibility pass is owed**, and the
+> items most worth re-examining are: L64/L65's animation volume against
+> the solo production strategy (`tech.md` §1), L46's moderation surface
+> under L76's minimal-intervention posture, and P11's per-turn cost
+> against L27.
 
 ## 1. Developer feasibility
 

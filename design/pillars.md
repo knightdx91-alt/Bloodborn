@@ -154,7 +154,8 @@ vertical slice.
 `demigod-realm.md`. Remaining: ring/offering tuning, whether L34
 true-forms escalate inside, low-population feel, mortal scrying.
 
-### P11. Living NPCs — free-form voice dialogue 🔶 OPEN (2026-07-30)
+### P11. Living NPCs — free-form voice dialogue ◐ MOSTLY LOCKED → L46–L49
+*(raised 2026-07-30; two prototype-gated questions remain)*
 `brainstorm.md` §9. No dialogue trees: you hold a button and talk out
 loud; NPCs answer in their own voice. Treated as the **display layer
 for world state** — the cheapest way to make epochs (L23) and player
@@ -194,7 +195,8 @@ Slice gate (§9.8): one town, six voice NPCs, one rumor that provably
 arrives *wrong* in the next town, one epoch flip that visibly changes
 what all six say.
 
-### P12. The Incarnate marks & the Age of Gods 🔶 OPEN (2026-09-08)
+### P12. The Incarnate marks & the Age of Gods ◐ MOSTLY LOCKED → L42–L45
+*(raised 2026-09-08; two questions remain)*
 `brainstorm.md` §10. Hold an Incarnate seat (L10), end that life,
 and the *account* keeps a **mark** — the sigil of the spell you
 embodied — on every character after. Nothing explains it. Six
@@ -244,76 +246,93 @@ Full list at the bottom of `brainstorm.md`.
 10. **Incarnate marks raised as P12** (2026-09-08) — `brainstorm.md`
     §10; open, seven questions to settle, launch hook separable from
     the expansion.
-11. **Open-questions pass, session 1** (2026-09-08) — L40–L50 locked:
-    the ascension gate (L40), epoch advancement (L41), P12's marks and
-    arrival (L42–L45), and four of P11's six calls (L46–L49), plus the
-    enemy's launch presence (L50). P11's cost ceiling escalated to a
-    business-model question rather than forced. **Resume here:** P12's
-    two remaining questions (secret-canon spend, per-server history),
-    then the content structures that unblock the slice (rumor data
-    model, the casual awakening chain), then economy and war numbers,
-    then the naming pass.
+11. **Design completion pass** (2026-09-08) — **L40–L87 locked** and
+    every missing document written. In order: the ascension gate and
+    epoch advancement (L40–L41); P12's rules and its second door
+    (L42–L45); P11's calls (L46–L49); the enemy at launch (L50);
+    Switch 2 only (L51); the retitle to Marrowmark and PC-first
+    (L52–L53); Unity (L54); stamina as exertion, mobility, the
+    encumbrance budget and armour on the road (L55–L58); durability,
+    wear, repair and breakage (L59–L63); directional combat (L64–L65);
+    the crafting model (L66–L68); onboarding (L69–L70); skill-by-use
+    and anti-grind (L71); recipe discovery and schematics (L72–L73);
+    moderation (L74–L76); live-ops (L77–L79); the interface
+    (L80–L83); and art and audio (L84–L87).
 
-**The original ten structural pillars are locked (87 decisions).** P11
-(living NPCs) and P12 (the Incarnate marks) are new and open — both
-added since the sweep. The one-page
-distillation is `vision.md`; the build-and-play sanity check is
-`feasibility-review.md` (design PASS; production PASS at AAA scale
-or via the staged path in §5).
+    Nine documents written that did not exist: `combat.md`, `tech.md`,
+    `naming.md`, `crafting.md`, `onboarding.md`, `moderation.md`,
+    `liveops.md`, `interface.md`, `art-audio.md`. A simulation library
+    (`sim/`) now implements and tests the rules — 185 tests, engine-free.
+
+**The design side is complete.** The original ten pillars are locked,
+P11 and P12 are locked down to their prototype-gated remainders, and
+every document identified as missing has been written (87 decisions).
+The one-page distillation is `vision.md`; the build-and-play sanity
+check is `feasibility-review.md` (design PASS; production PASS at AAA
+scale or via the staged path in §5), which predates L40–L87 and is owed
+a second pass.
+
+**What is genuinely still open** is short, and none of it is
+structural:
+
+- **P11's multi-party scope** — a prototype question; paper cannot
+  answer whether diarization survives console mic quality.
+- **P11's per-turn cost against L27** — escalated to a business-model
+  question. Subscription is on the table. Deferred until the slice
+  measures real numbers.
+- **P12's last two** — how much secret canon a playable prequel spends,
+  and whether the Age of Gods writes per-server history (L23).
+- **Tuning throughout** — numbers that want a controller in hand.
 
 ### Next phase
 
+**None of it is design.**
+
 0. ⚠️ **Trademark clearance on "Marrowmark"** — `naming.md` §5. The
-   title is chosen (L52); clearance is not done. Class 9 and 41
-   searches plus a common-law sweep, and an attorney. This blocks any
-   public material, store page, domain, or social account.
-1. **Naming polish** — currency ("marks" is placeholder), the six
-   town names, "the Interior," spell naming conventions. **The "mark"
-   collision is now four-way** and effectively settled by L52: the
-   *title* contains it, which makes maker's marks (L4) the canonical
-   in-world "mark" and forces the currency to be renamed outright.
-   P12's Incarnate sigil needs its own word too (`naming.md` §4).
-2. **Build Stage 1 of `tech.md` §6** — single-player combat, in six
-   steps from a character controller to a working parry. `combat.md`
-   §9's prototype is the target, but its networked half (Stage 2) is
-   what actually settles the L39 gate and cannot be attempted until
-   Stage 1 exists. For someone learning Unity, Stage 1 *is* the
-   learning, and it ends in something a person can hold a controller
-   and play. The full vertical slice is Stage 3 onward.
-3. **Two prototype-shaped risks to answer inside the slice**:
-   the Switch battle ceiling (`feasibility-review.md` T2) and
+   title is chosen (L52); clearance is not. Nice classes 9 and 41
+   across USPTO/EUIPO/UKIPO, a common-law sweep, and an attorney.
+   **Blocks any public material, store page, domain or social account.**
+1. **Hardware.** `tech.md` §6 Stage 1 needs a machine that can run
+   Unity. The 2017 MacBook Air cannot, and Unity removes Intel Mac
+   support at 6.8 regardless. A Windows PC is the better buy — PC is
+   the first ship target (L53) and console SDKs are Windows-only later.
+2. **Build Stage 1** (`tech.md` §6) — single-player combat in six
+   steps, from a character controller to a working parry. `combat.md`
+   §9's prototype is the target; its networked half (Stage 2) is what
+   actually settles the L39 gate and cannot be attempted until Stage 1
+   exists. For someone learning Unity, Stage 1 *is* the learning.
+3. **Naming polish** — the currency (forced by L52: "marks" as coin is
+   dead now the word is in the title), the six town names, "the
+   Interior", spell naming conventions, and a word for P12's sigil.
+4. **Two prototype-shaped risks, inside the slice**: the Switch battle
+   ceiling (`feasibility-review.md` T2, downgraded by L51) and
    contested-delve pressure (§4.3).
-4. **Settle P11's six open questions**, then prototype the living-NPC
-   gate (`brainstorm.md` §9.8) alongside the slice — latency, cost per
-   turn, and STT across accents are all things paper won't answer.
-5. **Decide P12's cheap half now** — the mark is an icon and a
-   counter and belongs in the launch data model whether or not the
-   Age of Gods is ever built. The expensive half can wait a year for
-   evidence.
+5. **P11's gate** (`brainstorm.md` §9.8) alongside the slice — latency,
+   cost per turn and STT across accents are all things paper will not
+   answer, and the cost measurement settles the open L27 collision.
 
-### Gaps with no doc yet
+**Buildable now, without an engine or new hardware:** the simulation
+library already covers combat, items and crafting. The economy (shops,
+ledgers, commissions, caravans), war and charters, and the rumour model
+are all pure logic and all implementable in `sim/` today.
 
-Raised 2026-09-08. Not open *questions* — open *documents*.
+### Documentation gaps — all closed
 
-**Now written:** ~~combat design~~ → `combat.md` (the L39 gate, the
-skill-vs-gear resolution, enemy vocabulary, the latency contract).
-~~Technical design~~ → `tech.md` (engine, server architecture, data
-model, solo production strategy, build order). ~~The title problem~~ →
-`naming.md`.
+Raised 2026-09-08 as load-bearing documents that did not exist. Every
+one has since been written:
 
-~~Onboarding~~ → `onboarding.md` (L69/L70): the tutorial is a person who
-employs you, and directional combat is taught by a sparring partner who
-calls the arc aloud and gradually stops.
+| Gap | Now |
+|---|---|
+| Combat design | `combat.md` (L39's gate, the skill-vs-gear resolution, enemy vocabulary, the latency contract) |
+| Technical design | `tech.md` (engine, server architecture, data model, solo production strategy, build order) |
+| The title problem | `naming.md` (L52) |
+| Crafting detail | `crafting.md` (L66–L68, L72–L73) |
+| Onboarding | `onboarding.md` (L69–L70) |
+| Moderation & trust and safety | `moderation.md` (L74–L76) |
+| Live-ops and the second year | `liveops.md` (L77–L79) |
+| Telemetry | `liveops.md` §6 |
+| UI and information design | `interface.md` (L80–L83) |
+| Art and audio direction | `art-audio.md` (L84–L87) |
 
-~~Moderation and trust & safety~~ → `moderation.md` (L74/L75).
-
-~~Live-ops and the server's second year~~ → `liveops.md` (L77–L79),
-which also carries the telemetry plan.
-
-~~UI and information design~~ → `interface.md` (L80–L83).
-~~Art and audio direction~~ → `art-audio.md` (L84–L87).
-~~Telemetry~~ → `liveops.md` §6.
-
-**Nothing on this list remains.** Every document identified as missing
-in the 2026-09-08 gap review has been written. What is left is tuning,
-content, and the prototype.
+**Nothing on the list remains.** What is left is tuning, content, and
+the prototype.

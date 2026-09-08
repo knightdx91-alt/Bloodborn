@@ -9,7 +9,8 @@ of each working session.
 
 ## The one-line version
 
-Design is **87 locked decisions** and, apart from two documents, done.
+Design is **87 locked decisions** and **complete** — every structural
+question locked, every missing document written.
 The engine is chosen (Unity). Every system a player touches in their
 first hundred hours is specified, and most of it is **written, tested
 and running** as engine-free C# — 185 tests. The development Mac cannot
