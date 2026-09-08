@@ -9,7 +9,7 @@ of each working session.
 
 ## The one-line version
 
-Design is **79 locked decisions** and, apart from two documents, done.
+Design is **83 locked decisions** and, apart from two documents, done.
 The engine is chosen (Unity). Every system a player touches in their
 first hundred hours is specified, and most of it is **written, tested
 and running** as engine-free C# — 185 tests. The development Mac cannot
@@ -58,19 +58,19 @@ Everything below can be done from the Claude Code app with no laptop.
 ## Done this session
 
 **Design.** Raised **P12** (the Incarnate marks and the Age of Gods)
-from an idea to a written pillar. Locked **L40–L79** — the ascension
+from an idea to a written pillar. Locked **L40–L83** — the ascension
 gate, epoch advancement, P12's rules, five of P11's calls, Switch 2
 only, the title, PC-first, Unity, stamina as exertion, combat mobility
 and archetypes, the encumbrance budget, armour on the road, durability
 and breakage, directional combat, the crafting model, recipe discovery,
-onboarding, skill-by-use, moderation, and live-ops.
+onboarding, skill-by-use, moderation, live-ops, and the interface.
 
 **Renamed the project.** Bloodborn → **Marrowmark** (trademark
 conflict), and the in-world term for the awakened to **the Quickened**.
 
-**Seven documents written**, all of which did not exist: `combat.md`,
+**Eight documents written**, none of which existed: `combat.md`,
 `tech.md`, `naming.md`, `crafting.md`, `onboarding.md`,
-`moderation.md`, `liveops.md`.
+`moderation.md`, `liveops.md`, `interface.md`.
 
 **Built the simulation library** — the rules of the game as engine-free
 C#, **185 tests**: the stamina economy with movement and encumbrance,
@@ -118,17 +118,14 @@ closed it, and both were already in the design:
 
 ## Next, in order
 
-1. **UI and information design** — with no markers, no global auction
-   house and rumour as discovery, the interface *is* the usability.
-   Also covers the companion app (L31), which has a feature list and no
-   design.
-2. **Art and audio direction** — `combat.md` §6 and L65 make animation
-   and sound readability a **hard requirement**, not polish, and
-   nothing describes the target.
+1. **Art and audio direction** — the last uncovered document.
+   `combat.md` §6 and L65 make animation and sound readability a **hard
+   requirement** rather than polish, and L80/L81 add to that by pushing
+   information onto the object instead of the HUD. Nothing yet
+   describes the target.
 
-Those are the last two uncovered documents. After them the design side
-is complete, and everything remaining is tuning, content, or the
-prototype.
+After that the design side is complete, and everything remaining is
+tuning, content, or the prototype.
 
 ## Open questions worth a phone session
 

@@ -73,7 +73,7 @@ glance, not a raid scheduler.
 
 ---
 
-*Everything above is locked design — 79 decisions in
+*Everything above is locked design — 83 decisions in
 `design/pillars.md`; systems detail in the companion docs;
 feasibility & simulation review in `design/feasibility-review.md`
 (verdict: design PASS; staged production plan). Next phase: naming
