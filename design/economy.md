@@ -1,4 +1,4 @@
-# Bloodborn — Economy & Business Model (working canon v1)
+# Marrowmark — Economy & Business Model (working canon v1)
 
 STATUS: **WORKING CANON** (adopted 2026-07-26; player-driven economy
 per direct instruction, remainder delegated best-call). Covers P6

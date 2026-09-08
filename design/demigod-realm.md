@@ -1,4 +1,4 @@
-# Bloodborn — The Interior (demigod realm, working canon v1)
+# Marrowmark — The Interior (demigod realm, working canon v1)
 
 STATUS: **WORKING CANON** (adopted 2026-07-26, delegated best-call).
 Covers P10. Spoiler-adjacent: builds on `lore.md` §9 secret canon.

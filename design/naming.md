@@ -1,6 +1,10 @@
-# Naming — the title problem
+# Naming — the title
 
-Raised 2026-09-08. **"Bloodborn" cannot ship as the title.**
+**DECIDED 2026-09-08 (L52): the game is _Marrowmark_.** The in-world
+term for the awakened moves with it: **the Quickened** (§4).
+Professional clearance (§5) is still outstanding and blocks anything
+public. The reasoning behind the change is kept below as the decision
+trail.
 
 ---
 
@@ -48,21 +52,33 @@ hindsight, once players know what the grave at the centre is.
 | **Sixtowns** | Plain and confident; names the Wheel without explaining it. Very easy to say and search | Reads a little small and cosy for M-rated dark |
 | **The Long Wheel** | Evocative and slightly strange; article-led titles age well | Three words, weaker as a logo, and "wheel" alone is heavily used |
 
-**Recommendation: Wheelgrave**, pending real clearance. It is the only
-candidate that encodes both halves of the premise, it is a coined
-compound (the strongest position for registration), and it keeps the
-secret — a player reads "grave" as a place name until the day they
-learn something is buried there.
+**Chosen: Marrowmark** (L52).
 
-## 4. The in-world term needs the same treatment
+Two consequences worth recording, both of which turn out to work in
+the title's favour:
 
-L21 uses **"Bloodborn" as the in-world name for the awakened.** Even
-with the title changed, keeping that as prominent in-game vocabulary
-re-creates a smaller version of the same problem, and there is a
-better word sitting in the lore already: `lore.md` says the god's
+- **The "Marrow" collision is deliberate.** The Interior's third ring
+  is also the Marrow (L30). Rather than rename either, treat the echo
+  as intended: the title quietly names the deepest place in the game,
+  and only a player who has been there years later can hear it. That
+  is the same layered-secret instinct the whole design runs on (L36).
+- **The "mark" collision is now settled by force.** The word appears
+  in the title, in maker's marks (L4), in P12's Incarnate sigil, and
+  in the placeholder currency. The title takes precedence, maker's
+  marks keep the in-world claim (oldest and most player-facing), and
+  **the currency must be renamed outright** — "marks" as coin is dead.
+  P12's sigil needs its own word too; "scar" and "brand" both read
+  well and neither collides.
+
+## 4. The in-world term — DECIDED
+
+L21 previously used **"Bloodborn" as the in-world name for the
+awakened.** Even with the title changed, keeping that as prominent
+in-game vocabulary would have re-created a smaller version of the same
+problem — and there was a better word sitting in the lore already: `lore.md` says the god's
 blood *quickens* in people.
 
-**Proposed: "the Quickened."** It grows out of the existing canon
+**Decided: "the Quickened."** It grows out of the existing canon
 rather than being imported, it is period-plausible as folk vocabulary,
 and it carries the right sense of something happening *to* a person
 rather than something they were born as — which is also more accurate,
@@ -92,12 +108,18 @@ is trivial today and expensive the day after the first trailer.
 
 ## Open questions
 
-- [ ] **Pick the title.** Lead: Wheelgrave.
-- [ ] Confirm the in-world rename of "Bloodborn" → "the Quickened"
-      (§4), then sweep `lore.md` and the other docs.
-- [ ] Professional clearance on the chosen name (§5).
-- [ ] The remaining naming pass, unchanged from `pillars.md`: currency
-      (the three-way "mark" collision), the six town names, "the
-      Interior", spell naming conventions.
-- [ ] Repository and working-title rename once the title is settled —
-      cheap now, annoying later.
+- [x] **Pick the title** → **L52**: Marrowmark.
+- [x] **In-world rename** → **L52**: "the Quickened". Swept through
+      `lore.md` §1 and L21.
+- [ ] ⚠️ **Professional clearance on Marrowmark** (§5) — Nice classes
+      9 and 41 across USPTO/EUIPO/UKIPO, a common-law sweep, and an
+      attorney. **Blocks all public material.** The searches behind
+      this document ruled out the obvious and nothing more.
+- [ ] **Rename the currency** — forced by §3: "marks" as coin is dead
+      now that the word is in the title.
+- [ ] **A word for P12's sigil** — "scar" or "brand"; not "mark".
+- [ ] The rest of the naming pass: the six town names, "the Interior",
+      spell naming conventions.
+- [ ] Repository rename (`Bloodborn` → `Marrowmark`) — cheap now,
+      annoying later. Requires a GitHub-side rename plus a remote URL
+      update; old links redirect, so nothing breaks.

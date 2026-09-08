@@ -1,4 +1,4 @@
-# Bloodborn — Brainstorm (living document)
+# Marrowmark — Brainstorm (living document)
 
 Expansions on the founding notes (`design/notes/2026-07-26-handwritten-brainstorm.md`).
 Nothing here is locked. Ideas marked **[core]** trace directly to the
@@ -746,7 +746,7 @@ tutorial for it and vision.md inverts. Non-negotiables:
 
 ### 10.7 Does this eat the Interior?
 
-Bloodborn would now have two terminal roads: ascension → the Interior
+Marrowmark would now have two terminal roads: ascension → the Interior
 → the Heart (L12/L30), and six marks → the Age of Gods. They need to
 not compete.
 

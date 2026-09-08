@@ -1,4 +1,4 @@
-# Bloodborn — PvE & Content Model (working canon v1)
+# Marrowmark — PvE & Content Model (working canon v1)
 
 STATUS: **WORKING CANON** (adopted 2026-07-26, delegated best-call).
 Covers P8. The mortal world's content; the demigod realm is

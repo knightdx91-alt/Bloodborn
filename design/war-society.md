@@ -1,4 +1,4 @@
-# Bloodborn — War & Society (working canon v1)
+# Marrowmark — War & Society (working canon v1)
 
 STATUS: **WORKING CANON** (adopted 2026-07-26, delegated best-call).
 Covers pillars P5 (war & territory) and P7 (social structures).

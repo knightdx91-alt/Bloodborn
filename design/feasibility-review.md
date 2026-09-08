@@ -1,4 +1,4 @@
-# Bloodborn — Feasibility & Simulation Pass (v1)
+# Marrowmark — Feasibility & Simulation Pass (v1)
 
 STATUS: review artifact, 2026-07-28. Run against L1–L39 and the five
 working-canon docs. Two lenses: **can it be built** (developer) and
@@ -191,7 +191,7 @@ server-side and tunable live — the single most important live-ops
 dial in the game. Build it as a dial, not a constant.
 
 ### 3.4 The visible game must carry the box
-Restated as a test: strip every hidden system out of Bloodborn and
+Restated as a test: strip every hidden system out of Marrowmark and
 ask if the remainder — crafting, shops, caravans, wars, delves,
 arena, councils — is a game worth $60 with zero knowledge of magic.
 Reading economy.md and war-society.md: **yes, narrowly** — it's

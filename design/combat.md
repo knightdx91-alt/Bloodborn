@@ -1,4 +1,4 @@
-# Bloodborn — Combat
+# Marrowmark — Combat
 
 The specification behind L2 (BotW-style real-time action) and L39
 (favor-the-defender netcode). Everything here exists to be built from:
@@ -57,7 +57,7 @@ status effect with an icon.
 
 ## 3. Where skill lives (the L18 problem) **[core]**
 
-**The problem:** BotW has no stats. Bloodborn is classless skill-by-use
+**The problem:** BotW has no stats. Marrowmark is classless skill-by-use
 (L18) with a moderate vertical curve (L19). If skill raises damage
 numbers, combat becomes a stat check and the action feel dies. If
 skill does nothing, progression is a lie.

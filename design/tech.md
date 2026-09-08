@@ -1,4 +1,4 @@
-# Bloodborn — Technical Design & Solo Production Strategy
+# Marrowmark — Technical Design & Solo Production Strategy
 
 Written 2026-09-08 against a specific reality: **one developer, AAA
 feature ambition, a multi-year horizon.** Every recommendation here
@@ -123,9 +123,10 @@ world exists:
   database is the kind of migration that eats a month.
 - **Monument entry** — append-only, immutable, per-server.
 
-## 5. Platform sequencing **[recommendation — needs your call]**
+## 5. Platform sequencing **[DECIDED — L53]**
 
-**PC first. Consoles later. Switch 2 as the only Nintendo target.**
+**PC first. Consoles later. Switch 2 as the only Nintendo target
+(L51).**
 
 L15 promises four platforms with crossplay, and nothing here breaks
 that promise — this is *sequencing*, not scope reduction. The reasons:
@@ -199,8 +200,9 @@ not a failure signal.
 
 ## Open questions
 
-- [ ] **Confirm PC-first sequencing** (§5) — the one recommendation
-      here that changes the plan materially if you disagree.
+- [x] **PC-first sequencing** → **L53**. All four platforms and full
+      crossplay remain committed; consoles are sequenced after PC, and
+      designed for from day one so they stay a port, not a retrofit.
 - [ ] Backend language and database choice; hosting model.
 - [ ] Region border handoff design — the hardest problem after combat
       netcode (§3).
@@ -209,5 +211,5 @@ not a failure signal.
 - [ ] Asset strategy specifics: which marketplace ecosystems, and the
       unifying art treatment that makes bought content cohere (§1).
 - [ ] Source control and build infrastructure for large binary assets.
-- [ ] Legal entity, and the **title trademark question** (see
-      `naming.md`) — both needed before any public-facing material.
+- [ ] Legal entity, and **trademark clearance on Marrowmark** (see
+      `naming.md` §5) — both needed before any public-facing material.

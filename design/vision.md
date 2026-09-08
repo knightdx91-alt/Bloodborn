@@ -1,4 +1,4 @@
-# BLOODBORN — Vision
+# MARROWMARK — Vision
 
 **A large-scale, cross-platform 3D MMORPG (PC, Xbox, PlayStation,
 Switch — one shared world, full crossplay) where the world keeps the
@@ -16,7 +16,7 @@ warps beasts in the deep places, and in a few people, in secret, it
 *quickens*.
 
 You start with none of that. You start with a trade, a horse, and a
-town that learns your name. Bloodborn is a world of real things:
+town that learns your name. Marrowmark is a world of real things:
 every sword was forged by a player whose mark it carries, every
 price was set by a shopkeeper, every cart of iron physically crossed
 dangerous country because nothing — goods or people — teleports.

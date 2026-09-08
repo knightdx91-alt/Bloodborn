@@ -1,4 +1,4 @@
-# Bloodborn — Lore (working canon v1)
+# Marrowmark — Lore (working canon v1)
 
 STATUS: **WORKING CANON** (adopted 2026-07-26). Names remain open to
 polish, but the structures below are the basis for content design.
@@ -8,10 +8,10 @@ Tone dials (locked): M-rated grounded dark, low-magic medieval.
 
 ## 1. The name
 
-**The Bloodborn are the awakened — and the world does not know they
+**The Quickened are the awakened — and the world does not know they
 exist.** Long ago a god died at the center of the world. Its blood
 soaked into the land — and in some people, the blood *quickens*. Those
-few are called Bloodborn, but only by each other, in whispers. To
+few are called the Quickened, but only by each other, in whispers. To
 everyone else, mages are a fireside story: the witch in the wood, the
 saint who never was, the man who spoke fire in your grandmother's
 grandmother's day. **Magic is myth.**

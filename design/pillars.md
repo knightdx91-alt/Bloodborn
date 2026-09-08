@@ -1,4 +1,4 @@
-# Bloodborn — Design Pillars & Decision Queue
+# Marrowmark — Design Pillars & Decision Queue
 
 Status tracker for the big structural decisions. Detail lives in
 `brainstorm.md`; this file is the map. Updated as decisions lock.
@@ -29,7 +29,7 @@ Status tracker for the big structural decisions. Detail lives in
 | L18 | Progression | Classless, skill-by-use. Every proficiency is a skill grown through use; "level" = total across skills; magic skills invisible until awakening. "Max level" = capping a defined skill set (definition TBD) |
 | L19 | Power curve | Moderate vertical: veterans usually win clean, but a skilled newcomer threatens a careless one and can always escape |
 | L20 | Tone | M-rated grounded dark, low-magic medieval |
-| L21 | Lore | Godsgrave cosmology adopted as working canon (`lore.md`): the god's blood explains respawn, regional materials, monsters, awakening, and permadeath; four faiths; six named towns; Bloodborn = the awakened; anyone is awakenable; secret canon in §9 |
+| L21 | Lore | Godsgrave cosmology adopted as working canon (`lore.md`): the god's blood explains respawn, regional materials, monsters, awakening, and permadeath; four faiths; six named towns; the Quickened = the awakened (L52); anyone is awakenable; secret canon in §9 |
 | L22 | Magic is myth | The NPC world believes mages are folklore. Public wonder is institutional miracle only. No anti-sorcery law — officially sorcery doesn't exist; exposure means mobs and secret institutions (Office of the Lamp / Vigil high circle / Open Vein inner circle), not trials. Succession Trials convene in the Veiled Ring (hidden night circuit); academies operate behind fronts |
 | L23 | Living history | Each server writes its own permanent history through player-advanced epochs. The Revelation Arc (`lore.md` §10): Myth → Whispers → Unveiling (the myth-breaker is named on the Monument, once per server) → Scouring → Wonder. Epochs are cheap to represent: dialogue, laws, faction posture, set-piece transitions — not rebuilt maps |
 | L24 | Social structures | Charters, not guilds (`war-society.md`): Companies (war), Houses (economy), Orders (faith), Circles (secret, unregistered); fellowships for casual groups; town councils remain place-based |
@@ -60,6 +60,8 @@ Status tracker for the big structural decisions. Detail lives in
 | L49 | The intent ceiling | Extends P11 §9.2. **No ceiling on what the model may propose; a hard gate on what executes.** The model can reach for any intent, including war declarations and escrow — but every binding intent (coin, gear, enrollment, escrow, contract, charter, war) requires explicit player confirmation before it takes effect. The panel is the gate, never a receipt for something already done. This keeps §9.2's rule intact — the model still never mutates state — while removing the whitelist's expressive ceiling. A misheard sentence can raise a panel; it can never sign one |
 | L50 | The enemy at launch | Extends L21/`lore.md` §9. **Rare, deniable traces only.** A handful of things across the whole world that the Godsgrave cosmology does not explain — wrong-shaped wounds, a deep-delve chamber older than the god, ruins in the Interior nobody built — each always explicable as something ordinary. Nothing names it, nothing confirms it, and no NPC knows. Rewards obsessives, spoils nothing, and gives the Heart's revelation the foreshadowing it needs to land as a payoff rather than an asspull |
 | L51 | Switch target is Switch 2 only | Amends L15. The Nintendo target is **Switch 2 exclusively** — original Switch is not supported. This materially downgrades **T2** (the Switch battle ceiling, `feasibility-review.md`), which was the constraint holding war enrollment caps toward 60v60; L25's 150v150 aspiration becomes plausible rather than fantasy. Crossplay across PC/Xbox/PlayStation/Switch 2 is unchanged |
+| L52 | Title: **Marrowmark** | The working title "Bloodborn" could not ship — *Bloodborne* is a live trademark in the same goods class, phonetically identical, and the name argued against L36's marketing silence by promising the supernatural on the box. **Marrowmark** is a coined compound: grounded, registrable, and quiet about magic. The in-world term for the awakened moves with it — **the Quickened**, which grows out of `lore.md`'s own language (the blood *quickens*) and is truer to L21, since anyone is awakenable rather than born to it. Professional clearance (`naming.md` §5) is still outstanding and blocks anything public |
+| L53 | PC first; consoles follow | Sequencing under L15, not a reduction of it. All four platforms and full crossplay remain the commitment; PC ships first because console certification costs money and months while teaching nothing about whether the game is good, and every design risk in the project is answerable on PC. **Crossplay is designed for from day one** — controller-first input, no keyboard-dependent systems, no PC-only UI affordances — so consoles are a port, never a retrofit |
 
 ---
 
@@ -217,7 +219,7 @@ Full list at the bottom of `brainstorm.md`.
     model, the casual awakening chain), then economy and war numbers,
     then the naming pass.
 
-**The original ten structural pillars are locked (51 decisions).** P11
+**The original ten structural pillars are locked (53 decisions).** P11
 (living NPCs) and P12 (the Incarnate marks) are new and open — both
 added since the sweep. The one-page
 distillation is `vision.md`; the build-and-play sanity check is
@@ -226,17 +228,16 @@ or via the staged path in §5).
 
 ### Next phase
 
-0. ⚠️ **Retitle the project** — `naming.md`. "Bloodborn" cannot ship:
-   *Bloodborne* is a live trademark in the same goods class and the
-   marks are phonetically identical. Independently, the name leaks the
-   magic secret that L36 requires be kept off the box. Lead candidate:
-   **Wheelgrave**. Must be settled before anything goes public.
+0. ⚠️ **Trademark clearance on "Marrowmark"** — `naming.md` §5. The
+   title is chosen (L52); clearance is not done. Class 9 and 41
+   searches plus a common-law sweep, and an attorney. This blocks any
+   public material, store page, domain, or social account.
 1. **Naming polish** — currency ("marks" is placeholder), the six
-   town names, "the Interior," spell naming conventions. **Three-way
-   collision to resolve:** the placeholder currency, maker's marks
-   (L4), and P12's Incarnate mark all currently share the word. At
-   most one of them keeps it — maker's marks have the strongest claim
-   (they are the oldest and the most player-facing).
+   town names, "the Interior," spell naming conventions. **The "mark"
+   collision is now four-way** and effectively settled by L52: the
+   *title* contains it, which makes maker's marks (L4) the canonical
+   in-world "mark" and forces the currency to be renamed outright.
+   P12's Incarnate sigil needs its own word too (`naming.md` §4).
 2. **Build the combat prototype first** — `combat.md` §9 and
    `tech.md` §6. One room, three enemies, six weapon families, a
    latency slider. It is the L39 gate, it is the one result that can
