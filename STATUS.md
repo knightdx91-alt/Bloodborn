@@ -59,9 +59,9 @@ Everything below can be done from the Claude Code app with no laptop.
 
 - Raised **P12** (Incarnate marks / the Age of Gods) from an idea to a
   written pillar.
-- Locked **L40–L73**: ascension gate, epoch advancement, P12's rules,
+- Locked **L40–L75**: ascension gate, epoch advancement, P12's rules,
   four of P11's calls, Switch 2 only, the title, PC-first, Unity, and
-  stamina as exertion, combat mobility, the encumbrance budget, armour on the road, durability, breakage, directional combat, the crafting model, onboarding, skill-by-use, and recipe discovery.
+  stamina as exertion, combat mobility, the encumbrance budget, armour on the road, durability, breakage, directional combat, the crafting model, onboarding, skill-by-use, recipe discovery, and moderation.
 - Retitled the project **Bloodborn → Marrowmark** (trademark), and the
   in-world term to **the Quickened**.
 - Wrote `combat.md`, `tech.md`, `naming.md` — the three documents that
@@ -73,13 +73,13 @@ Everything below can be done from the Claude Code app with no laptop.
 
 ## Next, in order
 
-1. **Moderation and trust & safety** — L46 put a live microphone in an
-   always-audible world, P11 put an LLM behind every named NPC, and
-   nothing covers the consequences. The largest uncovered risk.
-2. **Live-ops and the server's second year** — still uncovered, and
-   still the question P12 only half answers.
-3. **UI and information design** — with no markers, no global auction
+1. **Live-ops and the server's second year** — still uncovered, and
+   still the question P12 only half answers. Now the biggest gap.
+2. **UI and information design** — with no markers, no global auction
    house and rumour as discovery, the interface *is* the usability.
+3. **Art and audio direction** — `combat.md` §6 and L65 make animation
+   and sound readability a hard requirement, not polish, and nothing
+   describes the target.
 
 ## Open questions worth a phone session
 

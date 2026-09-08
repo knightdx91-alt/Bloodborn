@@ -82,6 +82,8 @@ Status tracker for the big structural decisions. Detail lives in
 | L71 | You learn from difficulty, not repetition | Closes P3's long-open anti-grind question. **A task well below your skill teaches nothing** — past a window beneath your current level, gain is zero. This is the whole anti-macro design, and it is a rule about *learning* rather than a rule about *players*: a bot hammering an easy action is not cheating, it is wasting its own time, and nobody genuinely playing is ever punished by it. Two supports: a **daily soft cap** (L33's precedent — past it learning slows sharply but never stops, per L38's spirit), so no marathon replaces months; and **no decay ever**, because a trade you learned is a trade you know. Measured on current tuning: casual play (~20 uses/day) masters one skill in ~88 days, heavy play (~200/day) in ~15 — a tenfold playtime difference buying a sixfold time difference, and L40's gate needs eight of them |
 | L72 | Recipes are pipelines, discovered not listed | Extends L4/`brainstorm.md` §2.3. **There is no recipe list.** A recipe is a *known pipeline* — which stages, in which order — so discovery means learning an operation exists and finding a sequence worth using. Three routes: **experimentation**, which is deterministic rather than lucky (insight comes from sequences you have never tried, so novelty teaches and repetition does not — L71's principle applied to knowledge, and two smiths who try the same number of new things learn the same amount); **found in the world**; and **taught**. Poor results earn a near-miss nudge that names the property that fell furthest short and never names the fix. Experimentation deliberately **runs out** — a smith who has exhausted their own bench needs a teacher, a ruin, or somebody's notes, which is what stops crafting being a solo puzzle |
 | L73 | Schematics are items; knowledge is an economy | Extends L72. A written pipeline can be **sold, copied, stolen, hoarded, or buried with its author**, and records who wrote it exactly as a maker's mark records who forged. The deliberate parallel to spell teaching (L9): in Marrowmark **knowing is a thing you can own and lose**, in crafting exactly as in magic. A House holding the only copy of a pattern has something worth defending; a rival who copies it has done something worth being angry about |
+| L74 | Moderate people, never the fiction | `moderation.md`. Marrowmark is adversarial on purpose: banditry and cargo looting are **intended gameplay** (`feasibility-review.md` §2.5), Succession Trial alliances **end in betrayal by design** (L35), and cornered markets, ruinous rents, wars nobody wanted and outright lying are all the game working. **None of that is a moderation matter** — a policy that treats it as abuse deletes the game. The line is **harm to a person, not harm to a character**: slurs, sexual harassment, threats, real-identity targeting, stalking and brigading, none of which need an in-fiction pretext to recognise. Test for any report: *would this still be wrong if the game had no rules at all?* Robbery would not; what was said while doing it might be. First enforcement layer is **consequence rather than punishment** — small worlds with permanent names (L16), maker's marks (L68), NPCs who dislike you and walk off (L47), charter reputation (L24) — which handles the ordinary jerk for free and does **not** handle malice |
+| L75 | The model is never trusted, and cannot leak what it lacks | Extends L49/P11 §9.6, restating two design rules as **security properties**. First: **the model never mutates state.** A fully jailbroken NPC still cannot move coin, gear, escrow or enrollment, because every binding intent stops at explicit confirmation — the difference between an embarrassing clip and an incident. Second: **secret canon is absent from the retrievable corpus per epoch, not merely forbidden within it** — you cannot extract what is not there, which is the strongest protection in the design. Supported by output moderation on every generated line (input-only filtering fails against jailbreaks by construction), the in-fiction failure mode (a refusing NPC gets confused and turns away — never "I can't help with that", which breaks L20 *and* shows a jailbreaker exactly where the wall is), and L48's fixed noun space, so the model cannot mint content that propagates as fact. Jailbreak clips will exist; the goal is that their output is **boring** |
 
 ---
 
@@ -240,7 +242,7 @@ Full list at the bottom of `brainstorm.md`.
     model, the casual awakening chain), then economy and war numbers,
     then the naming pass.
 
-**The original ten structural pillars are locked (73 decisions).** P11
+**The original ten structural pillars are locked (75 decisions).** P11
 (living NPCs) and P12 (the Incarnate marks) are new and open — both
 added since the sweep. The one-page
 distillation is `vision.md`; the build-and-play sanity check is
@@ -291,9 +293,10 @@ model, solo production strategy, build order). ~~The title problem~~ →
 employs you, and directional combat is taught by a sparring partner who
 calls the arc aloud and gradually stops.
 
+~~Moderation and trust & safety~~ → `moderation.md` (L74/L75).
+
 **Still uncovered**, each load-bearing: live-ops and the
-server's second year; moderation and trust & safety (which P11 aims a
-live microphone at, and which L46 makes sharper); UI and information
+server's second year; UI and information
 design, including the companion app (L31); art and audio direction —
 note that `combat.md` §6 makes animation and sound readability a
 **hard requirement**, not polish; and telemetry for the awakening
