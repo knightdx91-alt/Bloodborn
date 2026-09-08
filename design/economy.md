@@ -122,6 +122,26 @@ leaves trails; exposure is the price of losing.
   only if server economics demand it, and never with economy-touching
   perks.
 
+## Wear is the demand engine
+
+`brainstorm.md` §2.6 names three sinks that keep crafters in business.
+Two of them — war losses (L11) and Interior deletion (L12) — touch some
+players some of the time. **Wear touches everyone, every day.**
+
+L59 makes it permanent: every repair restores an item's condition but
+lowers its ceiling, and once that ceiling falls far enough the item is
+scrap. Nothing lasts forever, however well kept. Without that rule a
+masterwork blade forged in year one is still in circulation in year
+five, and crafting decays from an economy into a checklist a player
+completes once.
+
+L61 turns the same rule into a **second profession**. Anyone can repair
+in the field, but skill decides what the repair costs the item —
+roughly a fourfold difference in working life between an amateur patch
+and a master's bench. So a master smith is worth travelling to even
+when you are not buying anything, and *"who repairs your kit"* becomes
+a real relationship rather than a menu.
+
 ## Escort work is structural, not optional
 
 **L57** makes armour and cargo compete for one stamina budget: a

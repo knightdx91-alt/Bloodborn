@@ -52,6 +52,25 @@ Expected: all tests pass, in well under a second.
 | Health | `Combat/Health.cs` | `design/combat.md` §4 |
 | Time-to-kill guard | `Combat/TimeToKill.cs`, `Combat/FighterSpec.cs` | `design/combat.md` §4 |
 | Armour changes on the road | `Combat/ArmorSwap.cs` | L57, L58 |
+| Durability, wear & repair | `Items/Durability.cs`, `Items/DurabilityProfile.cs` | L3, L32, L59–L61 |
+
+### Item lifespan
+
+L59 makes every repair cost the item some of its ceiling, so gear
+eventually becomes scrap and crafters always have work. L61 makes the
+smith's skill decide the price. Measured on the current tuning,
+repairing only when the item is spent:
+
+```
+smith skill   repairs   deaths survived
+0.00 novice        19       190
+0.50               31       310
+1.00 master        76       760
+```
+
+A fourfold difference in working life between a field patch and a
+master's bench — enough that "who repairs your kit" is a relationship,
+not a menu.
 
 ### The time-to-kill guard
 
@@ -82,5 +101,5 @@ happens somewhere other than where it shows, which is the reason this
 exists.
 
 Next candidates, all pure logic and all buildable before Unity exists:
-durability and repair (L3/L32), crafting material properties and rolled
-stats (L4), and the skill-by-use curve (L18/L40).
+crafting material properties and rolled stats (L4) — the flagship
+system — and the skill-by-use curve (L18/L40).

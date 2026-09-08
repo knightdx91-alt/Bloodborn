@@ -166,12 +166,10 @@ the game together.
   beginner, and a stamina gate on the flagship system would do exactly
   that.
 
-> ⚠️ **The inclusion/exclusion lists above are an interpretation**
-> (2026-09-08) of the decision to extend stamina past combat. The
-> principle is locked (L55); the boundaries are a judgement call and
-> should be confirmed or corrected. The likeliest thing to revisit is
-> whether encumbrance reduces the maximum bar (current model) or
-> instead raises the cost of every action.
+> ✅ **Confirmed 2026-09-08.** The inclusion and exclusion lists above
+> were flagged as interpretation when L55 was locked; they have since
+> been reviewed and stand as written, including encumbrance reducing
+> the maximum bar rather than raising the cost of every action.
 
 - Attacks cost on **startup**, so a whiffed swing is paid for.
 - Dodges cost a flat amount; consecutive dodges cost escalating
@@ -330,8 +328,13 @@ cheaters.
 
 ## 8. Hooks into locked systems
 
-- **Durability (L3, L32):** wear on hit dealt and hit blocked; never
-  mid-fight breakage. Clean technique wears less (§3).
+- **Durability (L3, L32, L59–L61):** wear on hit dealt and hit blocked;
+  never mid-fight breakage, and a spent item is bad rather than useless.
+  Clean technique wears less (§3). Performance holds until roughly half
+  condition, then declines (L60). Every repair costs the item some of
+  its ceiling, so gear eventually dies and crafters always have work
+  (L59); anyone can repair, and the smith's skill decides what it costs
+  the item (L61).
 - **Ordinary death (L17, L32):** combat produces the ~10% durability
   hit and, in wedges, the cargo drop.
 - **War (L11, L25):** identical combat, enrollment-gated, with the

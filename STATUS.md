@@ -51,7 +51,7 @@ Everything below can be done from the Claude Code app with no laptop.
 | | |
 |---|---|
 | **Design** | `design/` — 55 locks in `pillars.md`, which is the map to everything |
-| **Code** | `sim/` — the rules of the game as engine-free C#, 78 tests |
+| **Code** | `sim/` — the rules of the game as engine-free C#, 95 tests |
 | **The plan** | `design/tech.md` §6 (build order), §8 (how the work divides) |
 | **Blocking** | `design/naming.md` §5 — trademark clearance, before anything public |
 
@@ -59,27 +59,26 @@ Everything below can be done from the Claude Code app with no laptop.
 
 - Raised **P12** (Incarnate marks / the Age of Gods) from an idea to a
   written pillar.
-- Locked **L40–L58**: ascension gate, epoch advancement, P12's rules,
+- Locked **L40–L61**: ascension gate, epoch advancement, P12's rules,
   four of P11's calls, Switch 2 only, the title, PC-first, Unity, and
-  stamina as exertion, combat mobility, the encumbrance budget, and armour on the road.
+  stamina as exertion, combat mobility, the encumbrance budget, armour on the road, and durability.
 - Retitled the project **Bloodborn → Marrowmark** (trademark), and the
   in-world term to **the Quickened**.
 - Wrote `combat.md`, `tech.md`, `naming.md` — the three documents that
   stood between the design and building anything.
 - Built the simulation library: **stamina economy**, the **damage
-  triangle**, **health**, a **time-to-kill guard**, and **armour changes on the road** that simulates
+  triangle**, **health**, a **time-to-kill guard**, **armour changes on the road**, and **durability with permanent wear** that simulates
   real fights and fails when tuning drifts outside `combat.md` §4's
   5–15 second window. 64 tests passing.
 
 ## Next, in order
 
-1. **Durability and repair** (L3/L32) — the ~10% hit per death that
-   feeds the whole crafting economy.
-2. **Crafting material properties** (L4) — the flagship system, and the
-   largest single piece of design in the repo.
-3. **Skill-by-use curve** (L18/L40).
+1. **Crafting material properties** (L4) — the flagship system, and the
+   largest single piece of design in the repo. Durability now exists to
+   hang it on.
+2. **Skill-by-use curve** (L18/L40).
 
-All three are pure logic and need no engine.
+Both are pure logic and need no engine.
 
 ## Open questions worth a phone session
 
@@ -89,9 +88,7 @@ Roughly 25 remain. The ones that unblock the most:
   progression and the main source of mobility — how many per weapon
   family, and how they unlock. This is a content-volume question as
   much as a design one.
-- **Confirm or correct L55's boundaries** — `combat.md` §2 flags that
-  the walking/riding/crafting exemptions are an interpretation, and
-  that encumbrance currently shrinks the bar rather than raising costs.
+
 - **P11's cost ceiling vs L27** — the open collision that may turn the
   game subscription-based. Deferred until real numbers exist, but the
   thinking can happen any time.
