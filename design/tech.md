@@ -42,39 +42,60 @@ content volume.** Concretely —
   and mystery over authored quest volume — that lock was written for
   design reasons and pays off enormously here.
 
-## 2. Engine: Unreal 5 **[recommendation]**
+## 2. Engine: Unity **[DECIDED — L54]**
 
-For this project, by these constraints:
+**Unity, URP, current LTS.** Chosen 2026-09-08 over Unreal 5, which
+this document previously recommended. The reasoning changed when two
+facts entered it: the developer is **new to gamedev**, and an **AI
+collaborator is a major part of the labour**. Both point the same way.
 
-- **Source access.** §7 of `combat.md` needs custom netcode. Engines
-  you cannot modify cannot implement favor-the-defender honestly.
-- **Fidelity without an art team.** Nanite and Lumen mean acceptable
-  AAA-adjacent visuals without manual LOD chains and lightmap bakes —
-  which is a *solo-developer lever* more than a graphics feature. It
-  removes weeks of optimization labour per environment.
-- **The marketplace is the content plan.** §1 depends on a deep asset
-  ecosystem; Unreal's is the deepest for grounded medieval.
-- **Console path is well-trodden**, including Switch 2.
-- **Animation tooling** is the best available, and §6 of `combat.md`
-  makes animation readability a hard requirement rather than polish.
+**Why Unity here:**
 
-**The honest caveat: Unreal's replication is not MMO-scale.** It is
-built for tens of players, not thousands. This is true of every
-general-purpose engine, so it is not a reason to pick differently —
-but it does mean the server architecture in §3 is *custom work you
-will write*, not a feature you will configure. Budget for that
-honestly.
+- **Everything is text.** C# scripts, scenes and prefabs (YAML), and
+  editor tooling are all readable and writable by an AI collaborator.
+  Unreal's Blueprints are binary `.uasset` files — opaque, and also
+  the way most solo Unreal developers actually work. Choosing Unreal
+  would mean a collaborator blind to a large share of the project.
+- **One language everywhere.** §3 makes clear the MMO server is custom
+  work regardless of engine. In Unity that server is C# — the same
+  language as the client, sharing the same data structures and
+  potentially the same simulation code. For one person, a single
+  language across client, server, and tools is worth more than any
+  rendering feature.
+- **The gentlest learning curve of the serious engines**, with the
+  deepest tutorial ecosystem — which matters when the developer is
+  learning the craft and the project simultaneously.
+- **Faster iteration.** No C++ compile cycle between having an idea
+  and seeing it.
 
-*A funded studio might reasonably choose a custom or heavily forked
-engine here. A solo developer should not.*
+**The honest cost.** Unreal's Nanite and Lumen remove weeks of manual
+optimization per environment, and that solo-art-leverage argument —
+the original reason this document said Unreal — remains true. Unity
+will mean more hand-optimization and a lower out-of-box visual
+ceiling. **This is the right trade for Marrowmark specifically**,
+because the game's distinctiveness is its systems (economy, crafting,
+war, secrecy) rather than its fidelity, and systems are exactly what
+the collaboration is good at.
+
+**Render pipeline: URP**, not HDRP. URP scales across every target in
+L15/L51 including Switch 2, is far lighter to learn, and its ceiling
+with good art direction is well above what this project needs. HDRP
+would look better on PC and hurt everywhere else.
+
+**Version:** take the current **Unity 6 LTS** from Unity Hub. Pin it
+and do not chase releases mid-project — engine upgrades are a cost
+with no gameplay upside.
+
+*A funded studio with an art team would likely still choose Unreal.
+This decision is correct for these constraints, not universally.*
 
 ## 3. Server architecture
 
 **Zone-server model with a persistent backend.**
 
 - **Zone servers** — one authoritative simulation process per region
-  (7 total: six wedges plus the capitol), each an Unreal dedicated
-  server instance. L16's medium worlds (~1–2k concurrent) put roughly
+  (7 total: six wedges plus the capitol), each a headless Unity
+  server build. L16's medium worlds (~1–2k concurrent) put roughly
   150–300 players in a region, which is within reach of a single
   well-tuned process.
 - **Seamless handoff at region borders.** L28 forbids fast travel, so
@@ -93,6 +114,14 @@ engine here. A solo developer should not.*
   budget and rate limits, reachable from zone servers, never
   authoritative over game state (L49 guarantees this in design; the
   architecture should guarantee it structurally too).
+
+**No engine's built-in networking is MMO-scale**, Unity's included.
+Netcode for GameObjects is built for tens of players, not thousands —
+it is fine for the Stage 2 latency prototype (§6) and wrong for the
+shipped game. The zone-server layer above is **code you write**, not a
+package you install. Budget for it honestly; it is the second hardest
+engineering problem here after combat netcode, and it does not need to
+exist until Stage 3.
 
 **War is already scope-sane by construction** (`war-society.md`):
 rights are database rows, battles are scheduled instances of ordinary
@@ -151,40 +180,63 @@ L15 and a downgrade of T2.
 ## 6. Build order — every step ends in something playable
 
 The single largest risk to a solo multi-year project is not technical.
-**It is abandonment** — and abandonment is caused by long stretches
-with nothing playable. Every stage below produces something you can
-put in front of a person.
+**It is abandonment** — caused by long stretches with nothing playable.
+Every stage below ends in something you can put in front of a person.
 
-1. **Combat prototype** (`combat.md` §9). One room, three enemies, six
-   weapon families, a latency slider. Weeks to months. *This is the
-   L39 gate and it can kill the project — build it first.*
-2. **Networked combat.** The same prototype, two real clients, real
-   server authority, real reconciliation. Proves §7 of `combat.md`
-   against reality rather than a slider.
-3. **One crafting pipeline, end to end.** Ore to sword, every stage
+**`combat.md` §9's prototype is the first target, but it is not the
+first step.** As specified it combines animation-driven combat,
+custom netcode, and latency reconciliation — a wall for a first
+project. It stages cleanly, and each stage is independently playable:
+
+### Stage 1 — learning Unity by building the real thing
+1. **Move and look.** A character controller, a camera, a flat test
+   room. Nothing from the design yet — this is the tutorial.
+2. **Dodge.** A roll with invulnerability frames and a recovery
+   window. This is the first real piece of `combat.md` §1.
+3. **Attack and hit.** One weapon, committed animation, a hitbox, a
+   training dummy that reacts.
+4. **Stamina.** The §2 economy: attacks, dodges, sprint. Tune it until
+   panic-rolling actually punishes.
+5. **One enemy, three attack shapes.** §6's vocabulary — quick, heavy,
+   committed — readable by animation and sound alone.
+6. **Parry.** The hardest single-player piece, and the heart of the
+   game's combat.
+
+**Stage 1 is the honest test of whether this project happens.** It is
+months of work for someone learning, it is entirely single-player, and
+at the end you can hand someone a controller and watch their face.
+**Judge it on feel, not completeness** — and on whether you still want
+to keep going.
+
+### Stage 2 — the L39 gate proper
+7. **Two clients, one server.** Networked combat, server-authoritative
+   damage, client-authoritative defensive windows.
+8. **The latency slider.** 0–150ms injection, then tune until 100ms is
+   indistinguishable from 0 (`combat.md` §7 and §9).
+
+*This is where L39 is actually passed or failed. It cannot be
+attempted before Stage 1 exists.*
+
+### Stage 3 onward — the game
+9. **One crafting pipeline, end to end.** Ore to sword, every stage
    playable, rolled properties, a maker's mark, durability, repair.
    Proves the flagship system (L4/L38) and the item data model.
-4. **One town, one wedge.** Streaming, mounts, a shop, an NPC
-   shopkeeper, a delve mouth, monsters using §6's vocabulary. This is
-   the first thing that feels like the game.
-5. **Persistence and accounts.** Characters, the account/character
-   split, death and durability, shrine respawn.
-6. **The prototype-only risks**, now answerable: contested-delve
-   pressure (§4.3) and multiplayer crowd budgets.
-7. **P11's slice gate** (`brainstorm.md` §9.8) — six voice NPCs, one
-   rumor that arrives wrong, one epoch flip. This is also where the
-   real per-turn cost gets measured, which is what settles the open
-   L27 collision.
-8. **Everything else**, in whatever order the game demands by then.
-
-**Stages 1–4 are the honest test of whether this project happens.**
-They are achievable solo. If they take two years, that is normal and
-not a failure signal.
+10. **One town, one wedge.** Streaming, mounts, a shop, an NPC
+    shopkeeper, a delve mouth, monsters using §6's vocabulary. The
+    first thing that feels like Marrowmark.
+11. **Persistence and accounts.** Characters, the account/character
+    split (§4), death and durability, shrine respawn.
+12. **The prototype-only risks**, now answerable: contested-delve
+    pressure (`feasibility-review.md` §4.3) and crowd budgets.
+13. **P11's slice gate** (`brainstorm.md` §9.8) — six voice NPCs, one
+    rumor that arrives wrong, one epoch flip. Also where real per-turn
+    cost gets measured, which settles the open L27 collision.
+14. **Everything else**, in whatever order the game demands by then.
 
 ## 7. What to deliberately not build
 
 - **Custom engine.** Ever.
-- **Custom asset pipeline** beyond what Unreal gives you.
+- **Custom asset pipeline** beyond what Unity gives you.
 - **Anti-cheat from scratch.** Use a platform solution; the design's
   statistical posture (`combat.md` §7) is the part you write.
 - **Voice/STT/TTS from scratch.** Vendor everything in P11's pipeline.
@@ -196,6 +248,47 @@ not a failure signal.
 - **A launcher, an anti-RMT team, a support org** — all real, all
   later, none of them design problems now.
 
+## 8. How this actually gets built **[the working method]**
+
+One developer, new to gamedev, working with an AI collaborator. The
+division of labour is not negotiable — it follows from what each side
+can physically do.
+
+**The collaborator can:** write and read every C# script, scene and
+prefab file (all text in Unity), the server backend, editor tooling
+that automates repetitive setup, and tests. It can explain any of it,
+which is the part that matters most while learning.
+
+**The collaborator cannot:** open the editor, see a viewport, drag
+anything, press Play, or look at the game. It has no GPU and no
+display. Anything that must happen in the Unity GUI — importing
+assets, wiring a scene, configuring an animator, tuning a material —
+is yours, though editor scripts can shrink that surface a lot.
+
+**And one thing is permanently yours: judging feel.** `combat.md` §9's
+gate is *"does this feel BotW-good at 100ms."* No one who cannot hold
+the controller can answer that. The collaborator builds it; you decide
+whether it is right. Treat its combat numbers as first guesses to be
+overwritten, never as tuning.
+
+**The loop:**
+1. You describe what should happen, or point at what feels wrong.
+2. The collaborator writes or changes the C# in the repo.
+3. You pull, press Play, and report back — errors, screenshots, or
+   just "the recovery is too long."
+4. Repeat.
+
+**Getting started, concretely:**
+- Install **Unity Hub**, then the current **Unity 6 LTS**.
+- Create a **3D (URP)** project. Pin the version; do not upgrade
+  mid-project.
+- Put it in this repository under `game/`, and set up **Git LFS**
+  before committing any binary assets — retrofitting LFS after the
+  fact means rewriting history.
+- The design docs stay in `design/`. They are the specification the
+  code is written against, and they stay authoritative: when code and
+  a lock disagree, the lock wins or the lock changes on purpose.
+
 ---
 
 ## Open questions
@@ -203,13 +296,15 @@ not a failure signal.
 - [x] **PC-first sequencing** → **L53**. All four platforms and full
       crossplay remain committed; consoles are sequenced after PC, and
       designed for from day one so they stay a port, not a retrofit.
-- [ ] Backend language and database choice; hosting model.
+- [ ] Database choice and hosting model (backend language is settled
+      by L54 — C#, shared with the client).
 - [ ] Region border handoff design — the hardest problem after combat
       netcode (§3).
 - [ ] Whether zone servers are one process per region or further
       subdivided under load.
 - [ ] Asset strategy specifics: which marketplace ecosystems, and the
       unifying art treatment that makes bought content cohere (§1).
-- [ ] Source control and build infrastructure for large binary assets.
+- [ ] Git LFS setup before the first binary asset lands (§8), and
+      build infrastructure later.
 - [ ] Legal entity, and **trademark clearance on Marrowmark** (see
       `naming.md` §5) — both needed before any public-facing material.

@@ -62,6 +62,7 @@ Status tracker for the big structural decisions. Detail lives in
 | L51 | Switch target is Switch 2 only | Amends L15. The Nintendo target is **Switch 2 exclusively** — original Switch is not supported. This materially downgrades **T2** (the Switch battle ceiling, `feasibility-review.md`), which was the constraint holding war enrollment caps toward 60v60; L25's 150v150 aspiration becomes plausible rather than fantasy. Crossplay across PC/Xbox/PlayStation/Switch 2 is unchanged |
 | L52 | Title: **Marrowmark** | The working title "Bloodborn" could not ship — *Bloodborne* is a live trademark in the same goods class, phonetically identical, and the name argued against L36's marketing silence by promising the supernatural on the box. **Marrowmark** is a coined compound: grounded, registrable, and quiet about magic. The in-world term for the awakened moves with it — **the Quickened**, which grows out of `lore.md`'s own language (the blood *quickens*) and is truer to L21, since anyone is awakenable rather than born to it. Professional clearance (`naming.md` §5) is still outstanding and blocks anything public |
 | L53 | PC first; consoles follow | Sequencing under L15, not a reduction of it. All four platforms and full crossplay remain the commitment; PC ships first because console certification costs money and months while teaching nothing about whether the game is good, and every design risk in the project is answerable on PC. **Crossplay is designed for from day one** — controller-first input, no keyboard-dependent systems, no PC-only UI affordances — so consoles are a port, never a retrofit |
+| L54 | Engine: **Unity**, URP, Unity 6 LTS | `tech.md` §2. Chosen over Unreal 5, which that document previously recommended, once two constraints entered the reasoning: the developer is new to gamedev, and an AI collaborator is a major share of the labour. Unity is **all text** (C#, YAML scenes/prefabs, C# editor tooling) so the whole codebase is legible to both; it puts client, headless server and tools in **one language**, which matters enormously for one person; and it has the gentlest learning curve of the serious engines. The cost is real — Unreal's Nanite/Lumen art leverage is given up for more hand-optimization and a lower out-of-box ceiling — and is the right trade here because Marrowmark's distinctiveness is systems, not fidelity. **No engine's built-in networking is MMO-scale**, Unity's included: the zone-server layer is code to be written, not a package to install |
 
 ---
 
@@ -219,7 +220,7 @@ Full list at the bottom of `brainstorm.md`.
     model, the casual awakening chain), then economy and war numbers,
     then the naming pass.
 
-**The original ten structural pillars are locked (53 decisions).** P11
+**The original ten structural pillars are locked (54 decisions).** P11
 (living NPCs) and P12 (the Incarnate marks) are new and open — both
 added since the sweep. The one-page
 distillation is `vision.md`; the build-and-play sanity check is
@@ -238,13 +239,13 @@ or via the staged path in §5).
    *title* contains it, which makes maker's marks (L4) the canonical
    in-world "mark" and forces the currency to be renamed outright.
    P12's Incarnate sigil needs its own word too (`naming.md` §4).
-2. **Build the combat prototype first** — `combat.md` §9 and
-   `tech.md` §6. One room, three enemies, six weapon families, a
-   latency slider. It is the L39 gate, it is the one result that can
-   kill the project, and it is reachable solo in weeks-to-months. The
-   full vertical slice (one town + its wedge, one crafting pipeline to
-   mastery, one hidden awakening end-to-end) is stages 3–5 of
-   `tech.md` §6, not the first step.
+2. **Build Stage 1 of `tech.md` §6** — single-player combat, in six
+   steps from a character controller to a working parry. `combat.md`
+   §9's prototype is the target, but its networked half (Stage 2) is
+   what actually settles the L39 gate and cannot be attempted until
+   Stage 1 exists. For someone learning Unity, Stage 1 *is* the
+   learning, and it ends in something a person can hold a controller
+   and play. The full vertical slice is Stage 3 onward.
 3. **Two prototype-shaped risks to answer inside the slice**:
    the Switch battle ceiling (`feasibility-review.md` T2) and
    contested-delve pressure (§4.3).

@@ -17,9 +17,11 @@ still open: **P11, living NPCs** (free-form voice dialogue,
 sigil that outlives the character, and the Age of Gods it eventually
 opens, `brainstorm.md` §10).
 
-**Next:** trademark clearance on the title, then build the combat prototype
-([`design/combat.md`](design/combat.md) §9) — the L39 gate, and the
-first build that can kill or confirm the whole project.
+**Next:** trademark clearance on the title, then **Stage 1** of
+[`design/tech.md`](design/tech.md) §6 — single-player combat in Unity,
+from a character controller to a working parry. It is the road to the
+L39 gate ([`design/combat.md`](design/combat.md) §9), the one result
+that can kill or confirm the whole project.
 
 ⚠️ **One open question now reaches the business model:** P11's
 per-turn inference cost against L27's buy-to-play lock. Subscription
@@ -36,7 +38,7 @@ is on the table. Deferred until the vertical slice measures real cost
 | [`design/pillars.md`](design/pillars.md) | The decision log — all 50 locks (L1–L50), pillar status, the next-phase plan, and the list of docs that don't exist yet. The map to everything else. |
 | [`design/feasibility-review.md`](design/feasibility-review.md) | Build-and-play sanity check: developer risk register, six player-archetype simulations, systemic stress tests, verdict and staged production path. |
 | [`design/combat.md`](design/combat.md) | The combat specification: core loop, stamina, where skill lives vs. gear, the damage triangle, enemy telegraph vocabulary, the latency contract, and the prototype gate that must pass first. |
-| [`design/tech.md`](design/tech.md) | Engine, server architecture, data model, platform sequencing — and the solo production strategy the whole plan rests on. |
+| [`design/tech.md`](design/tech.md) | Engine (Unity), server architecture, data model, platform sequencing, the solo production strategy the whole plan rests on, the staged build order, and how the work actually gets divided. |
 | [`design/naming.md`](design/naming.md) | How the title was chosen, why the old one could not ship, and what real trademark clearance still requires. |
 | [`design/lore.md`](design/lore.md) | Working canon: the Godsgrave cosmology, four faiths, six towns, the Revelation Arc, and the secret canon (§9 — spoilers). |
 | [`design/economy.md`](design/economy.md) | Player-driven economy, shops, local markets, travel, coin sinks, the shadow economy, business model. |
