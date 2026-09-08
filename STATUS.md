@@ -59,7 +59,7 @@ Everything below can be done from the Claude Code app with no laptop.
 
 - Raised **P12** (Incarnate marks / the Age of Gods) from an idea to a
   written pillar.
-- Locked **L40–L75**: ascension gate, epoch advancement, P12's rules,
+- Locked **L40–L76**: ascension gate, epoch advancement, P12's rules,
   four of P11's calls, Switch 2 only, the title, PC-first, Unity, and
   stamina as exertion, combat mobility, the encumbrance budget, armour on the road, durability, breakage, directional combat, the crafting model, onboarding, skill-by-use, recipe discovery, and moderation.
 - Retitled the project **Bloodborn → Marrowmark** (trademark), and the

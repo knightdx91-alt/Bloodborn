@@ -93,6 +93,12 @@ pretending otherwise is how games get this wrong.**
   server-side by default. This is the only workable way to evidence
   voice abuse, and its privacy shape must be stated plainly in-product.
 
+**Deliberately absent from this layer:** a karma system, a community
+reputation score, or any mechanism that lets players formally judge
+each other. Those become weapons within a week, and they turn an
+adversarial world into a popularity contest. Reputation in Marrowmark
+is what people *say about you*, not a number the game keeps.
+
 ## 5. Layer three: the LLM problem **[L75]**
 
 Players will jailbreak the NPCs. This is certain, not a risk.
@@ -159,19 +165,22 @@ and `economy.md`:
 
 - **Always-audible voice (L46) will produce more harassment than a
   private-by-default design would.** That is an accepted cost of a
-  deliberate choice, and it means the mitigation budget — platform
-  tooling, report handling, buffer review — must be real rather than
-  aspirational.
-- **Voice moderation does not scale like text.** It needs human review
-  and it is expensive per incident. A solo or small team cannot staff
-  this at launch, which is a genuine argument for a small first world
-  and slow growth rather than a wide launch.
+  deliberate choice. Under the minimal-intervention posture (§0) most
+  of it is answered by blocking and by the world's own consequences
+  rather than by staff.
+- **Even the mandatory floor is not free.** Voice reports need a human
+  to listen, and that does not scale like text. A solo or small team
+  cannot staff much of it — a real argument for **a small first world
+  and slow growth** rather than a wide launch, and for keeping the
+  actionable list as short as §0 makes it.
 - **Per-turn LLM output moderation is a cost on every conversation**,
   and it lands on the same budget as P11's open collision with L27.
 
 ## 8. Non-negotiables
 
-1. **Never moderate the fiction.** Robbery, betrayal and ruin stay.
+1. **Never moderate the fiction.** Robbery, betrayal and ruin stay —
+   nor anything above the legal floor (§0). Rudeness is not an offence,
+   and unpleasantness is not enforcement's problem.
 2. **Never let an LLM be the authority on state** (L49). No exceptions,
    no "trusted" NPC class.
 3. **Never announce a block or a report** to its subject.
@@ -185,9 +194,12 @@ and `economy.md`:
 
 ## Open questions
 
-- [ ] Who actually does human review at launch scale, and what does one
-      incident cost in time? This is a staffing question the project
-      has never costed.
+- [ ] What exactly sits on the actionable list, written as a short
+      explicit set rather than a principle. §0 says "the legal floor";
+      that has to become a list somebody can apply at 2am without
+      making judgement calls.
+- [ ] Who listens to a voice report at launch scale, and what does one
+      incident cost in time? Small under §0, but not zero.
 - [ ] Rolling buffer length, retention, and how its privacy shape is
       communicated in-product.
 - [ ] Does a charter (L24) bear formal responsibility for its members,
