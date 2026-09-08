@@ -59,9 +59,9 @@ Everything below can be done from the Claude Code app with no laptop.
 
 - Raised **P12** (Incarnate marks / the Age of Gods) from an idea to a
   written pillar.
-- Locked **L40–L68**: ascension gate, epoch advancement, P12's rules,
+- Locked **L40–L70**: ascension gate, epoch advancement, P12's rules,
   four of P11's calls, Switch 2 only, the title, PC-first, Unity, and
-  stamina as exertion, combat mobility, the encumbrance budget, armour on the road, durability, breakage, directional combat, and the crafting model.
+  stamina as exertion, combat mobility, the encumbrance budget, armour on the road, durability, breakage, directional combat, the crafting model, and onboarding.
 - Retitled the project **Bloodborn → Marrowmark** (trademark), and the
   in-world term to **the Quickened**.
 - Wrote `combat.md`, `tech.md`, `naming.md` — the three documents that
@@ -73,22 +73,12 @@ Everything below can be done from the Claude Code app with no laptop.
 
 ## Next, in order
 
-1. **Onboarding and the first three hours** — now the most urgent gap
-   in the project. L64/L65 gave this game the steepest learning curve
-   in its genre and there is still no document for teaching it.
-2. **Skill-by-use curve** (L18/L40) — pure logic, no engine needed.
-3. **Recipe discovery** (L4) — the crafting system is built, but how a
+1. **Skill-by-use curve** (L18/L40) — pure logic, no engine needed, and
+   the last major combat-adjacent system unbuilt.
+2. **Recipe discovery** (L4) — the crafting system is built, but how a
    player learns a stage exists is untouched (`crafting.md`).
-
-## Two risks L64/L65 created
-
-- **Animation volume** is now the largest content risk in the project
-  (~300–400 clips for combat alone). `tech.md` §1's buy-don't-make
-  strategy is no longer optional. Mitigation on file: per-weapon-family
-  direction sets.
-- **Onboarding** is now the hardest design problem here, and its
-  document still does not exist. Free-aim directional combat with the
-  guard read off the body is the steepest curve in the genre.
+3. **Live-ops and the server's second year** — still uncovered, and
+   still the question P12 only half answers.
 
 ## Open questions worth a phone session
 
