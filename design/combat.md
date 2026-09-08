@@ -37,8 +37,40 @@ with stamina gets away, period.
 
 ## 2. Stamina is the whole economy **[core]**
 
-One bar. It governs attacking, dodging, parrying, blocking, and
-sprinting. It does not govern walking, riding, or crafting.
+**One bar, and it is not only a combat system.** Stamina is the body's
+exertion — it governs fighting *and* the physical cost of moving
+through a world where nothing teleports (L28). The same bar that pays
+for a parry pays for the climb up a riverbank with sixty pounds of ore
+on your back.
+
+This is the right shape for Marrowmark specifically. L28 promises
+distance is real; a stamina bar that stops at the edge of combat makes
+travel free and quietly contradicts it. Making exertion continuous
+across fighting, climbing, and hauling is what ties the two halves of
+the game together.
+
+**What it governs:**
+- All combat actions — attacking, dodging, parrying, blocking.
+- Sprinting, climbing, swimming, jumping.
+- **Encumbrance**: what you carry reduces the bar you have to spend.
+  Cargo (L17/L32) is physical and heavy, so hauling is felt before the
+  bandits ever arrive.
+
+**What it does not govern, deliberately:**
+- **Walking.** A stamina cost on ordinary movement is misery, not
+  tension.
+- **Riding.** L28 makes mounts the speed system; taxing them makes the
+  whole map worse. The horse has its own limits, not yours.
+- **Crafting.** L38's floor rule — no stage may hard-fail a patient
+  beginner, and a stamina gate on the flagship system would do exactly
+  that.
+
+> ⚠️ **The inclusion/exclusion lists above are an interpretation**
+> (2026-09-08) of the decision to extend stamina past combat. The
+> principle is locked (L55); the boundaries are a judgement call and
+> should be confirmed or corrected. The likeliest thing to revisit is
+> whether encumbrance reduces the maximum bar (current model) or
+> instead raises the cost of every action.
 
 - Attacks cost on **startup**, so a whiffed swing is paid for.
 - Dodges cost a flat amount; consecutive dodges cost escalating
@@ -49,6 +81,13 @@ sprinting. It does not govern walking, riding, or crafting.
   zero, leaving you open — the punishment for turtling.
 - Sprinting drains slowly. **Fleeing is always affordable**: sprint
   drain is low enough that a player who disengages early escapes.
+- **Climbing and swimming drain harder than sprinting**, because they
+  are the movement options that should carry real risk — running out
+  halfway up or halfway across is a consequence, not an inconvenience.
+- **Encumbrance shrinks the bar, it does not slow regeneration.** A
+  loaded traveller has less to spend and recovers at a normal rate;
+  they are limited, not broken. A caravan guard who drops their load
+  before a fight is making a real tactical choice.
 - At zero stamina you are not stunned — you are *slow*. Recovery
   frames lengthen, and that is the vulnerability.
 

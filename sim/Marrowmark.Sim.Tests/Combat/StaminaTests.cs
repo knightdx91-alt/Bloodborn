@@ -288,7 +288,119 @@ namespace Marrowmark.Sim.Tests.Combat
             Assert.Equal(s.Max, s.Current, 3);
         }
 
+        // ── Movement & encumbrance (L55) ─────────────────────────────────
+
+        [Fact]
+        public void Climbing_and_swimming_drain_harder_than_sprinting()
+        {
+            var sprint = New(); sprint.Sprint(1f);
+            var climb = New();  climb.Climb(1f);
+            var swim = New();   swim.Swim(1f);
+
+            Assert.True(climb.Current < sprint.Current,
+                "climbing should cost more than sprinting");
+            Assert.True(swim.Current < sprint.Current,
+                "swimming should cost more than sprinting");
+        }
+
+        [Fact]
+        public void Running_out_mid_climb_reports_failure()
+        {
+            var s = New();
+            Assert.False(s.Climb(1000f));
+            Assert.Equal(0f, s.Current, 3);
+        }
+
+        [Fact]
+        public void Jumping_costs_stamina()
+        {
+            var s = New();
+            s.Jump();
+            Assert.True(s.Current < s.Max);
+        }
+
+        [Fact]
+        public void Encumbrance_shrinks_the_bar()
+        {
+            var s = New();
+            Assert.Equal(s.Max, s.EffectiveMax, 3);
+
+            s.Encumbrance = 1f;
+            Assert.True(s.EffectiveMax < s.Max,
+                "a fully loaded traveller should have less stamina to spend");
+        }
+
+        [Fact]
+        public void Taking_on_load_immediately_clamps_current_stamina()
+        {
+            var s = New();
+            s.Encumbrance = 1f;
+            Assert.Equal(s.EffectiveMax, s.Current, 3);
+        }
+
+        [Fact]
+        public void Encumbrance_does_not_slow_recovery()
+        {
+            // L55: a loaded traveller is limited, not broken — they recover
+            // at a normal rate, they simply have less headroom.
+            var p = StaminaProfile.Default;
+
+            var light = New();
+            light.Spend(30f);
+            light.Tick(p.RegenDelaySeconds + 1f);
+            var lightGain = light.Current - 70f;
+
+            var loaded = New();
+            loaded.Encumbrance = 0.8f;
+            loaded.Spend(30f);
+            loaded.Tick(p.RegenDelaySeconds + 1f);
+            var loadedGain = loaded.Current - (loaded.EffectiveMax - 30f);
+
+            Assert.Equal(lightGain, loadedGain, 2);
+        }
+
+        [Fact]
+        public void Dropping_the_load_restores_headroom_but_not_stamina()
+        {
+            var s = New();
+            s.Encumbrance = 1f;
+            s.Spend(20f);
+            var before = s.Current;
+
+            s.Encumbrance = 0f;
+
+            Assert.Equal(s.Max, s.EffectiveMax, 3);
+            Assert.Equal(before, s.Current, 3);
+        }
+
+        [Fact]
+        public void Encumbrance_is_clamped_to_a_sane_range()
+        {
+            var s = New();
+            s.Encumbrance = 5f;
+            Assert.Equal(1f, s.Encumbrance, 3);
+            s.Encumbrance = -5f;
+            Assert.Equal(0f, s.Encumbrance, 3);
+        }
+
+        [Fact]
+        public void Loaded_regeneration_still_caps_at_the_reduced_bar()
+        {
+            var s = New();
+            s.Encumbrance = 0.5f;
+            s.Spend(20f);
+            s.Tick(100f);
+            Assert.Equal(s.EffectiveMax, s.Current, 3);
+        }
+
         // ── Guards ───────────────────────────────────────────────────────
+
+        [Fact]
+        public void Negative_drain_rate_is_rejected()
+        {
+            var s = New();
+            Assert.Throws<ArgumentOutOfRangeException>(() => s.Exert(-1f, 1f));
+        }
 
         [Fact]
         public void Negative_cost_is_rejected()

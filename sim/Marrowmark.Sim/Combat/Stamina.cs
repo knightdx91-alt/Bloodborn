@@ -19,6 +19,7 @@ namespace Marrowmark.Sim.Combat
         private float _sinceLastDodge;
         private bool _exhausted;
         private int _consecutiveDodges;
+        private float _encumbrance;
 
         public Stamina(StaminaProfile profile)
         {
@@ -34,11 +35,34 @@ namespace Marrowmark.Sim.Combat
         /// <summary>Stamina remaining.</summary>
         public float Current => _current;
 
-        /// <summary>Full bar, from the profile.</summary>
+        /// <summary>Unburdened bar, from the profile.</summary>
         public float Max => _profile.Max;
 
-        /// <summary>Current stamina as 0..1, for bars and AI decisions.</summary>
-        public float Fraction => _current / _profile.Max;
+        /// <summary>
+        /// The bar actually available right now, after what you are
+        /// carrying. L55: encumbrance shrinks the bar rather than slowing
+        /// recovery — a loaded traveller is limited, not broken.
+        /// </summary>
+        public float EffectiveMax =>
+            _profile.Max * (1f - _profile.MaxEncumbrancePenalty * _encumbrance);
+
+        /// <summary>Current stamina as 0..1 of the bar you actually have.</summary>
+        public float Fraction => _current / EffectiveMax;
+
+        /// <summary>
+        /// Carried load as 0 (unburdened) to 1 (at capacity). Set this when
+        /// cargo changes; dropping your load before a fight is meant to be a
+        /// real tactical choice.
+        /// </summary>
+        public float Encumbrance
+        {
+            get => _encumbrance;
+            set
+            {
+                _encumbrance = value < 0f ? 0f : (value > 1f ? 1f : value);
+                if (_current > EffectiveMax) _current = EffectiveMax;
+            }
+        }
 
         /// <summary>
         /// True while recovering from a full drain. combat.md §2: this does
@@ -89,10 +113,10 @@ namespace Marrowmark.Sim.Combat
             var rate = _profile.RegenPerSecond;
             if (_exhausted) rate *= _profile.ExhaustedRegenMultiplier;
 
-            _current = Math.Min(_profile.Max, _current + rate * deltaSeconds);
+            _current = Math.Min(EffectiveMax, _current + rate * deltaSeconds);
 
             if (_exhausted &&
-                _current >= _profile.Max * _profile.ExhaustionRecoveryFraction)
+                _current >= EffectiveMax * _profile.ExhaustionRecoveryFraction)
             {
                 _exhausted = false;
             }
@@ -159,30 +183,51 @@ namespace Marrowmark.Sim.Combat
             var refund = _profile.ParryCost
                          * Clamp01Plus(efficiency)
                          * _profile.ParryRefundFraction;
-            _current = Math.Min(_profile.Max, _current + refund);
+            _current = Math.Min(EffectiveMax, _current + refund);
         }
 
         /// <summary>
-        /// Drain for one tick of sprinting. Returns false once the bar is
-        /// empty, at which point the caller should drop to a walk.
+        /// Drain for one tick of sustained effort. Returns false once the
+        /// bar is empty, at which point the caller should drop the player
+        /// out of the activity — to a walk, off the wall, under the water.
         /// </summary>
-        public bool Sprint(float deltaSeconds, float efficiency = 1f)
+        public bool Exert(float ratePerSecond, float deltaSeconds, float efficiency = 1f)
         {
             if (deltaSeconds <= 0f) return _current > 0f;
+            if (ratePerSecond < 0f)
+                throw new ArgumentOutOfRangeException(
+                    nameof(ratePerSecond), "Drain rate cannot be negative.");
 
-            var drain = _profile.SprintDrainPerSecond
-                        * deltaSeconds
-                        * Clamp01Plus(efficiency);
+            var drain = ratePerSecond * deltaSeconds * Clamp01Plus(efficiency);
 
             _current = Math.Max(0f, _current - drain);
             _regenDelayRemaining = _profile.RegenDelaySeconds;
             return _current > 0f;
         }
 
+        /// <summary>One tick of sprinting (L55).</summary>
+        public bool Sprint(float deltaSeconds, float efficiency = 1f) =>
+            Exert(_profile.SprintDrainPerSecond, deltaSeconds, efficiency);
+
+        /// <summary>
+        /// One tick of climbing. Drains harder than sprinting — running out
+        /// halfway up is a consequence, not an inconvenience.
+        /// </summary>
+        public bool Climb(float deltaSeconds, float efficiency = 1f) =>
+            Exert(_profile.ClimbDrainPerSecond, deltaSeconds, efficiency);
+
+        /// <summary>One tick of swimming.</summary>
+        public bool Swim(float deltaSeconds, float efficiency = 1f) =>
+            Exert(_profile.SwimDrainPerSecond, deltaSeconds, efficiency);
+
+        /// <summary>A single jump.</summary>
+        public SpendResult Jump(float efficiency = 1f) =>
+            Spend(_profile.JumpCost, efficiency);
+
         /// <summary>Refill to full and clear all state. For respawns and tests.</summary>
         public void Reset()
         {
-            _current = _profile.Max;
+            _current = EffectiveMax;
             _regenDelayRemaining = 0f;
             _sinceLastDodge = float.MaxValue;
             _exhausted = false;

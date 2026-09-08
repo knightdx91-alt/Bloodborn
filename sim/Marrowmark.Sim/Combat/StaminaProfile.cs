@@ -63,6 +63,27 @@ namespace Marrowmark.Sim.Combat
         public float SprintDrainPerSecond;
 
         /// <summary>
+        /// Climb drain per second. combat.md §2: climbing and swimming
+        /// drain harder than sprinting, because running out halfway up is
+        /// meant to be a consequence.
+        /// </summary>
+        public float ClimbDrainPerSecond;
+
+        /// <summary>Swim drain per second.</summary>
+        public float SwimDrainPerSecond;
+
+        /// <summary>Cost of one jump.</summary>
+        public float JumpCost;
+
+        /// <summary>
+        /// Fraction of the bar lost at full carrying capacity. L55: what you
+        /// carry shrinks what you have to spend, so hauling is felt before
+        /// any bandit appears. At 0.4, a fully loaded traveller fights with
+        /// 60% of their bar.
+        /// </summary>
+        public float MaxEncumbrancePenalty;
+
+        /// <summary>
         /// A sane starting point. These are placeholders with the right
         /// relationships between them, not tuned values.
         /// </summary>
@@ -82,6 +103,10 @@ namespace Marrowmark.Sim.Combat
             // answer and L19 promises a skilled newcomer can always escape,
             // so fleeing must stay affordable.
             SprintDrainPerSecond = 8f,
+            ClimbDrainPerSecond = 14f,
+            SwimDrainPerSecond = 12f,
+            JumpCost = 6f,
+            MaxEncumbrancePenalty = 0.4f,
         };
     }
 }

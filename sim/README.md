@@ -47,7 +47,7 @@ Expected: all tests pass, in well under a second.
 
 | Area | Files | Design source |
 |------|-------|---------------|
-| Stamina economy | `Combat/Stamina.cs`, `Combat/StaminaProfile.cs`, `Combat/SpendResult.cs` | `design/combat.md` §2, §3 |
+| Stamina economy, movement & encumbrance | `Combat/Stamina.cs`, `Combat/StaminaProfile.cs`, `Combat/SpendResult.cs` | `design/combat.md` §2, §3; L55 |
 | Damage triangle | `Combat/Damage.cs`, `Combat/DamageTable.cs`, `Combat/DamageKinds.cs` | `design/combat.md` §4 |
 
 Next candidates, all pure logic and all buildable before Unity exists:

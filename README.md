@@ -30,6 +30,9 @@ is on the table. Deferred until the vertical slice measures real cost
 
 ---
 
+**Picking this up again?** Start with [`STATUS.md`](STATUS.md) — where
+things stand, what's next, and what can be done without a laptop.
+
 ## Read in this order
 
 | Doc | What it is |
@@ -37,6 +40,7 @@ is on the table. Deferred until the vertical slice measures real cost
 | [`design/vision.md`](design/vision.md) | **Start here.** The one-page pitch and the five promises. |
 | [`design/pillars.md`](design/pillars.md) | The decision log — all 50 locks (L1–L50), pillar status, the next-phase plan, and the list of docs that don't exist yet. The map to everything else. |
 | [`design/feasibility-review.md`](design/feasibility-review.md) | Build-and-play sanity check: developer risk register, six player-archetype simulations, systemic stress tests, verdict and staged production path. |
+| [`sim/`](sim/) | The rules of the game as engine-free C#, with tests. Runs anywhere; the zone servers will run this same code. |
 | [`design/combat.md`](design/combat.md) | The combat specification: core loop, stamina, where skill lives vs. gear, the damage triangle, enemy telegraph vocabulary, the latency contract, and the prototype gate that must pass first. |
 | [`design/tech.md`](design/tech.md) | Engine (Unity), server architecture, data model, platform sequencing, the solo production strategy the whole plan rests on, the staged build order, and how the work actually gets divided. |
 | [`design/naming.md`](design/naming.md) | How the title was chosen, why the old one could not ship, and what real trademark clearance still requires. |
