@@ -14,6 +14,13 @@ chosen (Unity). Two combat systems are **written, tested, and running**
 as plain C#. The development Mac cannot run Unity, so work continues in
 pure C# until there is better hardware.
 
+## Device check
+
+`CLAUDE.md` instructs the assistant to ask which device you are on at
+the start of every session, and to plan around it. If it forgets, say
+"phone" or "Mac" and it will adjust — replies get shorter and more
+scannable on a phone, and it stops suggesting things you cannot run.
+
 ## Working from the phone
 
 Everything below can be done from the Claude Code app with no laptop.
