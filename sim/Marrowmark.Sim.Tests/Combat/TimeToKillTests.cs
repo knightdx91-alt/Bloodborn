@@ -21,6 +21,14 @@ namespace Marrowmark.Sim.Tests.Combat
         private const float MinSeconds = 5f;
         private const float MaxSeconds = 15f;
 
+        // These cover ONE fighter profile — a duellist. L56/L57 introduce
+        // archetypes, and a plate-and-shield mirror match is a stamina war
+        // that will legitimately run longer. Whether the window above
+        // applies per archetype or describes the median fight is deferred
+        // to the prototype (combat.md §9: feel is judged with a
+        // controller). Do not widen these bounds to accommodate a tank
+        // profile without settling that question first.
+
         [Fact]
         public void Mirror_match_lands_in_the_target_window()
         {

@@ -106,6 +106,14 @@ plate means a smaller bar to spend. That is the cost that keeps heavy
 builds honest, and blocking is the payoff that makes the smaller bar
 worth carrying.
 
+**One budget, and armour and cargo compete for it (L57).** A fighter in
+plate hauls almost nothing; a loaded hauler fights badly. That is not a
+combat constraint that leaked into the economy — it is the point. It
+means **you cannot be both the cargo and the muscle**, which turns
+escort work into a real profession rather than a thing players do when
+bored, and gives caravans (L26/L28) a reason to hire that no rule had
+to invent.
+
 **The ceiling: athletic, not supernatural.** Everything a trained human
 body could plausibly do — leaping, vaulting, lunging, spinning
 step-throughs. Nothing it could not: no double jumps, no air dashes, no
@@ -363,14 +371,18 @@ first, and be willing to hear the answer.
       volume is a real burden solo (`tech.md` §1).
 - [ ] **Does the 5–15s time-to-kill window apply per archetype or
       overall?** A shield-and-plate mirror match is a stamina war and
-      will run longer than a duellist mirror by design. The window in
-      §4 was written before archetypes were, and `sim/` currently tests
-      one fighter profile. Either widen the window for grounded builds
-      or state that the target describes the median fight.
-- [ ] **Armour weight versus cargo on the encumbrance channel.** Both
-      shrink the bar (L55). Plate plus a full pack may leave too little
-      to fight with — which might be correct and interesting, or might
-      simply make heavy builds unplayable on the road.
+      will run longer than a duellist mirror by design. **Deferred to
+      the prototype** (2026-09-08) — this is a feel question, and §9
+      already says feel is judged with a controller. `sim/` tests one
+      fighter profile until archetypes are real enough to measure.
+- [x] **Armour weight versus cargo on the encumbrance channel** →
+      **L57**: they share one budget, deliberately. You cannot be a
+      mule in plate.
+- [ ] **Can armour be changed in the field, and how long does it
+      take?** L57 makes this a real decision rather than a menu: if
+      donning plate is slow, being caught unarmoured on the road is an
+      event, and a guard's readiness becomes something an ambusher can
+      read. Grounded and cheap; needs a number.
 - [ ] **Mobility versus the latency contract.** Fast positional change
       is the worst case for §7's reconciliation: a dash-thrust moves
       the attacker *and* the hit origin during the disagreement window.

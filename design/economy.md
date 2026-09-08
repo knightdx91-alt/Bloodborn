@@ -122,6 +122,19 @@ leaves trails; exposure is the price of losing.
   only if server economics demand it, and never with economy-touching
   perks.
 
+## Escort work is structural, not optional
+
+**L57** makes armour and cargo compete for one stamina budget: a
+fighter in plate hauls almost nothing, and a loaded hauler fights
+badly. Nobody can be both the cargo and the muscle.
+
+That single rule does more for this document than any hiring mechanic
+could. Caravans need guards *because of physics*, not because a quest
+told them to. Escort becomes a paying profession, hauling becomes a
+role someone specialises in, and a merchant travelling alone is making
+a visible, legible gamble. The roads acquire stakes without a single
+scripted ambush.
+
 ## Open tuning questions
 - [ ] Currency name; denominations; starting coin.
 - [ ] Rent/tax/wage numbers per town tier; council tax-setting bounds.
