@@ -48,8 +48,9 @@ Expected: all tests pass, in well under a second.
 | Area | Files | Design source |
 |------|-------|---------------|
 | Stamina economy | `Combat/Stamina.cs`, `Combat/StaminaProfile.cs`, `Combat/SpendResult.cs` | `design/combat.md` §2, §3 |
+| Damage triangle | `Combat/Damage.cs`, `Combat/DamageTable.cs`, `Combat/DamageKinds.cs` | `design/combat.md` §4 |
 
 Next candidates, all pure logic and all buildable before Unity exists:
-the damage triangle (`combat.md` §4), durability and repair (L3/L32),
-crafting material properties (L4), and the skill-by-use curve
-(L18/L40).
+durability and repair (L3/L32), crafting material properties and rolled
+stats (L4), the skill-by-use curve (L18/L40), and health with a
+time-to-kill guard against `combat.md` §4's 5–15 second target.
