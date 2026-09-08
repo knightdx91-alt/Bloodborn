@@ -48,6 +48,10 @@ Status tracker for the big structural decisions. Detail lives in
 | L37 | No transfers; rebirth | Characters are citizens of one history — no transfers between worlds, ever. For dying servers or friend-chasing: rebirth — start fresh on the new world keeping only account flair; the old world records an epitaph line ("departed the world"). Skills, gear, titles, seats, lineage all stay behind. Server retirement uses rebirth too |
 | L38 | Crafting floor | Extends L4. Depth lives in the ceiling, not the floor: every stage is playable naively with acceptable results; skill raises quality ceilings, never gates the floor. No stage may hard-fail a patient beginner. Casuals buy intermediates and do only the stages they enjoy; masters make the legends |
 | L39 | Combat netcode stance | Extends L2. Favor-the-defender: client-authoritative dodge/parry windows with server reconciliation, tuned to feel fair at ~100ms; enemy readability comes from committed telegraph animations, not frame-perfect timing. Vertical-slice gate: parry/dodge must feel BotW-good at real MMO latency before anything else ships |
+| L40 | Max level (the ascension gate) | Extends L18/L12. "Max level" = your **top 8 skills, summed against a threshold**. Breadth past 8 contributes nothing, so the gate demands real depth — but *which* eight is entirely the player's, and two ascended characters need share no skill. Magic skills are **eligible but never required**: there are far more than 8 mundane skills, so no one is gated on awakening and the visible game still reaches the endgame on its own (`feasibility-review.md` §3.4). Threshold number is tuning |
+| L41 | Epoch advancement | Extends L23. **Thresholds arm; a named act fires.** Server-side conditions (awakened count, witnessed public castings, institutional pressure) arm the next epoch and are live-tunable — this is §3.3's dial. Once armed, the age turns only when a player commits the qualifying public act, and that player is named on the Monument (L23). Before arming, the same act does not turn the age — it just gets you hunted. An early hero fails dangerously rather than being told no |
+| L42 | Earning an Incarnate mark | Extends L10/P12. **Winning the seat marks you.** Claim an Incarnate seat, then end that life, and the account keeps that spell's sigil on every character after — unexplained, forever. Holding or losing a seat leaves nothing. The road is deliberately brutal: one seat per character (L10) means each mark is a full character lifetime ending in a claimed seat |
+| L43 | Arrival in the Age of Gods | Extends P12. **Knowledge, not power.** A marked account arrives already awakened, knowing its marked spells by name and effect — and casting them at Novice. The climb is real and must be walked again. This is vision.md's third promise ("knowing isn't having") restated at account scale, and it keeps L19's power curve intact in a world you would otherwise enter pre-solved |
 
 ---
 
@@ -66,15 +70,17 @@ shrine respawn. Remaining: tithe scaling by distance (closes the
 bind-and-die slow-teleport edge case, `feasibility-review.md` §4.1).
 
 ### ~~P3. Progression model~~ ✅ LOCKED → L18, L19
-Classless skill-by-use, moderate vertical power curve. Remaining
-sub-questions: which skills count toward the "max level" ascension
-gate; per-skill caps and total-cap structure; anti-AFK-grind design
-(meaningful-use XP rules, as with spell trickle).
+Classless skill-by-use, moderate vertical power curve. The ascension
+gate is now **L40** (top 8 skills against a threshold; magic eligible,
+never required). Remaining: the threshold number and per-skill caps
+(tuning), plus anti-AFK-grind design (meaningful-use XP rules, as with
+spell trickle) — the one remaining *structural* piece here.
 
 ### ~~P4. Setting, tone & lore~~ ✅ LOCKED → L20, L21
-Working canon in `lore.md`. Remaining sub-questions: final naming
-pass; the enemy's nature (§9); how much each faith questline glimpses
-of the secret canon.
+Working canon in `lore.md`. Epoch advancement is now **L41**
+(thresholds arm, a named act fires). Remaining sub-questions: final
+naming pass; the enemy's nature (§9); how much each faith questline
+glimpses of the secret canon.
 
 ### ~~P5. War & territory~~ ✅ LOCKED → L25
 `war-society.md`. Remaining: tuning numbers, battle formats, epoch
@@ -149,12 +155,13 @@ after the seats are taken* — but it does not answer the year-two
 newcomer joining a world whose mystery is already solved (§10.8).
 That gap stays open.
 
-Open before it can lock: what earns a mark, how many, whether you
-arrive with knowledge or power, whether this **is** the sealed
-expansion arc (`demigod-realm.md` §4 / `lore.md` §9) rather than a
-third thread, how it relates to the Interior, and how much secret
-canon a playable prequel spends. Full list at the bottom of
-`brainstorm.md`.
+Two of its questions are now locked: **L42** (winning the seat is what
+marks you) and **L43** (you arrive knowing, not powerful). Still open:
+how many marks, whether this **is** the sealed expansion arc
+(`demigod-realm.md` §4 / `lore.md` §9) rather than a third thread, how
+it relates to the Interior, how much secret canon a playable prequel
+spends, and whether the Age of Gods writes per-server history (L23).
+Full list at the bottom of `brainstorm.md`.
 
 ---
 
@@ -177,7 +184,7 @@ canon a playable prequel spends. Full list at the bottom of
     §10; open, seven questions to settle, launch hook separable from
     the expansion.
 
-**The original ten structural pillars are locked (39 decisions).** P11
+**The original ten structural pillars are locked (43 decisions).** P11
 (living NPCs) and P12 (the Incarnate marks) are new and open — both
 added since the sweep. The one-page
 distillation is `vision.md`; the build-and-play sanity check is

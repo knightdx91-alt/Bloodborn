@@ -793,15 +793,15 @@ all (§10.9).
 **P12 — the Incarnate marks & the Age of Gods (§10).** Raised
 2026-09-08. The hook (§10.9 step 1) is cheap enough to ship without
 settling any of these; the expansion is not.
-- [ ] **What earns a mark.** Winning the seat, holding it for a
-      tenure, or losing it in a Trial (§10.5). "Losing it" is the
-      most evocative — the mark as the scar of a past life.
+- [x] **What earns a mark** → **L42**: winning the seat. Holding or
+      losing one leaves nothing. Keeps the mark rare and the road
+      long; see the count question below, which this sharpens.
 - [ ] **How many marks.** Six as raised is close to a decade of play
-      given one seat per character (L10). Intended, or does it come
-      down to three, or do lineage seats count partially?
-- [ ] **Knowledge or power on arrival** (§10.4). Full mastery is the
-      better moment; awakened-at-Novice is the better game. Leaning
-      Novice — it is "knowing isn't having" at account scale.
+      given one seat per character (L10) — and L42 (win, don't merely
+      hold) makes that estimate *longer*, not shorter. Intended, or
+      does the number come down?
+- [x] **Knowledge or power on arrival** → **L43**: awakened, knowing
+      the marked spells by name and effect, casting at Novice.
 - [ ] **Is the Age of Gods the sealed expansion arc?** If yes it
       absorbs `demigod-realm.md` §4's "other option" and `lore.md`
       §9's seal-weakening hook instead of adding a third thread.

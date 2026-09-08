@@ -280,6 +280,9 @@ and police differently, not because geometry changed.
 - [ ] The enemy: nature, name, and whether launch content ever shows
       its fingerprints (recommend: rare, deniable traces only).
 - [ ] How much of §9 the four faith questlines each glimpse.
-- [ ] Epoch thresholds: what exactly advances a server from one age
-      to the next (see §10) — witnessed castings? awakened count?
-      a named player act?
+- [x] Epoch thresholds → **L41**: thresholds *arm* (awakened count,
+      witnessed castings, institutional pressure — server-side and
+      live-tunable), a named public player act *fires*. Before
+      arming, the act does not turn the age; it just gets you hunted.
+      Remaining: the specific arming conditions per epoch, and what
+      counts as the qualifying act for each (content work).
