@@ -50,6 +50,11 @@ game/[Aa]ssets/[Aa]ssetStoreTools*
 .LSOverride
 ._*
 
+# ── .NET / the simulation library ────────────────────────────────────
+sim/**/bin/
+sim/**/obj/
+*.user
+
 # ── Scratch ──────────────────────────────────────────────────────────
 scratch/
 *.tmp
