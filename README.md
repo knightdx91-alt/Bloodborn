@@ -10,7 +10,7 @@ score. Buy-to-play. M-rated grounded dark fantasy.
 > and is a blocker on anything public: see
 > [`design/naming.md`](design/naming.md).
 
-**Status:** 83 locked decisions, the original ten structural pillars
+**Status:** 87 locked decisions, the original ten structural pillars
 closed, feasibility reviewed. Two newer pillars are partly locked and
 still open: **P11, living NPCs** (free-form voice dialogue,
 `brainstorm.md` §9) and **P12, the Incarnate marks** (an unexplained
@@ -38,9 +38,10 @@ things stand, what's next, and what can be done without a laptop.
 | Doc | What it is |
 |-----|-----------|
 | [`design/vision.md`](design/vision.md) | **Start here.** The one-page pitch and the five promises. |
-| [`design/pillars.md`](design/pillars.md) | The decision log — all 83 locks (L1–L83), pillar status, the next-phase plan, and the list of docs still to write. The map to everything else. |
+| [`design/pillars.md`](design/pillars.md) | The decision log — all 87 locks (L1–L87), pillar status, the next-phase plan, and the list of docs still to write. The map to everything else. |
 | [`design/feasibility-review.md`](design/feasibility-review.md) | Build-and-play sanity check: developer risk register, six player-archetype simulations, systemic stress tests, verdict and staged production path. |
 | [`sim/`](sim/) | The rules of the game as engine-free C#, with tests. Runs anywhere; the zone servers will run this same code. |
+| [`design/art-audio.md`](design/art-audio.md) | Art as the interface: what must read at a glance, why the look lives in the treatment rather than the assets, and what audio carries that the eye cannot. |
 | [`design/interface.md`](design/interface.md) | Minimalist by rule: nothing permanently on screen, legibility as a skill, maps as player-made goods, and the companion app as the pressure valve. |
 | [`design/liveops.md`](design/liveops.md) | What a server is after its first year, the four dials an operator turns, what they must never touch, and the telemetry to read them by. |
 | [`design/moderation.md`](design/moderation.md) | Minimal intervention: what the law and the consoles actually require, why the fiction is never policed, and how the world's own consequences do the rest. |

@@ -92,6 +92,10 @@ Status tracker for the big structural decisions. Detail lives in
 | L81 | Legibility is itself a skill | `interface.md` §3. The hardest interface problem is crafting: L66 gives materials four continuous properties, and a stat sheet with four sliders is exactly the menu this design refuses. **Answer: what you perceive depends on what you know.** A novice is told *"heavy, and there is dirt in it"*; a master reads *"dense, near enough pure; it will take an edge but it will not forgive a hard quench."* Same object, different reader — and **appraisal grows by use like any other skill** (L18/L71), so the interface sharpens as the character learns. **No numbers anywhere in the fiction**, on materials, weapons or damage; numbers are a developer's tool and live in `sim/`. Three things this buys without inventing anything: appraisal becomes a profession worth hiring and worth lying to, second-hand markets acquire real risk (hedged by reading the maker's mark, L68), and nobody ever has to be taught what "hardness 0.62" means because nobody is shown it |
 | L82 | Maps are made by people | `interface.md` §4. No minimap, no compass, no player marker, and **no map you were simply given**. A map is a **physical item somebody made** — a crafted good carrying a maker's mark (L4/L68) — showing what its maker knew, wrong where they never went, and better ones cost more. Cartography is a trade. This does more work than its cost: it makes L28's distance real (travel becomes navigation rather than line-following), gives exploration a product to sell, makes `onboarding.md`'s landmark directions meaningful, and fits the rumour layer exactly — a map is a physical rumour, sourced, dated and possibly wrong |
 | L83 | The companion app absorbs the density | `interface.md` §5. Ledgers, price histories, commission queues, war declarations, arena odds and the Monument feed are genuinely dense, and presenting them in-world means building the menus L80 forbids. **So they live in the app (L31)**, which already exists for exactly this — "the shopkeeper's evening glance, not a second job." This is the pressure valve that makes minimalism affordable: the in-game interface stays clean *because there is somewhere else for the spreadsheet to live*, and that somewhere is optional and never gameplay-critical, so a player who never opens it loses convenience rather than capability. **Hard limit:** anything a player must consult *during play* cannot live only in the app |
+| L84 | Art is functional; it *is* the interface | `art-audio.md`. Every information channel this design refused — the guard indicator (L65), the HUD (L80), the stat sheet (L81), the quest marker (L29), the glowing tell (`combat.md` §6) — was refused on the assumption that a picture and a sound would carry it instead. So the test for any art choice is not *does it look good* but **does it tell the player what they need to know.** Ten things must read at a glance: attack shape, attack arc, guard direction, exhaustion, weapon wear, armour loss, NPC disposition, material character, maker's marks, and where you are. **None may be rescued with UI** — if a guard pose does not read, the answer is a better pose, never an indicator. Rules: silhouette carries the shape, weight is the vocabulary, **no emissive tells** (a game that resorts to a coloured flash has admitted its animation failed), contrast over saturation (dark means low light, not desaturated mud) |
+| L85 | The look lives in the treatment, not the assets | `art-audio.md` §5. `tech.md` §1 commits to buying content volume and building systems, which constrains art direction absolutely. **Identity must come from one lighting model, one post chain and one grade applied to everything** — a coherent bought look beats an incoherent handmade one. **Naturalistic, never stylised**: a bespoke stylisation cannot be matched by purchased assets, so every new asset would need hand-reworking, which is exactly the labour being avoided; naturalistic assets from different sources unify under lighting, stylised ones cannot. Bespoke effort is spent only where it is functional. **The one place to overspend is combat animation** — simultaneously the largest content risk in the project (~300–400 clips) and the channel every refused interface element depends on. Buy the world; author the fighting |
+| L86 | Regional palette replaces the minimap | Extends L82. With no minimap and maps as player-made goods, **the land carries orientation**: each of the six wedges gets a distinct palette, light quality, vegetation, stone and architecture, enough that **a screenshot is locatable**. Also serves regional materials (L21) — ore from a red-stone wedge should look like it came from there, and a finished blade should carry a hint of where its metal was dug — and makes the capitol the one place all six palettes meet, which is what a capitol should feel like |
+| L87 | Audio carries what the eye cannot | `art-audio.md` §4. **Impact sound tells you what happened**: a cut biting flesh, a cut skipping off plate, a mace finding mail are different sounds, and that is **how the damage triangle reaches a player who is never shown a number** (L81). Attack shapes get audio tells too, redundantly with the visual, because that redundancy survives a crowded battle where silhouettes overlap. Exhaustion is audible — breathing is the stamina bar your opponent does not get (L80). A ruined blade rings wrong. Per-town accent families (§9.3) place a person before they say anything about themselves. And **silence is affordable**: music is rare and earned, which makes the world feel large |
 
 ---
 
@@ -250,7 +254,7 @@ Full list at the bottom of `brainstorm.md`.
     model, the casual awakening chain), then economy and war numbers,
     then the naming pass.
 
-**The original ten structural pillars are locked (83 decisions).** P11
+**The original ten structural pillars are locked (87 decisions).** P11
 (living NPCs) and P12 (the Incarnate marks) are new and open — both
 added since the sweep. The one-page
 distillation is `vision.md`; the build-and-play sanity check is
@@ -307,12 +311,9 @@ calls the arc aloud and gradually stops.
 which also carries the telemetry plan.
 
 ~~UI and information design~~ → `interface.md` (L80–L83).
+~~Art and audio direction~~ → `art-audio.md` (L84–L87).
+~~Telemetry~~ → `liveops.md` §6.
 
-**Still uncovered**: art and audio direction — note that `combat.md` §6
-and L65 make animation and sound readability a **hard requirement**,
-not polish, and L80/L81 add to that by pushing information onto the
-object rather than the HUD. Formerly also listed: UI and information
-design, including the companion app (L31); art and audio direction —
-note that `combat.md` §6 makes animation and sound readability a
-**hard requirement**, not polish; and telemetry for the awakening
-throttle that §3.3 calls the most important live-ops dial in the game.
+**Nothing on this list remains.** Every document identified as missing
+in the 2026-09-08 gap review has been written. What is left is tuning,
+content, and the prototype.

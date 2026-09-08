@@ -9,7 +9,7 @@ of each working session.
 
 ## The one-line version
 
-Design is **83 locked decisions** and, apart from two documents, done.
+Design is **87 locked decisions** and, apart from two documents, done.
 The engine is chosen (Unity). Every system a player touches in their
 first hundred hours is specified, and most of it is **written, tested
 and running** as engine-free C# — 185 tests. The development Mac cannot
@@ -58,19 +58,20 @@ Everything below can be done from the Claude Code app with no laptop.
 ## Done this session
 
 **Design.** Raised **P12** (the Incarnate marks and the Age of Gods)
-from an idea to a written pillar. Locked **L40–L83** — the ascension
+from an idea to a written pillar. Locked **L40–L87** — the ascension
 gate, epoch advancement, P12's rules, five of P11's calls, Switch 2
 only, the title, PC-first, Unity, stamina as exertion, combat mobility
 and archetypes, the encumbrance budget, armour on the road, durability
 and breakage, directional combat, the crafting model, recipe discovery,
-onboarding, skill-by-use, moderation, live-ops, and the interface.
+onboarding, skill-by-use, moderation, live-ops, the interface, and art direction.
 
 **Renamed the project.** Bloodborn → **Marrowmark** (trademark
 conflict), and the in-world term for the awakened to **the Quickened**.
 
-**Eight documents written**, none of which existed: `combat.md`,
+**Nine documents written**, none of which existed: `combat.md`,
 `tech.md`, `naming.md`, `crafting.md`, `onboarding.md`,
-`moderation.md`, `liveops.md`, `interface.md`.
+`moderation.md`, `liveops.md`, `interface.md`, `art-audio.md`. **Every
+gap identified in the 2026-09-08 review is now closed.**
 
 **Built the simulation library** — the rules of the game as engine-free
 C#, **185 tests**: the stamina economy with movement and encumbrance,
@@ -118,14 +119,25 @@ closed it, and both were already in the design:
 
 ## Next, in order
 
-1. **Art and audio direction** — the last uncovered document.
-   `combat.md` §6 and L65 make animation and sound readability a **hard
-   requirement** rather than polish, and L80/L81 add to that by pushing
-   information onto the object instead of the HUD. Nothing yet
-   describes the target.
+**The design side is complete.** Every document identified as missing
+has been written, and every structural question is locked. What remains
+falls into three piles, and none of it is design:
 
-After that the design side is complete, and everything remaining is
-tuning, content, or the prototype.
+1. **Hardware, then the prototype.** `tech.md` §6 Stage 1 — single
+   player combat in Unity, six steps from a character controller to a
+   working parry. Blocked on a machine that can run Unity; the 2017
+   Air cannot, and Unity drops Intel Mac support at 6.8 regardless.
+2. **Trademark clearance on "Marrowmark"** (`naming.md` §5) — blocks
+   anything public. Classes 9 and 41, plus a common-law sweep, plus an
+   attorney.
+3. **Tuning and content** — numbers that need a controller in hand
+   (`combat.md` §9), the six town names and the currency, per-spell
+   rule-breaks, regional palettes. All of it downstream of something
+   playable existing.
+
+Meanwhile the simulation library can keep growing: the economy (shops,
+ledgers, commissions, caravans), war and charters, and the rumour
+model are all pure logic and all buildable without an engine.
 
 ## Open questions worth a phone session
 
