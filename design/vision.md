@@ -73,8 +73,15 @@ glance, not a raid scheduler.
 
 ---
 
-*Everything above is locked design — 39 decisions in
+*Everything above is locked design — 50 decisions in
 `design/pillars.md`; systems detail in the companion docs;
 feasibility & simulation review in `design/feasibility-review.md`
 (verdict: design PASS; staged production plan). Next phase: naming
 polish and the vertical slice.*
+
+*Two pillars are partly locked and still open, and are deliberately
+not pitched above: **P11** (living NPCs — free-form voice dialogue)
+and **P12** (the Incarnate marks and the Age of Gods). One question
+inside P11 — the per-turn cost of conversational NPCs — is a live
+collision with the buy-to-play line in this document, and may yet
+change it.*

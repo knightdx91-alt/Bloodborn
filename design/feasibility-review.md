@@ -8,6 +8,14 @@ needs a guard rail or a prototype proof.
 
 ---
 
+> **Scope note (2026-09-08):** this review ran against L1–L39. Locks
+> L40–L50 and pillars P11/P12 came after it and have *not* been through
+> a feasibility pass. Two of them raise new questions this document
+> does not cover: L46 (always-audible proximity voice) has moderation
+> and console-certification surface, and P11's per-turn inference cost
+> is an open collision with L27. A second review pass is owed once P11
+> and P12 finish locking.
+
 ## 1. Developer feasibility
 
 ### 1.1 The honest scope statement
@@ -203,9 +211,9 @@ secret layers; they ARE the product on the shelf.
    echoes of dead demigods are fine (ascension/faith is public), but
    confirm echoes never *cast* publicly pre-Unveiling, or the arena
    itself breaks the myth. One sentence in content canon fixes it.
-4. **vision.md drift:** says "31 decisions," predates the Incarnate
-   rename in one line, and doesn't reflect L32–L39. Needs a sync
-   pass (known).
+4. ~~**vision.md drift:** says "31 decisions," predates the Incarnate
+   rename in one line, and doesn't reflect L32–L39.~~ **DONE**
+   (2026-07-28, re-synced 2026-09-08 to L50).
 
 ## 4.3 One structural risk to watch (no fix locked)
 No-instancing (L29) + small worlds means **prime-time delve

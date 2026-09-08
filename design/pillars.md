@@ -206,6 +206,15 @@ Full list at the bottom of `brainstorm.md`.
 10. **Incarnate marks raised as P12** (2026-09-08) — `brainstorm.md`
     §10; open, seven questions to settle, launch hook separable from
     the expansion.
+11. **Open-questions pass, session 1** (2026-09-08) — L40–L50 locked:
+    the ascension gate (L40), epoch advancement (L41), P12's marks and
+    arrival (L42–L45), and four of P11's six calls (L46–L49), plus the
+    enemy's launch presence (L50). P11's cost ceiling escalated to a
+    business-model question rather than forced. **Resume here:** P12's
+    two remaining questions (secret-canon spend, per-server history),
+    then the content structures that unblock the slice (rumor data
+    model, the casual awakening chain), then economy and war numbers,
+    then the naming pass.
 
 **The original ten structural pillars are locked (50 decisions).** P11
 (living NPCs) and P12 (the Incarnate marks) are new and open — both

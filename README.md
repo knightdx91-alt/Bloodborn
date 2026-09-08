@@ -4,12 +4,18 @@ A large-scale, cross-platform 3D MMORPG (PC, Xbox, PlayStation,
 Switch — one shared world, full crossplay) where the world keeps the
 score. Buy-to-play. M-rated grounded dark fantasy.
 
-**Status:** 39 locked decisions, the original ten structural pillars
-closed, feasibility reviewed. Two new open pillars — **P11, living
-NPCs** (free-form voice dialogue, `brainstorm.md` §9) and **P12, the
-Incarnate marks** (an unexplained sigil that outlives the character,
-and the Age of Gods it eventually opens, `brainstorm.md` §10). Next:
-naming polish and the vertical slice.
+**Status:** 50 locked decisions, the original ten structural pillars
+closed, feasibility reviewed. Two newer pillars are partly locked and
+still open: **P11, living NPCs** (free-form voice dialogue,
+`brainstorm.md` §9) and **P12, the Incarnate marks** (an unexplained
+sigil that outlives the character, and the Age of Gods it eventually
+opens, `brainstorm.md` §10). Next: naming polish and the vertical
+slice.
+
+⚠️ **One open question now reaches the business model:** P11's
+per-turn inference cost against L27's buy-to-play lock. Subscription
+is on the table. Deferred until the vertical slice measures real cost
+— see `design/pillars.md`, P11.
 
 ---
 
@@ -18,7 +24,7 @@ naming polish and the vertical slice.
 | Doc | What it is |
 |-----|-----------|
 | [`design/vision.md`](design/vision.md) | **Start here.** The one-page pitch and the five promises. |
-| [`design/pillars.md`](design/pillars.md) | The decision log — all 39 locks (L1–L39), pillar status, and the next-phase plan. The map to everything else. |
+| [`design/pillars.md`](design/pillars.md) | The decision log — all 50 locks (L1–L50), pillar status, the next-phase plan, and the list of docs that don't exist yet. The map to everything else. |
 | [`design/feasibility-review.md`](design/feasibility-review.md) | Build-and-play sanity check: developer risk register, six player-archetype simulations, systemic stress tests, verdict and staged production path. |
 | [`design/lore.md`](design/lore.md) | Working canon: the Godsgrave cosmology, four faiths, six towns, the Revelation Arc, and the secret canon (§9 — spoilers). |
 | [`design/economy.md`](design/economy.md) | Player-driven economy, shops, local markets, travel, coin sinks, the shadow economy, business model. |
