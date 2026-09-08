@@ -55,6 +55,7 @@ Expected: all tests pass, in well under a second.
 | Durability, wear, repair & breakage | `Items/Durability.cs`, `Items/DurabilityProfile.cs` | L3, L32, L59–L62 |
 | Per-slot armour | `Items/ArmorSet.cs` | L63 |
 | Directional targeting & guards | `Combat/Targeting.cs`, `Combat/AttackDirection.cs` | L64, L65 |
+| Crafting: materials, stages, marks | `Crafting/` | `design/crafting.md`, L4, L38, L66–L68 |
 
 ### Item lifespan
 
