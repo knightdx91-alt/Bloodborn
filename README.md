@@ -10,7 +10,7 @@ score. Buy-to-play. M-rated grounded dark fantasy.
 > and is a blocker on anything public: see
 > [`design/naming.md`](design/naming.md).
 
-**Status:** 76 locked decisions, the original ten structural pillars
+**Status:** 79 locked decisions, the original ten structural pillars
 closed, feasibility reviewed. Two newer pillars are partly locked and
 still open: **P11, living NPCs** (free-form voice dialogue,
 `brainstorm.md` §9) and **P12, the Incarnate marks** (an unexplained
@@ -38,9 +38,10 @@ things stand, what's next, and what can be done without a laptop.
 | Doc | What it is |
 |-----|-----------|
 | [`design/vision.md`](design/vision.md) | **Start here.** The one-page pitch and the five promises. |
-| [`design/pillars.md`](design/pillars.md) | The decision log — all 76 locks (L1–L76), pillar status, the next-phase plan, and the list of docs still to write. The map to everything else. |
+| [`design/pillars.md`](design/pillars.md) | The decision log — all 79 locks (L1–L79), pillar status, the next-phase plan, and the list of docs still to write. The map to everything else. |
 | [`design/feasibility-review.md`](design/feasibility-review.md) | Build-and-play sanity check: developer risk register, six player-archetype simulations, systemic stress tests, verdict and staged production path. |
 | [`sim/`](sim/) | The rules of the game as engine-free C#, with tests. Runs anywhere; the zone servers will run this same code. |
+| [`design/liveops.md`](design/liveops.md) | What a server is after its first year, the four dials an operator turns, what they must never touch, and the telemetry to read them by. |
 | [`design/moderation.md`](design/moderation.md) | Minimal intervention: what the law and the consoles actually require, why the fiction is never policed, and how the world's own consequences do the rest. |
 | [`design/onboarding.md`](design/onboarding.md) | The hardest problem in the design: teaching a game with no markers, no class, and no guard indicator — by making the tutorial a person. |
 | [`design/crafting.md`](design/crafting.md) | The flagship system: material properties as tradeoffs, pipelines as trades, why skill raises the ceiling without gating the floor, and maker's marks. |
