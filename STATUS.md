@@ -59,9 +59,9 @@ Everything below can be done from the Claude Code app with no laptop.
 
 - Raised **P12** (Incarnate marks / the Age of Gods) from an idea to a
   written pillar.
-- Locked **L40–L55**: ascension gate, epoch advancement, P12's rules,
+- Locked **L40–L56**: ascension gate, epoch advancement, P12's rules,
   four of P11's calls, Switch 2 only, the title, PC-first, Unity, and
-  stamina as exertion.
+  stamina as exertion, and combat mobility.
 - Retitled the project **Bloodborn → Marrowmark** (trademark), and the
   in-world term to **the Quickened**.
 - Wrote `combat.md`, `tech.md`, `naming.md` — the three documents that
@@ -85,6 +85,10 @@ All three are pure logic and need no engine.
 
 Roughly 25 remain. The ones that unblock the most:
 
+- **Technique design (L56).** Techniques are now the main expression of
+  progression and the main source of mobility — how many per weapon
+  family, and how they unlock. This is a content-volume question as
+  much as a design one.
 - **Confirm or correct L55's boundaries** — `combat.md` §2 flags that
   the walking/riding/crafting exemptions are an interpretation, and
   that encumbrance currently shrinks the bar rather than raising costs.

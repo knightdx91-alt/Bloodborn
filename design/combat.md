@@ -11,6 +11,29 @@ first thing built and the first thing that can kill the project.
 
 ---
 
+## 0. Reference points — what this is and isn't
+
+A north star to compare a prototype against.
+
+**Closest to:** *Dark Souls* / *Elden Ring* for the stamina economy,
+attack commitment and reading an opponent. *Breath of the Wild* for
+texture — mobility, physicality, freedom of approach (L2 names it, and
+it is accurate for feel, though BotW does not actually spend stamina on
+attacks; Marrowmark does). *Sword Art Online* for **techniques as
+learned, committed motions that carry your body** (§3) — that idea is
+genuinely right for this game and is developed below.
+
+**Deliberately not *Skyrim*.** There, attacks cancel freely, light
+attacks are free, and outcomes are decided by the character sheet —
+perks and enchantments raise your numbers. Marrowmark inverts all
+three: attacks are commitments, everything costs stamina, and **skill
+buys options while gear buys numbers** (§3). A player with good hands
+and a decent sword is dangerous here. That is L19's promise, and it is
+the single most important thing not to lose.
+
+**Deliberately not anime-physical either.** No midair multi-hits, no
+gravity as a suggestion — see the athletic ceiling in §1.
+
 ## 1. The core loop **[core]**
 
 Approach → read the telegraph → commit to an answer → recover → punish.
@@ -34,6 +57,35 @@ Disengage is listed as a first-class answer deliberately. L19 promises
 a skilled newcomer *can always escape*. Escape must therefore never be
 skill-gated, gear-gated, or made worse by losing — a fleeing player
 with stamina gets away, period.
+
+### Movement is part of the loop, not a pause in it **[core — L56]**
+
+Fights should be **kinetic**. You move while you fight; you do not stop
+moving in order to fight. Three rules carry that:
+
+- **A dodge repositions, it does not merely evade.** Dodging *toward*,
+  *around* and *through* are all real options, so exchanges circle
+  rather than shuffling back and forth on a line. This one change does
+  more for the feel of moving-while-fighting than anything else here.
+- **Momentum feeds attacks.** A swing out of a sprint is not the
+  standing swing — different reach, different commitment, different
+  recovery. Without this, fights become run-over-stop-trade.
+- **Terrain is fighting space.** Vault the cart, take the high ground,
+  climb and drop. L55 already puts climbing on the stamina bar, so this
+  needs no new economy — only the freedom to do it mid-fight.
+
+**The ceiling: athletic, not supernatural.** Everything a trained human
+body could plausibly do — leaping, vaulting, lunging, spinning
+step-throughs. Nothing it could not: no double jumps, no air dashes, no
+midair multi-hits, no wall-running. This is what keeps L20 grounded
+while still feeling fast.
+
+**And that ceiling is a deliberate saving.** The mortal world is bound
+by human bodies, so the first time a player sees someone genuinely
+break physics — an Incarnate's true form breaking the one rule its
+spell obeys (L34) — it lands like a thunderclap. A game where everyone
+already defies gravity has nothing left to spend when magic arrives.
+The restraint here is what makes the secret worth keeping.
 
 ## 2. Stamina is the whole economy **[core]**
 
@@ -109,6 +161,17 @@ Skill-by-use raises:
 - **Recovery frames** — veterans return to neutral sooner.
 - **Technique access** — new moves per weapon family, unlocked by use.
   This is where progression is *felt*: a new verb, not a bigger number.
+  **Techniques are primarily how you move** (L56): a dash-thrust that
+  closes distance, a spinning step-through that puts you behind someone,
+  a leaping overhead that crosses a gap, a pivot-cut that carries you
+  laterally out of a heavy. Learning a weapon expands *where your body
+  can go in a fight*, which is the most satisfying shape progression can
+  take and costs nothing structurally — a technique is still a
+  commitment, still stamina-priced, still readable by an opponent, so
+  §6's grammar survives intact.
+  This is Marrowmark's version of a Sword Skill, and it is why a veteran
+  is frightening: not because they hit harder, but because they can be
+  somewhere you did not expect, sooner than you thought possible.
 - **Reliability** — reduced deviation on thrusts, less guard-break
   from awkward angles, steadier aim under stamina pressure.
 - **Durability efficiency** — clean hits wear gear less (feeds L3/L32).
@@ -238,14 +301,17 @@ cheaters.
 The first build. No world, no economy, no NPCs, no magic, no
 persistence, no other players.
 
-**Contents:** one room, one player character, three enemies (one per
-attack shape from §6), all six weapon families, a latency slider
-injecting 0–150ms, and a stamina bar.
+**Contents:** one room **with obstacles worth moving around**, one
+player character, three enemies (one per attack shape from §6), all six
+weapon families, at least two movement techniques (§3), a latency
+slider injecting 0–150ms, and a stamina bar.
 
 **It passes when:** a player who has never seen it can, inside ten
 minutes, reliably parry a heavy, dodge a quick, and disengage from an
 unblockable — and cannot tell from feel whether the slider is at 0ms
-or 100ms.
+or 100ms. **And when they move constantly while doing it** (L56): if
+testers plant their feet and trade, the mobility design has failed even
+if the timing works.
 
 **If it fails, nothing else in this repository matters.** Build it
 first, and be willing to hear the answer.
@@ -257,7 +323,15 @@ first, and be willing to hear the answer.
 - [ ] Exact stamina costs, recovery frames, and parry window widths —
       numbers come from the prototype, not from paper.
 - [ ] How many techniques per weapon family, and their unlock pacing
-      against skill-by-use.
+      against skill-by-use. Now heavier than it looks: L56 makes
+      techniques the main expression of progression, so this is a
+      content-volume question as well as a design one — and animation
+      volume is a real burden solo (`tech.md` §1).
+- [ ] **Mobility versus the latency contract.** Fast positional change
+      is the worst case for §7's reconciliation: a dash-thrust moves
+      the attacker *and* the hit origin during the disagreement window.
+      Must be answered in the Stage 2 prototype (`tech.md` §6), not on
+      paper.
 - [ ] Whether the damage triangle is multiplicative or additive, and
       how sharply — sharp enough to matter, soft enough that the
       wrong weapon is never useless (L38's floor rule).
