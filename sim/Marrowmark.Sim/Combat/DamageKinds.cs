@@ -20,6 +20,13 @@ namespace Marrowmark.Sim.Combat
     /// </summary>
     public enum ArmorClass
     {
+        /// <summary>
+        /// Unarmoured. A real and frequently chosen state, not an edge
+        /// case: L57 makes armour compete with cargo for one budget, so a
+        /// hauler on the road is usually wearing nothing worth the name.
+        /// Everything hurts more here.
+        /// </summary>
+        None,
         Light,
         Mail,
         Plate,

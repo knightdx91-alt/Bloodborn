@@ -51,6 +51,7 @@ Expected: all tests pass, in well under a second.
 | Damage triangle | `Combat/Damage.cs`, `Combat/DamageTable.cs`, `Combat/DamageKinds.cs` | `design/combat.md` §4 |
 | Health | `Combat/Health.cs` | `design/combat.md` §4 |
 | Time-to-kill guard | `Combat/TimeToKill.cs`, `Combat/FighterSpec.cs` | `design/combat.md` §4 |
+| Armour changes on the road | `Combat/ArmorSwap.cs` | L57, L58 |
 
 ### The time-to-kill guard
 
@@ -68,6 +69,11 @@ Cut          5.50    9.70   12.60
 Pierce       7.33    5.50    7.33
 Blunt        7.33    7.33    5.50
 ```
+
+The window covers **armoured** fighters. Unarmoured sits below it on
+purpose and is tested separately: L57 makes armour compete with cargo,
+so a hauler on the road is usually wearing nothing, and that tradeoff
+only bites if being caught bare is genuinely dangerous.
 
 Change weapon damage, health, attack pacing, the damage triangle or the
 stamina economy in a way that pushes any matchup out of that window and

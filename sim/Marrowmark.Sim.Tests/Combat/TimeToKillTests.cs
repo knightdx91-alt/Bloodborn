@@ -38,13 +38,17 @@ namespace Marrowmark.Sim.Tests.Combat
         }
 
         [Fact]
-        public void Every_matchup_lands_in_the_target_window()
+        public void Every_armoured_matchup_lands_in_the_target_window()
         {
+            // The window describes armoured fighters. Unarmoured is
+            // deliberately outside it — see the test below.
             var spec = FighterSpec.Default;
 
             foreach (DamageType type in Enum.GetValues(typeof(DamageType)))
             foreach (ArmorClass armor in Enum.GetValues(typeof(ArmorClass)))
             {
+                if (armor == ArmorClass.None) continue;
+
                 var attacker = spec; attacker.WeaponType = type;
                 var defender = spec; defender.Armor = armor;
 
@@ -53,6 +57,51 @@ namespace Marrowmark.Sim.Tests.Combat
                 Assert.True(ttk >= MinSeconds && ttk <= MaxSeconds,
                     $"{type} vs {armor} kills in {ttk:F2}s, outside combat.md §4's " +
                     $"{MinSeconds}–{MaxSeconds}s window");
+            }
+        }
+
+        [Fact]
+        public void Unarmoured_dies_faster_than_any_armoured_fighter()
+        {
+            // L57 makes armour compete with cargo, so a hauler on the road
+            // is usually unarmoured. That tradeoff only means something if
+            // being caught without armour is genuinely dangerous — this is
+            // the test that keeps it dangerous.
+            var spec = FighterSpec.Default;
+
+            foreach (DamageType type in Enum.GetValues(typeof(DamageType)))
+            {
+                var attacker = spec; attacker.WeaponType = type;
+
+                var bare = spec; bare.Armor = ArmorClass.None;
+                var bareTtk = TimeToKill.Estimate(attacker, bare);
+
+                foreach (ArmorClass armor in Enum.GetValues(typeof(ArmorClass)))
+                {
+                    if (armor == ArmorClass.None) continue;
+
+                    var armoured = spec; armoured.Armor = armor;
+                    Assert.True(bareTtk < TimeToKill.Estimate(attacker, armoured),
+                        $"{type} should kill an unarmoured fighter faster than one in {armor}");
+                }
+            }
+        }
+
+        [Fact]
+        public void Wearing_anything_is_better_than_wearing_nothing()
+        {
+            // No damage type should ever prefer a target in armour over a
+            // bare one. If it did, some armour would be worse than none,
+            // and no player would ever pick it.
+            foreach (DamageType type in Enum.GetValues(typeof(DamageType)))
+            foreach (ArmorClass armor in Enum.GetValues(typeof(ArmorClass)))
+            {
+                if (armor == ArmorClass.None) continue;
+
+                Assert.True(
+                    DamageTable.Default.Against(type, armor) <
+                    DamageTable.Default.Against(type, ArmorClass.None),
+                    $"{armor} should reduce {type} damage relative to being unarmoured");
             }
         }
 

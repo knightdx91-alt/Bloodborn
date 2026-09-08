@@ -48,6 +48,9 @@ namespace Marrowmark.Sim.Tests.Combat
         {
             foreach (ArmorClass armor in Enum.GetValues(typeof(ArmorClass)))
             {
+                // Unarmoured is not a rock-paper-scissors position; it is
+                // simply bad. Everything hurts, cutting worst.
+                if (armor == ArmorClass.None) continue;
                 var best = -1f;
                 var winners = 0;
 
@@ -74,6 +77,7 @@ namespace Marrowmark.Sim.Tests.Combat
             foreach (ArmorClass armor in Enum.GetValues(typeof(ArmorClass)))
                 worst = Math.Min(worst, Multiplier(type, armor));
 
+
             Assert.True(worst >= 0.5f,
                 $"worst matchup at {worst:P0} makes the wrong weapon useless; " +
                 "L38's floor rule says a beginner with the wrong tool must still be able to fight");
@@ -85,9 +89,12 @@ namespace Marrowmark.Sim.Tests.Combat
             var best = 0f;
             var worst = float.MaxValue;
 
+            // Armoured classes only — unarmoured sits outside the band by
+            // design and would flatter the spread.
             foreach (DamageType type in Enum.GetValues(typeof(DamageType)))
             foreach (ArmorClass armor in Enum.GetValues(typeof(ArmorClass)))
             {
+                if (armor == ArmorClass.None) continue;
                 var m = Multiplier(type, armor);
                 best = Math.Max(best, m);
                 worst = Math.Min(worst, m);
@@ -208,9 +215,11 @@ namespace Marrowmark.Sim.Tests.Combat
         public void Malformed_tables_are_rejected()
         {
             Assert.Throws<ArgumentException>(() =>
-                new DamageTable(new float[2, 3], new float[3]));
+                new DamageTable(new float[2, 4], new float[3]));
             Assert.Throws<ArgumentException>(() =>
-                new DamageTable(new float[3, 3], new float[2]));
+                new DamageTable(new float[3, 3], new float[3]));
+            Assert.Throws<ArgumentException>(() =>
+                new DamageTable(new float[3, 4], new float[2]));
         }
     }
 }

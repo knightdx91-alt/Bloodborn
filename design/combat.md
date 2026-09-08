@@ -106,6 +106,15 @@ plate means a smaller bar to spend. That is the cost that keeps heavy
 builds honest, and blocking is the payoff that makes the smaller bar
 worth carrying.
 
+**Armour can be changed on the road, and the armour decides how long
+that takes (L58).** Stripping down is quick; getting into plate is a
+minute and change, and faster with a second pair of hands. Mid-change
+you are wearing what you started in, and an interruption loses the
+progress — so armouring up is a gamble on having enough time, not a
+free action. An ambusher can read a traveller's readiness at a
+distance and pick their moment, which is the most grounded kind of
+tension this design can produce.
+
 **One budget, and armour and cargo compete for it (L57).** A fighter in
 plate hauls almost nothing; a loaded hauler fights badly. That is not a
 combat constraint that leaked into the economy — it is the point. It
@@ -378,11 +387,12 @@ first, and be willing to hear the answer.
 - [x] **Armour weight versus cargo on the encumbrance channel** →
       **L57**: they share one budget, deliberately. You cannot be a
       mule in plate.
-- [ ] **Can armour be changed in the field, and how long does it
-      take?** L57 makes this a real decision rather than a menu: if
-      donning plate is slow, being caught unarmoured on the road is an
-      event, and a guard's readiness becomes something an ambusher can
-      read. Grounded and cheap; needs a number.
+- [x] **Can armour be changed in the field?** → **L58**: yes,
+      anywhere, and the armour class decides how long you are helpless
+      doing it. Remaining: the actual durations, whether donning should
+      also cost stamina (currently time-only, so heavy builds are not
+      punished twice), and whether partial progress should survive an
+      interruption (currently it does not).
 - [ ] **Mobility versus the latency contract.** Fast positional change
       is the worst case for §7's reconciliation: a dash-thrust moves
       the attacker *and* the hit origin during the disagreement window.
