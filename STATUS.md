@@ -9,11 +9,11 @@ of each working session.
 
 ## The one-line version
 
-Design is 55 locked decisions and essentially complete. The engine is
-chosen (Unity). Two combat systems are **written, tested, and running**
-as plain C# — the combat loop now closes: stamina, damage, health and a
-clock. The development Mac cannot run Unity, so work continues in pure
-C# until there is better hardware.
+Design is **79 locked decisions** and, apart from two documents, done.
+The engine is chosen (Unity). Every system a player touches in their
+first hundred hours is specified, and most of it is **written, tested
+and running** as engine-free C# — 185 tests. The development Mac cannot
+run Unity, so work continues in pure C# until there is better hardware.
 
 ## Device check
 
@@ -57,29 +57,78 @@ Everything below can be done from the Claude Code app with no laptop.
 
 ## Done this session
 
-- Raised **P12** (Incarnate marks / the Age of Gods) from an idea to a
-  written pillar.
-- Locked **L40–L76**: ascension gate, epoch advancement, P12's rules,
-  four of P11's calls, Switch 2 only, the title, PC-first, Unity, and
-  stamina as exertion, combat mobility, the encumbrance budget, armour on the road, durability, breakage, directional combat, the crafting model, onboarding, skill-by-use, recipe discovery, and moderation.
-- Retitled the project **Bloodborn → Marrowmark** (trademark), and the
-  in-world term to **the Quickened**.
-- Wrote `combat.md`, `tech.md`, `naming.md` — the three documents that
-  stood between the design and building anything.
-- Built the simulation library: **stamina economy**, the **damage
-  triangle**, **health**, a **time-to-kill guard**, **armour changes on the road**, **durability with permanent wear**, **per-slot armour that breaks off**, **directional targeting**, the **crafting system**, **skill-by-use with the ascension gate**, and **recipe discovery** that simulates
-  real fights and fails when tuning drifts outside `combat.md` §4's
-  5–15 second window. 64 tests passing.
+**Design.** Raised **P12** (the Incarnate marks and the Age of Gods)
+from an idea to a written pillar. Locked **L40–L79** — the ascension
+gate, epoch advancement, P12's rules, five of P11's calls, Switch 2
+only, the title, PC-first, Unity, stamina as exertion, combat mobility
+and archetypes, the encumbrance budget, armour on the road, durability
+and breakage, directional combat, the crafting model, recipe discovery,
+onboarding, skill-by-use, moderation, and live-ops.
+
+**Renamed the project.** Bloodborn → **Marrowmark** (trademark
+conflict), and the in-world term for the awakened to **the Quickened**.
+
+**Seven documents written**, all of which did not exist: `combat.md`,
+`tech.md`, `naming.md`, `crafting.md`, `onboarding.md`,
+`moderation.md`, `liveops.md`.
+
+**Built the simulation library** — the rules of the game as engine-free
+C#, **185 tests**: the stamina economy with movement and encumbrance,
+the damage triangle, health, a time-to-kill guard that simulates real
+fights against the actual systems, armour changes on the road, per-slot
+armour that breaks off piece by piece, directional targeting and guard
+resolution, durability with permanent wear and earned breakage, the
+crafting system with material properties and pipelines, recipe
+discovery and schematics, and skill-by-use with the L40 ascension gate.
+
+### Three design bugs the tests caught
+
+Worth recording, because none of them would have surfaced until much
+later:
+
+- **Plate was nearly pointless against maces.** Blunt did 1.30 against
+  bare flesh and 1.25 against plate — nobody would have worn it.
+- **Crafting pipeline order didn't matter.** The first stage model was
+  additive, so quench-then-temper equalled temper-then-quench.
+- **Bought billets lost to raw ore** on the measure being tested —
+  which turned out to be the test asserting the wrong thing, not the
+  code.
+
+## The second-year answer
+
+`liveops.md` (L77–L79) resolved the gap P12 left open. Two things
+closed it, and both were already in the design:
+
+- **The Arc is an overture.** War, the economy, Incarnate seats and the
+  Interior are all cyclical by construction, so a finished Arc leaves
+  the game running rather than an empty world.
+- **Rebirth carries your marks.** Starting again on a young world is a
+  step toward P12's six, not a loss — so the second-year problem and
+  the Age of Gods are the same mechanism seen from two ends.
+
+## Two risks the combat locks created
+
+- **Animation volume** is the largest content risk in the project
+  (~300–400 clips for combat alone, from L64's five arcs across six
+  weapon families). `tech.md` §1's buy-don't-make strategy is no longer
+  optional. Mitigation on file: per-weapon-family direction sets.
+- **P11's per-turn cost** remains an open collision with L27's
+  buy-to-play lock. Subscription is on the table. Deferred until the
+  slice measures real numbers.
 
 ## Next, in order
 
-1. **Live-ops and the server's second year** — still uncovered, and
-   still the question P12 only half answers. Now the biggest gap.
-2. **UI and information design** — with no markers, no global auction
+1. **UI and information design** — with no markers, no global auction
    house and rumour as discovery, the interface *is* the usability.
-3. **Art and audio direction** — `combat.md` §6 and L65 make animation
-   and sound readability a hard requirement, not polish, and nothing
-   describes the target.
+   Also covers the companion app (L31), which has a feature list and no
+   design.
+2. **Art and audio direction** — `combat.md` §6 and L65 make animation
+   and sound readability a **hard requirement**, not polish, and
+   nothing describes the target.
+
+Those are the last two uncovered documents. After them the design side
+is complete, and everything remaining is tuning, content, or the
+prototype.
 
 ## Open questions worth a phone session
 
