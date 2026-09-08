@@ -56,17 +56,89 @@ namespace Marrowmark.Sim.Tests.Items
         }
 
         [Fact]
-        public void Nothing_ever_breaks_in_your_hands()
+        public void A_spent_item_still_works_until_you_use_it_again()
         {
-            // L3 forbids mid-fight breakage. A fully spent item is bad, not
-            // useless — there is no state in which a player's weapon stops
-            // working.
+            // L62 amends L3: things do break, but only at zero condition
+            // and only on the next use. Reaching zero is not itself
+            // failure — it is the last warning.
             var d = New();
             d.WearFraction(1f);
 
             Assert.Equal(0f, d.Condition, 3);
-            Assert.True(d.Performance > 0f,
-                "a spent item must still function — L3 forbids breakage");
+            Assert.False(d.IsBroken);
+            Assert.True(d.Performance > 0f, "a spent but unbroken item must still function");
+        }
+
+        // ── L62: breakage, earned and never random ───────────────────────
+
+        [Fact]
+        public void Using_a_spent_item_breaks_it()
+        {
+            var d = New();
+            d.WearFraction(1f);
+
+            Assert.True(d.Use(1f), "using an item at zero condition should break it");
+            Assert.True(d.IsBroken);
+            Assert.Equal(0f, d.Performance, 3);
+        }
+
+        [Fact]
+        public void A_maintained_item_never_breaks_however_long_it_is_used()
+        {
+            // The fairness guarantee. There is no randomness in breakage:
+            // a player who repairs before the danger zone will never once
+            // see an item fail, however many fights they take it into.
+            var d = New();
+
+            for (var i = 0; i < 2000; i++)
+            {
+                if (d.Fraction < 0.4f && !d.IsScrap) d.Repair(0.9f);
+                if (d.IsScrap) break;
+                Assert.False(d.Use(0.5f), $"a maintained item broke on use {i}");
+            }
+
+            Assert.False(d.IsBroken);
+        }
+
+        [Fact]
+        public void Breaking_is_always_preceded_by_a_long_visible_decline()
+        {
+            // You cannot go from healthy to broken. Performance must have
+            // fallen away first, which is the warning the player gets.
+            var d = New();
+            var sawDecline = false;
+
+            while (!d.IsBroken)
+            {
+                if (d.Performance < 1f) sawDecline = true;
+                d.Use(1f);
+            }
+
+            Assert.True(sawDecline, "an item must visibly decline before it breaks");
+        }
+
+        [Fact]
+        public void A_broken_item_cannot_be_repaired()
+        {
+            var d = New();
+            d.WearFraction(1f);
+            d.Use(1f);
+
+            var result = d.Repair(1f);
+
+            Assert.Equal(0f, result.Restored, 3);
+            Assert.True(d.IsBroken);
+            Assert.True(d.IsScrap, "a snapped blade is materials, not equipment");
+        }
+
+        [Fact]
+        public void Using_an_already_broken_item_changes_nothing()
+        {
+            var d = New();
+            d.WearFraction(1f);
+            d.Use(1f);
+
+            Assert.False(d.Use(1f));
         }
 
         // ── L59: repairs cost the item its life ──────────────────────────

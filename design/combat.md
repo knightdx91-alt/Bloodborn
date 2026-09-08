@@ -328,13 +328,22 @@ cheaters.
 
 ## 8. Hooks into locked systems
 
-- **Durability (L3, L32, L59–L61):** wear on hit dealt and hit blocked;
-  never mid-fight breakage, and a spent item is bad rather than useless.
+- **Durability (L3, L32, L59–L63):** wear on hit dealt and hit blocked.
   Clean technique wears less (§3). Performance holds until roughly half
   condition, then declines (L60). Every repair costs the item some of
   its ceiling, so gear eventually dies and crafters always have work
   (L59); anyone can repair, and the smith's skill decides what it costs
   the item (L61).
+- **Breakage (L62, L63) — amends L3's original "no mid-fight
+  breakage".** Weapons *do* break, but only at zero condition and only
+  on the next use, after the whole decline above. **Never random.** A
+  maintained weapon never fails, however long it is carried; a ruined
+  one fails because its owner chose to keep swinging it. Armour is
+  tracked per slot and pieces come off individually, so a harness
+  degrades in visible steps. Two things this buys: backup weapons
+  matter (and compete with cargo under L57), and visible damage lets a
+  fighter **read that an opponent is one parry from disaster** without
+  any UI at all.
 - **Ordinary death (L17, L32):** combat produces the ~10% durability
   hit and, in wedges, the cargo drop.
 - **War (L11, L25):** identical combat, enrollment-gated, with the

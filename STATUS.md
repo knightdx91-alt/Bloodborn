@@ -51,7 +51,7 @@ Everything below can be done from the Claude Code app with no laptop.
 | | |
 |---|---|
 | **Design** | `design/` — 55 locks in `pillars.md`, which is the map to everything |
-| **Code** | `sim/` — the rules of the game as engine-free C#, 95 tests |
+| **Code** | `sim/` — the rules of the game as engine-free C#, 113 tests |
 | **The plan** | `design/tech.md` §6 (build order), §8 (how the work divides) |
 | **Blocking** | `design/naming.md` §5 — trademark clearance, before anything public |
 
@@ -59,15 +59,15 @@ Everything below can be done from the Claude Code app with no laptop.
 
 - Raised **P12** (Incarnate marks / the Age of Gods) from an idea to a
   written pillar.
-- Locked **L40–L61**: ascension gate, epoch advancement, P12's rules,
+- Locked **L40–L63**: ascension gate, epoch advancement, P12's rules,
   four of P11's calls, Switch 2 only, the title, PC-first, Unity, and
-  stamina as exertion, combat mobility, the encumbrance budget, armour on the road, and durability.
+  stamina as exertion, combat mobility, the encumbrance budget, armour on the road, durability, and breakage.
 - Retitled the project **Bloodborn → Marrowmark** (trademark), and the
   in-world term to **the Quickened**.
 - Wrote `combat.md`, `tech.md`, `naming.md` — the three documents that
   stood between the design and building anything.
 - Built the simulation library: **stamina economy**, the **damage
-  triangle**, **health**, a **time-to-kill guard**, **armour changes on the road**, and **durability with permanent wear** that simulates
+  triangle**, **health**, a **time-to-kill guard**, **armour changes on the road**, **durability with permanent wear**, and **per-slot armour that breaks off** that simulates
   real fights and fails when tuning drifts outside `combat.md` §4's
   5–15 second window. 64 tests passing.
 

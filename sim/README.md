@@ -52,7 +52,8 @@ Expected: all tests pass, in well under a second.
 | Health | `Combat/Health.cs` | `design/combat.md` §4 |
 | Time-to-kill guard | `Combat/TimeToKill.cs`, `Combat/FighterSpec.cs` | `design/combat.md` §4 |
 | Armour changes on the road | `Combat/ArmorSwap.cs` | L57, L58 |
-| Durability, wear & repair | `Items/Durability.cs`, `Items/DurabilityProfile.cs` | L3, L32, L59–L61 |
+| Durability, wear, repair & breakage | `Items/Durability.cs`, `Items/DurabilityProfile.cs` | L3, L32, L59–L62 |
+| Per-slot armour | `Items/ArmorSet.cs` | L63 |
 
 ### Item lifespan
 

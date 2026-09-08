@@ -69,23 +69,40 @@ namespace Marrowmark.Sim.Items
         public float RemainingLife => Ceiling / _originalMax;
 
         /// <summary>
-        /// True once the ceiling has fallen too far to be worth repairing.
-        /// The item is materials now, not equipment.
+        /// True once the ceiling has fallen too far to be worth repairing,
+        /// or the item has broken outright. Materials now, not equipment.
         /// </summary>
-        public bool IsScrap => Ceiling < _originalMax * _profile.ScrapCeilingFraction;
+        public bool IsScrap =>
+            IsBroken || Ceiling < _originalMax * _profile.ScrapCeilingFraction;
+
+        /// <summary>
+        /// The item has failed outright — a snapped blade, a strap gone
+        /// (L62/L63).
+        ///
+        /// **This never happens without warning.** It requires reaching
+        /// zero condition and then being used again, after a long visible
+        /// decline (L60). There is no randomness anywhere in it: a player
+        /// who repairs before the danger zone will never see an item break,
+        /// and one who fights on with a ruined blade chose to. That
+        /// distinction is the whole difference between grounded consequence
+        /// and the arbitrariness players resent.
+        /// </summary>
+        public bool IsBroken { get; private set; }
 
         /// <summary>
         /// How well the item currently performs, 0..1, applied to whatever
         /// the item does — weapon damage, armour protection.
         ///
         /// L60: full performance down to the threshold, then a decline to
-        /// <see cref="DurabilityProfile.MinPerformance"/>. Never reaches
-        /// zero, because L3 forbids anything breaking in your hands.
+        /// <see cref="DurabilityProfile.MinPerformance"/> — which is the
+        /// state an item sits in while ruined but not yet broken. Only
+        /// actual breakage (L62) takes it to zero.
         /// </summary>
         public float Performance
         {
             get
             {
+                if (IsBroken) return 0f;
                 var f = Fraction;
                 if (f >= _profile.PerformanceThreshold) return 1f;
                 if (_profile.PerformanceThreshold <= 0f) return 1f;
@@ -102,6 +119,29 @@ namespace Marrowmark.Sim.Items
                 throw new ArgumentOutOfRangeException(nameof(amount), "Wear cannot be negative.");
 
             Condition = Math.Max(0f, Condition - amount);
+        }
+
+        /// <summary>
+        /// Use the item once — a swing, a parry, a blow absorbed — wearing
+        /// it and possibly breaking it. Returns true on the use that breaks
+        /// it (L62).
+        ///
+        /// Breakage requires the item to already be at zero condition and
+        /// be used anyway. The decline to that point is long, visible, and
+        /// entirely the player's choice to ignore.
+        /// </summary>
+        public bool Use(float wear)
+        {
+            if (IsBroken) return false;
+
+            if (Condition <= 0f)
+            {
+                IsBroken = true;
+                return true;
+            }
+
+            Wear(wear);
+            return false;
         }
 
         /// <summary>Wear by a fraction of the current ceiling.</summary>
@@ -138,6 +178,11 @@ namespace Marrowmark.Sim.Items
         /// A field patch by an amateur gets you home and shortens the
         /// blade's life; a master's bench repair costs it almost nothing.
         /// </summary>
+        /// <remarks>
+        /// A broken item cannot be repaired. A snapped blade is materials,
+        /// not equipment — which is what gives L62 its weight and keeps the
+        /// item sink (L59) honest.
+        /// </remarks>
         public RepairResult Repair(float smithSkill)
         {
             if (IsScrap)
