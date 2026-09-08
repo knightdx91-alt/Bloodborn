@@ -1,0 +1,66 @@
+# ── Defaults ─────────────────────────────────────────────────────────
+* text=auto
+
+# C# source. Kept as text so it diffs and merges normally.
+*.cs diff=csharp text
+
+# ── Unity scene and asset files ──────────────────────────────────────
+# These are YAML. Keep them TEXT (readable and diffable) but never let
+# git try an ordinary merge on them — use Unity's own merge tool.
+# Configure it once with:
+#   git config merge.unityyamlmerge.driver \
+#     '"/Applications/Unity/Hub/Editor/<VERSION>/Unity.app/Contents/Tools/UnityYAMLMerge" merge -p %O %B %A %A'
+*.unity      merge=unityyamlmerge eol=lf
+*.prefab     merge=unityyamlmerge eol=lf
+*.asset      merge=unityyamlmerge eol=lf
+*.mat        merge=unityyamlmerge eol=lf
+*.anim       merge=unityyamlmerge eol=lf
+*.controller merge=unityyamlmerge eol=lf
+*.physicMaterial merge=unityyamlmerge eol=lf
+
+# .meta files MUST be committed and MUST NOT go to LFS. Unity uses them
+# to track every asset; losing one detaches the asset from its settings.
+*.meta text eol=lf
+
+# ── Git LFS: binary assets ───────────────────────────────────────────
+# Run `git lfs install` once on your machine before the first commit
+# that contains any of these.
+
+# Images
+*.png  filter=lfs diff=lfs merge=lfs -text
+*.jpg  filter=lfs diff=lfs merge=lfs -text
+*.jpeg filter=lfs diff=lfs merge=lfs -text
+*.tga  filter=lfs diff=lfs merge=lfs -text
+*.tif  filter=lfs diff=lfs merge=lfs -text
+*.tiff filter=lfs diff=lfs merge=lfs -text
+*.psd  filter=lfs diff=lfs merge=lfs -text
+*.exr  filter=lfs diff=lfs merge=lfs -text
+*.hdr  filter=lfs diff=lfs merge=lfs -text
+
+# Models
+*.fbx   filter=lfs diff=lfs merge=lfs -text
+*.obj   filter=lfs diff=lfs merge=lfs -text
+*.blend filter=lfs diff=lfs merge=lfs -text
+*.dae   filter=lfs diff=lfs merge=lfs -text
+*.gltf  filter=lfs diff=lfs merge=lfs -text
+*.glb   filter=lfs diff=lfs merge=lfs -text
+
+# Audio
+*.wav  filter=lfs diff=lfs merge=lfs -text
+*.mp3  filter=lfs diff=lfs merge=lfs -text
+*.ogg  filter=lfs diff=lfs merge=lfs -text
+*.aif  filter=lfs diff=lfs merge=lfs -text
+
+# Video
+*.mp4 filter=lfs diff=lfs merge=lfs -text
+*.mov filter=lfs diff=lfs merge=lfs -text
+
+# Fonts
+*.ttf filter=lfs diff=lfs merge=lfs -text
+*.otf filter=lfs diff=lfs merge=lfs -text
+
+# Native libraries
+*.dll    filter=lfs diff=lfs merge=lfs -text
+*.so     filter=lfs diff=lfs merge=lfs -text
+*.dylib  filter=lfs diff=lfs merge=lfs -text
+*.bundle filter=lfs diff=lfs merge=lfs -text
