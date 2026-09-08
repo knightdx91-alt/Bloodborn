@@ -56,6 +56,30 @@ Expected: all tests pass, in well under a second.
 | Per-slot armour | `Items/ArmorSet.cs` | L63 |
 | Directional targeting & guards | `Combat/Targeting.cs`, `Combat/AttackDirection.cs` | L64, L65 |
 | Crafting: materials, stages, marks | `Crafting/` | `design/crafting.md`, L4, L38, L66–L68 |
+| Skill-by-use & the ascension gate | `Progression/` | L18, L40, L71 |
+
+### Progression pacing
+
+L71 makes learning come from difficulty rather than repetition, with a
+daily soft cap behind it. Measured on current tuning, days to reach a
+skill level by how much someone plays:
+
+```
+            casual(20)  regular(60)  heavy(200)   uses/day
+  skill 0.25         5            4           2
+  skill 0.50        12            8           5
+  skill 0.75        26           14           8
+  skill 0.90        55           23          12
+  skill 0.95        88           34          15
+```
+
+A tenfold difference in playtime buys a sixfold difference in days —
+the soft cap compressing that gap is what stops a marathon replacing
+months. And L40's gate needs **eight** skills, so the endgame is
+months of play on any schedule.
+
+The anti-grind guarantee has its own test: ten thousand trivial
+repetitions move a skill by exactly nothing.
 
 ### Item lifespan
 

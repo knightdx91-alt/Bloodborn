@@ -51,7 +51,7 @@ Everything below can be done from the Claude Code app with no laptop.
 | | |
 |---|---|
 | **Design** | `design/` — 55 locks in `pillars.md`, which is the map to everything |
-| **Code** | `sim/` — the rules of the game as engine-free C#, 148 tests |
+| **Code** | `sim/` — the rules of the game as engine-free C#, 168 tests |
 | **The plan** | `design/tech.md` §6 (build order), §8 (how the work divides) |
 | **Blocking** | `design/naming.md` §5 — trademark clearance, before anything public |
 
@@ -59,26 +59,26 @@ Everything below can be done from the Claude Code app with no laptop.
 
 - Raised **P12** (Incarnate marks / the Age of Gods) from an idea to a
   written pillar.
-- Locked **L40–L70**: ascension gate, epoch advancement, P12's rules,
+- Locked **L40–L71**: ascension gate, epoch advancement, P12's rules,
   four of P11's calls, Switch 2 only, the title, PC-first, Unity, and
-  stamina as exertion, combat mobility, the encumbrance budget, armour on the road, durability, breakage, directional combat, the crafting model, and onboarding.
+  stamina as exertion, combat mobility, the encumbrance budget, armour on the road, durability, breakage, directional combat, the crafting model, onboarding, and skill-by-use.
 - Retitled the project **Bloodborn → Marrowmark** (trademark), and the
   in-world term to **the Quickened**.
 - Wrote `combat.md`, `tech.md`, `naming.md` — the three documents that
   stood between the design and building anything.
 - Built the simulation library: **stamina economy**, the **damage
-  triangle**, **health**, a **time-to-kill guard**, **armour changes on the road**, **durability with permanent wear**, **per-slot armour that breaks off**, **directional targeting**, and the **crafting system** that simulates
+  triangle**, **health**, a **time-to-kill guard**, **armour changes on the road**, **durability with permanent wear**, **per-slot armour that breaks off**, **directional targeting**, the **crafting system**, and **skill-by-use with the ascension gate** that simulates
   real fights and fails when tuning drifts outside `combat.md` §4's
   5–15 second window. 64 tests passing.
 
 ## Next, in order
 
-1. **Skill-by-use curve** (L18/L40) — pure logic, no engine needed, and
-   the last major combat-adjacent system unbuilt.
-2. **Recipe discovery** (L4) — the crafting system is built, but how a
+1. **Recipe discovery** (L4) — the crafting system is built, but how a
    player learns a stage exists is untouched (`crafting.md`).
-3. **Live-ops and the server's second year** — still uncovered, and
+2. **Live-ops and the server's second year** — still uncovered, and
    still the question P12 only half answers.
+3. **Moderation and trust & safety** — L46 put a live microphone in an
+   always-audible world and nothing covers the consequences.
 
 ## Open questions worth a phone session
 

@@ -79,6 +79,7 @@ Status tracker for the big structural decisions. Detail lives in
 | L68 | Everything is signed | Extends L4. **Every finished item carries its maker's name, good work and bad.** No anonymous path exists — the code has no overload permitting one. Reputation becomes earned and losable, so flooding a board with rubbish costs a smith their name; second-hand gear becomes legible, which matters in an economy where goods physically travel and wear out; and marks are permanent, outliving their makers (`tech.md` §4), so a blade signed by someone long dead is a real object with a history |
 | L69 | Onboarding is an apprenticeship, not a tutorial | `onboarding.md`. **No tutorial zone, no tooltips, no training room** — all three break L20 before the player has seen anything. You begin as somebody's **hired hand**: a smith, a carter, a drover with a trade, work that needs doing, and opinions about how it is done. They teach you because that is what employers do. This is already paid for — P11's conversational NPCs exist to be the display layer for world state, and teaching is the same job. The master replaces the quest marker (spoken directions in landmarks), the tutorial popup (someone watching you work), the class choice (a trade you can leave), and the recipe list ("watch; now you do it") |
 | L70 | Directional combat is taught by a person who stops talking | Extends L65/L69. L65 forbids a guard indicator, so it is replaced by a **sparring partner who calls the arc aloud and then gradually stops** — announced and slow, announced at speed, unannounced with one arc, then two, then everything. This is the fading-indicator idea made **diegetic**, so L65 survives intact: the information comes from a person's voice rather than an interface, and it stops because *they* stop. A player who wants it back asks for it back, out loud. The drill yard is never exited — veterans learning a new weapon family return to it, and so do Companies drilling before a declared war (L25) |
+| L71 | You learn from difficulty, not repetition | Closes P3's long-open anti-grind question. **A task well below your skill teaches nothing** — past a window beneath your current level, gain is zero. This is the whole anti-macro design, and it is a rule about *learning* rather than a rule about *players*: a bot hammering an easy action is not cheating, it is wasting its own time, and nobody genuinely playing is ever punished by it. Two supports: a **daily soft cap** (L33's precedent — past it learning slows sharply but never stops, per L38's spirit), so no marathon replaces months; and **no decay ever**, because a trade you learned is a trade you know. Measured on current tuning: casual play (~20 uses/day) masters one skill in ~88 days, heavy play (~200/day) in ~15 — a tenfold playtime difference buying a sixfold time difference, and L40's gate needs eight of them |
 
 ---
 
@@ -98,10 +99,11 @@ bind-and-die slow-teleport edge case, `feasibility-review.md` §4.1).
 
 ### ~~P3. Progression model~~ ✅ LOCKED → L18, L19
 Classless skill-by-use, moderate vertical power curve. The ascension
-gate is now **L40** (top 8 skills against a threshold; magic eligible,
-never required). Remaining: the threshold number and per-skill caps
-(tuning), plus anti-AFK-grind design (meaningful-use XP rules, as with
-spell trickle) — the one remaining *structural* piece here.
+gate is **L40** (top 8 skills against a threshold; magic eligible,
+never required), and anti-grind is **L71** (you learn from difficulty,
+not repetition) — which closes the last structural piece here. Both are
+built and tested in `sim/Marrowmark.Sim/Progression/`. Remaining: the
+threshold number and per-skill caps, which are tuning.
 
 ### ~~P4. Setting, tone & lore~~ ✅ LOCKED → L20, L21
 Working canon in `lore.md`. Epoch advancement is now **L41**
@@ -236,7 +238,7 @@ Full list at the bottom of `brainstorm.md`.
     model, the casual awakening chain), then economy and war numbers,
     then the naming pass.
 
-**The original ten structural pillars are locked (70 decisions).** P11
+**The original ten structural pillars are locked (71 decisions).** P11
 (living NPCs) and P12 (the Incarnate marks) are new and open — both
 added since the sweep. The one-page
 distillation is `vision.md`; the build-and-play sanity check is
