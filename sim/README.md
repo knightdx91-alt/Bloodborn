@@ -49,8 +49,32 @@ Expected: all tests pass, in well under a second.
 |------|-------|---------------|
 | Stamina economy, movement & encumbrance | `Combat/Stamina.cs`, `Combat/StaminaProfile.cs`, `Combat/SpendResult.cs` | `design/combat.md` §2, §3; L55 |
 | Damage triangle | `Combat/Damage.cs`, `Combat/DamageTable.cs`, `Combat/DamageKinds.cs` | `design/combat.md` §4 |
+| Health | `Combat/Health.cs` | `design/combat.md` §4 |
+| Time-to-kill guard | `Combat/TimeToKill.cs`, `Combat/FighterSpec.cs` | `design/combat.md` §4 |
+
+### The time-to-kill guard
+
+`combat.md` §4 asks for fights of 5–15 seconds between comparable
+players. `TimeToKill` enforces that by **simulating a fight against the
+real stamina, damage and health systems** rather than dividing health
+by damage — sustained damage is capped by the stamina economy, so a
+formula would give an answer the game never produces.
+
+Current tuning, torso hits, no misses:
+
+```
+           Light   Mail    Plate
+Cut          5.50    9.70   12.60
+Pierce       7.33    5.50    7.33
+Blunt        7.33    7.33    5.50
+```
+
+Change weapon damage, health, attack pacing, the damage triangle or the
+stamina economy in a way that pushes any matchup out of that window and
+the tests fail, naming the matchup and the number. The drift usually
+happens somewhere other than where it shows, which is the reason this
+exists.
 
 Next candidates, all pure logic and all buildable before Unity exists:
 durability and repair (L3/L32), crafting material properties and rolled
-stats (L4), the skill-by-use curve (L18/L40), and health with a
-time-to-kill guard against `combat.md` §4's 5–15 second target.
+stats (L4), and the skill-by-use curve (L18/L40).

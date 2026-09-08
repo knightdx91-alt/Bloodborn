@@ -11,8 +11,9 @@ of each working session.
 
 Design is 55 locked decisions and essentially complete. The engine is
 chosen (Unity). Two combat systems are **written, tested, and running**
-as plain C#. The development Mac cannot run Unity, so work continues in
-pure C# until there is better hardware.
+as plain C# — the combat loop now closes: stamina, damage, health and a
+clock. The development Mac cannot run Unity, so work continues in pure
+C# until there is better hardware.
 
 ## Device check
 
@@ -50,7 +51,7 @@ Everything below can be done from the Claude Code app with no laptop.
 | | |
 |---|---|
 | **Design** | `design/` — 55 locks in `pillars.md`, which is the map to everything |
-| **Code** | `sim/` — the rules of the game as engine-free C#, 48 tests |
+| **Code** | `sim/` — the rules of the game as engine-free C#, 64 tests |
 | **The plan** | `design/tech.md` §6 (build order), §8 (how the work divides) |
 | **Blocking** | `design/naming.md` §5 — trademark clearance, before anything public |
 
@@ -65,21 +66,20 @@ Everything below can be done from the Claude Code app with no laptop.
   in-world term to **the Quickened**.
 - Wrote `combat.md`, `tech.md`, `naming.md` — the three documents that
   stood between the design and building anything.
-- Built the simulation library: **stamina economy** and the **damage
-  triangle**, 48 tests passing.
+- Built the simulation library: **stamina economy**, the **damage
+  triangle**, **health**, and a **time-to-kill guard** that simulates
+  real fights and fails when tuning drifts outside `combat.md` §4's
+  5–15 second window. 64 tests passing.
 
 ## Next, in order
 
-1. **Health and time-to-kill.** `combat.md` §4 targets 5–15 seconds
-   between comparable players and nothing currently enforces it. This
-   closes the combat loop: stamina, damage, and a clock.
-2. **Durability and repair** (L3/L32) — the ~10% hit per death that
+1. **Durability and repair** (L3/L32) — the ~10% hit per death that
    feeds the whole crafting economy.
-3. **Crafting material properties** (L4) — the flagship system, and the
+2. **Crafting material properties** (L4) — the flagship system, and the
    largest single piece of design in the repo.
-4. **Skill-by-use curve** (L18/L40).
+3. **Skill-by-use curve** (L18/L40).
 
-All four are pure logic and need no engine.
+All three are pure logic and need no engine.
 
 ## Open questions worth a phone session
 
