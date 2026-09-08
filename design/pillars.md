@@ -52,6 +52,10 @@ Status tracker for the big structural decisions. Detail lives in
 | L41 | Epoch advancement | Extends L23. **Thresholds arm; a named act fires.** Server-side conditions (awakened count, witnessed public castings, institutional pressure) arm the next epoch and are live-tunable — this is §3.3's dial. Once armed, the age turns only when a player commits the qualifying public act, and that player is named on the Monument (L23). Before arming, the same act does not turn the age — it just gets you hunted. An early hero fails dangerously rather than being told no |
 | L42 | Earning an Incarnate mark | Extends L10/P12. **Winning the seat marks you.** Claim an Incarnate seat, then end that life, and the account keeps that spell's sigil on every character after — unexplained, forever. Holding or losing a seat leaves nothing. The road is deliberately brutal: one seat per character (L10) means each mark is a full character lifetime ending in a claimed seat |
 | L43 | Arrival in the Age of Gods | Extends P12. **Knowledge, not power.** A marked account arrives already awakened, knowing its marked spells by name and effect — and casting them at Novice. The climb is real and must be walked again. This is vision.md's third promise ("knowing isn't having") restated at account scale, and it keeps L19's power curve intact in a world you would otherwise enter pre-solved |
+| L44 | Marks required; two doors | Extends P12/L42. **Six marks** opens the Age of Gods — a genuine lifetime road, kept as raised. Because six claimed seats is close to a decade, the prequel has a **second entrance** (L45): refusing godhood at the Heart. Marks are the long road walked by the living; the Heart's refusal is the short road paid for with everything. Neither is required for the other, and the expansion's audience is the union of both |
+| L45 | The Age of Gods **is** the sealed arc | Extends L30/P12. The "other option" at the Heart (`demigod-realm.md` §4) and the seal-weakening expansion hook (`lore.md` §9) are **the same door as P12's** — refusing pantheon godhood is what cracks time open. Three dangling threads become one. Launch data still contains nothing about what refusal does; the answer now exists internally, sealed, instead of being a promise with no payload |
+| L46 | Proximity speech is always audible | Extends P11 §9.4/§9.6. **No in-fiction mute, no whisper channel, no private mode.** Speech in public is public, always — the strongest version of the tavern-as-information-market bet. Secrets therefore leak from careless *placement*, by design. Stakes-bearing NPCs (Circle contacts, the Lamp, anything touching L22) are protected diegetically instead: **they simply refuse to speak while anyone is in earshot**, which is better fiction than a muted channel and the same protection. Platform-level personal block/mute exists as a safety and certification layer (required by all three console platforms for player-to-player voice) — never as a gameplay toggle |
+| L47 | Disposition is never numeric | Extends P11 §9.3. No bar, no number, no named tier. An NPC's regard reads entirely through behavior: greeting warmth, whether they use your name, body language (head turns, lean-ins, the eyes going to an eavesdropper), how much they volunteer, and whether they end the conversation and walk off. The budget goes to animation and voice direction, not UI — §9.3's own position, that cheap animation sells *alive* better than model quality |
 
 ---
 
@@ -184,7 +188,7 @@ Full list at the bottom of `brainstorm.md`.
     §10; open, seven questions to settle, launch hook separable from
     the expansion.
 
-**The original ten structural pillars are locked (43 decisions).** P11
+**The original ten structural pillars are locked (47 decisions).** P11
 (living NPCs) and P12 (the Incarnate marks) are new and open — both
 added since the sweep. The one-page
 distillation is `vision.md`; the build-and-play sanity check is

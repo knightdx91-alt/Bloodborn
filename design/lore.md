@@ -229,7 +229,10 @@ Implications:
   maintenance.
 - What waits at the Heart, what the enemy is, and what a player-god
   in the pantheon actually does to the seal — reserved for P10.
-  Expansion hook: the seal weakening.
+  Expansion hook: the seal weakening — **now L45**: the seal thins
+  where a Heart-reacher refuses godhood, and that is the door to the
+  Age of Gods (`brainstorm.md` §10), reachable either by refusal or
+  by six Incarnate marks.
 
 ## 10. Living history — the world evolves (DECIDED 2026-07-26)
 

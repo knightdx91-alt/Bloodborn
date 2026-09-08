@@ -482,7 +482,11 @@ industry sounds like the same eager assistant.
 - **They don't have to like you.** Disposition, refusal, boredom,
   contempt. An NPC allowed to end the conversation and walk off is
   worth ten that aren't — and is also the best moderation tool on
-  this list (§9.6).
+  this list (§9.6). **Never shown as a number (L47):** regard reads
+  through greeting warmth, whether they use your name, what they
+  volunteer unasked, and whether they stay. If a player cannot tell
+  an NPC dislikes them, that is an animation and voice-direction
+  failure, not a missing UI element.
 - **Voice cards, not one house style.** Per-NPC diction, cadence,
   verbal tics, an anti-pattern budget (no "Ah, traveler!", no
   restating your own question back at you). Accent families by town.
@@ -500,6 +504,10 @@ fallback** (§9.7).
 
 That makes it realistic to ask the real question: **nearby players
 hear your side of an NPC conversation.**
+
+**Settled by L46: always audible, no mute.** Speech in public is
+public, without exception or opt-out. What follows is therefore the
+design as shipped, not one option among several.
 
 - **Overheard speech is a rumor source.** Someone standing nearby now
   knows what you asked the drover, and carries it at caravan speed
@@ -563,10 +571,15 @@ is already committed to a party or Discord.
   shouting nonsense. In-fiction mitigations: conversation ownership
   (initiator holds the floor), disposition drops toward the
   interloper and *not* toward you, NPCs that turn away and stop
-  talking. Hard-mute proximity during anything with stakes (Circle
-  contacts, the Lamp, anything touching L22) — secrets leaking
-  because a stranger stood nearby is fantastic fiction right up until
-  it is a grief tool.
+  talking. **Superseded on the mute question by L46:** there is no
+  hard-mute during stakes conversations, because there is no mute at
+  all. Stakes-bearing NPCs are protected by *refusing to speak while
+  anyone is in earshot* — the secret never enters the air, so it
+  cannot leak, and the player learns to find an empty room. Same
+  protection, entirely diegetic, and it turns a mute rule into a
+  scene. Harassment is handled at the platform layer (personal
+  block/mute, required by console certification for player-to-player
+  voice) rather than by a gameplay toggle.
 - **STT fairness is first-class, not polish.** If voice is the
   primary path, an NPC that understands one accent and not another is
   a broken game for a chunk of the players. Budget real evaluation
@@ -691,11 +704,13 @@ each ending in a won Succession Trial (L35), on a road that takes
 months to Master before the Trial is even reachable. Realistically
 that is the better part of a decade.
 
-That may be intended — a genuine lifetime achievement with a
-population in the dozens, server-wide famous, is a legitimate design
-target and this game already thinks in years. But it should be a
-*choice*, not an accident of multiplying L10 by six. Levers, if it
-needs to come down:
+**Resolved (L44): six stands, deliberately.** It is a lifetime
+achievement with a population in the dozens, server-wide famous —
+which this game already thinks in years for. The commercial risk of
+building an expansion almost nobody unlocks is answered instead by
+L45's second door: the Heart's refusal reaches the same world without
+any marks at all. Levers kept on file in case the number ever needs
+to move:
 
 - Fewer marks (three).
 - Mark on **seat held**, not seat won — a regency-length tenure, or
@@ -733,8 +748,10 @@ arc already written into `demigod-realm.md` §4 ("the other option")
 and `lore.md` §9 ("the seal weakening") — unifying two dangling
 threads instead of adding a third.
 
-Open either way: whether reaching the Heart is a *prerequisite* for
-the Age of Gods, an alternative route to it, or unrelated.
+**Answered (L44/L45): alternative, not prerequisite.** Two doors into
+the same world — six claimed seats, or the Heart's refusal. That also
+rescues the six-mark number (§10.5): the expansion's audience is no
+longer gated on a decade-long road alone.
 
 ### 10.8 What it does and does not fix
 
@@ -772,10 +789,10 @@ all (§10.9).
 
 **Reopened 2026-07-30 by §9 (living NPCs) and 2026-09-08 by §10
 (the Incarnate marks).** Neither pillar is locked.
-- [ ] **Proximity audibility default.** Leaning: audible at short
-      range, per-player mutable, hard-muted during stakes
-      conversations. Alternative: private by default (everyone uses
-      it, but the best MMO-only scenes never happen).
+- [x] **Proximity audibility** → **L46**: always audible. No
+      in-fiction mute, no whisper mode. Stakes NPCs go quiet while
+      anyone is in earshot rather than the channel being muted.
+      Platform block/mute is a safety layer, not a game mechanic.
 - [ ] **Multi-party scope.** Which NPC classes accept 3–4 speakers,
       and does diarization survive console mic quality?
 - [ ] **Model tiering boundaries.** Where exactly the bark / ambient
@@ -784,8 +801,9 @@ all (§10.9).
 - [ ] **Gossip distortion: authored or generated?** Authored
       distortion tables are safe and repetitive; generated
       distortion is alive and can invent canon it shouldn't.
-- [ ] **Is disposition visible to the player?** A number kills the
-      illusion; nothing at all makes NPC coldness feel like a bug.
+- [x] **Is disposition visible?** → **L47**: never numeric. It reads
+      through greeting, name use, body language, volunteered
+      information, and the freedom to walk off.
 - [ ] **Where the intent whitelist ends** — how much can be
       negotiated by voice before it must become a confirm panel
       (§9.2).
@@ -796,16 +814,17 @@ settling any of these; the expansion is not.
 - [x] **What earns a mark** → **L42**: winning the seat. Holding or
       losing one leaves nothing. Keeps the mark rare and the road
       long; see the count question below, which this sharpens.
-- [ ] **How many marks.** Six as raised is close to a decade of play
-      given one seat per character (L10) — and L42 (win, don't merely
-      hold) makes that estimate *longer*, not shorter. Intended, or
-      does the number come down?
+- [x] **How many marks** → **L44**: six, as raised. The decade
+      problem is answered not by lowering the bar but by adding a
+      second door (L45) — the expansion's audience is marked accounts
+      *plus* everyone who reaches the Heart and refuses.
 - [x] **Knowledge or power on arrival** → **L43**: awakened, knowing
       the marked spells by name and effect, casting at Novice.
-- [ ] **Is the Age of Gods the sealed expansion arc?** If yes it
-      absorbs `demigod-realm.md` §4's "other option" and `lore.md`
-      §9's seal-weakening hook instead of adding a third thread.
-- [ ] **Interior prerequisite, alternative, or unrelated** (§10.7).
+- [x] **Is the Age of Gods the sealed expansion arc?** → **L45**:
+      yes. Refusing godhood at the Heart is what cracks time open.
+      Three threads collapse into one.
+- [x] **Interior prerequisite, alternative, or unrelated** → **L45**:
+      *alternative*. Two independent doors into the same world.
 - [ ] **How much secret canon the prequel makes playable.** Watching
       the god's death is the strongest scene available to this
       design and the fastest way to spend its last secret.

@@ -67,7 +67,12 @@ seal is everyone) — and gets the choice:
   sainthood. The seal strengthens. This is launch's canonical ending.
 - **The other option** is written but sealed (expansion arc: the one
   who cracks the door). Launch players sense a refusal is possible;
-  what it does is not in any launch data.
+  what it does is not in any launch data. **Internally answered by
+  L45:** refusal is what cracks time open — it is the second door
+  into the Age of Gods (`brainstorm.md` §10), the same world six
+  Incarnate marks unlock. This stays out of launch data entirely; the
+  difference is that the sealed option now has a payload instead of
+  being a promise.
 
 The Heart-reacher keeps the truth: no system broadcasts what they
 learned. Whether they tell their server — or lie — is theirs.
