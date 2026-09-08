@@ -74,6 +74,38 @@ moving in order to fight. Three rules carry that:
   climb and drop. L55 already puts climbing on the stamina bar, so this
   needs no new economy — only the freedom to do it mid-fight.
 
+### Mobility is afforded, never required **[core]**
+
+**Standing your ground is a legitimate way to fight, not a failure to
+play correctly.** A plate-armoured fighter behind a shield who plants
+their feet and trades until the other person runs out of stamina is
+playing Marrowmark exactly as intended. L18 is classless: the game
+promises builds, and a game that only rewards footwork has one build
+wearing different hats.
+
+What everything above buys is *the option* to move — dodges that
+reposition, momentum that feeds attacks, terrain worth using. Whether a
+player takes that option is a build decision they make with armour,
+weapon and skill.
+
+**Both ends of the spectrum spend the same bar, differently:**
+
+- **The mobile fighter** spends stamina on *movement* — dodges,
+  techniques, sprints, climbs. They avoid damage entirely and cannot
+  afford a mistake, because light armour does not forgive one.
+- **The grounded fighter** spends stamina on *absorption* — blocking
+  bleeds the bar instead of health (§2), and the shield is a battery
+  (§5). They take the hit on purpose and win by outlasting.
+
+That is the elegant part: it is one economy, not two systems. A tank is
+not standing still doing nothing; a tank is fighting a **stamina war**
+while the duellist fights a **positioning war**, and either can win.
+
+**Armour weight sits on the same encumbrance channel as cargo (L55)** —
+plate means a smaller bar to spend. That is the cost that keeps heavy
+builds honest, and blocking is the payoff that makes the smaller bar
+worth carrying.
+
 **The ceiling: athletic, not supernatural.** Everything a trained human
 body could plausibly do — leaping, vaulting, lunging, spinning
 step-throughs. Nothing it could not: no double jumps, no air dashes, no
@@ -309,9 +341,11 @@ slider injecting 0–150ms, and a stamina bar.
 **It passes when:** a player who has never seen it can, inside ten
 minutes, reliably parry a heavy, dodge a quick, and disengage from an
 unblockable — and cannot tell from feel whether the slider is at 0ms
-or 100ms. **And when they move constantly while doing it** (L56): if
-testers plant their feet and trade, the mobility design has failed even
-if the timing works.
+or 100ms. **And when a tester who chooses to move can do so
+fluidly** (L56) — the mobility must be *available* and feel good. It
+must not be mandatory: a tester who picks a shield and holds ground
+should also be winning fights. If only one of those two players is
+having a good time, the design has failed.
 
 **If it fails, nothing else in this repository matters.** Build it
 first, and be willing to hear the answer.
@@ -327,6 +361,16 @@ first, and be willing to hear the answer.
       techniques the main expression of progression, so this is a
       content-volume question as well as a design one — and animation
       volume is a real burden solo (`tech.md` §1).
+- [ ] **Does the 5–15s time-to-kill window apply per archetype or
+      overall?** A shield-and-plate mirror match is a stamina war and
+      will run longer than a duellist mirror by design. The window in
+      §4 was written before archetypes were, and `sim/` currently tests
+      one fighter profile. Either widen the window for grounded builds
+      or state that the target describes the median fight.
+- [ ] **Armour weight versus cargo on the encumbrance channel.** Both
+      shrink the bar (L55). Plate plus a full pack may leave too little
+      to fight with — which might be correct and interesting, or might
+      simply make heavy builds unplayable on the road.
 - [ ] **Mobility versus the latency contract.** Fast positional change
       is the worst case for §7's reconciliation: a dash-thrust moves
       the attacker *and* the hit origin during the disagreement window.
