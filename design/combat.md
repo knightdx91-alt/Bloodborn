@@ -136,6 +136,65 @@ spell obeys (L34) — it lands like a thunderclap. A game where everyone
 already defies gravity has nothing left to spend when magic arrives.
 The restraint here is what makes the secret worth keeping.
 
+## 1b. Direction — where the blow goes **[core — L64, L65]**
+
+**Five cutting arcs plus the thrust, aimed freely.** Not a menu of
+targets: you point, the arc follows, and the nearest zone snaps on a
+controller. Kingdom Come's system, and it shipped on consoles — thumb
+precision is the cost, not the barrier.
+
+**Direction is the other half of the telegraph, not a second system.**
+§6's shapes (quick, heavy, committed) and the arc are read from one
+animation: the weight shift says how hard, the wind-up says where. A
+player tracks a single tell and gets both.
+
+**Where blows land:**
+
+| Arc | Lands on |
+|-----|----------|
+| Overhead | Head |
+| Upper left / upper right | Torso |
+| Lower left / lower right | Legs |
+| Thrust | Torso — the gap-seeker |
+
+This is what makes per-slot armour (L63) worth having. **Which piece of
+a harness fails is a record of how its owner was fought.** Keep going
+overhead and you ruin their helm; they finish the fight bare-headed,
+and everyone watching can see it.
+
+**Nothing is aimed at the arms** — arms are what you raise. Vambraces
+wear from *blocking*, so a sword-arm that gives out after a day of
+parrying is the most grounded failure this system can produce.
+
+**Guards must match the arc.** An exact match blocks; an adjacent arc
+glances it partly aside; anything else lands clean. **Only a thrust
+guard stops a thrust** — no cut guard turns a point — which is why a
+spear is frightening against someone reading edges. A blocked blow
+still carries something through: blocking is a stamina war (§1), never
+an off switch.
+
+**And the guard is read from the body (L65).** No indicator, no marker,
+nothing on screen — the same rule as §6's telegraphs and L20's refusal
+of glowing tells. **This makes animation quality load-bearing rather
+than decorative**: if a guard pose does not read at a glance, the
+combat does not work, and no UI element may be added to rescue it.
+
+> **Two costs, recorded rather than discovered later.**
+> **Animation volume** is now the project's largest content risk —
+> five arcs plus thrust, across six weapon families, times light and
+> heavy, plus guard poses and directional hit reactions, is on the
+> order of 300–400 clips for combat alone. That is beyond hand
+> authoring for one person and makes `tech.md` §1's buy-the-content
+> strategy load-bearing. **Mitigation: weapon families get different
+> direction sets** — a dagger has all five and a thrust, a two-handed
+> maul has an overhead and two side arcs and no thrust worth the name.
+> Historically true, makes weapons feel distinct, and cuts the matrix
+> by a third or more.
+> **Onboarding** is now the hardest problem in the design. Free-aim
+> directional combat read entirely off the body is the steepest
+> learning curve in the genre, and the onboarding document still does
+> not exist.
+
 ## 2. Stamina is the whole economy **[core]**
 
 **One bar, and it is not only a combat system.** Stamina is the body's

@@ -72,6 +72,8 @@ Status tracker for the big structural decisions. Detail lives in
 | L61 | Anyone repairs; skill sets the price | Extends L59. **Any player can repair with materials, anywhere** — but the smith's skill decides how much ceiling the repair costs. A field patch by an untrained hand gets you home and shortens the blade's life badly; a master's bench repair costs it almost nothing. Measured on the current tuning: an amateur-patched item survives ~19 repairs, a master-maintained one ~76 — a fourfold difference in working life. That spread is what makes master smiths worth travelling to and turns **repair into a profession**, not a chore, without ever stranding a player whose kit fails deep in a wedge |
 | L62 | Weapons break — earned, never random | **Amends L3.** A weapon breaks only when it reaches zero condition **and is used again**, after the whole visible decline of L60. There is no randomness at any point: a player who repairs before the danger zone will never once see an item fail, and one who fights on with a ruined blade chose to. That distinction is everything — L2 names BotW as a reference, and BotW's breakage is its most resented mechanic precisely because it is fast and arbitrary. A broken item is scrap and cannot be repaired, which gives the moment weight and keeps the item sink (L59) honest. Consequences the design gets for free: **backup weapons become real** (and cost encumbrance under L57, so "second blade or more cargo?" is a genuine decision), and visible weapon damage lets a duellist **read that an opponent is one parry from disaster** — exactly the no-UI information L20 wants |
 | L63 | Armour is per slot; pieces break off | Extends L62. Armour is tracked across **head, torso, arms and legs**, each with its own condition. A piece that breaks does not merely stop protecting — **it comes off**, and that slot is bare for the rest of the fight. Armour therefore degrades in visible steps rather than vanishing: the vambrace goes, then the helm, and a fighter who started the day in plate finishes it half bare and increasingly desperate. That progression is legible to everyone watching, and with unarmoured damage sitting well above every armoured class, losing a piece is felt immediately. Also allows piecemeal kit, which is what a poor fighter actually wears |
+| L64 | Directional combat, Kingdom Come-style | **Five cutting arcs plus the thrust, chosen by free aim** rather than a menu — right stick, snapped to the nearest zone on a controller (KCD shipped this on consoles; precision is the cost, not feasibility). Direction is **not a second system stacked on** `combat.md` §6's attack shapes — it is the other half of the same telegraph: the weight shift says quick or heavy, the wind-up says where. One read, two pieces of information. **Direction decides which armour slot takes the blow** (overhead→head, high cuts and thrusts→torso, low arcs→legs), which is what makes L63 mean something: which piece of a harness fails is now a record of how its owner was fought. Guards must match the arc — an adjacent guard glances, anything else lands clean, and **only a thrust guard stops a thrust**, which is why the point is dangerous against someone reading edges. Nothing is aimed at the arms, because arms are what you raise to defend: **vambraces wear from blocking**, so a sword-arm that gives out after a day of parrying is the most grounded failure the system can produce |
+| L65 | The guard is read from the body | Extends L64 and `combat.md` §6's no-UI rule. **No guard indicator of any kind.** You read an opponent's guard from how they hold the weapon, the same way you read whether a blow is quick or heavy. This is the most demanding readability requirement in the design and it makes **animation quality load-bearing rather than decorative** — if a guard pose does not read at a glance, the combat does not work and no interface element may be added to rescue it. Consequence recorded plainly: combined with L64, this is the steepest learning curve in the genre, and it makes the still-unwritten onboarding document the most important gap in the project |
 
 ---
 
@@ -229,7 +231,7 @@ Full list at the bottom of `brainstorm.md`.
     model, the casual awakening chain), then economy and war numbers,
     then the naming pass.
 
-**The original ten structural pillars are locked (63 decisions).** P11
+**The original ten structural pillars are locked (65 decisions).** P11
 (living NPCs) and P12 (the Incarnate marks) are new and open — both
 added since the sweep. The one-page
 distillation is `vision.md`; the build-and-play sanity check is
@@ -276,8 +278,10 @@ skill-vs-gear resolution, enemy vocabulary, the latency contract).
 model, solo production strategy, build order). ~~The title problem~~ →
 `naming.md`.
 
-**Still uncovered**, each load-bearing: onboarding and the first three
-hours (every lock is hostile to a new player — no markers, no fast
+**Still uncovered**, each load-bearing — and **onboarding is now the
+most urgent of them**, because L64/L65 (free-aim directional combat
+read entirely off the body) give this game the steepest learning curve
+in its genre: onboarding and the first three hours (every lock is hostile to a new player — no markers, no fast
 travel, classless, and the best system invisible); live-ops and the
 server's second year; moderation and trust & safety (which P11 aims a
 live microphone at, and which L46 makes sharper); UI and information
