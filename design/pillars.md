@@ -77,6 +77,8 @@ Status tracker for the big structural decisions. Detail lives in
 | L66 | Materials have properties, not quality | Extends L4. Four continuous axes — **hardness, toughness, density, purity** — rolled per source, each with a real cost, so no configuration is simply best. Hardness buys the edge and fights toughness; toughness buys the item's life (L59's ceiling); **density buys blunt force and charges weight**, which eats stamina headroom under L55/L57, so one number has three consequences and no right answer. **Purity is a multiplier on skill's reach**, not a bonus of its own: clean stock rewards a good hand and does little for a poor one, which is why masters bid for good ore and beginners should not. Detail in `crafting.md` |
 | L67 | Stages are trades; skill decides your share | Extends L4/L38. A pipeline is hands-on operations — smelt, fold, quench, temper, grind — and **every stage offers something and charges something**. The asymmetry that matters: **skill scales what you collect, the charge is the same for everyone.** A master and a beginner quenching one billet lose the same toughness; the master takes far more hardness for it. This is L38 made mechanical — no stage can hard-fail a patient beginner (a floor on realisation guarantees an unskilled hand still improves the work), while the ceiling stays enormous. Gains meet diminishing returns and costs scale with what is there to lose, so **each stage acts on what the last one left and order is part of the craft** — tempering an unquenched billet is a wasted heat, and no wiki can hand that understanding over as a number |
 | L68 | Everything is signed | Extends L4. **Every finished item carries its maker's name, good work and bad.** No anonymous path exists — the code has no overload permitting one. Reputation becomes earned and losable, so flooding a board with rubbish costs a smith their name; second-hand gear becomes legible, which matters in an economy where goods physically travel and wear out; and marks are permanent, outliving their makers (`tech.md` §4), so a blade signed by someone long dead is a real object with a history |
+| L69 | Onboarding is an apprenticeship, not a tutorial | `onboarding.md`. **No tutorial zone, no tooltips, no training room** — all three break L20 before the player has seen anything. You begin as somebody's **hired hand**: a smith, a carter, a drover with a trade, work that needs doing, and opinions about how it is done. They teach you because that is what employers do. This is already paid for — P11's conversational NPCs exist to be the display layer for world state, and teaching is the same job. The master replaces the quest marker (spoken directions in landmarks), the tutorial popup (someone watching you work), the class choice (a trade you can leave), and the recipe list ("watch; now you do it") |
+| L70 | Directional combat is taught by a person who stops talking | Extends L65/L69. L65 forbids a guard indicator, so it is replaced by a **sparring partner who calls the arc aloud and then gradually stops** — announced and slow, announced at speed, unannounced with one arc, then two, then everything. This is the fading-indicator idea made **diegetic**, so L65 survives intact: the information comes from a person's voice rather than an interface, and it stops because *they* stop. A player who wants it back asks for it back, out loud. The drill yard is never exited — veterans learning a new weapon family return to it, and so do Companies drilling before a declared war (L25) |
 
 ---
 
@@ -234,7 +236,7 @@ Full list at the bottom of `brainstorm.md`.
     model, the casual awakening chain), then economy and war numbers,
     then the naming pass.
 
-**The original ten structural pillars are locked (68 decisions).** P11
+**The original ten structural pillars are locked (70 decisions).** P11
 (living NPCs) and P12 (the Incarnate marks) are new and open — both
 added since the sweep. The one-page
 distillation is `vision.md`; the build-and-play sanity check is
@@ -281,11 +283,11 @@ skill-vs-gear resolution, enemy vocabulary, the latency contract).
 model, solo production strategy, build order). ~~The title problem~~ →
 `naming.md`.
 
-**Still uncovered**, each load-bearing — and **onboarding is now the
-most urgent of them**, because L64/L65 (free-aim directional combat
-read entirely off the body) give this game the steepest learning curve
-in its genre: onboarding and the first three hours (every lock is hostile to a new player — no markers, no fast
-travel, classless, and the best system invisible); live-ops and the
+~~Onboarding~~ → `onboarding.md` (L69/L70): the tutorial is a person who
+employs you, and directional combat is taught by a sparring partner who
+calls the arc aloud and gradually stops.
+
+**Still uncovered**, each load-bearing: live-ops and the
 server's second year; moderation and trust & safety (which P11 aims a
 live microphone at, and which L46 makes sharper); UI and information
 design, including the companion app (L31); art and audio direction —
