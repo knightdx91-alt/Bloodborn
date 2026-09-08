@@ -93,7 +93,47 @@ There is no anonymous path; the code has no overload that permits one.
 - Marks are **permanent and outlive their makers** (`tech.md` §4). A
   blade signed by someone long dead is a real object with a history.
 
-## 4. How crafting reaches the rest of the game
+## 4. Discovery — there is no recipe list **[core — L72, L73]**
+
+**A recipe in Marrowmark is a known pipeline**: which stages, in which
+order. So discovery is not unlocking a line in a book — it is learning
+that an operation exists, and working out a sequence worth using.
+
+`brainstorm.md` §2.3 names three routes, and all three matter:
+
+**Experimentation, and it is deterministic.** Insight comes from trying
+sequences you have *never tried before*. A smith who genuinely
+experiments makes progress; one who runs a known-good recipe forever
+does not. This is L71's principle applied to knowledge rather than
+skill — **novelty teaches, repetition does not** — and it means
+discovery is earned by curiosity rather than won on a dice roll. Two
+smiths who try the same number of new things learn the same amount.
+
+**Near-miss hints.** After a poor result the work itself tells you
+something: *"the edge is soft — something here is drawing the temper."*
+The hint names the property that fell furthest short of what the
+material could have given, and **never names the fix.** It points; it
+does not answer.
+
+**But you cannot bootstrap the whole craft alone.** Experimentation
+runs out. A smith who has tried everything their own bench can teach
+them needs the world: a teacher, a ruin, or somebody's notes. That
+ceiling is deliberate — it is what stops crafting from being a solo
+puzzle and makes the knowledge market real.
+
+### Schematics — knowledge is an economy **[L73]**
+
+A written pipeline is an **item**. It can be sold, copied, stolen,
+hoarded, or buried with its author, and it records who wrote it exactly
+as a maker's mark records who forged.
+
+This is the deliberate parallel to spell teaching (L9): in Marrowmark,
+**knowing is a thing you can own and lose**, in crafting exactly as in
+magic. A House that holds the only copy of a pattern has something
+worth defending, and a rival who copies it has committed something
+worth being angry about.
+
+## 5. How crafting reaches the rest of the game
 
 - **Combat** — properties become damage by type (`combat.md` §4): cut
   from hardness, blunt from density, pierce from a hard *fine* point.
@@ -117,8 +157,9 @@ There is no anonymous path; the code has no overload that permits one.
 - [ ] Order-dependence is currently real but subtle. Should a badly
       ordered pipeline be more punishing?
 - [ ] Non-metal pipelines: leather, cloth, wood, bowyery.
-- [ ] Recipe **discovery** (L4) — the system is built, but how a
-      player learns that a stage exists is untouched.
+- [ ] How stages are seeded into the world for the "found in a ruin"
+      route — which is now the only discovery path with no mechanics
+      behind it.
 - [ ] Failure states above the floor: a beginner cannot ruin a piece,
       but should they be able to waste *materials*?
 - [ ] How maker's marks surface in the UI and on the companion app

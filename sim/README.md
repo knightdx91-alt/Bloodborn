@@ -57,6 +57,7 @@ Expected: all tests pass, in well under a second.
 | Directional targeting & guards | `Combat/Targeting.cs`, `Combat/AttackDirection.cs` | L64, L65 |
 | Crafting: materials, stages, marks | `Crafting/` | `design/crafting.md`, L4, L38, L66–L68 |
 | Skill-by-use & the ascension gate | `Progression/` | L18, L40, L71 |
+| Recipe discovery & schematics | `Crafting/Knowledge.cs`, `Crafting/Schematic.cs` | L4, L72, L73 |
 
 ### Progression pacing
 
