@@ -127,6 +127,35 @@ Slice gate (§9.8): one town, six voice NPCs, one rumor that provably
 arrives *wrong* in the next town, one epoch flip that visibly changes
 what all six say.
 
+### P12. The Incarnate marks & the Age of Gods 🔶 OPEN (2026-09-08)
+`brainstorm.md` §10. Hold an Incarnate seat (L10), end that life,
+and the *account* keeps a **mark** — the sigil of the spell you
+embodied — on every character after. Nothing explains it. Six
+distinct marks open passage to an **Age of Gods** world: the same
+Wheel, centuries before the god's death, when the gods still walked
+and magic was not yet a secret. You relive history knowing how it
+ends.
+
+Shape that already feels settled: the mark is **account flair, not a
+transfer** — L37 holds intact, nothing of the character moves; the
+tone inversion is **social, not visual** (magic as a licensed trade,
+gods as landlords — same medieval bar, opposite feeling, §10.3);
+**nothing flows back** from the prequel (§10.6); and the hook ships
+at launch as an icon and a counter while the expansion waits on
+whether players catch fire over it (§10.9).
+
+This is the first answer in the design to *what a veteran chases
+after the seats are taken* — but it does not answer the year-two
+newcomer joining a world whose mystery is already solved (§10.8).
+That gap stays open.
+
+Open before it can lock: what earns a mark, how many, whether you
+arrive with knowledge or power, whether this **is** the sealed
+expansion arc (`demigod-realm.md` §4 / `lore.md` §9) rather than a
+third thread, how it relates to the Interior, and how much secret
+canon a playable prequel spends. Full list at the bottom of
+`brainstorm.md`.
+
 ---
 
 ## Suggested working order
@@ -144,9 +173,13 @@ what all six say.
 
 9. **Living NPCs raised as P11** (2026-07-30) — `brainstorm.md` §9;
    open, six questions to settle, slice gate defined.
+10. **Incarnate marks raised as P12** (2026-09-08) — `brainstorm.md`
+    §10; open, seven questions to settle, launch hook separable from
+    the expansion.
 
 **The original ten structural pillars are locked (39 decisions).** P11
-(living NPCs) is new and open — the first addition since the sweep. The one-page
+(living NPCs) and P12 (the Incarnate marks) are new and open — both
+added since the sweep. The one-page
 distillation is `vision.md`; the build-and-play sanity check is
 `feasibility-review.md` (design PASS; production PASS at AAA scale
 or via the staged path in §5).
@@ -154,7 +187,11 @@ or via the staged path in §5).
 ### Next phase
 
 1. **Naming polish** — currency ("marks" is placeholder), the six
-   town names, "the Interior," spell naming conventions.
+   town names, "the Interior," spell naming conventions. **Three-way
+   collision to resolve:** the placeholder currency, maker's marks
+   (L4), and P12's Incarnate mark all currently share the word. At
+   most one of them keeps it — maker's marks have the strongest claim
+   (they are the oldest and the most player-facing).
 2. **Vertical slice** — the smallest playable proof of the loop: one
    town + its wedge, one crafting pipeline to mastery, combat vs. a
    few monster types at real MMO latency (the L39 gate), one hidden
@@ -165,3 +202,20 @@ or via the staged path in §5).
 4. **Settle P11's six open questions**, then prototype the living-NPC
    gate (`brainstorm.md` §9.8) alongside the slice — latency, cost per
    turn, and STT across accents are all things paper won't answer.
+5. **Decide P12's cheap half now** — the mark is an icon and a
+   counter and belongs in the launch data model whether or not the
+   Age of Gods is ever built. The expensive half can wait a year for
+   evidence.
+
+### Gaps with no doc yet
+
+Raised 2026-09-08. Not open *questions* — open *documents*. Each is
+load-bearing and currently uncovered: onboarding and the first three
+hours (every lock is hostile to a new player — no markers, no fast
+travel, classless, and the best system invisible); combat design
+beyond L2/L39's feel-and-netcode locks; live-ops and the server's
+second year; moderation and trust & safety (which P11 aims a live
+microphone at); UI and information design, including the companion
+app (L31); art and audio direction; and telemetry for the awakening
+throttle that §3.3 calls the most important live-ops dial in the
+game.

@@ -593,10 +593,185 @@ town **wrong**. One epoch flip that visibly changes what all six of
 them say. If that demo gives people chills, the pillar is real —
 if it doesn't, cut to authored barks and lose nothing else.
 
+## 10. The Incarnate marks & the Age of Gods **[new pillar, 2026-09-08]**
+
+The pitch, in the order a player experiences it:
+
+1. You hold an Incarnate seat (L10). You embody a spell.
+2. That life ends. You rebirth (L37) onto a new world.
+3. Your new character's status screen carries a **mark** — the sigil
+   of the spell you embodied. Nothing explains it. No tooltip, no
+   achievement text, no patch note, no wiki entry that isn't a guess.
+4. Collect **six distinct marks** — six different spells, six lives —
+   and a door opens: passage to an **Age of Gods** world. The same
+   Wheel, centuries before the god's death, when the gods still walked
+   and magic was not yet a secret. You arrive carrying what you
+   incarnated.
+
+You relive history. You are the only person alive who knows how it
+ends.
+
+### 10.1 Why this belongs in this game
+
+- **It is L36's layered secret, moved up one level.** The in-world
+  secret is discovered by players inside a server. This one is
+  discovered by *accounts*, across servers, over years. The first
+  layer breaks in a week; this layer cannot break at internet speed
+  because almost nobody has the second mark yet.
+- **It answers the question the docs did not have an answer to:**
+  what a veteran chases once the seats are taken and their server's
+  mystery is solved. (See P12's relevance note below — it does not
+  answer all of it.)
+- **It makes rebirth (L37) load-bearing.** Rebirth stops being the
+  consolation prize for a dying server and becomes the *mechanism* of
+  the longest arc in the game.
+- **It costs almost nothing to ship the hook.** The mark is an icon
+  and a counter. It goes in at launch. The Age of Gods is built only
+  if the marks generate the fervor — the same staged logic that
+  ships the Interior only when the first servers near the gate.
+
+### 10.2 It does not break L37 (transfers) — read carefully
+
+L37 forbids **character** transfer: skills, gear, titles, seats and
+lineage stay in the world that made them. That holds here completely.
+What persists is an **account-level mark**, which is precisely the
+"account flair" L37 already permits. The Age of Gods is not a
+transfer destination for a character — it is a *new character on a
+new world*, born with a memory.
+
+The pressure point is not the mark. It is §10.4.
+
+### 10.3 The tone inversion **[the load-bearing creative call]**
+
+"Gods roamed the earth" reads as high fantasy, and high fantasy
+contradicts L20 (M-rated grounded dark, low-magic) and doubles the
+art bar. **Resist the spectacle reading.** The inversion should be
+*social*, not visual — the same medieval production bar with the
+rules flipped:
+
+- Magic is not secret because it is not yet forbidden. It is a
+  **licensed trade** — guilded, taxed, apprenticed, unremarkable. A
+  mage is a professional, like a farrier.
+- The gods are not distant. They are **landlords**. They hold rights
+  (L25's language, centuries early), they collect, they are
+  negotiated with, and they are not kind.
+- The Godsgrave does not exist. The center of the Wheel is whatever
+  stood there before it was a grave.
+- The horror is not monsters. **It is that you know how this ends and
+  no one will listen to you.** Every warm scene is a scene you are
+  watching die.
+
+Same budget. Opposite feeling. And it turns the base game's identity
+(magic is a fireside story that three institutions kill you for
+knowing) into a thing the player watches *become* true.
+
+### 10.4 Knowledge or power on arrival **[the open fork]**
+
+The idea as raised: "you start with the magic you had incarnated
+before."
+
+- **Full mastery on arrival** gives the strongest fantasy moment and
+  the weakest game: the prequel has no climb, L19's moderate vertical
+  curve is dead at the door, and a world where you begin as its most
+  powerful person is a diorama, not an MMO.
+- **Awakened, knowing the six by name, at Novice** keeps the fantasy
+  and keeps the game. You arrive with the *memory* of power. You know
+  these spells exist, what they are called, and roughly what they do
+  — which in this era may be knowledge that is common, or knowledge
+  that is not yet invented. Then you climb.
+
+Leaning: the second. It is also the exact restatement of vision.md's
+third promise — **knowing isn't having** — at the account scale, and
+it preserves the discovery loop that is the best thing in the design.
+
+### 10.5 The math problem
+
+L10: one seat per character. So six marks = six character lifetimes,
+each ending in a won Succession Trial (L35), on a road that takes
+months to Master before the Trial is even reachable. Realistically
+that is the better part of a decade.
+
+That may be intended — a genuine lifetime achievement with a
+population in the dozens, server-wide famous, is a legitimate design
+target and this game already thinks in years. But it should be a
+*choice*, not an accident of multiplying L10 by six. Levers, if it
+needs to come down:
+
+- Fewer marks (three).
+- Mark on **seat held**, not seat won — a regency-length tenure, or
+  losing the seat in a Trial (dying as an Incarnate) counts. This
+  version is also the most evocative: the mark is the scar of a past
+  life, and you get it by *falling*.
+- Marks from lineage — a disciple of yours taking a seat marks you
+  faintly. Ties it to L9/L33's teaching arc rather than pure
+  individual conquest.
+
+### 10.6 Guard rail: lateral, not superior
+
+If the Age of Gods is the *better* game, the grounded world becomes a
+tutorial for it and vision.md inverts. Non-negotiables:
+
+- **Nothing flows back.** No power, gear, currency, title, or mark
+  earned in the Age of Gods returns to a present-day world.
+- The prequel is a **different** game, not a higher one — different
+  social rules, different pressures, not bigger numbers.
+- The present-day Wheel remains the product on the shelf (§3.4 of the
+  feasibility review: the visible game must carry the box).
+
+### 10.7 Does this eat the Interior?
+
+Bloodborn would now have two terminal roads: ascension → the Interior
+→ the Heart (L12/L30), and six marks → the Age of Gods. They need to
+not compete.
+
+Cleanest reading available: **they are the same road seen from two
+ends.** The Interior's Heart is where a player learns *why* the god
+died (lore §9). The Age of Gods is where a player *watches it
+happen*. One is the answer stated; the other is the answer lived.
+That also makes this a strong candidate to be the sealed expansion
+arc already written into `demigod-realm.md` §4 ("the other option")
+and `lore.md` §9 ("the seal weakening") — unifying two dangling
+threads instead of adding a third.
+
+Open either way: whether reaching the Heart is a *prerequisite* for
+the Age of Gods, an alternative route to it, or unrelated.
+
+### 10.8 What it does and does not fix
+
+**Fixes:** what a veteran chases after the seats are taken; account
+identity that survives L37's no-transfer rule; a reason to start over
+that is not nostalgia; a secret with a multi-year fuse.
+
+**Does not fix:** the player who buys the game in year two and joins
+a world whose mystery is already solved, whose seats are held, and
+whose one-time Monument lines are carved. That is still open and
+still needs an answer.
+
+### 10.8b Naming collision
+
+"Mark" is now overloaded three ways: the placeholder currency, maker's
+marks (L4, the oldest and most player-facing claim), and this. At most
+one keeps the word — routed into the naming-polish pass. The sigil
+reads fine as a **scar**, a **brand**, or a **remnant**; note that
+whatever it is called in the docs, the *game* should never label it at
+all (§10.9).
+
+### 10.9 Ship order
+
+1. **The mark ships at launch.** Icon, counter, zero explanation.
+   Cheap, and it is the entire hook.
+2. **Watch what players do with it** for a year. This is the
+   validation gate: if the forums do not catch fire over an
+   unexplained sigil, the expansion is not worth building and nothing
+   has been lost.
+3. **The Age of Gods ships as a paid expansion** (L27) when accounts
+   approaching six marks exist — the same "the design guarantees
+   months of runway" logic that stages the Interior.
+
 ## Open questions
 
-**Reopened 2026-07-30 by §9 (living NPCs).** The pillar itself is not
-locked; these are the calls to settle before the slice.
+**Reopened 2026-07-30 by §9 (living NPCs) and 2026-09-08 by §10
+(the Incarnate marks).** Neither pillar is locked.
 - [ ] **Proximity audibility default.** Leaning: audible at short
       range, per-player mutable, hard-muted during stakes
       conversations. Alternative: private by default (everyone uses
@@ -614,6 +789,28 @@ locked; these are the calls to settle before the slice.
 - [ ] **Where the intent whitelist ends** — how much can be
       negotiated by voice before it must become a confirm panel
       (§9.2).
+
+**P12 — the Incarnate marks & the Age of Gods (§10).** Raised
+2026-09-08. The hook (§10.9 step 1) is cheap enough to ship without
+settling any of these; the expansion is not.
+- [ ] **What earns a mark.** Winning the seat, holding it for a
+      tenure, or losing it in a Trial (§10.5). "Losing it" is the
+      most evocative — the mark as the scar of a past life.
+- [ ] **How many marks.** Six as raised is close to a decade of play
+      given one seat per character (L10). Intended, or does it come
+      down to three, or do lineage seats count partially?
+- [ ] **Knowledge or power on arrival** (§10.4). Full mastery is the
+      better moment; awakened-at-Novice is the better game. Leaning
+      Novice — it is "knowing isn't having" at account scale.
+- [ ] **Is the Age of Gods the sealed expansion arc?** If yes it
+      absorbs `demigod-realm.md` §4's "other option" and `lore.md`
+      §9's seal-weakening hook instead of adding a third thread.
+- [ ] **Interior prerequisite, alternative, or unrelated** (§10.7).
+- [ ] **How much secret canon the prequel makes playable.** Watching
+      the god's death is the strongest scene available to this
+      design and the fastest way to spend its last secret.
+- [ ] **Does the Age of Gods write per-server history too** (L23), or
+      is it one authored arc every account plays through?
 
 ---
 

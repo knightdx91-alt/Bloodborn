@@ -5,9 +5,11 @@ Switch — one shared world, full crossplay) where the world keeps the
 score. Buy-to-play. M-rated grounded dark fantasy.
 
 **Status:** 39 locked decisions, the original ten structural pillars
-closed, feasibility reviewed. One new open pillar — **P11, living
-NPCs** (free-form voice dialogue, `brainstorm.md` §9). Next: naming
-polish and the vertical slice.
+closed, feasibility reviewed. Two new open pillars — **P11, living
+NPCs** (free-form voice dialogue, `brainstorm.md` §9) and **P12, the
+Incarnate marks** (an unexplained sigil that outlives the character,
+and the Age of Gods it eventually opens, `brainstorm.md` §10). Next:
+naming polish and the vertical slice.
 
 ---
 
