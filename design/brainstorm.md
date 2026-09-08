@@ -462,6 +462,13 @@ deal; you still click to sign it.** This also gives console/text
 parity, an audit trail, and softlock immunity on required quest
 beats.
 
+**L49 removes the ceiling on the whitelist, not the gate.** The model
+may reach for *any* intent — there is no list of things too big to
+propose, war declarations included. What it can never do is execute
+one. Every binding intent stops at explicit confirmation, so the worst
+a misheard sentence achieves is an unwanted panel the player dismisses.
+Speech is free, proposal is free, execution is always clicked.
+
 ### 9.3 What actually makes them feel alive
 
 Not fluency — fluency is table stakes, and every LLM NPC in the
@@ -478,7 +485,11 @@ industry sounds like the same eager assistant.
 - **Gossip diffusion.** What you say becomes a rumor object with a
   source, a decay timer, and **distortion**. It travels at caravan
   speed. Three towns over it is wrong in an interesting way. Plugs
-  straight into the rumor layer in `content.md` §3.
+  straight into the rumor layer in `content.md` §3. **Distortion is
+  generated, not tabled (L48)** — the model decides how the story
+  curdles, but every proper noun in it comes from retrieval. It can
+  invent that Corran poisoned the well out of jealousy; it cannot
+  invent Corran, the well, or a spell that does the poisoning.
 - **They don't have to like you.** Disposition, refusal, boredom,
   contempt. An NPC allowed to end the conversation and walk off is
   worth ten that aren't — and is also the best moderation tool on
@@ -794,19 +805,28 @@ all (§10.9).
       anyone is in earshot rather than the channel being muted.
       Platform block/mute is a safety layer, not a game mechanic.
 - [ ] **Multi-party scope.** Which NPC classes accept 3–4 speakers,
-      and does diarization survive console mic quality?
-- [ ] **Model tiering boundaries.** Where exactly the bark / ambient
-      / story-bearing lines fall, and the per-turn cost ceiling a
-      buy-to-play game can carry in perpetuity (L27).
-- [ ] **Gossip distortion: authored or generated?** Authored
-      distortion tables are safe and repetitive; generated
-      distortion is alive and can invent canon it shouldn't.
+      and does diarization survive console mic quality? *Prototype
+      question — paper cannot answer the second half.*
+- [ ] ⚠️ **Model tiering + cost ceiling — ESCALATED, reaches L27.**
+      §9.1's arithmetic is a permanent per-player operating cost on a
+      game with no recurring revenue. **Subscription is on the table**
+      and would break L27's letter while keeping its spirit (still no
+      pay-for-power, no cosmetic shop, nothing a crafter could make).
+      Live alternatives: per-account daily story-tier budget that
+      degrades in-fiction ("the world is busy today"), per-NPC rate
+      limits, or story-tier NPCs shipping only with expansions that
+      fund their own inference. **Decide after the slice measures real
+      cost per turn**, not before.
+- [x] **Gossip distortion** → **L48**: fully generated, over a fixed
+      noun space. The model invents meaning freely; retrieval owns
+      every proper noun. No invented spell names, ever.
 - [x] **Is disposition visible?** → **L47**: never numeric. It reads
       through greeting, name use, body language, volunteered
       information, and the freedom to walk off.
-- [ ] **Where the intent whitelist ends** — how much can be
-      negotiated by voice before it must become a confirm panel
-      (§9.2).
+- [x] **Where the intent whitelist ends** → **L49**: nowhere, for
+      *proposal*. The model may reach for any intent; every binding
+      one is gated by explicit confirmation. The panel is a gate, not
+      a receipt.
 
 **P12 — the Incarnate marks & the Age of Gods (§10).** Raised
 2026-09-08. The hook (§10.9 step 1) is cheap enough to ship without

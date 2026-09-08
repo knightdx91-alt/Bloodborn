@@ -280,8 +280,12 @@ and police differently, not because geometry changed.
 
 ## Open lore questions
 - [ ] Final naming pass before any public-facing material.
-- [ ] The enemy: nature, name, and whether launch content ever shows
-      its fingerprints (recommend: rare, deniable traces only).
+- [x] The enemy → **L50**: rare, deniable traces at launch. A
+      handful of things the Godsgrave cosmology does not explain,
+      each always explicable as something ordinary; nothing names it
+      and no NPC knows. Remaining: the nature and name themselves
+      (internal canon), and which specific traces ship — content
+      work, not design.
 - [ ] How much of §9 the four faith questlines each glimpse.
 - [x] Epoch thresholds → **L41**: thresholds *arm* (awakened count,
       witnessed castings, institutional pressure — server-side and

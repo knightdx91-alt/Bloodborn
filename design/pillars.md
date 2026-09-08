@@ -56,6 +56,9 @@ Status tracker for the big structural decisions. Detail lives in
 | L45 | The Age of Gods **is** the sealed arc | Extends L30/P12. The "other option" at the Heart (`demigod-realm.md` §4) and the seal-weakening expansion hook (`lore.md` §9) are **the same door as P12's** — refusing pantheon godhood is what cracks time open. Three dangling threads become one. Launch data still contains nothing about what refusal does; the answer now exists internally, sealed, instead of being a promise with no payload |
 | L46 | Proximity speech is always audible | Extends P11 §9.4/§9.6. **No in-fiction mute, no whisper channel, no private mode.** Speech in public is public, always — the strongest version of the tavern-as-information-market bet. Secrets therefore leak from careless *placement*, by design. Stakes-bearing NPCs (Circle contacts, the Lamp, anything touching L22) are protected diegetically instead: **they simply refuse to speak while anyone is in earshot**, which is better fiction than a muted channel and the same protection. Platform-level personal block/mute exists as a safety and certification layer (required by all three console platforms for player-to-player voice) — never as a gameplay toggle |
 | L47 | Disposition is never numeric | Extends P11 §9.3. No bar, no number, no named tier. An NPC's regard reads entirely through behavior: greeting warmth, whether they use your name, body language (head turns, lean-ins, the eyes going to an eavesdropper), how much they volunteer, and whether they end the conversation and walk off. The budget goes to animation and voice direction, not UI — §9.3's own position, that cheap animation sells *alive* better than model quality |
+| L48 | Gossip distortion is generated | Extends P11 §9.3. Distortion is **fully generated** — the model decides how a rumor curdles and says it in the NPC's own voice. Alive, never a pattern players can memorize. One hard constraint: **the noun space is fixed.** Retrieval supplies every proper noun (real people, towns, goods, events on this server); the model may invent causes, motives, exaggerations and interpretations freely, but never a new name — and above all never a spell name. A generated false spell sends a whole server hunting something that does not exist. Invented *meaning* is the feature; invented *nouns* are the bug |
+| L49 | The intent ceiling | Extends P11 §9.2. **No ceiling on what the model may propose; a hard gate on what executes.** The model can reach for any intent, including war declarations and escrow — but every binding intent (coin, gear, enrollment, escrow, contract, charter, war) requires explicit player confirmation before it takes effect. The panel is the gate, never a receipt for something already done. This keeps §9.2's rule intact — the model still never mutates state — while removing the whitelist's expressive ceiling. A misheard sentence can raise a panel; it can never sign one |
+| L50 | The enemy at launch | Extends L21/`lore.md` §9. **Rare, deniable traces only.** A handful of things across the whole world that the Godsgrave cosmology does not explain — wrong-shaped wounds, a deep-delve chamber older than the god, ruins in the Interior nobody built — each always explicable as something ordinary. Nothing names it, nothing confirms it, and no NPC knows. Rewards obsessives, spoils nothing, and gives the Heart's revelation the foreshadowing it needs to land as a payoff rather than an asspull |
 
 ---
 
@@ -128,10 +131,26 @@ caravan speed (L28); push-to-talk on a dedicated bind, never open mic;
 proximity conversation where bystanders — players *and NPCs* — overhear;
 voice-first with full-fidelity text parity.
 
-Open before it can lock: proximity audibility default, multi-party
-scope, model tiering + per-turn cost ceiling against L27, authored vs.
-generated gossip distortion, whether disposition is visible, and where
-the intent whitelist ends. Full list at the bottom of `brainstorm.md`.
+Four of its questions are now locked: **L46** (always audible),
+**L47** (disposition never numeric), **L48** (generated distortion over
+a fixed noun space) and **L49** (no proposal ceiling, hard execution
+gate). Still open: multi-party scope (needs the prototype), and —
+escalated — **the cost ceiling, which now reaches the business model.**
+
+⚠️ **P11 vs L27 — the open commercial question.** §9.1's arithmetic
+(~33 inferences/sec at 3k concurrent, forever) is a permanent
+per-player operating cost on a game with no recurring revenue. That is
+a genuine collision with L27's buy-to-play lock, and it is not settled.
+Subscription is explicitly on the table. Note that a sub breaks L27's
+*letter* while keeping its *spirit* intact — no pay-for-power, no
+cosmetic shop, no crafter-competing goods — which makes it a far
+cleaner fit than any monetization that sells advantage. Alternatives
+still live: per-account daily story-tier budget degrading in-fiction,
+per-NPC rate limits, or shipping story-tier NPCs only with expansions
+that fund their own inference. **Decide after the slice measures real
+cost per turn** — this is the one question where paper numbers are
+worth less than a week of telemetry. Full list at the bottom of
+`brainstorm.md`.
 
 Slice gate (§9.8): one town, six voice NPCs, one rumor that provably
 arrives *wrong* in the next town, one epoch flip that visibly changes
@@ -188,7 +207,7 @@ Full list at the bottom of `brainstorm.md`.
     §10; open, seven questions to settle, launch hook separable from
     the expansion.
 
-**The original ten structural pillars are locked (47 decisions).** P11
+**The original ten structural pillars are locked (50 decisions).** P11
 (living NPCs) and P12 (the Incarnate marks) are new and open — both
 added since the sweep. The one-page
 distillation is `vision.md`; the build-and-play sanity check is
