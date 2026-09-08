@@ -19,12 +19,13 @@ opens, `brainstorm.md` §10).
 
 **The design side is complete** — every structural question is locked
 and every document that was missing has been written. What remains is
-not design: trademark clearance on the title, hardware that can run
-Unity, and then **Stage 1** of [`design/tech.md`](design/tech.md) §6 —
-single-player combat, from a character controller to a working parry.
-That is the road to the L39 gate
-([`design/combat.md`](design/combat.md) §9), the one result that can
-kill or confirm the whole project.
+not design.
+
+**Stage 1 has started.** [`design/tech.md`](design/tech.md) §6 walks
+from a character controller to a working parry in six steps; step one
+is written and waiting in [`unity/`](unity/). That is the road to the
+L39 gate ([`design/combat.md`](design/combat.md) §9) — the one result
+that can kill or confirm the whole project.
 
 ⚠️ **One open question now reaches the business model:** P11's
 per-turn inference cost against L27's buy-to-play lock. Subscription
@@ -43,6 +44,7 @@ things stand, what's next, and what can be done without a laptop.
 | [`design/vision.md`](design/vision.md) | **Start here.** The one-page pitch and the five promises. |
 | [`design/pillars.md`](design/pillars.md) | The decision log — all 87 locks (L1–L87), pillar status, and the next-phase plan. The map to everything else. |
 | [`design/feasibility-review.md`](design/feasibility-review.md) | Build-and-play sanity check: developer risk register, six player-archetype simulations, systemic stress tests, verdict and staged production path. |
+| [`unity/`](unity/) | Unity scripts staged before they can be verified in the editor, with setup instructions. Step 1 of the Stage 1 prototype lives here. |
 | [`sim/`](sim/) | The rules of the game as engine-free C#, with tests. Runs anywhere; the zone servers will run this same code. |
 | [`design/art-audio.md`](design/art-audio.md) | Art as the interface: what must read at a glance, why the look lives in the treatment rather than the assets, and what audio carries that the eye cannot. |
 | [`design/interface.md`](design/interface.md) | Minimalist by rule: nothing permanently on screen, legibility as a skill, maps as player-made goods, and the companion app as the pressure valve. |

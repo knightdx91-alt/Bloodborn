@@ -13,8 +13,8 @@ Design is **87 locked decisions** and **complete** — every structural
 question locked, every missing document written.
 The engine is chosen (Unity). Every system a player touches in their
 first hundred hours is specified, and most of it is **written, tested
-and running** as engine-free C# — 185 tests. The development Mac cannot
-run Unity, so work continues in pure C# until there is better hardware.
+and running** as engine-free C# — 185 tests. Unity 6.6 is installed on the
+development Mac and **Stage 1 is now unblocked**.
 
 ## Device check
 
@@ -124,10 +124,12 @@ closed it, and both were already in the design:
 has been written, and every structural question is locked. What remains
 falls into three piles, and none of it is design:
 
-1. **Hardware, then the prototype.** `tech.md` §6 Stage 1 — single
-   player combat in Unity, six steps from a character controller to a
-   working parry. Blocked on a machine that can run Unity; the 2017
-   Air cannot, and Unity drops Intel Mac support at 6.8 regardless.
+1. **Stage 1 in Unity — started.** `tech.md` §6, six steps from a
+   character controller to a working parry. **Step 1 (move and look)
+   is written** and staged in `unity/Scripts/` with setup instructions
+   in `unity/README.md`. Unity 6.6 is installed and this is no longer
+   blocked on hardware — see Known constraints for what that machine
+   can and cannot do.
 2. **Trademark clearance on "Marrowmark"** (`naming.md` §5) — blocks
    anything public. Classes 9 and 41, plus a common-law sweep, plus an
    attorney.
@@ -161,11 +163,15 @@ Roughly 25 remain. The ones that unblock the most:
 ## Known constraints
 
 - **Hardware.** MacBook Air 2017, Monterey 12.7.6, dual-core i5, 8GB,
-  Intel HD Graphics 6000. Runs C# comfortably; cannot realistically run
-  Unity, and Unity removes Intel Mac support at 6.8 regardless. A
-  different machine is needed before `tech.md` §6 Stage 1. A Windows PC
-  is the better buy — PC is the first ship target (L53) and console
-  SDKs are Windows-only later.
+  Intel HD Graphics 6000, **Unity 6.6 installed**. Corrected
+  2026-09-08: this machine **can** run Unity for Stage 1. Grey-box
+  scenes and code are fine; iteration is slow and 8GB is the pinch
+  point, but it is not a blocker. It becomes one around Stage 3.
+  **Pin Unity 6.6** — Intel Mac support is deprecated there and removed
+  at 6.8. A better machine is wanted eventually, and a Windows PC is
+  the right buy when it happens (PC is the first ship target, L53, and
+  console SDKs are Windows-only later) — but it is no longer blocking
+  anything.
 - **Solo developer, new to gamedev, AAA ambition, multi-year horizon.**
   The strategy that makes that viable is `tech.md` §1: build systems to
   full ambition, buy or generate content volume.

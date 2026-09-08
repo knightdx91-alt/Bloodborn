@@ -278,6 +278,21 @@ overwritten, never as tuning.
    just "the recovery is too long."
 4. Repeat.
 
+> **Hardware note (2026-09-08).** An earlier draft said the
+> development Mac could not run Unity. That was an overstatement. A
+> 2017 MacBook Air on Unity 6.6 handles Stage 1 — grey rooms, a
+> capsule, a few dummies — perfectly adequately. Iteration is slow
+> (recompile and domain reload on a dual-core) and 8GB is the pinch
+> point, but it is not a blocker. It becomes one around Stage 3, when
+> towns stream and bought assets accumulate. Intel Mac support is
+> deprecated at 6.6 and **removed at 6.8**, so pin the version.
+>
+> **For the Stage 1 prototype specifically, use the Built-In Render
+> Pipeline rather than URP** (L54). URP compiles a large shader library
+> up front, which is the single slowest thing this hardware will do,
+> and nothing in Stage 1 needs it. Switching later costs nothing when
+> there is no art to convert.
+
 **Getting started, concretely:**
 - Install **Unity Hub**, then the current **Unity 6 LTS**.
 - Create a **3D (URP)** project. Pin the version; do not upgrade
