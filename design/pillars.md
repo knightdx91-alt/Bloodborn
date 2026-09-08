@@ -59,6 +59,7 @@ Status tracker for the big structural decisions. Detail lives in
 | L48 | Gossip distortion is generated | Extends P11 §9.3. Distortion is **fully generated** — the model decides how a rumor curdles and says it in the NPC's own voice. Alive, never a pattern players can memorize. One hard constraint: **the noun space is fixed.** Retrieval supplies every proper noun (real people, towns, goods, events on this server); the model may invent causes, motives, exaggerations and interpretations freely, but never a new name — and above all never a spell name. A generated false spell sends a whole server hunting something that does not exist. Invented *meaning* is the feature; invented *nouns* are the bug |
 | L49 | The intent ceiling | Extends P11 §9.2. **No ceiling on what the model may propose; a hard gate on what executes.** The model can reach for any intent, including war declarations and escrow — but every binding intent (coin, gear, enrollment, escrow, contract, charter, war) requires explicit player confirmation before it takes effect. The panel is the gate, never a receipt for something already done. This keeps §9.2's rule intact — the model still never mutates state — while removing the whitelist's expressive ceiling. A misheard sentence can raise a panel; it can never sign one |
 | L50 | The enemy at launch | Extends L21/`lore.md` §9. **Rare, deniable traces only.** A handful of things across the whole world that the Godsgrave cosmology does not explain — wrong-shaped wounds, a deep-delve chamber older than the god, ruins in the Interior nobody built — each always explicable as something ordinary. Nothing names it, nothing confirms it, and no NPC knows. Rewards obsessives, spoils nothing, and gives the Heart's revelation the foreshadowing it needs to land as a payoff rather than an asspull |
+| L51 | Switch target is Switch 2 only | Amends L15. The Nintendo target is **Switch 2 exclusively** — original Switch is not supported. This materially downgrades **T2** (the Switch battle ceiling, `feasibility-review.md`), which was the constraint holding war enrollment caps toward 60v60; L25's 150v150 aspiration becomes plausible rather than fantasy. Crossplay across PC/Xbox/PlayStation/Switch 2 is unchanged |
 
 ---
 
@@ -216,7 +217,7 @@ Full list at the bottom of `brainstorm.md`.
     model, the casual awakening chain), then economy and war numbers,
     then the naming pass.
 
-**The original ten structural pillars are locked (50 decisions).** P11
+**The original ten structural pillars are locked (51 decisions).** P11
 (living NPCs) and P12 (the Incarnate marks) are new and open — both
 added since the sweep. The one-page
 distillation is `vision.md`; the build-and-play sanity check is
@@ -225,16 +226,24 @@ or via the staged path in §5).
 
 ### Next phase
 
+0. ⚠️ **Retitle the project** — `naming.md`. "Bloodborn" cannot ship:
+   *Bloodborne* is a live trademark in the same goods class and the
+   marks are phonetically identical. Independently, the name leaks the
+   magic secret that L36 requires be kept off the box. Lead candidate:
+   **Wheelgrave**. Must be settled before anything goes public.
 1. **Naming polish** — currency ("marks" is placeholder), the six
    town names, "the Interior," spell naming conventions. **Three-way
    collision to resolve:** the placeholder currency, maker's marks
    (L4), and P12's Incarnate mark all currently share the word. At
    most one of them keeps it — maker's marks have the strongest claim
    (they are the oldest and the most player-facing).
-2. **Vertical slice** — the smallest playable proof of the loop: one
-   town + its wedge, one crafting pipeline to mastery, combat vs. a
-   few monster types at real MMO latency (the L39 gate), one hidden
-   awakening end-to-end.
+2. **Build the combat prototype first** — `combat.md` §9 and
+   `tech.md` §6. One room, three enemies, six weapon families, a
+   latency slider. It is the L39 gate, it is the one result that can
+   kill the project, and it is reachable solo in weeks-to-months. The
+   full vertical slice (one town + its wedge, one crafting pipeline to
+   mastery, one hidden awakening end-to-end) is stages 3–5 of
+   `tech.md` §6, not the first step.
 3. **Two prototype-shaped risks to answer inside the slice**:
    the Switch battle ceiling (`feasibility-review.md` T2) and
    contested-delve pressure (§4.3).
@@ -248,13 +257,20 @@ or via the staged path in §5).
 
 ### Gaps with no doc yet
 
-Raised 2026-09-08. Not open *questions* — open *documents*. Each is
-load-bearing and currently uncovered: onboarding and the first three
+Raised 2026-09-08. Not open *questions* — open *documents*.
+
+**Now written:** ~~combat design~~ → `combat.md` (the L39 gate, the
+skill-vs-gear resolution, enemy vocabulary, the latency contract).
+~~Technical design~~ → `tech.md` (engine, server architecture, data
+model, solo production strategy, build order). ~~The title problem~~ →
+`naming.md`.
+
+**Still uncovered**, each load-bearing: onboarding and the first three
 hours (every lock is hostile to a new player — no markers, no fast
-travel, classless, and the best system invisible); combat design
-beyond L2/L39's feel-and-netcode locks; live-ops and the server's
-second year; moderation and trust & safety (which P11 aims a live
-microphone at); UI and information design, including the companion
-app (L31); art and audio direction; and telemetry for the awakening
-throttle that §3.3 calls the most important live-ops dial in the
-game.
+travel, classless, and the best system invisible); live-ops and the
+server's second year; moderation and trust & safety (which P11 aims a
+live microphone at, and which L46 makes sharper); UI and information
+design, including the companion app (L31); art and audio direction —
+note that `combat.md` §6 makes animation and sound readability a
+**hard requirement**, not polish; and telemetry for the awakening
+throttle that §3.3 calls the most important live-ops dial in the game.

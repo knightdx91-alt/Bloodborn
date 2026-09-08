@@ -1,16 +1,25 @@
-# BLOODBORN
+# BLOODBORN *(working title — must change)*
 
 A large-scale, cross-platform 3D MMORPG (PC, Xbox, PlayStation,
-Switch — one shared world, full crossplay) where the world keeps the
+Switch 2 — one shared world, full crossplay) where the world keeps the
 score. Buy-to-play. M-rated grounded dark fantasy.
 
-**Status:** 50 locked decisions, the original ten structural pillars
+> ⚠️ **"Bloodborn" cannot ship.** *Bloodborne* is a live trademark in
+> the same goods class and the marks are phonetically identical — and
+> independently, the name leaks the magic secret L36 requires be kept
+> off the box. See [`design/naming.md`](design/naming.md); lead
+> candidate **Wheelgrave**. Settle before anything goes public.
+
+**Status:** 51 locked decisions, the original ten structural pillars
 closed, feasibility reviewed. Two newer pillars are partly locked and
 still open: **P11, living NPCs** (free-form voice dialogue,
 `brainstorm.md` §9) and **P12, the Incarnate marks** (an unexplained
 sigil that outlives the character, and the Age of Gods it eventually
-opens, `brainstorm.md` §10). Next: naming polish and the vertical
-slice.
+opens, `brainstorm.md` §10).
+
+**Next:** retitle, then build the combat prototype
+([`design/combat.md`](design/combat.md) §9) — the L39 gate, and the
+first build that can kill or confirm the whole project.
 
 ⚠️ **One open question now reaches the business model:** P11's
 per-turn inference cost against L27's buy-to-play lock. Subscription
@@ -26,6 +35,9 @@ is on the table. Deferred until the vertical slice measures real cost
 | [`design/vision.md`](design/vision.md) | **Start here.** The one-page pitch and the five promises. |
 | [`design/pillars.md`](design/pillars.md) | The decision log — all 50 locks (L1–L50), pillar status, the next-phase plan, and the list of docs that don't exist yet. The map to everything else. |
 | [`design/feasibility-review.md`](design/feasibility-review.md) | Build-and-play sanity check: developer risk register, six player-archetype simulations, systemic stress tests, verdict and staged production path. |
+| [`design/combat.md`](design/combat.md) | The combat specification: core loop, stamina, where skill lives vs. gear, the damage triangle, enemy telegraph vocabulary, the latency contract, and the prototype gate that must pass first. |
+| [`design/tech.md`](design/tech.md) | Engine, server architecture, data model, platform sequencing — and the solo production strategy the whole plan rests on. |
+| [`design/naming.md`](design/naming.md) | The title problem: why "Bloodborn" cannot ship, the shortlist, and what real trademark clearance requires. |
 | [`design/lore.md`](design/lore.md) | Working canon: the Godsgrave cosmology, four faiths, six towns, the Revelation Arc, and the secret canon (§9 — spoilers). |
 | [`design/economy.md`](design/economy.md) | Player-driven economy, shops, local markets, travel, coin sinks, the shadow economy, business model. |
 | [`design/war-society.md`](design/war-society.md) | Charters (Companies, Houses, Orders, Circles), rights-based territory, and declared wars. |

@@ -8,13 +8,20 @@ needs a guard rail or a prototype proof.
 
 ---
 
+> **T2 downgraded (2026-09-08):** L51 sets the Nintendo target to
+> **Switch 2 only**. The battle-ceiling risk below was written against
+> original Switch hardware and should be re-read as substantially
+> reduced; L25's 150v150 aspiration is now plausible rather than
+> fantasy. A re-measurement still belongs in the slice.
+>
 > **Scope note (2026-09-08):** this review ran against L1–L39. Locks
 > L40–L50 and pillars P11/P12 came after it and have *not* been through
 > a feasibility pass. Two of them raise new questions this document
 > does not cover: L46 (always-audible proximity voice) has moderation
 > and console-certification surface, and P11's per-turn inference cost
 > is an open collision with L27. A second review pass is owed once P11
-> and P12 finish locking.
+> and P12 finish locking. `combat.md`, `tech.md` and `naming.md` also
+> postdate this review and have not been through a feasibility pass.
 
 ## 1. Developer feasibility
 
