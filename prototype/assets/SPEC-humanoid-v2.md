@@ -1,4 +1,8 @@
-# Spec: humanoid — rebuild request
+# Spec: humanoid — rebuild request  ⟨SUPERSEDED⟩
+
+> **Superseded by [`SPEC-character-v3.md`](SPEC-character-v3.md).**
+> Kept for the diagnosis below, which explains *why* v3 forbids any
+> Blender step. Do not work from this document.
 
 > ## ⚠️ Status after the v2 rebuild (verified 2026-09-13)
 >
