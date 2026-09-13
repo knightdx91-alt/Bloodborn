@@ -37,6 +37,16 @@
     "maxEncumbrancePenalty": 0.4
   },
 
+  "attack": {
+    "windupSeconds": 0.3,
+    "activeSeconds": 0.12,
+    "recoverySeconds": 0.45,
+    "staminaCost": 14.0,
+    "reach": 2.1,
+    "arcDegrees": 110.0,
+    "exhaustedRecoveryMultiplier": 1.5
+  },
+
   "dodge": {
     "startupSeconds": 0.05,
     "invulnerableSeconds": 0.3,

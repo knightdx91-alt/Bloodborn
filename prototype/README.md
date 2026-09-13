@@ -1,8 +1,9 @@
 # Prototype — Godot
 
-`tech.md` §6 Stage 1, **steps 1 and 2: move and look, then dodge**. A
-character you can walk and run around a grey room, and a roll with
-invulnerability frames that costs stamina and punishes panic.
+`tech.md` §6 Stage 1, **steps 1 to 3**. A character you can walk and run
+around a grey room, a roll with invulnerability frames that costs
+stamina and punishes panic, and a sword you can beat a training dummy
+down with.
 
 Built entirely headless — no editor was opened to make this. It exists
 to answer a question that had been assumed settled: **whether the
@@ -22,6 +23,9 @@ engine work can happen without a capable PC.** It can.
 - **A stamina bar that is not always there.** It fades in when the bar
   moves and fades out once you are full and rested (`interface.md` §2:
   there is no persistent HUD).
+- **A sword, and a training dummy that reacts.** The swing is
+  committed, the blade is live for a tenth of a second, and the dummy
+  rocks back, flashes, and eventually topples.
 
 ### On the animations
 
@@ -63,7 +67,38 @@ Controls:
   finger** while steering to dodge that way. There is no dodge button
   and there will not be one: `interface.md` keeps the screen clear, and
   a thumb that is already steering cannot reach a button anyway.
-- **Keyboard** — WASD or arrows, Shift to sprint, **Space** to dodge.
+- **Attack** — **tap** to swing. Attacking is the commonest thing you
+  do, so it gets the commonest gesture; a swing is committed anyway, so
+  lifting a steering thumb to tap costs nothing.
+- **Keyboard** — WASD or arrows, Shift to sprint, **Space** to dodge,
+  **J** or left-click to swing.
+
+### The swing
+
+0.87 seconds: 0.30 winding up, 0.12 with a live blade, 0.45 recovering.
+The wind-up is the telegraph (`combat.md` §6) and is harmless; the
+recovery is the longest phase, because a whiffed swing has to leave
+something to punish — which is what the dodge's repositioning is *for*.
+
+It is paid for on startup, so **a swing that hits nothing still costs
+stamina**, and it is committed: you cannot steer, cancel it, or dodge
+out of it. One swing lands at most one blow, however many frames the
+blade is live for.
+
+The damage triangle (`combat.md` §4) is built and tested in `sim/` and
+is **deliberately not wired in yet**. It resolves a blow against armour
+class and hit location, and a straw dummy has neither; it arrives at
+step 5 with an enemy that wears something. For the same reason the
+sword's damage and the dummy's health are constants in `world.gd` and
+are *not* in `shared/tuning/combat.json` — L4 has weapons coming from
+players, so there is no such thing in the design as "the damage of a
+sword".
+
+The sword is placed by measurement, not by guesswork: the blade axis
+comes from the longest side of the weapon's own bounding box, and the
+grip from the line across the character's knuckles. Both hold for any
+weapon and any hand, which matters because assuming the blade ran along
++Y put it straight through the character's hip.
 
 ### The dodge
 
@@ -88,16 +123,21 @@ fix it.
 
 ### The debug readout
 
-The top-left line — phase, stamina, dodge count, fps — is scaffolding,
-not design. There is nothing to dodge yet, so the invulnerable window
-(the character flashes blue) would otherwise be invisible. It comes out
-at step 3, when the dummy swings back. `SHOW_DEBUG` in `world.gd` turns
-it off.
+The top-left block — dodge and swing phase, stamina, the dummy's
+health, counts, fps — is scaffolding, not design. In particular
+`interface.md` §2 gives an opponent **no bars at all**; the dummy's
+percentage is there to check the sums, and a player is meant to read a
+hit off the body. The invulnerable window (the character
+flashes blue) has nothing swinging at it yet, so it would otherwise be
+invisible. It comes out when the dummy fights back at step 5.
+`SHOW_DEBUG` in `world.gd` turns it off.
 
 **The fps number is worth a look on a real phone.** The verification
 browser here has no GPU and renders this at 3–4 fps, which says nothing
 about real hardware — but it also means nothing about *feel* can be
-judged from this environment.
+judged from this environment. It is not only a testing problem: at that
+frame rate a 70ms tap measures as a second-long press, which is why the
+tap window counts frames as well as milliseconds.
 
 **Or run the source.** Download Godot 4.3 (about 100MB, runs fine on
 the 2017 Air), open this folder as a project, press Play.

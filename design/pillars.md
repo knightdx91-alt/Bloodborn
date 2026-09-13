@@ -262,11 +262,11 @@ Full list at the bottom of `brainstorm.md`.
     Nine documents written that did not exist: `combat.md`, `tech.md`,
     `naming.md`, `crafting.md`, `onboarding.md`, `moderation.md`,
     `liveops.md`, `interface.md`, `art-audio.md`. A simulation library
-    (`sim/`) now implements and tests the rules — 203 tests, engine-free.
-    `tech.md` §6 Stage 1 steps 1 and 2 are built and playable in a
-    browser: an animated character that walks and runs, and a dodge
-    with invulnerability frames, escalating cost and a punishable
-    recovery.
+    (`sim/`) now implements and tests the rules — 218 tests, engine-free.
+    `tech.md` §6 Stage 1 steps 1 to 3 are built and playable in a
+    browser: an animated character that walks and runs, a dodge with
+    invulnerability frames, escalating cost and a punishable recovery,
+    and a committed sword swing against a training dummy that reacts.
 
 **The design side is complete.** The original ten pillars are locked,
 P11 and P12 are locked down to their prototype-gated remainders, and

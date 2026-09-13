@@ -78,6 +78,10 @@ namespace Marrowmark.Sim.Tests
             AssertMatches(DodgeProfile.Default, "dodge");
 
         [Fact]
+        public void Attack_tuning_matches_the_shared_file() =>
+            AssertMatches(AttackProfile.Default, "attack");
+
+        [Fact]
         public void The_prototypes_copy_is_identical_to_the_canonical_file()
         {
             var root = RepoRoot();
@@ -101,6 +105,7 @@ namespace Marrowmark.Sim.Tests
             {
                 ("stamina", typeof(StaminaProfile)),
                 ("dodge", typeof(DodgeProfile)),
+                ("attack", typeof(AttackProfile)),
             };
 
             foreach (var (section, type) in pairs)

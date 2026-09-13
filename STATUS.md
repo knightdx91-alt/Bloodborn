@@ -15,7 +15,7 @@ prototype** with an animated character in it, reachable from any
 browser (see the build loop below). The engine lock (Unity, L54) is
 **under review** — the prototype is Godot. Every system a player touches in their
 first hundred hours is specified, and most of it is **written, tested
-and running** as engine-free C# — 203 tests. Unity 6.6 is installed on the
+and running** as engine-free C# — 218 tests. Unity 6.6 is installed on the
 development Mac and **Stage 1 is now unblocked**.
 
 ## Device check
@@ -58,10 +58,58 @@ Everything below can be done from the Claude Code app with no laptop.
 | | |
 |---|---|
 | **Design** | `design/` — 87 locks in `pillars.md`, which is the map to everything |
-| **Code** | `sim/` — the rules of the game as engine-free C#, 203 tests |
+| **Code** | `sim/` — the rules of the game as engine-free C#, 218 tests |
 | **Tuning** | `shared/tuning/combat.json` — every combat number, once, read by both `sim/` and the prototype |
 | **The plan** | `design/tech.md` §6 (build order), §8 (how the work divides) |
 | **Blocking** | `design/naming.md` §5 — trademark clearance, before anything public |
+
+## Done 2026-09-13 — attack and hit (step 3)
+
+**`tech.md` §6 Stage 1 step 3 is done and playable.** Tap to swing.
+There is a sword in the character's hand and a training dummy you can
+beat down; it rocks back, flashes, topples at zero and rights itself.
+
+- **0.87 seconds**: 0.30 winding up, 0.12 with a live blade, 0.45
+  recovering. The wind-up is the telegraph and is harmless; recovery is
+  the longest phase, because a whiffed swing has to leave something to
+  punish — which is what the dodge's repositioning is *for*.
+- **A swing that hits nothing still costs stamina.** Paid on startup,
+  never on connection.
+- **One swing, one blow**, however many frames the blade is live for.
+- **Committed**: no steering, no cancelling, no dodging out of it.
+- **15 new tests**, `sim/` now at 218.
+
+**The damage triangle is deliberately not wired in.** It resolves a
+blow against armour class and hit location, and a straw dummy has
+neither — it arrives at step 5 with an enemy that wears something. For
+the same reason the sword's damage and the dummy's health are constants
+in `world.gd` rather than shared tuning: L4 has weapons coming from
+players, so "the damage of a sword" is not a thing the design has.
+
+### Three bugs, and a lesson that keeps repeating
+
+- **Godot turns every touch into a left click too.** The emulated press
+  arrives *before* the touch, so it fired a swing on press and then
+  blocked the second-finger dodge.
+- **The fix for that silently did nothing**, because comments in
+  `project.godot` must start with `;` — a `#` line is a parse error
+  that drops the key beneath it.
+- **Taps were being eaten below about 10 fps.** The tap window now
+  counts frames as well as milliseconds. This one is not just a testing
+  artefact: a phone having a bad moment would have lost inputs too.
+
+Two asset assumptions were also wrong in *both* directions — the dummy
+already stands up on its own (a rotation knocked it over) and the
+sword's blade runs along −Z, not +Y (assuming +Y put it through the
+character's hip). Both are now measured rather than assumed: the blade
+axis comes from the longest side of the weapon's bounding box and the
+grip from the line across the knuckles, which will hold for the axe and
+the spear too.
+
+**The lesson, three sessions running: put the numbers on screen.**
+Every one of these was solved the moment something printed what it
+actually saw, and two of them cost an extra round because I guessed
+first.
 
 ## Done 2026-09-13 — the dodge (step 2)
 
@@ -279,17 +327,21 @@ explicitly not a commitment.
 has been written, and every structural question is locked. What remains
 falls into three piles, and none of it is design:
 
-1. **Stage 1 — steps 1 and 2 are done.** `tech.md` §6, six steps from a
-   character controller to a working parry. Move, look and **dodge**
-   are finished and playable in a browser. **Step 3 is attack and hit**
-   — one weapon, a committed animation, a hitbox, and a training dummy
-   that reacts. That is the step where the dodge stops being a trick
-   and starts being an answer to something, and where the debug
-   readout comes out. The slash and hit-reaction clips are already in
-   the repo. Unity versions of step 1 remain staged in
-   `unity/Scripts/` against L54 landing that way.
+1. **Stage 1 — steps 1 to 3 are done.** `tech.md` §6, six steps from a
+   character controller to a working parry. Move, look, **dodge** and
+   **attack** are finished and playable in a browser. **Step 4 is the
+   stamina economy** — attacks, dodges and sprint all draw on it
+   already, so this is the tuning pass: make panic-rolling actually
+   punish, and find out whether a fight has a shape. It is the first
+   step that is mostly judgement rather than construction, and the
+   first that would really rather have a controller.
+   - **Step 5 is one enemy with three attack shapes**, and it is the
+     one that makes the dodge mean something: nothing has ever swung
+     back. The hit-reaction clip is already in the repo.
+   - Unity versions of step 1 remain staged in `unity/Scripts/` against
+     L54 landing that way.
    - Waiting on Muse: `prototype/assets/SPEC-dodge-clips.md`, four
-     directional dodge clips. Not blocking step 3.
+     directional dodge clips. Not blocking anything.
 2. **Trademark clearance on "Marrowmark"** (`naming.md` §5) — blocks
    anything public. Classes 9 and 41, plus a common-law sweep, plus an
    attorney.
