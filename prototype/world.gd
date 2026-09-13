@@ -4,6 +4,27 @@ extends Node3D
 
 var player: CharacterBody3D
 var cam: Camera3D
+var anim: AnimationPlayer
+
+# The character and every clip are direct Mixamo downloads of the same
+# skeleton, so the clips play exactly as they arrived — no retargeting.
+# Anything that re-exports the character through Blender bakes a Z-up
+# rest rotation into the rig and breaks this; see SPEC-character-v3.md.
+const CHARACTER := "res://assets/models/humanoid.fbx"
+const LOCOMOTION := {
+	"idle": "res://assets/animations/anim_Idle.fbx",
+	"walk": "res://assets/animations/anim_Walking.fbx",
+	"run": "res://assets/animations/anim_Running.fbx",
+}
+# The roll, the two slashes and the hit reaction are in
+# assets/animations/ already. They belong to step 2 (the dodge), which
+# is where the stamina and i-frame rules from sim/ come in.
+
+# Roughly the ground speed each clip was authored at. Used only to keep
+# the feet from skating; it is a look, not a rule.
+const WALK_CLIP_SPEED := 1.5
+const RUN_CLIP_SPEED := 4.2
+const WALK_TO_RUN := 2.0
 
 # Touch input: drag anywhere to steer, like a floating thumbstick.
 var _touch_id := -1
@@ -21,6 +42,7 @@ func _ready() -> void:
 	var sun := DirectionalLight3D.new()
 	sun.rotation_degrees = Vector3(-55, -35, 0)
 	sun.light_energy = 1.1
+	sun.shadow_enabled = true  # without it the character floats
 	add_child(sun)
 
 	var env := WorldEnvironment.new()
@@ -104,21 +126,15 @@ func _ready() -> void:
 	# ── Player ──────────────────────────────────────────────────────
 	player = CharacterBody3D.new()
 	player.position = Vector3(0, 1, 2)
-	var pm := MeshInstance3D.new()
-	pm.mesh = CapsuleMesh.new()
-	var pmat := StandardMaterial3D.new()
-	pmat.albedo_color = Color(0.72, 0.70, 0.66)
-	pm.material_override = pmat
-	player.add_child(pm)
 
-	# A nose, so you can see which way you are facing.
-	var nose := MeshInstance3D.new()
-	var nm := BoxMesh.new()
-	nm.size = Vector3(0.18, 0.18, 0.5)
-	nose.mesh = nm
-	nose.position = Vector3(0, 0.35, -0.55)
-	nose.material_override = pmat
-	player.add_child(nose)
+	var body := (load(CHARACTER) as PackedScene).instantiate()
+	# The capsule is two metres tall and centred on the player's origin,
+	# so the character hangs a metre below it to stand on its feet.
+	body.position = Vector3(0, -1.0, 0)
+	# Mixamo characters face +Z. Travel here is toward -Z.
+	body.rotation_degrees = Vector3(0, 180, 0)
+	player.add_child(body)
+	_rig(body)
 
 	var pcol := CollisionShape3D.new()
 	var caps := CapsuleShape3D.new()
@@ -132,6 +148,55 @@ func _ready() -> void:
 	cam = Camera3D.new()
 	add_child(cam)
 	_place_camera()
+
+func _find(node: Node, cls: String) -> Node:
+	if node.get_class() == cls:
+		return node
+	for child in node.get_children():
+		var hit := _find(child, cls)
+		if hit != null:
+			return hit
+	return null
+
+func _rig(body: Node) -> void:
+	var skel := _find(body, "Skeleton3D") as Skeleton3D
+	if skel == null:
+		push_warning("no Skeleton3D in the character; movement will be mute")
+		return
+
+	var lib := AnimationLibrary.new()
+	for key in LOCOMOTION:
+		var src := (load(LOCOMOTION[key]) as PackedScene).instantiate()
+		var src_anim := _find(src, "AnimationPlayer") as AnimationPlayer
+		var clip: Animation = src_anim.get_animation(src_anim.get_animation_list()[0])
+		clip.loop_mode = Animation.LOOP_LINEAR
+		lib.add_animation(key, clip)
+		src.queue_free()
+
+	anim = AnimationPlayer.new()
+	skel.get_parent().add_child(anim)
+	anim.root_node = anim.get_path_to(skel.get_parent())
+	anim.add_animation_library("", lib)
+	anim.play("idle")
+
+func _animate(ground_speed: float) -> void:
+	if anim == null:
+		return
+	var want := "idle"
+	var rate := 1.0
+	if ground_speed > 0.15:
+		if ground_speed < WALK_TO_RUN:
+			want = "walk"
+			rate = ground_speed / WALK_CLIP_SPEED
+		else:
+			want = "run"
+			rate = ground_speed / RUN_CLIP_SPEED
+	if anim.current_animation != want:
+		anim.play(want, 0.15)
+	# Kept near 1.0 on purpose. Pushing a clip past about 1.35x reads as
+	# comical long before it stops skating, so the sprint is allowed to
+	# slide a little rather than gabble.
+	anim.speed_scale = clamp(rate, 0.7, 1.35)
 
 func _unhandled_input(event: InputEvent) -> void:
 	# One finger, anywhere on screen. Where you first press becomes the
@@ -174,11 +239,14 @@ func _physics_process(delta: float) -> void:
 
 	# On touch, how far you drag is how fast you go — so a small nudge
 	# walks and a full push runs, without a separate sprint button.
+	# The curve is squared on purpose: a linear ramp put almost the whole
+	# stick above walking pace, so the walk was unreachable by thumb.
 	var speed := SPEED
 	if Input.is_key_pressed(KEY_SHIFT):
 		speed = SPRINT
 	elif _touch_id != -1:
-		speed = lerp(SPEED * 0.45, SPRINT, clamp(pushed, 0.0, 1.0))
+		var t: float = clamp(pushed, 0.0, 1.0)
+		speed = lerp(SPEED * 0.32, SPRINT, t * t)
 
 	player.velocity.x = dir.x * speed
 	player.velocity.z = dir.z * speed
@@ -189,6 +257,8 @@ func _physics_process(delta: float) -> void:
 		player.velocity.y = -0.1
 
 	player.move_and_slide()
+
+	_animate(Vector2(player.velocity.x, player.velocity.z).length())
 
 	# Turn to face travel.
 	if dir.length() > 0.01:
@@ -212,9 +282,12 @@ func _place_camera() -> void:
 	# far too much sky at a laptop's camera angle, which makes the game
 	# unplayable on a phone and fine everywhere else — the worst kind of
 	# bug to find late.
-	var height: float = lerp(3.2, 8.5, tall)
-	var back: float = lerp(7.0, 6.0, tall)
+	# Framed for a person, not a capsule. The old distance was set when
+	# the player was an untextured pill and nothing was lost by it being
+	# small; a character has to be close enough to read.
+	var height: float = lerp(2.4, 6.0, tall)
+	var back: float = lerp(4.6, 4.4, tall)
 
-	var focus := player.position + Vector3(0, 1.2, 0)
+	var focus := player.position + Vector3(0, 1.0, 0)
 	cam.position = focus + Vector3(0, height, back)
 	cam.look_at(focus, Vector3.UP)

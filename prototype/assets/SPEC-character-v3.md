@@ -5,6 +5,37 @@ needed.
 
 ---
 
+## ✅ Delivered and verified — 2026-09-13
+
+**This worked.** Muse's third delivery (commit `52ad22f`) is an X Bot
+and seven clips straight off Mixamo, and it animates correctly with
+**no retargeting code at all**.
+
+What the numbers say, against the same checks v2 failed:
+
+| | v2 (Blender) | v3 (Mixamo direct) |
+|---|---|---|
+| Worst rest-pose difference | **90°**, on the hips | **1.1°**, on a thumb |
+| Skeleton parent rotation | Z-up bake present | identity, both files |
+| Bones / `mixamorig_` prefixed | 65 / 65 | 65 / 65 |
+| Clip tracks resolving to a bone | 22 of 22 | 43 of 43 |
+| Root motion in walk and run | — | **zero** ("In Place" was ticked) |
+| **Plays correctly** | **no** | **yes** |
+
+The bone counts and names matched in v2 too. **Rest orientation was the
+whole problem**, exactly as the rule below says, and the fix was to
+delete the retargeter rather than improve it — `prototype/tools/` is
+gone.
+
+The character is now the player in `prototype/world.gd`, with idle,
+walk and run driven by ground speed. The remaining four clips — the
+roll, two slashes and the hit reaction — are waiting on step 2.
+
+**Nothing in this spec needs changing. It is kept as the standing rule
+for every future character.**
+
+---
+
 ## The one rule
 
 > ### Every file must be a direct download from mixamo.com.

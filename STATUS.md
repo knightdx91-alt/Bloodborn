@@ -3,7 +3,7 @@
 Short, current, and written to be read on a phone. Updated at the end
 of each working session.
 
-**Last updated:** 2026-09-08
+**Last updated:** 2026-09-13
 
 ---
 
@@ -11,8 +11,9 @@ of each working session.
 
 Design is **87 locked decisions** and **complete** — every structural
 question locked, every missing document written. **There is a playable
-prototype**, reachable from any browser (see the build loop below).
-The engine is chosen (Unity). Every system a player touches in their
+prototype** with an animated character in it, reachable from any
+browser (see the build loop below). The engine lock (Unity, L54) is
+**under review** — the prototype is Godot. Every system a player touches in their
 first hundred hours is specified, and most of it is **written, tested
 and running** as engine-free C# — 185 tests. Unity 6.6 is installed on the
 development Mac and **Stage 1 is now unblocked**.
@@ -52,12 +53,42 @@ Everything below can be done from the Claude Code app with no laptop.
 
 | | |
 |---|---|
-| **Design** | `design/` — 55 locks in `pillars.md`, which is the map to everything |
+| **Design** | `design/` — 87 locks in `pillars.md`, which is the map to everything |
 | **Code** | `sim/` — the rules of the game as engine-free C#, 185 tests |
 | **The plan** | `design/tech.md` §6 (build order), §8 (how the work divides) |
 | **Blocking** | `design/naming.md` §5 — trademark clearance, before anything public |
 
-## Done this session
+## Done 2026-09-13 — the character
+
+The prototype has a **rigged, skinned, animated character**, and it
+took three rounds with Muse to get there. The first two failed the same
+way for the same reason and passed every check that was being run.
+
+- **The cause:** the character had been through Blender, whose FBX
+  exporter bakes a Z-up→Y-up rotation into the skeleton's rest pose.
+  Mixamo's clips do not expect it. Bone names and counts were *always*
+  correct; **rest orientation** was the whole problem.
+- **The wrong fix** was four rounds of increasingly clever retargeting
+  code. Every one printed `22 tracks retargeted, 0 errors` and produced
+  a character that was, in turn, a speck, on its side, facing the wrong
+  way, and scissor-legged. **Every single one was caught by looking at
+  a render, and none by a check.**
+- **The right fix** was `SPEC-character-v3.md`: *every file must be a
+  direct download from mixamo.com; do not open Blender.* The
+  retargeter was then **deleted**, not improved — `prototype/tools/` is
+  gone.
+- Worst rest-pose mismatch went from **90° to 1.1°**, and the clips
+  play exactly as downloaded.
+
+Also this round: idle/walk/run blended by ground speed, the camera
+reframed for a person rather than a capsule, shadows on, and the touch
+speed ramp squared so that a gentle drag actually walks.
+
+**Lesson worth keeping:** a spec should lead with the *mechanism*, not
+the outcome. v2 asked for "a Mixamo-compatible rig" and got a Blender
+rebuild, which is exactly what breaks it.
+
+## Done in the design sessions
 
 **Design.** Raised **P12** (the Incarnate marks and the Age of Gods)
 from an idea to a written pillar. Locked **L40–L87** — the ascension
@@ -125,7 +156,9 @@ closed it, and both were already in the design:
 **https://knightdx91-alt.github.io/Bloodborn/**
 
 Touch and drag to steer on a phone; WASD or arrows with Shift to sprint
-on a keyboard.
+on a keyboard. **There is a character in it now** — a Mixamo X Bot
+placeholder that idles, walks and runs, with the clip picked by how
+fast you are moving. It is not a capsule any more.
 
 The loop, with no PC involved at any point:
 
@@ -140,8 +173,10 @@ The loop, with no PC involved at any point:
 
 Step 4 is the part that matters — it is real testing, not assumption.
 It has already caught a GDScript parse error, a character that walked
-off the edge of the world, and a camera angle that was fine on a laptop
-and showed nothing but sky on a phone.
+off the edge of the world, a camera angle that was fine on a laptop and
+showed nothing but sky on a phone, a walking speed that no thumb could
+reach, and **three separate broken character deliveries that every
+structural check had passed**.
 
 **Rebuilding:** export to `docs/`, commit, push. Pages redeploys
 automatically. `.gitattributes` unsets LFS filters under `docs/`,
@@ -159,6 +194,15 @@ no GPU, exported to web, driven with simulated keypresses, and visually
 verified. The full development loop, with nothing done on the
 developer's machine. That is not possible with Unity.
 
+**One of the three open questions is now half answered.** The loop was
+only ever proven on capsules. It has now imported a rigged, skinned
+character, blended three clips against ground speed, exported, and
+verified the result in a phone-sized browser — and it *diagnosed* three
+broken asset deliveries by measurement rather than by opening them.
+What is still unproven is combat feel, which no engine choice fixes.
+The two questions that actually decide L54 — asset-ecosystem depth and
+the console porting cost — are untouched.
+
 This undermines one of the two reasons L54 chose Unity. The other —
 asset marketplace depth for `tech.md` §1's buy-the-content strategy —
 still stands, along with the console path (L53). **The trade is about
@@ -175,12 +219,14 @@ explicitly not a commitment.
 has been written, and every structural question is locked. What remains
 falls into three piles, and none of it is design:
 
-1. **Stage 1 in Unity — started.** `tech.md` §6, six steps from a
+1. **Stage 1 — step 1 is done.** `tech.md` §6, six steps from a
    character controller to a working parry. **Step 1 (move and look)
-   is written** and staged in `unity/Scripts/` with setup instructions
-   in `unity/README.md`. Unity 6.6 is installed and this is no longer
-   blocked on hardware — see Known constraints for what that machine
-   can and cannot do.
+   is finished and playable in a browser**, with a real animated
+   character rather than a capsule. **Step 2 is the dodge** — the first
+   thing that pulls from the `sim/` library (stamina cost, i-frames),
+   and the point where the design starts arriving in the engine. The
+   roll clip is already in the repo. Unity versions of step 1 remain
+   staged in `unity/Scripts/` against L54 landing that way.
 2. **Trademark clearance on "Marrowmark"** (`naming.md` §5) — blocks
    anything public. Classes 9 and 41, plus a common-law sweep, plus an
    attorney.

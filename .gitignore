@@ -58,3 +58,10 @@ sim/**/obj/
 # ── Scratch ──────────────────────────────────────────────────────────
 scratch/
 *.tmp
+
+# ── Godot ────────────────────────────────────────────────────────────
+# The import cache is rebuilt from the .import files beside each asset,
+# which are source and do get committed.
+prototype/.godot/
+# The web export is staged here, then published from docs/.
+prototype/build/

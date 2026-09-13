@@ -136,8 +136,15 @@ difference between the engine work happening and not happening.
   whether Unity Asset Store purchases can be converted at acceptable
   cost (many formats are engine-neutral; many are not).
 - What third-party console porting actually costs against L53.
-- Whether the demonstrated loop holds up past grey boxes — it has been
-  proven on capsules, not on an animated character with combat.
+- ~~Whether the demonstrated loop holds up past grey boxes — it has
+  been proven on capsules, not on an animated character with combat.~~
+  **Half answered (2026-09-13.)** The prototype now runs a rigged,
+  skinned character with idle/walk/run and a speed-driven blend,
+  imported, built, exported and verified without an editor. Three
+  broken asset deliveries were also *diagnosed* headlessly, by
+  measurement and by rendering. What remains unproven is combat —
+  timing, hit reaction, and feel — which is `combat.md` §9's gate and
+  needs a human on a controller under any engine.
 
 **Interim position:** the prototype in `prototype/` is Godot, because
 that is what can be built now. L54 stands until the questions above are

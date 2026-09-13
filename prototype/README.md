@@ -1,7 +1,7 @@
 # Prototype — Godot
 
-`tech.md` §6 Stage 1, **step 1: move and look**. A capsule you can walk
-around a grey room with a few blocks and a training dummy.
+`tech.md` §6 Stage 1, **step 1: move and look**. A character you can
+walk and run around a grey room with a few blocks and a training dummy.
 
 Built entirely headless — no editor was opened to make this. It exists
 to answer a question that had been assumed settled: **whether the
@@ -10,9 +10,27 @@ engine work can happen without a capable PC.** It can.
 ## What it is
 
 - A ground plane, three blocks to move around, and a dummy.
-- A capsule with a "nose" so you can see which way it faces.
+- **A rigged, skinned character** — a Mixamo X Bot placeholder — that
+  idles, walks and runs, with the clip chosen and its rate set by how
+  fast you are actually moving.
 - WASD or arrow keys to move, Shift to sprint.
-- The capsule turns toward its direction of travel; the camera follows.
+- The character turns toward its direction of travel; the camera
+  follows, and pulls up and back on a portrait screen.
+
+### On the animations
+
+The character and every clip are **direct Mixamo downloads of the same
+skeleton**, so the clips play exactly as they arrived — there is no
+retargeting code, and there should never need to be. Three earlier
+deliveries went through Blender, whose FBX exporter bakes a Z-up→Y-up
+rotation into the rest pose, and every one of them was broken in a
+different way. `assets/SPEC-character-v3.md` is the standing rule for
+any character added later; it is worth reading before touching the
+rig.
+
+Four more clips are in `assets/animations/` — a roll, two sword
+slashes and a hit reaction — unused until step 2, where the dodge
+brings in the stamina and i-frame rules from `sim/`.
 
 Nothing from the game design is in it — that is deliberate.
 `tech.md` §6 makes step 1 the tutorial rung, and the dodge in step 2 is
@@ -32,7 +50,9 @@ a minute to go live, and works from a phone browser.)*
 Controls:
 
 - **Touch** — press and drag anywhere to steer. How far you drag is how
-  fast you go, so a small nudge walks and a full push runs.
+  fast you go, so a small nudge walks and a full push runs. The ramp is
+  squared on purpose: a linear one put nearly the whole range above
+  walking pace, which made the walk unreachable by thumb.
 - **Keyboard** — WASD or arrows, Shift to sprint.
 
 **Or run the source.** Download Godot 4.3 (about 100MB, runs fine on
