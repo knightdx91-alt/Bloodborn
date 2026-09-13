@@ -63,5 +63,7 @@ scratch/
 # The import cache is rebuilt from the .import files beside each asset,
 # which are source and do get committed.
 prototype/.godot/
-# The web export is staged here, then published from docs/.
+# The web export goes straight to docs/ (see export_presets.cfg). It used
+# to be staged in prototype/build/, which sits inside the Godot project,
+# so the exporter's own PNGs were being re-imported on the next scan.
 prototype/build/

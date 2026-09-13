@@ -15,7 +15,7 @@ prototype** with an animated character in it, reachable from any
 browser (see the build loop below). The engine lock (Unity, L54) is
 **under review** — the prototype is Godot. Every system a player touches in their
 first hundred hours is specified, and most of it is **written, tested
-and running** as engine-free C# — 185 tests. Unity 6.6 is installed on the
+and running** as engine-free C# — 203 tests. Unity 6.6 is installed on the
 development Mac and **Stage 1 is now unblocked**.
 
 ## Device check
@@ -37,6 +37,10 @@ Everything below can be done from the Claude Code app with no laptop.
   its own environment and builds and runs the test suite there, so new
   simulation code can be written and verified without your machine
   being involved at all.
+- **Building and playing the prototype.** It is authored, built,
+  exported, driven with simulated touch and looked at entirely in the
+  assistant's environment, then published — so you play the result in
+  a browser on the phone itself.
 - Reviewing diffs and commits.
 
 **What needs the Mac:**
@@ -54,9 +58,65 @@ Everything below can be done from the Claude Code app with no laptop.
 | | |
 |---|---|
 | **Design** | `design/` — 87 locks in `pillars.md`, which is the map to everything |
-| **Code** | `sim/` — the rules of the game as engine-free C#, 185 tests |
+| **Code** | `sim/` — the rules of the game as engine-free C#, 203 tests |
+| **Tuning** | `shared/tuning/combat.json` — every combat number, once, read by both `sim/` and the prototype |
 | **The plan** | `design/tech.md` §6 (build order), §8 (how the work divides) |
 | **Blocking** | `design/naming.md` §5 — trademark clearance, before anything public |
+
+## Done 2026-09-13 — the dodge (step 2)
+
+**`tech.md` §6 Stage 1 step 2 is done and playable.** Tap to dodge; tap
+with a second finger while steering to dodge that way; Space on a
+keyboard. It is the first thing in the engine that comes from the
+design rather than from a tutorial.
+
+- **0.70 seconds**: 0.05 committed, 0.30 invulnerable, 0.35 recovering.
+  Rather more than half of it is spent hittable, which is the point —
+  recovery is the punishable part.
+- **Panic-rolling drains you.** 20 stamina, +10 for each dodge in a
+  chain, empty in four. A dodge you cannot pay for still happens, goes
+  45% as far, and recovers 1.6× slower.
+- **The stamina bar obeys `interface.md` §2** — it fades in when the
+  bar moves and is gone once you are full and rested. Verified: it is
+  at zero alpha standing still, and back to zero 5.3 seconds after
+  recovering.
+- **18 new tests**, `sim/` now at 203.
+
+### The thing this turned up: Godot's web export cannot run C#
+
+Godot 4 lost C# everywhere except Windows, macOS and Linux when it
+moved from Mono to .NET. **This does not affect shipping** — PC and
+console both run C# fine. It affects the *development loop*, which is
+the only reason Godot is a candidate at all: the web build is how you
+play anything without a PC, so anything the prototype does has to exist
+in GDScript too.
+
+Handled, for now, by mirroring: `sim/` stays the authority, and
+`prototype/rules/` is a deliberate GDScript copy. **The tuning is not
+copied** — every number lives once in `shared/tuning/combat.json`, and
+a test fails the build if the prototype's copy drifts. Logic diverging
+is a bug someone notices; numbers diverging is a month of tuning
+against the wrong game.
+
+It is affordable at the size of a dodge and not at the size of a game.
+Recorded in `tech.md` §2 as a fourth consideration under L54.
+
+### Two bugs the browser found
+
+- **A player standing still could not dodge at all.** Their only finger
+  became the steering finger. A quick tap now dodges.
+- **The tap test read the release event's position**, which a touchend
+  does not reliably carry — it put the release 694 pixels from the
+  press and silently ate every tap. It now measures how far the finger
+  moved while down.
+
+### And one number worth knowing
+
+The verification browser renders this at **3–4 fps** — no GPU, software
+rasterisation. It says nothing about a real phone, but it is a hard
+limit on what this loop can check: it made a 70ms tap measure as 959ms
+held. The debug readout in the corner now shows fps, so **it is worth
+glancing at on the actual phone**.
 
 ## Done 2026-09-13 — the character
 
@@ -219,14 +279,17 @@ explicitly not a commitment.
 has been written, and every structural question is locked. What remains
 falls into three piles, and none of it is design:
 
-1. **Stage 1 — step 1 is done.** `tech.md` §6, six steps from a
-   character controller to a working parry. **Step 1 (move and look)
-   is finished and playable in a browser**, with a real animated
-   character rather than a capsule. **Step 2 is the dodge** — the first
-   thing that pulls from the `sim/` library (stamina cost, i-frames),
-   and the point where the design starts arriving in the engine. The
-   roll clip is already in the repo. Unity versions of step 1 remain
-   staged in `unity/Scripts/` against L54 landing that way.
+1. **Stage 1 — steps 1 and 2 are done.** `tech.md` §6, six steps from a
+   character controller to a working parry. Move, look and **dodge**
+   are finished and playable in a browser. **Step 3 is attack and hit**
+   — one weapon, a committed animation, a hitbox, and a training dummy
+   that reacts. That is the step where the dodge stops being a trick
+   and starts being an answer to something, and where the debug
+   readout comes out. The slash and hit-reaction clips are already in
+   the repo. Unity versions of step 1 remain staged in
+   `unity/Scripts/` against L54 landing that way.
+   - Waiting on Muse: `prototype/assets/SPEC-dodge-clips.md`, four
+     directional dodge clips. Not blocking step 3.
 2. **Trademark clearance on "Marrowmark"** (`naming.md` §5) — blocks
    anything public. Classes 9 and 41, plus a common-law sweep, plus an
    attorney.

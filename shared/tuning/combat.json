@@ -1,0 +1,48 @@
+{
+  "_README": [
+    "The combat tuning numbers, and the ONE place they live.",
+    "",
+    "sim/ is the authority on the RULES and is written in C#. Godot's web",
+    "export cannot run C# (Godot 4 dropped it when it moved from Mono to",
+    ".NET Core, and it has not come back), and the web export is the whole",
+    "reason the developer can play builds on a phone. So prototype/ mirrors",
+    "the rules in GDScript.",
+    "",
+    "Duplicated logic is a real cost and it is accepted deliberately, but",
+    "duplicated NUMBERS are not: tuning is what changes daily once someone",
+    "has a controller, and two drifting copies of it would be poison. Both",
+    "sides read this file. TuningFileTests.cs fails the build if it stops",
+    "matching the C# defaults, so drift cannot happen quietly.",
+    "",
+    "Every value here is a placeholder with the right relationships between",
+    "them. combat.md section 9: feel is judged with a controller, never",
+    "derived on paper."
+  ],
+
+  "stamina": {
+    "max": 100.0,
+    "regenPerSecond": 25.0,
+    "regenDelaySeconds": 0.6,
+    "exhaustedRegenMultiplier": 0.5,
+    "exhaustionRecoveryFraction": 0.3,
+    "dodgeCost": 20.0,
+    "dodgeChainEscalation": 0.5,
+    "dodgeChainWindowSeconds": 1.2,
+    "parryCost": 15.0,
+    "parryRefundFraction": 0.8,
+    "sprintDrainPerSecond": 8.0,
+    "climbDrainPerSecond": 14.0,
+    "swimDrainPerSecond": 12.0,
+    "jumpCost": 6.0,
+    "maxEncumbrancePenalty": 0.4
+  },
+
+  "dodge": {
+    "startupSeconds": 0.05,
+    "invulnerableSeconds": 0.3,
+    "recoverySeconds": 0.35,
+    "distance": 2.6,
+    "exhaustedDistanceFraction": 0.45,
+    "exhaustedRecoveryMultiplier": 1.6
+  }
+}

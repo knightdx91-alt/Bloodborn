@@ -122,7 +122,7 @@ engine work**, and that assumption is now false.
 | Developer can play builds today | No | **Yes, in a browser** |
 | Asset marketplace depth | Much deeper | Thinner |
 | Console path (L53) | Direct | Third-party porting house |
-| One language client/server/tools | Yes (C#) | Yes (C# or GDScript) |
+| One language client/server/tools | Yes (C#) | Yes when shipping, **no for the web build** — see below |
 
 **The honest shape of the trade is a question of *when*.** Unity's
 advantages — marketplace depth for §1's buy-the-content strategy, and
@@ -145,6 +145,43 @@ difference between the engine work happening and not happening.
   measurement and by rendering. What remains unproven is combat —
   timing, hit reaction, and feel — which is `combat.md` §9's gate and
   needs a human on a controller under any engine.
+
+### A fourth consideration, found while building the dodge (2026-09-13)
+
+**Godot's web export cannot run C#.** Godot 4 lost C# on every platform
+except Windows, macOS and Linux when it moved from Mono to .NET, and
+the web is one of the platforms it lost. There are community builds
+that restore it; there is nothing official.
+
+This is narrower than it first looks, and worth stating precisely:
+
+- **It does not affect shipping.** Marrowmark ships to PC first (L53)
+  and consoles later. Godot runs C# on all of those, so `sim/` would be
+  the client and the server exactly as written.
+- **It does affect the development loop**, and the loop is the entire
+  reason Godot is under consideration. The web build is how the
+  developer plays anything at all without a PC. So for as long as that
+  is true, anything the prototype needs to *do* has to exist in
+  GDScript as well as C#.
+
+**How it is handled now.** `sim/` stays the authority: it is what the
+server will run and what the tests cover. `prototype/rules/` mirrors
+the parts the prototype needs in GDScript, and the mirroring is
+deliberate duplication, accepted with open eyes.
+
+**The tuning is not duplicated**, because that is the part that would
+actually hurt. Every number lives once, in `shared/tuning/combat.json`,
+which both sides read, and `TuningFileTests.cs` fails the build if the
+prototype's copy drifts from it. Logic diverging is a bug someone will
+eventually notice; numbers diverging is a month of tuning against the
+wrong game.
+
+**What it costs:** every rule the prototype exercises is written twice.
+That is affordable at the size of a dodge and it is not affordable at
+the size of the whole game. If Godot wins L54, this is a real bill —
+either the web loop is dropped once there is better hardware, or the
+simulation is written in GDScript and C# stops being the authority.
+**Either is a decision, and neither should happen by drift.**
 
 **Interim position:** the prototype in `prototype/` is Godot, because
 that is what can be built now. L54 stands until the questions above are
