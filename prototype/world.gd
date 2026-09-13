@@ -5,6 +5,12 @@ extends Node3D
 var player: CharacterBody3D
 var cam: Camera3D
 
+# Touch input: drag anywhere to steer, like a floating thumbstick.
+var _touch_id := -1
+var _touch_origin := Vector2.ZERO
+var _touch_vec := Vector2.ZERO
+const TOUCH_RANGE := 90.0  # pixels of drag for full tilt
+
 const SPEED := 4.0
 const SPRINT := 7.0
 const GRAVITY := 18.0
@@ -28,10 +34,12 @@ func _ready() -> void:
 	add_child(env)
 
 	# ── Ground ──────────────────────────────────────────────────────
+	const YARD := 30.0  # half-extent of the drill yard
+
 	var ground := StaticBody3D.new()
 	var gm := MeshInstance3D.new()
 	var plane := PlaneMesh.new()
-	plane.size = Vector2(40, 40)
+	plane.size = Vector2(YARD * 2.0, YARD * 2.0)
 	gm.mesh = plane
 	var gmat := StandardMaterial3D.new()
 	gmat.albedo_color = Color(0.42, 0.42, 0.40)
@@ -39,10 +47,37 @@ func _ready() -> void:
 	ground.add_child(gm)
 	var gcol := CollisionShape3D.new()
 	var gbox := BoxShape3D.new()
-	gbox.size = Vector3(40, 0.2, 40)
+	gbox.size = Vector3(YARD * 2.0, 0.2, YARD * 2.0)
 	gcol.shape = gbox
 	gcol.position = Vector3(0, -0.1, 0)
 	ground.add_child(gcol)
+
+	# Yard walls. You should never be able to walk into the void —
+	# falling out of the world is the least informative bug there is.
+	for i in 4:
+		var wall := CollisionShape3D.new()
+		var wb := BoxShape3D.new()
+		var along := YARD * 2.0 + 2.0
+		wb.size = Vector3(along, 6.0, 1.0) if i < 2 else Vector3(1.0, 6.0, along)
+		wall.shape = wb
+		match i:
+			0: wall.position = Vector3(0, 3, -YARD)
+			1: wall.position = Vector3(0, 3, YARD)
+			2: wall.position = Vector3(-YARD, 3, 0)
+			3: wall.position = Vector3(YARD, 3, 0)
+		ground.add_child(wall)
+
+		# A low kerb so the wall is visible, not just felt.
+		var kerb := MeshInstance3D.new()
+		var km := BoxMesh.new()
+		km.size = Vector3(along, 0.6, 0.6) if i < 2 else Vector3(0.6, 0.6, along)
+		kerb.mesh = km
+		kerb.position = Vector3(wall.position.x, 0.3, wall.position.z)
+		var kmat := StandardMaterial3D.new()
+		kmat.albedo_color = Color(0.26, 0.25, 0.24)
+		kerb.material_override = kmat
+		ground.add_child(kerb)
+
 	add_child(ground)
 
 	# ── Some blocks to walk around, so movement reads ───────────────
@@ -98,6 +133,24 @@ func _ready() -> void:
 	add_child(cam)
 	_place_camera()
 
+func _unhandled_input(event: InputEvent) -> void:
+	# One finger, anywhere on screen. Where you first press becomes the
+	# centre; dragging away from it steers. Nothing to aim at, which
+	# matters on a phone where you cannot see your own thumb.
+	if event is InputEventScreenTouch:
+		if event.pressed and _touch_id == -1:
+			_touch_id = event.index
+			_touch_origin = event.position
+			_touch_vec = Vector2.ZERO
+		elif not event.pressed and event.index == _touch_id:
+			_touch_id = -1
+			_touch_vec = Vector2.ZERO
+	elif event is InputEventScreenDrag and event.index == _touch_id:
+		var offset: Vector2 = event.position - _touch_origin
+		_touch_vec = offset / TOUCH_RANGE
+		if _touch_vec.length() > 1.0:
+			_touch_vec = _touch_vec.normalized()
+
 func _physics_process(delta: float) -> void:
 	if player == null:
 		return
@@ -112,9 +165,20 @@ func _physics_process(delta: float) -> void:
 		dir.x -= 1.0
 	if Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT):
 		dir.x += 1.0
+	# Touch overrides keys when a finger is down.
+	if _touch_id != -1 and _touch_vec.length() > 0.15:
+		dir = Vector3(_touch_vec.x, 0.0, _touch_vec.y)
+
+	var pushed := dir.length()
 	dir = dir.normalized()
 
-	var speed := SPRINT if Input.is_key_pressed(KEY_SHIFT) else SPEED
+	# On touch, how far you drag is how fast you go — so a small nudge
+	# walks and a full push runs, without a separate sprint button.
+	var speed := SPEED
+	if Input.is_key_pressed(KEY_SHIFT):
+		speed = SPRINT
+	elif _touch_id != -1:
+		speed = lerp(SPEED * 0.45, SPRINT, clamp(pushed, 0.0, 1.0))
 
 	player.velocity.x = dir.x * speed
 	player.velocity.z = dir.z * speed
@@ -134,6 +198,23 @@ func _physics_process(delta: float) -> void:
 	_place_camera()
 
 func _place_camera() -> void:
+	# A portrait phone has a narrow horizontal field of view, so the
+	# camera pulls back on tall screens to keep the same amount of world
+	# on screen. Without this the game is unplayable on a phone and fine
+	# on a laptop, which is the worst kind of bug to find late.
+	var vp := get_viewport().get_visible_rect().size
+	var aspect: float = vp.x / max(vp.y, 1.0)
+
+	# 0 on a wide screen, 1 on a tall phone in portrait.
+	var tall: float = clamp((1.5 - aspect) / 1.1, 0.0, 1.0)
+
+	# Portrait gets a steeper, slightly closer view. A tall screen shows
+	# far too much sky at a laptop's camera angle, which makes the game
+	# unplayable on a phone and fine everywhere else — the worst kind of
+	# bug to find late.
+	var height: float = lerp(3.2, 8.5, tall)
+	var back: float = lerp(7.0, 6.0, tall)
+
 	var focus := player.position + Vector3(0, 1.2, 0)
-	cam.position = focus + Vector3(0, 3.2, 7.0)
+	cam.position = focus + Vector3(0, height, back)
 	cam.look_at(focus, Vector3.UP)

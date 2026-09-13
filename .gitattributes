@@ -22,6 +22,12 @@
 # to track every asset; losing one detaches the asset from its settings.
 *.meta text eol=lf
 
+# ── Published web build ──────────────────────────────────────────────
+# Everything under docs/ is served by GitHub Pages, which hands out LFS
+# pointer files rather than the real thing. Unset every filter here so
+# the build is stored as plain git objects.
+docs/** -filter -diff -merge
+
 # ── Git LFS: binary assets ───────────────────────────────────────────
 # Run `git lfs install` once on your machine before the first commit
 # that contains any of these.
