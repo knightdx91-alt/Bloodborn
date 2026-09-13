@@ -10,7 +10,8 @@ of each working session.
 ## The one-line version
 
 Design is **87 locked decisions** and **complete** — every structural
-question locked, every missing document written.
+question locked, every missing document written. **There is a playable
+prototype**, reachable from any browser (see the build loop below).
 The engine is chosen (Unity). Every system a player touches in their
 first hundred hours is specified, and most of it is **written, tested
 and running** as engine-free C# — 185 tests. Unity 6.6 is installed on the
@@ -117,6 +118,38 @@ closed it, and both were already in the design:
 - **P11's per-turn cost** remains an open collision with L27's
   buy-to-play lock. Subscription is on the table. Deferred until the
   slice measures real numbers.
+
+## The build loop (working)
+
+**Playable now, on anything, with nothing installed:**
+**https://knightdx91-alt.github.io/Bloodborn/**
+
+Touch and drag to steer on a phone; WASD or arrows with Shift to sprint
+on a keyboard.
+
+The loop, with no PC involved at any point:
+
+1. Assistant writes the Godot project as text — scenes, scripts,
+   config. No editor.
+2. Builds it headless against a software rasteriser, no GPU.
+3. Exports to web.
+4. **Verifies it by loading the real build in a browser at phone
+   viewport size, firing simulated touch events, and screenshotting.**
+5. Commits to `docs/`; GitHub Pages serves it.
+6. Developer opens a URL on any device.
+
+Step 4 is the part that matters — it is real testing, not assumption.
+It has already caught a GDScript parse error, a character that walked
+off the edge of the world, and a camera angle that was fine on a laptop
+and showed nothing but sky on a phone.
+
+**Rebuilding:** export to `docs/`, commit, push. Pages redeploys
+automatically. `.gitattributes` unsets LFS filters under `docs/`,
+because Pages serves LFS pointers rather than files.
+
+**What this does not solve:** feel. Screenshots are not playtesting.
+`combat.md` §9's gate — does a parry land right at 100ms — still needs
+a human holding a controller.
 
 ## ⚠️ L54 is under review
 

@@ -17,6 +17,10 @@ still open: **P11, living NPCs** (free-form voice dialogue,
 sigil that outlives the character, and the Age of Gods it eventually
 opens, `brainstorm.md` §10).
 
+> ▶ **Play the prototype:** <https://knightdx91-alt.github.io/Bloodborn/>
+> Touch and drag on a phone; WASD on a keyboard. `tech.md` §6 Stage 1,
+> step 1 — built headless, no editor involved.
+
 **The design side is complete** — every structural question is locked
 and every document that was missing has been written. What remains is
 not design.
