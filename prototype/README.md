@@ -38,13 +38,9 @@ different way. `assets/SPEC-character-v3.md` is the standing rule for
 any character added later; it is worth reading before touching the
 rig.
 
-Four more clips are in `assets/animations/` — a roll, two sword
-slashes and a hit reaction — unused until step 2, where the dodge
-brings in the stamina and i-frame rules from `sim/`.
-
-Nothing from the game design is in it — that is deliberate.
-`tech.md` §6 makes step 1 the tutorial rung, and the dodge in step 2 is
-where the design starts.
+Two clips are still unused — a second sword slash and a hit reaction.
+The hit reaction is waiting on step 5, where something finally swings
+back.
 
 ## Playing it
 

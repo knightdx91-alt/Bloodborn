@@ -138,15 +138,23 @@ difference between the engine work happening and not happening.
 - What third-party console porting actually costs against L53.
 - ~~Whether the demonstrated loop holds up past grey boxes — it has
   been proven on capsules, not on an animated character with combat.~~
-  **Half answered (2026-09-13.)** The prototype now runs a rigged,
-  skinned character with idle/walk/run and a speed-driven blend,
-  imported, built, exported and verified without an editor. Three
-  broken asset deliveries were also *diagnosed* headlessly, by
-  measurement and by rendering. What remains unproven is combat —
-  timing, hit reaction, and feel — which is `combat.md` §9's gate and
-  needs a human on a controller under any engine.
+  **Answered as far as it can be here (2026-09-13.)** The loop has now
+  carried a rigged skinned character, blended locomotion, a dodge with
+  invulnerability frames, a weapon placed on a bone, a hitbox, and a
+  target that reacts — all authored, built, exported and verified
+  without an editor. It also *diagnosed* three broken asset deliveries
+  and four input bugs by measurement rather than inspection.
 
-### A fourth consideration, found while building the dodge (2026-09-13)
+  **What it cannot do is judge feel**, and the limit is concrete rather
+  than theoretical: the verification browser renders at three to four
+  frames a second. That is not merely too slow to assess timing — at
+  that rate input timing itself misreports, which had to be designed
+  around. This is the same answer `combat.md` §9 gives for every
+  engine: a human holds the controller or the question stays open. **It
+  is not a point of difference between Unity and Godot**, so it should
+  not weigh on L54 either way.
+
+### A fourth consideration: C# does not reach the web (2026-09-13)
 
 **Godot's web export cannot run C#.** Godot 4 lost C# on every platform
 except Windows, macOS and Linux when it moved from Mono to .NET, and
@@ -286,17 +294,25 @@ first step.** As specified it combines animation-driven combat,
 custom netcode, and latency reconciliation — a wall for a first
 project. It stages cleanly, and each stage is independently playable:
 
-### Stage 1 — learning Unity by building the real thing
-1. **Move and look.** A character controller, a camera, a flat test
+### Stage 1 — learning the engine by building the real thing
+
+*Steps 1 to 3 are done and playable in a browser (2026-09-13), built in
+Godot because that is what could be built without a PC. See the L54
+review in §2 — the prototype is not a commitment.*
+
+1. ✅ **Move and look.** A character controller, a camera, a flat test
    room. Nothing from the design yet — this is the tutorial.
-2. **Dodge.** A roll with invulnerability frames and a recovery
+2. ✅ **Dodge.** A roll with invulnerability frames and a recovery
    window. This is the first real piece of `combat.md` §1.
-3. **Attack and hit.** One weapon, committed animation, a hitbox, a
+3. ✅ **Attack and hit.** One weapon, committed animation, a hitbox, a
    training dummy that reacts.
 4. **Stamina.** The §2 economy: attacks, dodges, sprint. Tune it until
-   panic-rolling actually punishes.
+   panic-rolling actually punishes. *All three already draw on the bar,
+   so this is a tuning pass rather than construction — and the first
+   step that would rather have a controller than a screenshot.*
 5. **One enemy, three attack shapes.** §6's vocabulary — quick, heavy,
-   committed — readable by animation and sound alone.
+   committed — readable by animation and sound alone. *The step that
+   makes the dodge mean anything: so far nothing has ever swung back.*
 6. **Parry.** The hardest single-player piece, and the heart of the
    game's combat.
 
@@ -352,16 +368,47 @@ One developer, new to gamedev, working with an AI collaborator. The
 division of labour is not negotiable — it follows from what each side
 can physically do.
 
+> ⚠️ **Rewritten 2026-09-13.** This section previously said the
+> collaborator could not see a viewport, press Play, or look at the
+> game. **That is no longer true**, and the difference is the whole
+> reason L54 is under review. What follows describes both paths,
+> because which one applies depends on an engine choice that is not
+> settled.
+
+### On the Godot path — what has actually been happening
+
+The collaborator authors the project as text, builds it headless
+against a software rasteriser with no GPU, exports it to the web, loads
+the real build in a browser at phone size, drives it with simulated
+touch, and **looks at the result**. Stage 1 steps 1 to 3 were built
+this way without the developer's machine being involved at any point.
+
+That loop has caught things no amount of reading would have: a
+character walking off the edge of the world, a camera fine on a laptop
+and showing nothing but sky on a phone, a walking speed no thumb could
+reach, three broken character deliveries that passed every structural
+check, an input that fired on press instead of release, and taps being
+silently eaten below ten frames a second.
+
+**It has limits, and they are sharp.** The verification browser renders
+at three to four frames a second, so anything about *timing felt in the
+hand* is unmeasurable there — and at that frame rate, input timing
+itself misreports, which has to be designed around rather than assumed
+away. Screenshots are stills. Nothing here judges feel.
+
+### On the Unity path — what the division would be
+
 **The collaborator can:** write and read every C# script, scene and
 prefab file (all text in Unity), the server backend, editor tooling
 that automates repetitive setup, and tests. It can explain any of it,
 which is the part that matters most while learning.
 
-**The collaborator cannot:** open the editor, see a viewport, drag
-anything, press Play, or look at the game. It has no GPU and no
-display. Anything that must happen in the Unity GUI — importing
-assets, wiring a scene, configuring an animator, tuning a material —
-is yours, though editor scripts can shrink that surface a lot.
+**The collaborator cannot:** open the editor, drag anything, press
+Play, or look at the result. Anything that must happen in the Unity GUI
+— importing assets, wiring a scene, configuring an animator, tuning a
+material — is yours, though editor scripts can shrink that surface a
+lot. **This is the asymmetry that put L54 under review:** the same work
+on the Godot side happens end to end without you.
 
 **And one thing is permanently yours: judging feel.** `combat.md` §9's
 gate is *"does this feel BotW-good at 100ms."* No one who cannot hold
@@ -369,12 +416,17 @@ the controller can answer that. The collaborator builds it; you decide
 whether it is right. Treat its combat numbers as first guesses to be
 overwritten, never as tuning.
 
-**The loop:**
+**The loop, on the Godot path:**
 1. You describe what should happen, or point at what feels wrong.
-2. The collaborator writes or changes the C# in the repo.
-3. You pull, press Play, and report back — errors, screenshots, or
-   just "the recovery is too long."
+2. The collaborator writes it, builds it, verifies it by rendering and
+   by driving the real build, and publishes it.
+3. You open a URL on any device and report back — usually "the
+   recovery is too long", which is the half of this it cannot do.
 4. Repeat.
+
+**The loop, on the Unity path:** as above, but step 2 stops at
+"writes it", and you pull and press Play before anything is known to
+work at all.
 
 > **Hardware note (2026-09-08).** An earlier draft said the
 > development Mac could not run Unity. That was an overstatement. A
@@ -391,10 +443,11 @@ overwritten, never as tuning.
 > and nothing in Stage 1 needs it. Switching later costs nothing when
 > there is no art to convert.
 
-**Getting started, concretely:**
+**Getting started on Unity, concretely** — if L54 is confirmed:
 - Install **Unity Hub**, then the current **Unity 6 LTS**.
-- Create a **3D (URP)** project. Pin the version; do not upgrade
-  mid-project.
+- Create a **3D (Built-In Render Pipeline)** project — see the hardware
+  note above, which is the reason, and which overrides L54's original
+  URP line for Stage 1. Pin the version; do not upgrade mid-project.
 - Put it in this repository under `game/`, and set up **Git LFS**
   before committing any binary assets — retrofitting LFS after the
   fact means rewriting history.

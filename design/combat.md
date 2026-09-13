@@ -438,6 +438,15 @@ having a good time, the design has failed.
 **If it fails, nothing else in this repository matters.** Build it
 first, and be willing to hear the answer.
 
+> **Progress against this gate (2026-09-13).** `tech.md` §6 stages the
+> route to it. Steps 1 to 3 are built and playable in a browser: a
+> room with obstacles, a character, a dodge with invulnerability frames
+> and a punishable recovery, and a committed swing against a training
+> dummy. **Nothing of the gate itself is answered yet** — there are no
+> enemies, one weapon rather than six, no techniques, no latency
+> slider, and above all no verdict on feel, which this section is
+> explicit can only come from a controller. The stamina bar exists.
+
 ---
 
 ## Open tuning questions

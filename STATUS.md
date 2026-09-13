@@ -10,13 +10,19 @@ of each working session.
 ## The one-line version
 
 Design is **87 locked decisions** and **complete** — every structural
-question locked, every missing document written. **There is a playable
-prototype** with an animated character in it, reachable from any
-browser (see the build loop below). The engine lock (Unity, L54) is
-**under review** — the prototype is Godot. Every system a player touches in their
-first hundred hours is specified, and most of it is **written, tested
-and running** as engine-free C# — 218 tests. Unity 6.6 is installed on the
-development Mac and **Stage 1 is now unblocked**.
+question locked, every missing document written. Every system a player
+touches in their first hundred hours is specified, and most of it is
+**written, tested and running** as engine-free C# — 218 tests.
+
+**Stage 1 is half built and playable in any browser**: a character who
+walks and runs, a dodge with invulnerability frames, and a sword
+against a training dummy that reacts. That is `tech.md` §6 steps 1 to 3
+of six. **Step 4 is the stamina tuning pass; step 5 is the first enemy
+that swings back.**
+
+⚠️ **The engine lock (Unity, L54) is under review** — the prototype is
+Godot, because the whole build-and-play loop runs there without a PC.
+Not decided.
 
 ## Device check
 
@@ -215,7 +221,8 @@ conflict), and the in-world term for the awakened to **the Quickened**.
 gap identified in the 2026-09-08 review is now closed.**
 
 **Built the simulation library** — the rules of the game as engine-free
-C#, **185 tests**: the stamina economy with movement and encumbrance,
+C#, **185 tests at the time** (218 now): the stamina economy with
+movement and encumbrance,
 the damage triangle, health, a time-to-kill guard that simulates real
 fights against the actual systems, armour changes on the road, per-slot
 armour that breaks off piece by piece, directional targeting and guard
@@ -263,10 +270,12 @@ closed it, and both were already in the design:
 **Playable now, on anything, with nothing installed:**
 **https://knightdx91-alt.github.io/Bloodborn/**
 
-Touch and drag to steer on a phone; WASD or arrows with Shift to sprint
-on a keyboard. **There is a character in it now** — a Mixamo X Bot
-placeholder that idles, walks and runs, with the clip picked by how
-fast you are moving. It is not a capsule any more.
+**Controls.** Drag anywhere to steer — how far you drag is how fast you
+go. **Tap to swing. Tap with a second finger to dodge.** On a keyboard:
+WASD or arrows, Shift to sprint, Space to dodge, J to swing.
+
+Walk over to the training dummy and hit it. Four clean blows put it
+down, and panic-rolling four times in a row empties you.
 
 The loop, with no PC involved at any point:
 
@@ -280,11 +289,24 @@ The loop, with no PC involved at any point:
 6. Developer opens a URL on any device.
 
 Step 4 is the part that matters — it is real testing, not assumption.
-It has already caught a GDScript parse error, a character that walked
-off the edge of the world, a camera angle that was fine on a laptop and
-showed nothing but sky on a phone, a walking speed that no thumb could
-reach, and **three separate broken character deliveries that every
-structural check had passed**.
+What it has caught so far, none of which would have come out of reading
+the code:
+
+- A GDScript parse error, and a character that walked off the edge of
+  the world into empty space.
+- A camera angle that was fine on a laptop and showed nothing but sky
+  on a phone, and later one framed for a capsule that left a person 80
+  pixels tall.
+- A walking speed no thumb could reach.
+- **Three separate broken character deliveries that every structural
+  check had passed** — bone counts, names, scale, all correct, all
+  useless.
+- An attack that fired on press instead of release, because Godot
+  turns every touch into a mouse click as well.
+- A project setting that silently did nothing, because its comment
+  started with `#` instead of `;`.
+- **Taps being eaten below about ten frames a second** — the one that
+  was not merely a testing artefact.
 
 **Rebuilding:** export to `docs/`, commit, push. Pages redeploys
 automatically. `.gitattributes` unsets LFS filters under `docs/`,
@@ -294,6 +316,14 @@ because Pages serves LFS pointers rather than files.
 `combat.md` §9's gate — does a parry land right at 100ms — still needs
 a human holding a controller.
 
+**And the limit is sharper than "no controller".** This browser has no
+GPU and renders at **3–4 fps**. At that rate input timing itself
+misreports: a 70ms tap measures as a second-long press. That had to be
+designed around rather than assumed away, and it is why the debug
+readout shows fps — **worth a glance on the actual phone**, because
+that number is the one thing here that cannot be checked from this
+side.
+
 ## ⚠️ L54 is under review
 
 A Godot project was built, exported and play-tested **entirely inside
@@ -302,20 +332,30 @@ no GPU, exported to web, driven with simulated keypresses, and visually
 verified. The full development loop, with nothing done on the
 developer's machine. That is not possible with Unity.
 
-**One of the three open questions is now half answered.** The loop was
-only ever proven on capsules. It has now imported a rigged, skinned
-character, blended three clips against ground speed, exported, and
-verified the result in a phone-sized browser — and it *diagnosed* three
-broken asset deliveries by measurement rather than by opening them.
-What is still unproven is combat feel, which no engine choice fixes.
-The two questions that actually decide L54 — asset-ecosystem depth and
-the console porting cost — are untouched.
+**One of the three open questions is now closed, and it turned out not
+to be a deciding one.** The loop has carried a rigged character,
+blended locomotion, a dodge, a weapon on a bone, a hitbox and a target
+that reacts — and diagnosed three broken asset deliveries and four
+input bugs by measurement. What it cannot do is judge feel, at 3–4 fps
+with no GPU. **But no engine choice fixes that**, so it should not
+weigh on L54 either way.
 
-This undermines one of the two reasons L54 chose Unity. The other —
-asset marketplace depth for `tech.md` §1's buy-the-content strategy —
-still stands, along with the console path (L53). **The trade is about
-timing:** Unity's advantages land at Stage 3+, a year out; Godot's
-lands today.
+**The two questions that actually decide L54 are still untouched:**
+asset-ecosystem depth for the buy-the-content strategy, and what
+third-party console porting costs. Both want research rather than more
+building, and neither needs a PC.
+
+**And a fourth consideration has since appeared, against Godot:** its
+web export cannot run C#, so every rule the prototype exercises is
+written twice (see the step-2 notes above). Not fatal, and it does not
+touch shipping — but a real bill if Godot wins.
+
+**Where that leaves it.** The original case for Unity was two things:
+everything-is-text, and asset-marketplace depth for `tech.md` §1's
+buy-the-content strategy. Godot wins the first outright. The second
+still stands, along with the console path (L53). **So the trade is
+about timing:** Unity's advantages land at Stage 3+, a year out;
+Godot's land today, and compound every week.
 
 Recorded in `tech.md` §2 with what would settle it. **Not decided.**
 `prototype/` is Godot because that is what can be built now, and is
@@ -357,6 +397,14 @@ model are all pure logic and all buildable without an engine.
 ## Open questions worth a phone session
 
 Roughly 25 remain. The ones that unblock the most:
+
+- **The two questions that decide L54**, and they are research rather
+  than building — which makes them ideal phone work, and they are now
+  the only thing standing between the engine choice and a decision:
+  - Can Godot's asset ecosystem carry `tech.md` §1's buy-the-content
+    strategy? Can Unity Asset Store purchases be converted, and at what
+    cost? (Many formats are engine-neutral; many are not.)
+  - What does third-party console porting actually cost, against L53?
 
 - **Technique design (L56).** Techniques are now the main expression of
   progression and the main source of mobility — how many per weapon

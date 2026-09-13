@@ -8,6 +8,19 @@ They are written but **not compiled** — there is no Unity in the
 environment they were authored in. Expect to fix the first error or two
 together; that is normal and not a sign anything is wrong.
 
+> ⚠️ **Read this before doing any work here (2026-09-13).**
+> **L54 is under review** and this folder is not where the project
+> currently lives. The working prototype is
+> [`../prototype/`](../prototype/), in Godot, and it is three steps
+> further along: move and look, dodge, and attack and hit, all playable
+> in a browser. This folder holds **step 1 only**, and only so that
+> nothing is lost if L54 is confirmed as Unity.
+>
+> The reason for the review is in [`../design/tech.md`](../design/tech.md)
+> §2. The short version: the whole build-and-play loop runs on the
+> Godot side without the developer's machine being involved, and it
+> cannot on Unity. Nothing is decided.
+
 ---
 
 ## Step 1 — move and look
