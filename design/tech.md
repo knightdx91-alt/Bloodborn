@@ -89,6 +89,60 @@ with no gameplay upside.
 *A funded studio with an art team would likely still choose Unreal.
 This decision is correct for these constraints, not universally.*
 
+### ⚠️ L54 under review — the Godot challenge (2026-09-13)
+
+**New evidence has undermined one of the two reasons Unity was
+chosen.** Recorded here rather than acted on, because a locked engine
+should not change by drift.
+
+**What was demonstrated.** A Godot 4.3 project was built, exported and
+**play-tested end to end inside the assistant's own environment**, with
+no editor, no GPU and nothing done on the developer's machine:
+
+1. Project authored as text — scenes, scripts, config.
+2. Built headless against a software rasteriser.
+3. Exported to web.
+4. Loaded in a browser, **driven with simulated keypresses**.
+5. Screenshotted and visually verified — the character moved, the
+   camera followed, the world was correct.
+
+That is the full development loop. It is not possible with Unity, whose
+editor cannot be operated this way and whose Blueprint-equivalent
+workflows are opaque to an assistant regardless.
+
+**What this changes about §2's reasoning.** Two arguments were made for
+Unity. "Everything is text" was already a tie at best — Godot wins it.
+The assumption underneath both was that **the developer would do all
+engine work**, and that assumption is now false.
+
+| | Unity | Godot |
+|---|---|---|
+| Assistant can build end to end | No | **Yes, demonstrated** |
+| Runs on the current hardware | Poorly | Yes |
+| Developer can play builds today | No | **Yes, in a browser** |
+| Asset marketplace depth | Much deeper | Thinner |
+| Console path (L53) | Direct | Third-party porting house |
+| One language client/server/tools | Yes (C#) | Yes (C# or GDScript) |
+
+**The honest shape of the trade is a question of *when*.** Unity's
+advantages — marketplace depth for §1's buy-the-content strategy, and
+the console path — land at **Stage 3 and beyond**, a year or more out.
+Godot's advantage lands **today**, and compounds every week: it is the
+difference between the engine work happening and not happening.
+
+**Not yet decided.** What would settle it:
+
+- Whether Godot's asset ecosystem can actually carry §1's strategy, or
+  whether Unity Asset Store purchases can be converted at acceptable
+  cost (many formats are engine-neutral; many are not).
+- What third-party console porting actually costs against L53.
+- Whether the demonstrated loop holds up past grey boxes — it has been
+  proven on capsules, not on an animated character with combat.
+
+**Interim position:** the prototype in `prototype/` is Godot, because
+that is what can be built now. L54 stands until the questions above are
+answered, and the prototype is explicitly not a commitment.
+
 ## 3. Server architecture
 
 **Zone-server model with a persistent backend.**

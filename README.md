@@ -44,6 +44,7 @@ things stand, what's next, and what can be done without a laptop.
 | [`design/vision.md`](design/vision.md) | **Start here.** The one-page pitch and the five promises. |
 | [`design/pillars.md`](design/pillars.md) | The decision log — all 87 locks (L1–L87), pillar status, and the next-phase plan. The map to everything else. |
 | [`design/feasibility-review.md`](design/feasibility-review.md) | Build-and-play sanity check: developer risk register, six player-archetype simulations, systemic stress tests, verdict and staged production path. |
+| [`prototype/`](prototype/) | A playable Godot prototype of Stage 1 step 1, built headless with no editor. Exists to make the engine question concrete — see the L54 review in `design/tech.md` §2. |
 | [`unity/`](unity/) | Unity scripts staged before they can be verified in the editor, with setup instructions. Step 1 of the Stage 1 prototype lives here. |
 | [`sim/`](sim/) | The rules of the game as engine-free C#, with tests. Runs anywhere; the zone servers will run this same code. |
 | [`design/art-audio.md`](design/art-audio.md) | Art as the interface: what must read at a glance, why the look lives in the treatment rather than the assets, and what audio carries that the eye cannot. |

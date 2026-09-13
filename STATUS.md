@@ -118,6 +118,24 @@ closed it, and both were already in the design:
   buy-to-play lock. Subscription is on the table. Deferred until the
   slice measures real numbers.
 
+## ⚠️ L54 is under review
+
+A Godot project was built, exported and play-tested **entirely inside
+the assistant's environment** — authored as text, built headless with
+no GPU, exported to web, driven with simulated keypresses, and visually
+verified. The full development loop, with nothing done on the
+developer's machine. That is not possible with Unity.
+
+This undermines one of the two reasons L54 chose Unity. The other —
+asset marketplace depth for `tech.md` §1's buy-the-content strategy —
+still stands, along with the console path (L53). **The trade is about
+timing:** Unity's advantages land at Stage 3+, a year out; Godot's
+lands today.
+
+Recorded in `tech.md` §2 with what would settle it. **Not decided.**
+`prototype/` is Godot because that is what can be built now, and is
+explicitly not a commitment.
+
 ## Next, in order
 
 **The design side is complete.** Every document identified as missing
