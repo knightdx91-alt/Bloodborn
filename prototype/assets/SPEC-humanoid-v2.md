@@ -1,4 +1,61 @@
-# Spec: humanoid v2 — rebuild request
+# Spec: humanoid — rebuild request
+
+> ## ⚠️ Status after the v2 rebuild (verified 2026-09-13)
+>
+> **v2 fixed two of the three problems. The third remains, and it is
+> the one that actually blocks animation.**
+>
+> | Check | v1 | v2 |
+> |---|---|---|
+> | Bone count | 22 | **65** ✅ |
+> | Naming | `UpperArm.L` | **`mixamorig_*`** ✅ |
+> | Scale | 1.7 cm | **1.839 m** ✅ |
+> | Mesh skinned | yes | yes ✅ |
+> | Clip tracks resolving | 0 of 43 | **43 of 43** ✅ |
+> | **Plays the clips** | no | **still no** ❌ |
+>
+> **Why it still fails.** Matching bone *names* is not sufficient.
+> Animation rotations are stored relative to each bone's **rest pose**,
+> and the two rests differ:
+>
+> ```
+>                      model rest      clip rest
+> mixamorig_Hips       (91, 0, 0)      (1, 0, 0)      <- 90 degrees apart
+> mixamorig_LeftArm    (31,-30,-5)     (-3,-1,12)
+> skeleton parent      (-90, 0, 0)     (0, 0, 0)
+> ```
+>
+> Played directly, the mesh explodes — limbs detach and fly. The rest
+> pose renders perfectly, which is what makes this so easy to miss.
+>
+> **This is Blender's FBX axis conversion.** The clips come from Mixamo
+> with an identity skeleton parent and near-identity Hips rest. A
+> skeleton rebuilt in Blender and exported to FBX gets Z-up→Y-up baked
+> in as −90° on the parent and +90° on the Hips. Same names, same
+> hierarchy, different resting orientation.
+>
+> **Attempted downstream fix, and why it was abandoned.** Rebasing every
+> key onto the model's rest (`m_rest * (c_rest⁻¹ * q)`) got the torso
+> and legs walking correctly. The arms never came right, because the two
+> rigs also differ in the arms' own axis conventions (model rests
+> A-pose, clips assume T-pose). Adding global-frame conjugation moved
+> the error without removing it. **Writing a retargeter to compensate
+> for an export bug is the wrong repair.**
+>
+> **The fix is §1 of this document, performed as written: put the mesh
+> through Mixamo's auto-rigger.** Then the rest pose *originates* from
+> Mixamo and matches the clips by construction, rather than being
+> reconstructed in Blender and re-exported. A skeleton rebuilt in
+> Blender cannot satisfy this spec however carefully the bone names are
+> copied — the names were never the hard part.
+>
+> **One acceptance check matters more than all the others:** load the
+> character and a clip together and confirm the character animates
+> cleanly. Structural checks passed completely on v2 and it still does
+> not work.
+
+---
+
 
 **Standalone brief.** Everything needed is below; no prior context
 required.
