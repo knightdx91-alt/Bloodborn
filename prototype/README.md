@@ -108,12 +108,29 @@ Controls:
   screen is already an aiming surface. **There is no reticle and there
   will not be one** (L65) — you learn where you are aiming by watching
   where the blow lands.
-- **Parry** — **hold a finger still.** A tap is a swing, a drag is a
-  steer, and a press that does neither is a brace. It fires while the
-  finger is down rather than on release, because a guard that appeared
-  after you let go would be useless.
+- **Guard** — **press and hold.** The guard comes up the moment your
+  finger lands and stays up while you hold it. Time the press against a
+  heavy and you **parry** it; hold it through and you are **blocking**,
+  which bleeds the bar and breaks at zero. A tap is a swing, a drag is
+  a steer.
 - **Keyboard** — WASD or arrows, Shift to sprint, **Space** to dodge,
   **J** or left-click to swing, **K** or right-click to parry.
+
+### The guard (step 6)
+
+**It used to raise itself on a timer** — 260ms after any touch, whether
+you meant it or not. You could not time a parry you had not asked for,
+and resting a thumb on the screen cost 15 stamina. It felt automatic
+because it was.
+
+Now the guard goes up **on press** and stays up while held, so the
+moment is yours. The cost is that the input layer must commit before it
+knows what the touch is: it raises a guard speculatively and hands it
+back if the finger turns out to be tapping or steering. Taking one back
+is refused once it has turned a blow, and is **only possible during the
+0.06s it takes to raise** — a guard that is properly up has been paid
+for, including a mistimed one, because §2 says a failed parry refunds
+nothing.
 
 ### The parry (step 6)
 
@@ -127,6 +144,25 @@ correct play.
 A landed parry staggers the attacker for 0.9s and frees you in 0.12s,
 which is what makes §6's "free punish" free rather than merely fast.
 **The committed attack cannot be parried** — perfect timing included.
+
+### Blocking
+
+Hold the guard past its window and you are blocking. §1: "a blocked blow
+still carries something through: blocking is a stamina war, never an off
+switch." 35% gets through, the bar pays in proportion to what was
+stopped, and **emptying it breaks your guard** and leaves you open —
+§2's punishment for turtling.
+
+The committed attack is **unblockable as well as unparryable**. A guard
+is the wrong answer to it however it is held.
+
+> **Measured, and honest about what it did not show:** turtling for 30
+> seconds saved 72 damage and two deaths, and the bar only ever dipped
+> to 82%. Blocking is supposed to bleed you "under pressure", and one
+> enemy attacking every second or so is not pressure — regeneration
+> outruns it. That is the same gap step 5 found, and the answer is more
+> enemies rather than a bigger number here, which would over-punish a
+> crowd to fix a duel.
 
 > ⚠️ **The guard has no pose of its own yet.** It borrows the hit
 > reaction at half speed. L65 reads the guard *off the body* and

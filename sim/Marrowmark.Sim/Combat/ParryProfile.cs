@@ -49,6 +49,33 @@ namespace Marrowmark.Sim.Combat
         /// </summary>
         public float StaggerSeconds;
 
+        /// <summary>
+        /// How much of a blocked blow still gets through. combat.md §1:
+        /// "a blocked blow still carries something through: blocking is a
+        /// stamina war, never an off switch."
+        /// </summary>
+        public float BlockedFraction;
+
+        /// <summary>
+        /// Stamina bled per point of damage stopped. §2: "blocking bleeds
+        /// stamina under pressure and breaks your guard at zero, leaving
+        /// you open — the punishment for turtling."
+        /// </summary>
+        public float BlockStaminaPerDamage;
+
+        /// <summary>
+        /// Recovery after a guard is broken by running the bar dry. Long,
+        /// because being opened up is the entire punishment for turtling.
+        /// </summary>
+        public float BrokenGuardRecoverySeconds;
+
+        /// <summary>
+        /// What a cancelled guard gives back. The whole cost: the input
+        /// layer started it speculatively and the fighter never raised it.
+        /// </summary>
+        public float StaminaCostRefundedOnCancel(float efficiency) =>
+            StaminaProfile.Default.ParryCost * (efficiency < 0f ? 0f : efficiency);
+
         public static ParryProfile Default => new ParryProfile
         {
             StartupSeconds = 0.06f,
@@ -56,6 +83,9 @@ namespace Marrowmark.Sim.Combat
             RecoverySeconds = 0.55f,
             SuccessRecoverySeconds = 0.12f,
             StaggerSeconds = 0.90f,
+            BlockedFraction = 0.35f,
+            BlockStaminaPerDamage = 0.55f,
+            BrokenGuardRecoverySeconds = 1.20f,
         };
     }
 }

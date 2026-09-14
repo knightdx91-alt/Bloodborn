@@ -187,6 +187,16 @@ namespace Marrowmark.Sim.Combat
         }
 
         /// <summary>
+        /// Return stamina. Does not clear the regeneration delay — giving
+        /// something back is not the same as never having spent it.
+        /// </summary>
+        public void Refund(float amount)
+        {
+            if (amount <= 0f) return;
+            _current = Math.Min(EffectiveMax, _current + amount);
+        }
+
+        /// <summary>
         /// Drain for one tick of sustained effort. Returns false once the
         /// bar is empty, at which point the caller should drop the player
         /// out of the activity — to a walk, off the wall, under the water.

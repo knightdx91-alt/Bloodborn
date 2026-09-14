@@ -62,11 +62,16 @@ const TOUCH_RANGE := 90.0  # pixels of drag for full tilt
 const TAP_MILLISECONDS := 260
 const TAP_FRAMES := 3
 const TAP_SLOP := 24.0
+## Movement past this means the finger is steering, not bracing. Much
+## smaller than TAP_SLOP: a guard has to be handed back inside the
+## fraction of a second it takes to raise, so this errs toward deciding
+## early.
+const GUARD_SLOP := 7.0
 var _touch_started := 0
 var _touch_started_frame := 0
 var _touch_max_drag := 0.0
 var _touch_dodged := false
-var _touch_parried := false
+var _touch_guarding := false
 
 # Prototype scaffolding, not a design decision. interface.md §2 gives an
 # opponent no bars at all; these numbers exist to check the sums.
@@ -261,12 +266,15 @@ func _unhandled_input(event: InputEvent) -> void:
 			_touch_started_frame = Engine.get_frames_drawn()
 			_touch_max_drag = 0.0
 			_touch_dodged = false
-			_touch_parried = false
+			_touch_guarding = false
 		elif event.pressed:
 			# A second finger, anywhere, dodges immediately. No button: the
 			# interface is meant to stay off the screen (L81), a thumb
 			# already steering cannot reach one, and in a fight the dodge
 			# cannot afford to wait and see whether this was a tap.
+			if _touch_guarding:
+				_touch_guarding = false
+				player.cancel_guard()
 			_try_dodge()
 			_touch_dodged = true
 		elif not event.pressed and event.index == _touch_id:
@@ -284,12 +292,20 @@ func _unhandled_input(event: InputEvent) -> void:
 				_last_release = "held %dms / %d frames, drag %dpx" % [
 					held, frames, roundi(_touch_max_drag)]
 			var quick: bool = held <= TAP_MILLISECONDS or frames <= TAP_FRAMES
-			if quick and _touch_max_drag <= TAP_SLOP and not _touch_dodged \
-					and not _touch_parried:
+			var tapped: bool = quick and _touch_max_drag <= TAP_SLOP \
+					and not _touch_dodged
+			if _touch_guarding:
+				_touch_guarding = false
+				# A quick release means that was a tap after all: take the
+				# guard back and swing instead. Refused if it already
+				# turned something, in which case it really was a guard.
+				if not tapped or not player.cancel_guard():
+					player.lower_guard()
+					tapped = false
+			if tapped:
 				_try_attack(_arc_from(_touch_origin))
 			_touch_id = -1
 			_touch_vec = Vector2.ZERO
-			_touch_parried = false
 	elif event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_SPACE:
 			_try_dodge()
@@ -297,6 +313,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			_try_attack()
 		elif event.keycode == KEY_K:
 			_try_parry()
+	elif event is InputEventKey and not event.pressed and event.keycode == KEY_K:
+		player.lower_guard()
 	elif event is InputEventMouseButton and event.pressed:
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			_try_attack()
@@ -305,6 +323,16 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event is InputEventScreenDrag and event.index == _touch_id:
 		var offset: Vector2 = event.position - _touch_origin
 		_touch_max_drag = maxf(_touch_max_drag, offset.length())
+		# Take the speculative guard back the instant the finger moves at
+		# all. This is checked here rather than in the physics step
+		# because a guard can only be taken back while it is still being
+		# raised — 0.06s — and waiting a frame for the physics step misses
+		# that window. A guard that is properly up has to be paid for,
+		# including a mistimed one: combat.md §2 is explicit that a failed
+		# parry refunds nothing.
+		if _touch_guarding and _touch_max_drag > GUARD_SLOP:
+			_touch_guarding = false
+			player.cancel_guard()
 		_touch_vec = offset / TOUCH_RANGE
 		if _touch_vec.length() > 1.0:
 			_touch_vec = _touch_vec.normalized()
@@ -475,7 +503,17 @@ func _land(attacker: Fighter, victim: Fighter, damage: float, by: String,
 	# The guard gets first refusal. combat.md §6 makes parry the answer to
 	# a heavy, and the committed attack unparryable — the rule for which
 	# lives in sim/, not here.
-	match victim.meet(attacker.attack):
+	match victim.meet(attacker.attack, damage):
+		Parry.Outcome.BLOCKED:
+			# §1: a blocked blow still carries something through. Blocking
+			# is a stamina war, never an off switch.
+			var through: float = damage * victim.parry.blocked_fraction()
+			var hurt := victim.hurt(through, attacker.attack.arc)
+			if SHOW_DEBUG:
+				print("BLOCKED %s's blow — %.0f through, %.0f stamina left%s" % [
+					by, hurt["taken"], victim.stamina.current(),
+					"  GUARD BROKEN" if not victim.parry.is_guarding() else ""])
+			return
 		Parry.Outcome.PARRIED:
 			attacker.stagger(victim.parry.stagger_seconds())
 			# A parry is a clang, not a shove: it rattles rather than
@@ -544,19 +582,34 @@ func _tick_bodies(delta: float) -> void:
 			enemy.revive()
 			enemy.position = ENEMY_HOME
 
-## A finger held still is a raised guard. There is no event for "still
-## holding", so it is checked per frame — and it has to fire while the
-## finger is down rather than on release, because a guard that only
-## appeared after you let go would be useless.
+## The guard comes up the moment a finger lands, and stays up while it is
+## held. That is the whole of the fix for the thing that was wrong here.
+##
+## It used to be raised on a TIMER — 260ms after the touch, whether you
+## meant it or not — which meant the player never chose the moment. You
+## cannot time a parry you did not ask for, and resting a thumb on the
+## screen cost 15 stamina. It felt automatic because it *was*.
+##
+## Raising it on press instead means the input layer has to commit before
+## it knows whether this is a tap, a steer or a guard. So it raises one
+## speculatively and takes it back if the touch turns out to be something
+## else — `cancel_guard()` refunds it whole, and refuses once the guard
+## has actually turned a blow.
 func _check_hold() -> void:
-	if _touch_id == -1 or _touch_parried or _touch_dodged:
+	if _touch_id == -1 or _touch_dodged or player == null:
 		return
-	if _touch_max_drag > TAP_SLOP:
-		return  # that is a steer, not a brace
-	var held := Time.get_ticks_msec() - _touch_started
-	var frames := Engine.get_frames_drawn() - _touch_started_frame
-	if held > TAP_MILLISECONDS and frames > TAP_FRAMES:
-		_touch_parried = true
+
+	if _touch_max_drag > GUARD_SLOP:
+		# A steer. The drag handler will normally have given the guard
+		# back already; this is the backstop for a finger that moved
+		# without a drag event reaching us first.
+		if _touch_guarding:
+			_touch_guarding = false
+			player.cancel_guard()
+		return
+
+	if not _touch_guarding and player.parry.can_act() and not player.is_busy():
+		_touch_guarding = true
 		_try_parry()
 
 func _try_parry() -> void:
@@ -755,7 +808,7 @@ func _update_interface(delta: float) -> void:
 
 	const DODGE_NAMES := ["ready", "startup", "INVULNERABLE", "recovery"]
 	const SWING_NAMES := ["ready", "windup", "LIVE", "recovery"]
-	const GUARD_NAMES := ["-", "raising", "OPEN", "caught"]
+	const GUARD_NAMES := ["-", "raising", "OPEN", "BLOCKING", "caught"]
 	_phase_label.text = (
 		"you: dodge %s  swing %s  guard %s\n"
 		+ "    stamina %d%%%s  health %d%%  armour %d/4\n"

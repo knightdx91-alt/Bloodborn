@@ -64,7 +64,7 @@ things stand, what's next, and what can be done without a laptop.
 | [`design/pillars.md`](design/pillars.md) | The decision log — all 88 locks (L1–L88), pillar status, and the next-phase plan. The map to everything else. |
 | [`design/feasibility-review.md`](design/feasibility-review.md) | Build-and-play sanity check: developer risk register, six player-archetype simulations, systemic stress tests, verdict and staged production path. |
 | [`prototype/`](prototype/) | **The game, such as it is** — the Godot project, all of Stage 1, built headless with no editor. Started as the experiment that settled L54. |
-| [`sim/`](sim/) | The rules of the game as engine-free C#, with 257 tests. Runs anywhere; the zone servers will run this same code. |
+| [`sim/`](sim/) | The rules of the game as engine-free C#, with 267 tests. Runs anywhere; the zone servers will run this same code. |
 | [`shared/tuning/`](shared/tuning/) | Every combat number, once. Both `sim/` and the prototype read it, and a test fails the build if they drift — Godot's web export cannot run C#, so the rules are mirrored in GDScript and the tuning deliberately is not. |
 | [`design/art-audio.md`](design/art-audio.md) | Art as the interface: what must read at a glance, why the look lives in the treatment rather than the assets, and what audio carries that the eye cannot. |
 | [`design/interface.md`](design/interface.md) | Minimalist by rule: nothing permanently on screen, legibility as a skill, maps as player-made goods, and the companion app as the pressure valve. |

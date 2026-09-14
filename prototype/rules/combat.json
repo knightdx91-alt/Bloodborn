@@ -112,7 +112,10 @@
     "openSeconds": 0.28,
     "recoverySeconds": 0.55,
     "successRecoverySeconds": 0.12,
-    "staggerSeconds": 0.9
+    "staggerSeconds": 0.9,
+    "blockedFraction": 0.35,
+    "blockStaminaPerDamage": 0.55,
+    "brokenGuardRecoverySeconds": 1.2
   },
   "damageTable": {
     "_order": [

@@ -12,7 +12,7 @@ of each working session.
 Design is **88 locked decisions** and **complete** — every structural
 question locked, every missing document written. Every system a player
 touches in their first hundred hours is specified, and most of it is
-**written, tested and running** as engine-free C# — 257 tests.
+**written, tested and running** as engine-free C# — 267 tests.
 
 **Stage 1 is built and playable in any browser**: a character who walks
 and runs, a dodge with invulnerability frames, a sword, a training
@@ -70,7 +70,7 @@ Everything below can be done from the Claude Code app with no laptop.
 | | |
 |---|---|
 | **Design** | `design/` — 88 locks in `pillars.md`, which is the map to everything |
-| **Code** | `sim/` — the rules of the game as engine-free C#, 257 tests |
+| **Code** | `sim/` — the rules of the game as engine-free C#, 267 tests |
 | **Tuning** | `shared/tuning/combat.json` — every combat number, once, read by both `sim/` and the prototype |
 | **The plan** | `design/tech.md` §6 (build order), §8 (how the work divides) |
 | **Blocking** | `design/naming.md` §5 — trademark clearance, before anything public |
@@ -186,6 +186,36 @@ thrown away.
 
 Nothing about that blocks the two characters above, which are wanted
 either way.
+
+## Done 2026-09-14 — the guard, fixed, and blocking
+
+**The parry used to raise itself on a timer** — 260ms after any touch,
+whether you meant it or not — so you could never choose the moment, and
+resting a thumb on the screen cost 15 stamina. It felt automatic
+because it was. Caught by playing it, not by any test.
+
+**Now the guard goes up on press and stays up while held.** The moment
+is yours. The input layer has to commit before it knows whether a touch
+is a tap, a steer or a guard, so it raises one speculatively and hands
+it back — refused once the guard has turned a blow, and only possible
+during the 0.06s it takes to raise. **A guard that is properly up has
+been paid for, including a mistimed one**, because §2 says a failed
+parry refunds nothing.
+
+**And holding it now does something: blocking**, which was specified in
+§1 and §2 and had never been built. 35% of the blow still comes
+through — "a stamina war, never an off switch" — the bar pays in
+proportion, and emptying it breaks your guard and leaves you open. The
+committed attack is unblockable as well as unparryable.
+
+**11 new tests, `sim/` at 267.**
+
+⚠️ **What the measurement did not show:** turtling for 30 seconds saved
+72 damage and two deaths, and the bar only dipped to 82%. Blocking is
+meant to bleed you *under pressure*, and one enemy swinging every second
+or so is not pressure — regeneration outruns it. Same gap step 5 found.
+The answer is more enemies, not a bigger number, which would
+over-punish a crowd to fix a duel.
 
 ## Done 2026-09-14 — armour that matters, and aiming
 

@@ -81,6 +81,9 @@ var _worn := {}
 ## say so — this comes out when a real hit reaction and a real miss sound
 ## carry it instead.
 var show_iframes := false
+## Whether the player is still holding the guard up. A guard held past
+## its window becomes a block rather than expiring.
+var _guard_held := false
 ## Hitstop. Presentation only — see feel.gd for why the rules must not
 ## be frozen with it.
 var _frozen_for := 0.0
@@ -162,7 +165,7 @@ func is_staggered() -> bool:
 func tick(delta: float) -> void:
 	dodge.tick(delta)
 	attack.tick(delta)
-	parry.tick(delta)
+	parry.tick(delta, _guard_held)
 	stamina.tick(delta)
 	if _hurt_for > 0.0:
 		_hurt_for = max(0.0, _hurt_for - delta)
@@ -276,12 +279,14 @@ func try_attack(section: String = "attack") -> bool:
 	anim.speed_scale = window / total
 	return true
 
-## Raise the guard. combat.md §6: the answer to a heavy.
+## Raise the guard. combat.md §6: the answer to a heavy — and, held past
+## its window, §2's block.
 func try_parry() -> bool:
 	if is_busy():
 		return false
 	if not parry.try_start(stamina):
 		return false
+	_guard_held = true
 	# No guard-pose clip yet, so the hit reaction stands in for the brace.
 	# L65 reads the guard off the body and forbids any UI element to
 	# rescue it, which makes this a placeholder for the single most
@@ -292,11 +297,22 @@ func try_parry() -> bool:
 	anim.speed_scale = 0.5
 	return true
 
+## Let the guard down. Holding it is what makes it a block.
+func lower_guard() -> void:
+	_guard_held = false
+
+## Take back a guard that was only raised to find out whether the touch
+## was a tap. Refunds it whole, and refuses once the guard has done
+## anything — it can never undo a parry.
+func cancel_guard() -> bool:
+	_guard_held = false
+	return parry.cancel(stamina)
+
 ## Meet an incoming blow with whatever this fighter is doing about it.
 ## Returns the Parry.Outcome — the caller applies the stagger, because
 ## staggering is something that happens to the *attacker*.
-func meet(incoming: Attack) -> int:
-	return parry.meet(incoming, stamina)
+func meet(incoming: Attack, damage: float = 0.0) -> int:
+	return parry.meet(incoming, stamina, damage)
 
 ## Opened up by a parry that landed.
 func stagger(seconds: float) -> void:
@@ -366,6 +382,7 @@ func revive() -> void:
 	dodge.reset()
 	attack.reset()
 	parry.reset()
+	_guard_held = false
 	harness.reset()
 	rearm()
 	_hurt_for = 0.0
