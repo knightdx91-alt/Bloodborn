@@ -71,6 +71,9 @@ var _dodge_travelled := 0.0
 var _hurt_for := 0.0
 var _stagger_for := 0.0
 var _sword: Node3D
+## Slot -> the nodes wearing it. L63 tracks head, torso, arms and legs
+## separately because a broken piece comes off and that slot stays bare.
+var _worn := {}
 
 ## Prototype scaffolding. Nothing on screen otherwise says a blow passed
 ## through you, and interface.md §2 forbids adding anything permanent to
@@ -86,7 +89,8 @@ signal died
 ## because the placeholder will be replaced, and because the player and
 ## an enemy have no reason to be the same person.
 func setup(max_health: float, tint: Color, carries_sword: bool = true,
-		character: String = CHARACTER) -> void:
+		character: String = CHARACTER,
+		iron: Color = Look.IRON, leather: Color = Look.LEATHER) -> void:
 	var body := (load(character) as PackedScene).instantiate()
 	# The capsule is two metres tall and centred on the origin, so the
 	# character hangs a metre below it to stand on its feet. Mixamo
@@ -111,6 +115,7 @@ func setup(max_health: float, tint: Color, carries_sword: bool = true,
 
 	if carries_sword:
 		_arm(skel)
+	_worn = Armour.fit(skel, iron, leather)
 
 	var lib := AnimationLibrary.new()
 	for key in LOCOMOTION:
@@ -291,12 +296,31 @@ func hurt(amount: float) -> float:
 	anim.speed_scale = 1.0
 	return taken
 
+## L63: a piece that breaks does not merely stop protecting — it comes
+## off, and the slot is bare for the rest of the fight. The damage side
+## of that is not built yet; this is the half that makes it visible.
+func shed(slot: int) -> void:
+	for mount in _worn.get(slot, []):
+		(mount as Node3D).visible = false
+
+func wearing(slot: int) -> bool:
+	var mounts: Array = _worn.get(slot, [])
+	return not mounts.is_empty() and (mounts[0] as Node3D).visible
+
+## Put the whole harness back on. Respawn only — nothing in the design
+## repairs armour mid-fight (L59: repair is a crafter's job).
+func rearm() -> void:
+	for slot in _worn:
+		for mount in _worn[slot]:
+			(mount as Node3D).visible = true
+
 func revive() -> void:
 	health.reset()
 	stamina.reset()
 	dodge.reset()
 	attack.reset()
 	parry.reset()
+	rearm()
 	_hurt_for = 0.0
 	_stagger_for = 0.0
 	rotation = Vector3.ZERO

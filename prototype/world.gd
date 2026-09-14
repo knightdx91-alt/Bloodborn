@@ -100,7 +100,11 @@ func _ready() -> void:
 	add_child(enemy)
 	# Darker and colder, so the two are told apart by value rather than by
 	# a marker over anyone's head (interface.md §2).
-	enemy.setup(ENEMY_HEALTH, Color(0.40, 0.62, 0.62))
+	# Darker kit as well as a darker body. interface.md §2 gives an
+	# opponent no marker over their head, so the difference has to be in
+	# the silhouette and the value.
+	enemy.setup(ENEMY_HEALTH, Color(0.40, 0.62, 0.62), true, Fighter.CHARACTER,
+		Color(0.26, 0.27, 0.30), Color(0.16, 0.13, 0.10))
 	tactics = EnemyTactics.new(20260914)
 
 	cam = Camera3D.new()

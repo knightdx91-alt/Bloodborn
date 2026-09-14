@@ -222,6 +222,35 @@ The visible ground runs 420m, far past the 30m yard. It used to stop at
 the wall, leaving a hard black band of nothing beyond the fence. You
 still cannot walk out there.
 
+### Armour (`armour.gd`)
+
+Grey-box plate, built from primitives and hung on the skeleton — a helm,
+pauldrons, a cuirass, vambraces, tassets, thigh guards and greaves.
+
+**The geometry is a placeholder. The structure is not.** L63 tracks
+armour across **head, torso, arms and legs**, each with its own
+condition, and says a piece that breaks
+
+> does not merely stop protecting — **it comes off**, and that slot is
+> bare for the rest of the fight... a fighter who started the day in
+> plate finishes it half bare and increasingly desperate.
+
+A character with its armour baked into one mesh cannot do that — which
+is most bought characters and all of Mixamo's — so the slots were worth
+building before the meshes are worth buying. `shed(slot)` is that rule,
+and when real pieces arrive they replace the boxes and nothing else
+changes.
+
+Two things it got wrong first:
+
+- **`size` is a full extent, not a radius.** Reading it as a radius put
+  a bucket on the character's head. Both primitives are now built at
+  diameter 1 so scale and size are the same number.
+- **Realistic metal rendered as a black silhouette.** A metal surface is
+  lit almost entirely by what it reflects and there is nothing here to
+  reflect but a procedural sky, so `metallic` sits at 0.18 rather than
+  0.75. Grounded iron is not a mirror anyway (L20).
+
 ### Where the code lives
 
 - `world.gd` — the fight: who is where, who hit whom, input, camera.
@@ -230,6 +259,7 @@ still cannot walk out there.
   the cheapest way to keep that promise is for there to be nothing in
   the body that knows which it is.
 - `look.gd` — light, sky, haze, grade and palette. See above.
+- `armour.gd` — the per-slot harness. See above.
 - `rules/` — the GDScript mirror of `sim/`. See L88.
 
 ### The debug readout

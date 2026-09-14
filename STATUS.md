@@ -109,6 +109,18 @@ scattered stones so the eye has something to measure distance against,
 and the visible ground extended to 420m — it used to stop at the yard
 wall and leave a hard black band of nothing beyond the fence.
 
+**And the characters are wearing armour now** — a helm, pauldrons, a
+cuirass, vambraces, tassets and greaves, built from primitives in
+`armour.gd` and hung on the skeleton. They still have mannequin bodies,
+but they read as fighters rather than shop dummies.
+
+**The geometry is a placeholder; the structure is not.** L63 tracks
+head, torso, arms and legs separately because a broken piece *comes
+off*, and `shed(slot)` does exactly that — so **L63 is visible in the
+prototype for the first time**. It also means the earlier warning stands
+with a solution attached: a fused bought character still cannot do this,
+but the slots now exist for real pieces to drop into.
+
 **What is still free and not yet done**, roughly by value:
 
 - **Sound.** `art-audio.md` §4 makes audio carry the damage triangle to

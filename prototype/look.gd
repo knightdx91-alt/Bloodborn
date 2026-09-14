@@ -38,6 +38,8 @@ const EARTH := Color(0.27, 0.28, 0.23)
 const STONE := Color(0.35, 0.36, 0.35)
 const TIMBER := Color(0.22, 0.17, 0.12)
 const KERB := Color(0.25, 0.25, 0.23)
+const IRON := Color(0.46, 0.47, 0.50)
+const LEATHER := Color(0.26, 0.19, 0.13)
 
 static func build(into: Node3D) -> void:
 	_sky(into)
@@ -123,6 +125,21 @@ static func solid_material(base: Color, tiles: float = 3.0,
 		rough: float = 0.85) -> StandardMaterial3D:
 	var mat := ground_material(base, tiles)
 	mat.roughness = rough
+	return mat
+
+## Iron. Rough, and only slightly metallic.
+##
+## The metallic value is low on purpose and it is not a stylistic choice:
+## a metal surface is lit almost entirely by what it reflects, and there
+## is nothing here to reflect but a procedural sky. At a realistic 0.75
+## every piece of armour rendered as a black silhouette. Grounded iron is
+## not a mirror anyway (L20), so this reads better and costs nothing.
+static func metal_material(base: Color, rough: float = 0.52) -> StandardMaterial3D:
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = base
+	mat.roughness = rough
+	mat.metallic = 0.18
+	mat.metallic_specular = 0.55
 	return mat
 
 ## A ground material with some variation in it. A single flat colour is
