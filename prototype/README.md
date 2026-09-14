@@ -176,21 +176,41 @@ dodges. That is wrong for L56's circling and
 `assets/SPEC-dodge-clips.md` asks for the four directional clips that
 fix it.
 
-### ⚠️ What Stage 1 found
+### The sparring bot (`spar.gd`)
 
-A bot fought the same seeded enemy three ways for 30 seconds:
+```
+godot --path prototype --headless --fixed-fps 60 spar.tscn
+```
 
-| Strategy | Damage taken |
-|---|---|
-| Nothing at all | 342, died twice |
-| Parry everything | 188 — all of it from committed attacks |
-| **Dodge everything** | **0** |
+Fights the same seeded enemy several ways and reports what each is
+worth. It exists to answer one question after any tuning change: **is
+one answer strictly better than the others?** §6 promises three shapes
+with three answers, and that promise is falsifiable.
 
-**The dodge answers all three shapes perfectly**, so on defence there is
-never a reason to parry. Almost certainly because one slow enemy
-applies no stamina pressure: dodges more than 1.2s apart never trigger
-the chain escalation, so they are free. That is step 4's problem, and
-it is now a specific one — `design/tech.md` §6 has the detail.
+Four seeds, forty seconds each, striking into openings only:
+
+| Strategy | Kills | Dealt | Taken | Openings |
+|---|---|---|---|---|
+| Dodge everything, **away** | **0** | 56 | 26 | 2 |
+| Dodge everything, **around** | 4 | 524 | 59 | 21 |
+| §6's answers, dodging away | 4 | 826 | 176 | 31 |
+| §6's answers, dodging **around** | 8 | 1020 | 176 | 40 |
+| Parry everything you can | 10 | 1376 | 66 | 51 |
+
+**L56 is measurably right.** Dodging *away* kills nothing; dodging
+*around* — the same mechanic, aimed differently — kills four and makes
+ten times the openings.
+
+⚠️ **It cannot tell you whether anything feels good.** §9 says that
+needs a controller, and this bot is frame-perfect: it parries 0.22s
+wind-ups no human could read, which is exactly why §6 gives the quick
+attack to the dodge.
+
+**Two ways it measured nothing before it measured something:** it
+counted only damage *taken*, under which a bot that never tries to win
+is optimal — and it swung freely, so the defensive choice drowned in
+its own aggression. Both are in the file's header, because a tuning
+instrument that lies is worse than none.
 
 ### The look (`look.gd`)
 

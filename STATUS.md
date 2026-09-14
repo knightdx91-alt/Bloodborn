@@ -187,36 +187,53 @@ thrown away.
 Nothing about that blocks the two characters above, which are wanted
 either way.
 
-## ⚠️ The most useful thing Stage 1 produced: the dodge is dominant
+## ✅ Stage 1's real finding: the vocabulary works
 
-With all six steps in, a bot fought the same seeded enemy three ways.
-Over 30 seconds:
+**This replaces an earlier entry that said the opposite, and the
+correction is the more useful half.**
 
-| Strategy | Damage taken |
-|---|---|
-| Nothing at all | 342, died twice |
-| Parry everything | 188 — all of it from committed attacks |
-| **Dodge everything** | **0** |
-| §6's answers (dodge / parry / leave) | 0 |
+`prototype/spar.gd` is a sparring bot and a tuning instrument — it
+fights the same seeded enemy several ways and reports what each is
+worth. Four seeds, forty seconds each, striking into openings only:
 
-**Dodging answers all three shapes perfectly.** So on defence there is
-never a reason to parry, and §6's three answers collapse into one.
-Parry's justification has to be the punish rather than the defence —
-and no bot can settle whether that punish is worth the risk, because
-§9 says that is a controller question.
+| Strategy | Kills | Dealt | Taken | Openings made |
+|---|---|---|---|---|
+| Dodge everything, **away** | **0** | 56 | 26 | 2 |
+| Dodge everything, **around** | 4 | 524 | 59 | 21 |
+| §6's answers, dodging away | 4 | 826 | 176 | 31 |
+| §6's answers, dodging **around** | 8 | 1020 | 176 | 40 |
+| Parry everything you can | 10 | 1376 | 66 | 51 |
 
-**The likely cause is that one slow enemy applies no stamina
-pressure.** Dodges more than 1.2s apart never trigger the chain
-escalation, so they are free, and nothing ever forces a second dodge
-inside that window.
+**L56 turns out to be measurably right.** It says "a dodge repositions,
+it does not merely evade... dodging toward, around and through are all
+real options, so exchanges circle rather than shuffling back and forth
+on a line." Dodging *away* makes two openings in a hundred and sixty
+seconds and kills nothing. Dodging *around* — same mechanic, aimed
+differently — makes twenty-one and kills four.
 
-**This makes step 4 a specific problem instead of a vague one:** find
-the pressure that makes a free answer stop being free. Untested
-candidates — a faster or a second enemy, a longer dodge recovery, a
-wider escalation window, a cost that does not fully reset.
+**And parry is the high-reward answer §2 promises**, on every axis at
+once. That is partly bot-flattery, since it parries 0.22s wind-ups no
+human could read — which is precisely why §6 gives quick attacks to the
+dodge. The realistic line is "§6's answers, dodging around", and it
+comes second.
 
-It is exactly the kind of finding Stage 1 exists to produce, and it
-arrived on schedule.
+### ⚠️ The earlier finding was wrong, and here is why
+
+I previously recorded — prominently, in `tech.md` and here — that **the
+dodge was strictly dominant and §6's three answers collapsed into one.**
+
+It was measured with a bot that counted only damage *taken* and never
+tried to win. Under that metric, refusing to fight is optimal: the
+boxer who runs away, declared champion. Counting kills reverses it
+completely.
+
+**The lesson is not about dodging.** A metric that leaves out the goal
+will confidently rank the strategies that ignore the goal first. It
+took a deliberately disciplined bot — one that strikes into openings
+only — to see it.
+
+**No tuning change came out of this**, which is the good outcome: the
+numbers say the design works as written.
 
 ## Done 2026-09-14 — an enemy that fights back (step 5)
 
@@ -588,12 +605,11 @@ falls into three piles, and none of it is design:
    dodge, attack and hit, an enemy that fights back, and the parry —
    all playable in a browser. **Only step 4 remains, and it is not
    construction.**
-   - **Step 4 is the stamina tuning, and it needs you, not me.** The
-     economy is wired; what is missing is *pressure*. The finding
-     above makes it concrete: the dodge currently answers everything
-     for free, so nothing else has a reason to exist. **This is the
-     single highest-value thing left in Stage 1** — and `combat.md` §9
-     is explicit that it cannot be settled from this side.
+   - **Step 4 is the stamina tuning.** The economy is wired and
+     `spar.gd` now answers the half that is not about feel — whether
+     any one answer is strictly better — and says no. **What is left
+     is genuinely feel**, and `combat.md` §9 is explicit that it needs
+     a controller: run it, and tell me when a fight feels wrong.
    - **Then Stage 2**, which is where L39 is actually passed or failed:
      two clients and a server, then a latency slider tuned until 100ms
      is indistinguishable from 0. Everything in `sim/` was written to

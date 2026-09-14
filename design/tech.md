@@ -485,13 +485,10 @@ tuning pass, which needs a controller. Built in Godot, which as of
 4. **Stamina — wired, not tuned.** The §2 economy: attacks, dodges,
    sprint. All three draw on the bar, and the enemy pays for its swings
    out of the same one. **What is left is the tuning**, and it is the
-   first step that needs a controller rather than a screenshot. One
-   observation already on file from step 5: a player who dodges every
-   wind-up perfectly takes *zero* damage, because spacing dodges out
-   avoids the chain escalation entirely. That is correct by design —
-   spacing is the counterplay — but it means a single slow enemy
-   applies no stamina pressure at all, and pressure is what this step
-   has to find.
+   first step that needs a controller rather than a screenshot.
+   `prototype/spar.gd` can now answer the half that is not about feel —
+   whether any one answer is strictly better — and as of 2026-09-14 it
+   says no: see the box below.
 5. ✅ **One enemy, three attack shapes.** §6's vocabulary — quick,
    heavy, committed — with distinct wind-ups, reach, arc and damage,
    and the committed attack unparryable by rule. *The dodge is no
@@ -526,37 +523,46 @@ to keep going.
 *This is where L39 is actually passed or failed. It cannot be
 attempted before Stage 1 exists.*
 
-> ### ⚠️ What Stage 1 found: the dodge is strictly dominant
+> ### ✅ What Stage 1 found: the vocabulary works, and L56 is measurably right
 >
-> With all six steps in, a bot was run against the same seeded enemy
-> answering every attack three different ways. Over 30 seconds:
+> `prototype/spar.gd` fights the same seeded enemy several ways and
+> reports what each is worth. Four seeds, forty seconds each, striking
+> into openings only:
 >
-> | Strategy | Damage taken |
-> |---|---|
-> | Nothing at all | 342, died twice |
-> | Parry everything | 188 (all of it from committed attacks) |
-> | **Dodge everything** | **0** |
-> | §6's answers (dodge / parry / leave) | 0 |
+> | Strategy | Kills | Dealt | Taken | Openings made |
+> |---|---|---|---|---|
+> | Dodge everything, **away** | **0** | 56 | 26 | 2 |
+> | Dodge everything, **around** | 4 | 524 | 59 | 21 |
+> | §6's answers, dodging away | 4 | 826 | 176 | 31 |
+> | §6's answers, dodging **around** | 8 | 1020 | 176 | 40 |
+> | Parry everything you can | 10 | 1376 | 66 | 51 |
 >
-> **Dodging answers all three shapes perfectly**, so on defence alone
-> there is never a reason to parry, and §6's vocabulary of three
-> answers collapses to one. Parry's justification has to be the punish
-> rather than the defence — and a bot cannot settle whether the punish
-> is worth the risk, because that is a feel question and §9 says so.
+> **L56 is vindicated by the numbers.** "A dodge repositions, it does
+> not merely evade. Dodging *toward*, *around* and *through* are all
+> real options, so exchanges circle rather than shuffling back and
+> forth on a line." Dodging *away* produces two openings in a hundred
+> and sixty seconds and kills nothing. Dodging *around* — the identical
+> mechanic, aimed differently — produces twenty-one and kills four.
 >
-> **The cause is almost certainly that one slow enemy applies no
-> stamina pressure.** Dodges spaced more than 1.2s apart never trigger
-> the chain escalation, so they are effectively free, and nothing here
-> ever forces a second dodge inside that window. That is step 4's
-> problem to solve, and it is now a specific problem rather than a
-> vague one: **find the pressure that makes a free answer stop being
-> free.** Candidates, none of them tested: a faster or second enemy,
-> a longer dodge recovery, a wider escalation window, or a cost that
-> does not reset.
+> **And parry is the high-reward answer §2 says it is**, on every axis
+> at once: most kills, most damage dealt, least damage taken. That last
+> is bot-flattered, because it parries 0.22s quick wind-ups no human
+> could read — which is exactly why §6 gives the quick attack to the
+> dodge. The realistic line is "§6's answers, dodging around", and it
+> is second.
 >
-> This is the most valuable thing Stage 1 produced, and it is exactly
-> the kind of finding the stage exists to produce. **Judge it on feel,
-> not on the table above.**
+> ### ⚠️ And a correction, because this was recorded wrong first
+>
+> **This section previously said the dodge was strictly dominant and
+> that §6's three answers collapsed into one.** That was measured with
+> a bot that only counted damage *taken* and never tried to win —
+> under which metric refusing to fight is optimal, and the boxer who
+> runs away is champion. Counting kills reverses the finding
+> completely.
+>
+> The lesson is not about dodging. **A metric that does not include
+> the goal will confidently rank the strategies that ignore it first**,
+> and it took a deliberately disciplined bot to see it.
 
 ### Stage 3 onward — the game
 9. **One crafting pipeline, end to end.** Ore to sword, every stage
