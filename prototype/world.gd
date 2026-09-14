@@ -89,6 +89,7 @@ func _ready() -> void:
 	player.position = PLAYER_HOME
 	add_child(player)
 	player.setup(PLAYER_HEALTH, Color(1, 1, 1))
+	player.show_iframes = SHOW_DEBUG
 
 	enemy = Fighter.new()
 	enemy.position = ENEMY_HOME

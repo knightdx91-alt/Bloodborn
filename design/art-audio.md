@@ -151,6 +151,15 @@ rumour, and unmistakable once seen.
 - **Wear states multiply asset work.** Every weapon and armour piece
   needs readable damage stages (L60/L62/L63), which is a cost L80 and
   L81 added by refusing to show condition numerically.
+- **L63 forbids buying fused characters for anything but placeholder
+  use**, and this is worth knowing *before* the first armour purchase.
+  Armour is tracked per slot and **a broken piece comes off**, so the
+  character cannot be one mesh with its plate baked in — which is what
+  almost every bought character is. What has to be bought instead is a
+  **base body plus separable head, torso, arm and leg pieces sharing
+  one skeleton**, and that is a narrower and dearer market. Recorded
+  2026-09-14, while replacing the prototype's grey mannequin; it does
+  not block a placeholder character, only a wardrobe.
 - **Voice direction is a real discipline.** Per-town accents, NPC voice
   cards (§9.3), and the sparring teacher (L70) are performance work,
   not audio implementation.

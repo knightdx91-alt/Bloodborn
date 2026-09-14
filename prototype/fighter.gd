@@ -59,8 +59,12 @@ var attack: Attack
 var parry: Parry
 
 var anim: AnimationPlayer
-var skin: StandardMaterial3D
-var skin_base_color := Color(1, 1, 1)
+## Every surface of the character, each with its own material. A
+## placeholder mannequin has one; a real character has several — body,
+## head, hair, gear — and anything that assumes one silently paints a
+## quarter of them.
+var skins: Array[StandardMaterial3D] = []
+var skin_base_colors: Array[Color] = []
 
 var _dodge_dir := Vector3.FORWARD
 var _dodge_travelled := 0.0
@@ -68,10 +72,22 @@ var _hurt_for := 0.0
 var _stagger_for := 0.0
 var _sword: Node3D
 
+## Prototype scaffolding. Nothing on screen otherwise says a blow passed
+## through you, and interface.md §2 forbids adding anything permanent to
+## say so — this comes out when a real hit reaction and a real miss sound
+## carry it instead.
+var show_iframes := false
+const IFRAME_COLOR := Color(0.45, 0.80, 1.00)
+var _iframes_shown := false
+
 signal died
 
-func setup(max_health: float, tint: Color, carries_sword: bool = true) -> void:
-	var body := (load(CHARACTER) as PackedScene).instantiate()
+## `character` names the model. It is a parameter rather than a constant
+## because the placeholder will be replaced, and because the player and
+## an enemy have no reason to be the same person.
+func setup(max_health: float, tint: Color, carries_sword: bool = true,
+		character: String = CHARACTER) -> void:
+	var body := (load(character) as PackedScene).instantiate()
 	# The capsule is two metres tall and centred on the origin, so the
 	# character hangs a metre below it to stand on its feet. Mixamo
 	# characters face +Z; travel here is toward -Z.
@@ -91,13 +107,7 @@ func setup(max_health: float, tint: Color, carries_sword: bool = true) -> void:
 		push_warning("no Skeleton3D; this fighter will be mute")
 		return
 
-	var mesh := _find(body, "MeshInstance3D") as MeshInstance3D
-	if mesh != null:
-		var base := mesh.get_active_material(0)
-		skin = base.duplicate() if base is StandardMaterial3D else StandardMaterial3D.new()
-		skin.albedo_color = skin.albedo_color * tint
-		skin_base_color = skin.albedo_color
-		mesh.material_override = skin
+	_dress(body, tint)
 
 	if carries_sword:
 		_arm(skel)
@@ -146,6 +156,17 @@ func tick(delta: float) -> void:
 		_hurt_for = max(0.0, _hurt_for - delta)
 	if _stagger_for > 0.0:
 		_stagger_for = max(0.0, _stagger_for - delta)
+	_show_iframes()
+
+func _show_iframes() -> void:
+	if not show_iframes:
+		return
+	var invulnerable := dodge.is_invulnerable()
+	if invulnerable == _iframes_shown:
+		return
+	_iframes_shown = invulnerable
+	for i in skins.size():
+		skins[i].albedo_color = IFRAME_COLOR if invulnerable else skin_base_colors[i]
 
 ## Move under the fighter's own steam, or under a dodge if one is running.
 func move(desired: Vector3, speed: float, delta: float) -> void:
@@ -299,6 +320,36 @@ func _animate(ground_speed: float) -> void:
 	# Kept near 1.0 on purpose: a clip pushed past about 1.35x reads as
 	# comical long before it stops skating.
 	anim.speed_scale = clamp(rate, 0.7, 1.35)
+
+## Give this fighter its own copy of every material on its body, tinted.
+##
+## Two things here exist for the character that has not arrived yet. It
+## walks EVERY mesh rather than the first, because a real character is
+## several meshes and tinting only one would paint the body and leave the
+## head grey. And it multiplies into `albedo_color` rather than replacing
+## it, because on a textured model multiplying tints the texture while
+## replacing would flatten it to a solid colour — which is exactly the
+## kind of thing that would cost a round with the artist to discover.
+func _dress(body: Node, tint: Color) -> void:
+	for mesh in _all(body, "MeshInstance3D"):
+		var mi := mesh as MeshInstance3D
+		for surface in maxi(mi.mesh.get_surface_count() if mi.mesh else 0, 1):
+			var base := mi.get_active_material(surface)
+			var mat: StandardMaterial3D = base.duplicate() \
+				if base is StandardMaterial3D else StandardMaterial3D.new()
+			mat.albedo_color = mat.albedo_color * tint
+			mi.set_surface_override_material(surface, mat)
+			skins.append(mat)
+			skin_base_colors.append(mat.albedo_color)
+
+## Every descendant of a class, not just the first.
+func _all(node: Node, cls: String) -> Array[Node]:
+	var found: Array[Node] = []
+	if node.get_class() == cls:
+		found.append(node)
+	for child in node.get_children():
+		found.append_array(_all(child, cls))
+	return found
 
 func _arm(skel: Skeleton3D) -> void:
 	# There is no grip marker on a Mixamo hand, and guessing rotations is a

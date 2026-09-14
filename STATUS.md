@@ -94,6 +94,42 @@ guard (K or right-click on a keyboard).
   health.
 - **15 new tests**, `sim/` now at 254.
 
+## Next after step 4: characters that look like people
+
+The prototype uses X Bot, a grey mannequin. It was the right call and it
+animates perfectly, but the game should look like the game.
+
+**`prototype/assets/SPEC-character-v4.md` is written and ready for
+Muse.** The cheap path first: Mixamo has ~70 of its own characters
+already on the skeleton every clip here uses, so it is the v3 path
+exactly. Two characters, visibly different in silhouette — the player
+and the opponent should not be the same person. If none fit, Mixamo's
+**auto-rigger** will rig an uploaded mesh onto the same skeleton, which
+is still a direct mixamo.com download and so does not break v3's rule.
+That path has never been tried here.
+
+**The engine side is already done.** Which model a fighter uses is a
+parameter, every surface of a character gets its own tinted material
+(X Bot turned out to have two, so the old code had only ever been
+painting half of it), and the tint multiplies into the albedo rather
+than replacing it — on a textured character, replacing would flatten it
+to a solid colour.
+
+### ⚠️ But do not buy an armour set yet — L63 says why
+
+L63 tracks armour across head, torso, arms and legs, and **a broken
+piece comes off**: a fighter who started the day in plate finishes it
+half bare, legibly, to everyone watching.
+
+**A character with its armour baked into one mesh cannot do that** —
+and that is most bought characters, and all of Mixamo's. Fine for now,
+since there is no armour system. **Not** fine as the basis for buying a
+wardrobe: modular equipment has to be settled first, or the money is
+thrown away.
+
+Nothing about that blocks the two characters above, which are wanted
+either way.
+
 ## ⚠️ The most useful thing Stage 1 produced: the dodge is dominant
 
 With all six steps in, a bot fought the same seeded enemy three ways.
@@ -505,10 +541,13 @@ falls into three piles, and none of it is design:
      two clients and a server, then a latency slider tuned until 100ms
      is indistinguishable from 0. Everything in `sim/` was written to
      run on that server unchanged.
-   - Waiting on Muse, neither blocking: **`SPEC-attack-clips.md`** —
-     three distinct attack shapes *and a guard pose*, and §6 and L65
-     both call these hard requirements rather than polish — and
-     `SPEC-dodge-clips.md` (four directional dodges).
+   - Waiting on Muse, none of it blocking:
+     **`SPEC-attack-clips.md`** — three distinct attack shapes *and* a
+     guard pose; §6 and L65 both call these hard requirements rather
+     than polish, so this is the highest-value one.
+     **`SPEC-character-v4.md`** — characters that look like people
+     instead of grey mannequins.
+     `SPEC-dodge-clips.md` — four directional dodges.
 2. **Trademark clearance on "Marrowmark"** (`naming.md` §5) — blocks
    anything public. Classes 9 and 41, plus a common-law sweep, plus an
    attorney.
