@@ -94,6 +94,33 @@ guard (K or right-click on a keyboard).
   health.
 - **15 new tests**, `sim/` now at 254.
 
+## Done 2026-09-14 — the look, for free
+
+`art-audio.md` §5 (L85) already said where to spend: **the look lives
+in the treatment, not the assets.** So `prototype/look.gd` now carries
+a sky, haze, a low sun with long shadows, a cool fill light, filmic
+tonemapping and a grade pulled off full saturation — all code, against
+the same grey mannequin, costing nothing. The palette lives in one
+place because **L86** makes each of the six wedges a different one of
+these and nothing else.
+
+Also: a textured ground rather than a flat colour, a fence and
+scattered stones so the eye has something to measure distance against,
+and the visible ground extended to 420m — it used to stop at the yard
+wall and leave a hard black band of nothing beyond the fence.
+
+**What is still free and not yet done**, roughly by value:
+
+- **Sound.** `art-audio.md` §4 makes audio carry the damage triangle to
+  a player who is never shown a number. CC0 libraries are free, and
+  footsteps and impacts do more for perceived quality than any shader.
+- **Hitstop** — a few frames of freeze when a blow lands. Ten lines,
+  and one of the largest game-feel wins available anywhere.
+- **Impact and footstep particles**, which Godot makes without assets.
+- **Camera work** — a shove on impact, a small push-in on a parry.
+- The Mixamo specs already written: characters, attack shapes, a guard
+  pose, directional dodges. All free downloads.
+
 ## Next after step 4: characters that look like people
 
 The prototype uses X Bot, a grey mannequin. It was the right call and it

@@ -88,15 +88,19 @@ func _ready() -> void:
 	player = Fighter.new()
 	player.position = PLAYER_HOME
 	add_child(player)
-	player.setup(PLAYER_HEALTH, Color(1, 1, 1))
+	# These tints exist to drag a pink mannequin toward linen and leather.
+	# They multiply into the albedo, so when a real textured character
+	# arrives (SPEC-character-v4.md) they should go back to white rather
+	# than being kept — the character will bring its own colour.
+	player.setup(PLAYER_HEALTH, Color(0.66, 0.92, 0.84))
 	player.show_iframes = SHOW_DEBUG
 
 	enemy = Fighter.new()
 	enemy.position = ENEMY_HOME
 	add_child(enemy)
-	# Darker, so the two are told apart by silhouette and value rather than
-	# by a marker over anyone's head (interface.md §2).
-	enemy.setup(ENEMY_HEALTH, Color(0.42, 0.46, 0.62))
+	# Darker and colder, so the two are told apart by value rather than by
+	# a marker over anyone's head (interface.md §2).
+	enemy.setup(ENEMY_HEALTH, Color(0.40, 0.62, 0.62))
 	tactics = EnemyTactics.new(20260914)
 
 	cam = Camera3D.new()
@@ -105,32 +109,26 @@ func _ready() -> void:
 	_build_interface()
 
 func _build_yard() -> void:
-	var sun := DirectionalLight3D.new()
-	sun.rotation_degrees = Vector3(-55, -35, 0)
-	sun.light_energy = 1.1
-	sun.shadow_enabled = true  # without it the characters float
-	add_child(sun)
-
-	var env := WorldEnvironment.new()
-	var e := Environment.new()
-	e.background_mode = Environment.BG_COLOR
-	e.background_color = Color(0.16, 0.17, 0.19)
-	e.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	e.ambient_light_color = Color(0.35, 0.37, 0.42)
-	e.ambient_light_energy = 0.8
-	env.environment = e
-	add_child(env)
+	# Light, sky, haze and grade all live in look.gd — art-audio.md §5
+	# puts the look in the treatment rather than the assets, and this is
+	# that taken literally.
+	Look.build(self)
 
 	const YARD := 30.0  # half-extent of the drill yard
 
+	# The visible ground runs far past the yard. It used to stop at the
+	# wall, which left a hard black band of nothing beyond the fence —
+	# the single most render-like thing in frame. You still cannot walk
+	# out there: the collision box and the walls below stay yard-sized.
+	const SEEN := 420.0
 	var ground := StaticBody3D.new()
 	var gm := MeshInstance3D.new()
 	var plane := PlaneMesh.new()
-	plane.size = Vector2(YARD * 2.0, YARD * 2.0)
+	plane.size = Vector2(SEEN, SEEN)
 	gm.mesh = plane
-	var gmat := StandardMaterial3D.new()
-	gmat.albedo_color = Color(0.42, 0.42, 0.40)
-	gm.material_override = gmat
+	# Tiled to the same texel density as before, so a bigger plane does
+	# not mean a smeared one.
+	gm.material_override = Look.ground_material(Look.EARTH, SEEN / 5.45)
 	ground.add_child(gm)
 	var gcol := CollisionShape3D.new()
 	var gbox := BoxShape3D.new()
@@ -160,24 +158,23 @@ func _build_yard() -> void:
 		km.size = Vector3(along, 0.6, 0.6) if i < 2 else Vector3(0.6, 0.6, along)
 		kerb.mesh = km
 		kerb.position = Vector3(wall.position.x, 0.3, wall.position.z)
-		var kmat := StandardMaterial3D.new()
-		kmat.albedo_color = Color(0.26, 0.25, 0.24)
-		kerb.material_override = kmat
+		kerb.material_override = Look.solid_material(Look.KERB, 6.0)
 		ground.add_child(kerb)
 
 	add_child(ground)
 
 	# Blocks to fight around. combat.md §1: terrain is fighting space.
+	var stone := Look.solid_material(Look.STONE, 2.4)
 	for spot in [Vector3(6, 0.75, -4), Vector3(-5, 0.75, -7), Vector3(-7, 0.75, 3)]:
 		var b := MeshInstance3D.new()
 		var bm := BoxMesh.new()
 		bm.size = Vector3(1.5, 1.5, 1.5)
 		b.mesh = bm
 		b.position = spot
-		var bmat := StandardMaterial3D.new()
-		bmat.albedo_color = Color(0.30, 0.29, 0.27)
-		b.material_override = bmat
+		b.material_override = stone
 		add_child(b)
+
+	_scatter(stone)
 
 	dummy = Node3D.new()
 	dummy.position = DUMMY_HOME
@@ -193,6 +190,48 @@ func _build_yard() -> void:
 		dmesh.material_override = _dummy_skin
 	add_child(dummy)
 	_dummy_health = DUMMY_HEALTH
+
+## A handful of posts and stones. Nothing here is a feature — it exists
+## because an empty plane gives the eye nothing to measure speed or
+## distance against, and because a drill yard with nothing in it does not
+## read as a place.
+func _scatter(stone: StandardMaterial3D) -> void:
+	var timber := Look.solid_material(Look.TIMBER, 5.0, 0.9)
+
+	# A fence along two sides, just inside the kerb.
+	for i in 22:
+		var t := i / 21.0
+		for corner in [Vector3(-26.0 + t * 52.0, 0, -27.0), Vector3(-27.0, 0, -26.0 + t * 52.0)]:
+			var post := MeshInstance3D.new()
+			var pm := CylinderMesh.new()
+			pm.top_radius = 0.09
+			pm.bottom_radius = 0.12
+			pm.height = 1.5 + fmod(i * 0.37, 0.5)
+			post.mesh = pm
+			post.position = corner + Vector3(0, pm.height * 0.5, 0)
+			post.rotation.z = (fmod(i * 0.61, 1.0) - 0.5) * 0.12
+			post.material_override = timber
+			add_child(post)
+
+	# Stones, biggest near the walls so the middle stays fightable.
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 20260914
+	for i in 34:
+		var angle := rng.randf() * TAU
+		var radius: float = lerp(9.0, 27.0, rng.randf())
+		var rock := MeshInstance3D.new()
+		var rm := SphereMesh.new()
+		# Small and rounded. The first pass made them big and flat, which
+		# reads as puddles rather than stone.
+		var size: float = lerp(0.16, 0.42, radius / 27.0) * rng.randf_range(0.7, 1.4)
+		rm.radius = size
+		rm.height = size * 1.7
+		rock.mesh = rm
+		rock.position = Vector3(cos(angle) * radius, size * 0.45, sin(angle) * radius)
+		rock.scale = Vector3(1.0, rng.randf_range(0.7, 1.0), rng.randf_range(0.85, 1.15))
+		rock.rotation.y = rng.randf() * TAU
+		rock.material_override = stone
+		add_child(rock)
 
 func _find(node: Node, cls: String) -> Node:
 	if node.get_class() == cls:

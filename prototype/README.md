@@ -192,6 +192,36 @@ applies no stamina pressure: dodges more than 1.2s apart never trigger
 the chain escalation, so they are free. That is step 4's problem, and
 it is now a specific one — `design/tech.md` §6 has the detail.
 
+### The look (`look.gd`)
+
+`art-audio.md` §5 (L85) says **the look lives in the treatment, not the
+assets** — "palette, contrast curve and atmosphere carry more of the
+look than geometry does, and they are cheap to change globally and
+late." `look.gd` is that taken literally: a sky, haze, a low sun with
+long shadows, a cool fill so a figure keeps its far edge, filmic
+tonemapping, and a grade pulled off full saturation. All code, against
+the same grey mannequin, costing nothing.
+
+It also holds the palette in one place, because **L86** makes each of
+the six wedges a different one of these and nothing else — "a
+screenshot is locatable".
+
+Three things it got wrong first, all worth knowing:
+
+- **UV scale is tiles, not size.** Below 1 it zooms *into* one smooth
+  patch of noise and produces a flat colour — indistinguishable from
+  having no texture at all.
+- **Raw noise runs black to white**, which multiplied into an albedo
+  reads as camouflage. The colour ramp squeezes it to a narrow band:
+  variation you notice only by its absence.
+- **The first pass was lit like a product shot** and everything blew
+  out to the same beige, which made every albedo choice pointless — a
+  leather tint and a linen tint landed on the same white.
+
+The visible ground runs 420m, far past the 30m yard. It used to stop at
+the wall, leaving a hard black band of nothing beyond the fence. You
+still cannot walk out there.
+
 ### Where the code lives
 
 - `world.gd` — the fight: who is where, who hit whom, input, camera.
@@ -199,6 +229,7 @@ it is now a specific one — `design/tech.md` §6 has the detail.
   on purpose: `combat.md` §8 promises one ruleset rather than two, and
   the cheapest way to keep that promise is for there to be nothing in
   the body that knows which it is.
+- `look.gd` — light, sky, haze, grade and palette. See above.
 - `rules/` — the GDScript mirror of `sim/`. See L88.
 
 ### The debug readout
