@@ -11,7 +11,9 @@ extends CharacterBody3D
 ## The RULES live in `rules/`, mirroring `sim/`. This is the body they
 ## move.
 
-const CHARACTER := "res://assets/models/humanoid.fbx"
+const CHARACTER := "res://assets/models/paladin.fbx"
+const ENEMY_CHARACTER := "res://assets/models/skeleton_zombie.fbx"
+const NIGHTSHADE_MODEL := "res://assets/models/nightshade.fbx"
 const SWORD_MODEL := "res://assets/models/weapon_sword.fbx"
 
 const LOCOMOTION := {

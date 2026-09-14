@@ -18,6 +18,8 @@ const ENEMY_HOME := Vector3(-4, 1, -5)
 
 const DUMMY_MODEL := "res://assets/models/dummy.fbx"
 const DUMMY_HOME := Vector3(3, 0, -2)
+# Inactive display model only — no AI, no collision. Judged for silhouette.
+const NIGHTSHADE_HOME := Vector3(9, 0, 7)
 const DUMMY_COLOR := Color(0.55, 0.38, 0.30)
 const DUMMY_RADIUS := 0.45
 const DUMMY_HALF_HEIGHT := 0.75
@@ -123,11 +125,10 @@ func _ready() -> void:
 	player = Fighter.new()
 	player.position = PLAYER_HOME
 	add_child(player)
-	# These tints exist to drag a pink mannequin toward linen and leather.
-	# They multiply into the albedo, so when a real textured character
-	# arrives (SPEC-character-v4.md) they should go back to white rather
-	# than being kept — the character will bring its own colour.
-	player.setup(PLAYER_HEALTH, Color(0.66, 0.92, 0.84), true, Fighter.CHARACTER,
+	# The paladin is a real textured Mixamo character, so it brings its own
+	# colour — the mannequin-era tint goes back to white rather than being
+	# kept (see SPEC-character-v4.md).
+	player.setup(PLAYER_HEALTH, Color.WHITE, true, Fighter.CHARACTER,
 		Look.IRON, Look.LEATHER, "mail")
 	player.show_iframes = SHOW_DEBUG
 
@@ -139,7 +140,7 @@ func _ready() -> void:
 	# Darker kit as well as a darker body. interface.md §2 gives an
 	# opponent no marker over their head, so the difference has to be in
 	# the silhouette and the value.
-	enemy.setup(ENEMY_HEALTH, Color(0.40, 0.62, 0.62), true, Fighter.CHARACTER,
+	enemy.setup(ENEMY_HEALTH, Color(0.40, 0.62, 0.62), true, Fighter.ENEMY_CHARACTER,
 		Color(0.26, 0.27, 0.30), Color(0.16, 0.13, 0.10), "light")
 	tactics = EnemyTactics.new(20260914)
 	feel = Feel.new()
@@ -231,6 +232,14 @@ func _build_yard() -> void:
 		dmesh.material_override = _dummy_skin
 	add_child(dummy)
 	_dummy_health = DUMMY_HEALTH
+
+	# INACTIVE DISPLAY MODEL — not a fighter. The nightshade stands at the
+	# yard's edge so its silhouette can be judged, but it has no AI, no
+	# health and no collision. Enemy variety is a later build-plan step.
+	var shade := (load(Fighter.NIGHTSHADE_MODEL) as PackedScene).instantiate()
+	shade.position = NIGHTSHADE_HOME
+	shade.rotation_degrees = Vector3(0, 140, 0)
+	add_child(shade)
 
 ## A handful of posts and stones. Nothing here is a feature — it exists
 ## because an empty plane gives the eye nothing to measure speed or

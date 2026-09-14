@@ -11,14 +11,22 @@ were built 2026-09-12 by `tools/build_assets.py` (Blender 4.5.1,
 headless) and validated through FBX re-import (`tools/validate.py`).
 
 - `humanoid.fbx` — **a stock Mixamo X Bot, downloaded 2026-09-13**, per
-  `SPEC-character-v3.md`. Not built here and **not to be rebuilt**: two
-  earlier Blender-made characters failed identically, because Blender's
-  FBX exporter bakes a Z-up→Y-up rotation into the skeleton's rest pose
-  and Mixamo's clips do not expect it. Bone names and counts were
-  correct every time; rest *orientation* was the whole problem. Worst
-  rest-pose mismatch is now 1.1° on a thumb bone, against 90° on the
-  hips before, and the clips play exactly as downloaded. **Read
-  `SPEC-character-v3.md` before touching any character.**
+  `SPEC-character-v3.md`. Superseded as the player model 2026-09-14 by
+  `paladin.fbx` below, but kept in the repo as the reference rest pose the
+  clips were validated against. **Read `SPEC-character-v3.md` before
+  touching any character.**
+- `paladin.fbx` — **Paladin (J. Nordstrom), downloaded 2026-09-14.**
+  Current player character (`Fighter.CHARACTER`). Standard Mixamo 65-bone
+  rig, so all seven clips play with no retargeting.
+- `skeleton_zombie.fbx` — **Skeletonzombie (T. Avelange), downloaded
+  2026-09-14.** Current enemy character (`Fighter.ENEMY_CHARACTER`),
+  driven by the existing `EnemyTactics` AI. Same Mixamo rig as the clips.
+- `nightshade.fbx` — **Nightshade (J. Friedrich), downloaded 2026-09-14.**
+  Inactive display model staged in the yard (`world.gd`); no AI yet.
+- `drake.fbx` — **Ch25 non-PBR ("Drake"), downloaded 2026-09-14.** Spare
+  demon-like character. **Not committed yet:** at 83 MB it exceeds the
+  git-database blob API's size limit, so it waits for a different upload
+  path. Nothing references it.
 - `weapon_sword.fbx` — quick-attack silhouette.
 - `weapon_axe.fbx` — heavy-attack silhouette.
 - `weapon_spear.fbx` — committed/thrust silhouette.
