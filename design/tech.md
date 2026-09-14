@@ -120,8 +120,8 @@ engine work**, and that assumption is now false.
 | Assistant can build end to end | No | **Yes, demonstrated** |
 | Runs on the current hardware | Poorly | Yes |
 | Developer can play builds today | No | **Yes, in a browser** |
-| Asset marketplace depth | Much deeper | Thinner |
-| Console path (L53) | Direct | Third-party porting house |
+| Asset marketplace depth | Much deeper | Thinner — **but Unity's store is usable from Godot, see §2a** |
+| Console path (L53) | Direct | Third-party porting house — **and cheaper, see §2a** |
 | One language client/server/tools | Yes (C#) | Yes when shipping, **no for the web build** — see below |
 
 **The honest shape of the trade is a question of *when*.** Unity's
@@ -132,10 +132,11 @@ difference between the engine work happening and not happening.
 
 **Not yet decided.** What would settle it:
 
-- Whether Godot's asset ecosystem can actually carry §1's strategy, or
-  whether Unity Asset Store purchases can be converted at acceptable
-  cost (many formats are engine-neutral; many are not).
-- What third-party console porting actually costs against L53.
+- ~~Whether Godot's asset ecosystem can actually carry §1's strategy,
+  or whether Unity Asset Store purchases can be converted at
+  acceptable cost.~~ **Answered 2026-09-14 — see §2a below.**
+- ~~What third-party console porting actually costs against L53.~~
+  **Answered 2026-09-14 — see §2a below, and it inverts.**
 - ~~Whether the demonstrated loop holds up past grey boxes — it has
   been proven on capsules, not on an animated character with combat.~~
   **Answered as far as it can be here (2026-09-13.)** The loop has now
@@ -153,6 +154,129 @@ difference between the engine work happening and not happening.
   engine: a human holds the controller or the question stays open. **It
   is not a point of difference between Unity and Godot**, so it should
   not weigh on L54 either way.
+
+## 2a. L54 — the research, and a recommendation (2026-09-14)
+
+Both remaining questions are answered. **Neither landed where §2
+assumed**, and the recommendation below is to flip L54 to Godot. It is
+a lock, so it does not flip without a decision.
+
+### Question 1: can Godot's ecosystem carry §1's buy-the-content strategy?
+
+**Yes — and the Unity Asset Store is available from Godot anyway.**
+
+Unity's own support documentation says Asset Store assets **may be used
+with other engines**, Godot and Unreal named explicitly, provided the
+Asset Store EULA is followed. The binding conditions:
+
+- **No redistribution** — assets cannot ship as standalone items, or in
+  a way that lets others extract them from the build.
+- **No cost-sharing** — you cannot split a purchase and share access.
+- **The asset cannot be the project's primary purpose**, and
+  user-generated-content monetisation needs the creator's permission.
+- **Per-asset licences override this**, as do open-source components
+  inside a pack. Each purchase has to be read.
+
+That substantially dissolves the "marketplace depth" argument, because
+the marketplace is not Unity-only. **But the question has two halves
+and they answer differently:**
+
+| | Transfers to Godot? |
+|---|---|
+| Models, textures, animation, audio | **Yes.** These are FBX/glTF/WAV, not Unity objects |
+| Materials, prefabs, shaders, scene setup | **No.** Rebuilt per pack — real work, not free |
+| Editor extensions, systems, C# plugins | **No, and not at any price.** They are Unity software |
+
+**The genuine gap is tooling, not content.** Unity's store runs to tens
+of thousands of items; Godot's Asset Library is around three thousand,
+mostly free and community-maintained. Behaviour trees, inventory and
+dialogue systems, shader editors, inspector tooling — on Godot these
+are written or done without.
+
+**And that is the half this project is least exposed to.** §1's
+strategy is *build systems to full ambition, buy content volume*. The
+systems are being hand-written regardless — `sim/` is over two hundred
+tests of rules nobody sells. What gets bought is content, and content
+is the portable half.
+
+Two practical notes: **Godot prefers glTF/GLB**, and FBX, while
+improved in 4.3, still lags on complex rigs — so prefer GLB where a
+seller offers both. And conversion is not free: budget rework per pack
+for materials and prefab structure.
+
+> ⚠️ **A content risk that is NOT about the engine, and is the more
+> urgent finding.** §1 names animation volume as the project's largest
+> content risk (~300–400 clips), and the plan rests on **Mixamo**. As
+> of mid-2026 Mixamo is still up, but showing signs of being left
+> alone: repeated multi-day outages through 2025, Adobe having already
+> discontinued its companion product Fuse, and at least one Adobe
+> support contact telling a user during an outage that "Mixamo is not
+> supported anymore." **That last is a forum anecdote, not an
+> announcement** — but there is no roadmap and no commitment either.
+>
+> This costs the same under Unity and Godot, so **it does not bear on
+> L54 at all.** It bears on doing something now: **download and commit
+> the clips this project needs while the service is up**, rather than
+> assuming it will be there at Stage 3. Alternatives exist (ActorCore,
+> Rokoko, Cascadeur, hand-authored) but all of them cost more than
+> free.
+
+### Question 2: what does console porting cost against L53?
+
+**Less on Godot than on Unity.** This is the finding that inverts §2's
+comparison table, which listed the console path as a Unity advantage.
+
+**Godot — W4 Consoles**, built by the company the Godot founders
+started. Published subscription pricing, no quote required:
+
+- **Starter: $800/year for one platform, $2,000/year for all three** —
+  the tier for companies under $300k revenue and 30 employees, which is
+  this project by a wide margin.
+- **No revenue share and no runtime fee.** Full source access.
+- Switch, PS5 and Xbox Series in production; **Switch 2 in early beta**
+  and billed as a separate platform from Switch 1 — which matters,
+  because L53 targets **Switch 2 only**. Full commercial release is
+  "coming soon", which is a real schedule risk to watch rather than a
+  blocker at this distance.
+- Godot 4.4–4.6 supported. **C# is in beta on Switch and Xbox**, which
+  partially softens the §2 C# concern below — though not for the web.
+
+**Unity — a licence requirement, not a porting fee.** Console
+development on PlayStation, Xbox or Switch **requires an active Unity
+Pro subscription**, or a Preferred Platform License key from the
+platform holder. Unity Pro went to **$2,310 per seat per year on 12
+January 2026**. Sony and Nintendo issue platform keys; **Microsoft does
+not**, so shipping on Xbox means paying Unity directly regardless.
+
+**So: $2,000/year for three platforms on Godot, against $2,310/year per
+seat on Unity before any porting work at all.** Platform-holder devkits
+and approval are required either way and are not in either number.
+
+**The honest counterweight:** W4 is one small company, and taking all
+three console ports through a single vendor is a concentration risk
+Unity does not carry. That is a real difference — it is just not a
+*cost* difference, which is what §2 assumed.
+
+### Where this leaves L54
+
+The original case for Unity was two arguments. Here is what is left of
+them, with the two later findings:
+
+| Argument | Status |
+|---|---|
+| Everything is text | **Lost.** Godot wins outright, and by more than a tie |
+| Asset marketplace depth | **Mostly dissolved.** The store is usable from Godot; the residue is tooling, where this project is least exposed |
+| Console path (L53) | **Inverted.** Godot is cheaper; the counterweight is vendor concentration, not money |
+| Assistant can build end to end | **Godot, decisively.** Stage 1 steps 1–3 exist because of it |
+| C# does not reach the web | **Against Godot.** Rules written twice while the web build is the play surface — see below |
+
+**Recommendation: flip L54 to Godot**, and accept the mirroring cost
+with a stated exit — either the web loop is dropped once there is
+better hardware, or the simulation moves to GDScript and C# stops being
+the authority. **That is the one thing that should not be allowed to
+happen by drift.**
+
+**This has not been done.** L54 is a lock and locks change on purpose.
 
 ### A fourth consideration: C# does not reach the web (2026-09-13)
 

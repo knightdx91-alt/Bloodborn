@@ -261,6 +261,14 @@ closed it, and both were already in the design:
   (~300–400 clips for combat alone, from L64's five arcs across six
   weapon families). `tech.md` §1's buy-don't-make strategy is no longer
   optional. Mitigation on file: per-weapon-family direction sets.
+
+  ⚠️ **And the plan rests on Mixamo, which may be quietly dying.**
+  Still up as of mid-2026, but with repeated multi-day outages through
+  2025, its companion product Fuse already discontinued, and no
+  roadmap. **This costs the same on either engine, so it does not
+  touch L54** — but it argues for pulling the clips this project needs
+  down *now*, while it is up, rather than at Stage 3. Cheap insurance;
+  see `tech.md` §2a.
 - **P11's per-turn cost** remains an open collision with L27's
   buy-to-play lock. Subscription is on the table. Deferred until the
   slice measures real numbers.
@@ -340,10 +348,30 @@ input bugs by measurement. What it cannot do is judge feel, at 3–4 fps
 with no GPU. **But no engine choice fixes that**, so it should not
 weigh on L54 either way.
 
-**The two questions that actually decide L54 are still untouched:**
-asset-ecosystem depth for the buy-the-content strategy, and what
-third-party console porting costs. Both want research rather than more
-building, and neither needs a PC.
+**Both remaining questions are now researched (2026-09-14), and
+neither landed where the doc assumed.** `tech.md` §2a has the detail
+and the sources.
+
+- **Asset ecosystem — dissolved.** Unity's own documentation says
+  Asset Store assets **may be used in other engines**, Godot named,
+  subject to the EULA (no redistribution, no cost-sharing, per-asset
+  licences can override). Art, animation and audio transfer; materials
+  and prefabs need rebuilding per pack; **editor tools and C# plugins
+  do not transfer at all.** That last is the real gap — and it is the
+  half this project is least exposed to, because §1 buys *content* and
+  hand-writes systems anyway.
+- **Console cost — inverted.** W4 Consoles (built by the Godot
+  founders) is **$2,000/year for all three platforms** at this
+  project's size, no revenue share, source included. Unity **requires
+  Unity Pro to ship on console at all — $2,310 per seat per year** as
+  of January 2026, and Microsoft issues no platform key, so Xbox means
+  paying Unity regardless. Switch 2 is early beta at W4, which matters
+  because L53 is Switch 2 only. The honest counterweight is vendor
+  concentration, not money.
+
+**Recommendation on file: flip L54 to Godot** — with a stated exit for
+the double-writing, because that should never be allowed to happen by
+drift. **Not done. It is a lock and it is your call.**
 
 **And a fourth consideration has since appeared, against Godot:** its
 web export cannot run C#, so every rule the prototype exercises is
@@ -398,13 +426,10 @@ model are all pure logic and all buildable without an engine.
 
 Roughly 25 remain. The ones that unblock the most:
 
-- **The two questions that decide L54**, and they are research rather
-  than building — which makes them ideal phone work, and they are now
-  the only thing standing between the engine choice and a decision:
-  - Can Godot's asset ecosystem carry `tech.md` §1's buy-the-content
-    strategy? Can Unity Asset Store purchases be converted, and at what
-    cost? (Many formats are engine-neutral; many are not.)
-  - What does third-party console porting actually cost, against L53?
+- **L54 itself — the engine.** Both open questions are researched
+  (`tech.md` §2a) and the recommendation is Godot. **All that is left
+  is deciding**, and every week it stays open is another week of rules
+  written twice.
 
 - **Technique design (L56).** Techniques are now the main expression of
   progression and the main source of mobility — how many per weapon
