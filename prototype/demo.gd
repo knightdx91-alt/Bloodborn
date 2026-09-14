@@ -191,15 +191,25 @@ func _beat_parry() -> void:
 	for i in 8: await _tick()
 
 func _beat_armour() -> void:
-	_say("Aim by where you tap", "High and centred is an overhead. It goes for the helm.")
+	_say("Aim by where you tap",
+		"High and centred is an overhead — and his helm is nearly spent.")
 	w.player.revive(); w.enemy.revive()
 	w.player.position = Vector3(2, 1, 8)
 	w.enemy.position = Vector3(2, 1, 5)
 	w._player_down = 0.0; w._enemy_down = 0.0
+
+	# He comes to this fight with a battered helm, and that is the
+	# honest way to show L63. Armour wears across a DAY — L59: "wear
+	# touches everyone every day" — not inside one exchange. A man dies
+	# through his helm long before you beat it off him, and the first
+	# cut of this beat tried to do exactly that and failed.
+	for i in 7:
+		w.enemy.harness.resolve(ArmourSet.Slot.HEAD, 0.0, "cut")
 	for i in 3: await get_tree().process_frame
 
 	var announced := false
-	for i in 300:
+	var after_break := 0
+	for i in 260:
 		var to: Vector3 = w.enemy.global_position - w.player.global_position
 		to.y = 0.0
 		var heading: Vector3 = to.normalized()
@@ -224,10 +234,14 @@ func _beat_armour() -> void:
 		else:
 			_steer(Vector2.ZERO)
 
+		if announced:
+			after_break += 1
+			if after_break > 80:
+				break
 		if not announced and w.enemy.harness.intact_pieces() < 4:
 			announced = true
 			_say("His helm is gone",
-				"L63: a broken piece comes off. The next overhead hurts twice as much.")
+				"L63: a broken piece comes off. Now an overhead lands for twice as much.")
 		await _tick()
 
 	_say("Stage 1, built headless", "No editor, no GPU, nothing on the developer's machine.")

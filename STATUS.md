@@ -221,6 +221,19 @@ if it drifts from `DamageTable.Default` — including a test that every
 unarmoured entry stays clear of every armoured one, because if any
 armour were not clearly better than none, nobody would wear it.
 
+### One thing this clarified about L63
+
+Trying to film a helm being beaten off exposed that **it almost never
+happens in a single fight** — a man dies through his helm long before
+you wear it out. That looked like a tuning fault and is not one: **L59
+says "wear touches everyone every day"**, so a harness degrades across a
+day of fighting and gets repaired by a crafter, not inside one exchange.
+A piece failing mid-fight should be rare and notable.
+
+So no tuning changed. What changed was the demo, which now shows a man
+arriving with a helm already nearly spent — which is exactly what
+"started the day in plate, finishes it half bare" describes.
+
 **257 tests.**
 
 ## ✅ Stage 1's real finding: the vocabulary works
