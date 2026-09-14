@@ -80,6 +80,10 @@ var _worn := {}
 ## say so — this comes out when a real hit reaction and a real miss sound
 ## carry it instead.
 var show_iframes := false
+## Hitstop. Presentation only — see feel.gd for why the rules must not
+## be frozen with it.
+var _frozen_for := 0.0
+var _speed_before_freeze := 1.0
 const IFRAME_COLOR := Color(0.45, 0.80, 1.00)
 var _iframes_shown := false
 
@@ -161,7 +165,31 @@ func tick(delta: float) -> void:
 		_hurt_for = max(0.0, _hurt_for - delta)
 	if _stagger_for > 0.0:
 		_stagger_for = max(0.0, _stagger_for - delta)
+	_tick_freeze(delta)
 	_show_iframes()
+
+## A few frames of hesitation on a blow. The clocks above have already
+## ticked: only the animation hesitates, so the parry window is still
+## the length the server thinks it is.
+func freeze(seconds: float) -> void:
+	if anim == null or seconds <= 0.0:
+		return
+	if _frozen_for <= 0.0:
+		_speed_before_freeze = anim.speed_scale
+	_frozen_for = maxf(_frozen_for, seconds)
+	anim.speed_scale = _speed_before_freeze * 0.04
+
+func _tick_freeze(delta: float) -> void:
+	if _frozen_for <= 0.0:
+		return
+	_frozen_for -= delta
+	if _frozen_for <= 0.0:
+		_frozen_for = 0.0
+		if anim != null:
+			anim.speed_scale = _speed_before_freeze
+
+func is_frozen() -> bool:
+	return _frozen_for > 0.0
 
 func _show_iframes() -> void:
 	if not show_iframes:
@@ -323,12 +351,13 @@ func revive() -> void:
 	rearm()
 	_hurt_for = 0.0
 	_stagger_for = 0.0
+	_frozen_for = 0.0
 	rotation = Vector3.ZERO
 	if anim != null:
 		anim.play("idle")
 
 func _animate(ground_speed: float) -> void:
-	if anim == null or is_busy():
+	if anim == null or is_busy() or is_frozen():
 		return
 	var want := "idle"
 	var rate := 1.0

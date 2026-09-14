@@ -121,15 +121,33 @@ prototype for the first time**. It also means the earlier warning stands
 with a solution attached: a fused bought character still cannot do this,
 but the slots now exist for real pieces to drop into.
 
+**And blows land like they mean something now.** `feel.gd` adds
+hitstop — a few frames of hesitation scaled to the weight of the blow —
+a camera shove along the hit, a rattle on a parry, and a sway that
+starts when stamina runs low, which is `art-audio.md` §2's "an
+exhausted character's camera behaves differently".
+
+**None of it touches the rules**, and that was the thing to get right:
+`combat.md` §7 adjudicates defensive windows against a tolerance
+envelope, so a freeze that stopped the clocks would mean the 0.28s
+parry window was not 0.28s on the client. Hitstop pauses *animation*
+only — verified at 55 frames of parry window with a 0.12s freeze in the
+middle of it, and 55 without.
+
+**A grade correction, caught by re-reading the doc.** `art-audio.md` §2
+says "Contrast over saturation. Dark here means *low light*, not
+desaturated mud. The grey-brown cliché is both a visual dead end and
+genuinely worse for reading a fight." The first look pass pulled
+saturation to 0.82 and produced exactly that cliché. Saturation is back
+at 0.98 and the mood comes out of exposure and the contrast curve.
+
 **What is still free and not yet done**, roughly by value:
 
 - **Sound.** `art-audio.md` §4 makes audio carry the damage triangle to
   a player who is never shown a number. CC0 libraries are free, and
   footsteps and impacts do more for perceived quality than any shader.
-- **Hitstop** — a few frames of freeze when a blow lands. Ten lines,
-  and one of the largest game-feel wins available anywhere.
+  **This is now the biggest free win left.**
 - **Impact and footstep particles**, which Godot makes without assets.
-- **Camera work** — a shove on impact, a small push-in on a parry.
 - The Mixamo specs already written: characters, attack shapes, a guard
   pose, directional dodges. All free downloads.
 

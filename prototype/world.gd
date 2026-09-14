@@ -34,6 +34,7 @@ var player: Fighter
 var enemy: Fighter
 var cam: Camera3D
 var tactics: EnemyTactics
+var feel: Feel
 
 var dummy: Node3D
 var _dummy_skin: StandardMaterial3D
@@ -106,6 +107,7 @@ func _ready() -> void:
 	enemy.setup(ENEMY_HEALTH, Color(0.40, 0.62, 0.62), true, Fighter.CHARACTER,
 		Color(0.26, 0.27, 0.30), Color(0.16, 0.13, 0.10))
 	tactics = EnemyTactics.new(20260914)
+	feel = Feel.new()
 
 	cam = Camera3D.new()
 	add_child(cam)
@@ -339,6 +341,12 @@ func _physics_process(delta: float) -> void:
 	_tick_dummy(delta)
 	_tick_bodies(delta)
 
+	feel.tick(delta)
+	# art-audio.md §2: an exhausted character's camera behaves
+	# differently. The bar is the last thing interface.md §2 allows on
+	# screen, and this says the same thing without using it.
+	feel.breathe(clamp(1.0 - player.stamina.fraction() * 2.2, 0.0, 1.0))
+
 	_place_camera()
 	_update_interface(delta)
 
@@ -429,21 +437,45 @@ func _resolve_swing(who: Fighter, weapon_damage: float, is_player: bool) -> void
 			return
 
 		var damage: float = weapon_damage * who.attack.damage_multiplier()
+		var blow: Vector3 = to_target.normalized()
+		var weight: float = who.attack.damage_multiplier()
 		if target["dummy"]:
+			_impact(who, null, blow, weight)
 			_hit_dummy(damage)
 		elif is_player:
-			_land(who, enemy, damage, "player")
+			_land(who, enemy, damage, "player", blow, weight)
 		else:
-			_land(who, player, damage, "enemy")
+			_land(who, player, damage, "enemy", blow, weight)
 		return
 
-func _land(attacker: Fighter, victim: Fighter, damage: float, by: String) -> void:
+## Hitstop and a camera shove. Presentation only — feel.gd says why the
+## rules are not allowed to stop with it.
+func _impact(attacker: Fighter, victim: Fighter, blow: Vector3, weight: float) -> void:
+	var stop := Feel.hitstop_for(weight)
+	attacker.freeze(stop)
+	if victim != null:
+		victim.freeze(stop)
+	# Taking one shoves the view harder than landing one.
+	var strength: float = 0.05 + 0.055 * weight
+	if victim == player:
+		strength *= 1.8
+	feel.kick(blow, strength)
+
+func _land(attacker: Fighter, victim: Fighter, damage: float, by: String,
+		blow: Vector3, weight: float) -> void:
+	_impact(attacker, victim, blow, weight)
+
 	# The guard gets first refusal. combat.md §6 makes parry the answer to
 	# a heavy, and the committed attack unparryable — the rule for which
 	# lives in sim/, not here.
 	match victim.meet(attacker.attack):
 		Parry.Outcome.PARRIED:
 			attacker.stagger(victim.parry.stagger_seconds())
+			# A parry is a clang, not a shove: it rattles rather than
+			# throwing the view, because nothing moved.
+			attacker.freeze(Feel.STOP_PARRY)
+			victim.freeze(Feel.STOP_PARRY)
+			feel.shake(0.075)
 			_parries += 1
 			if SHOW_DEBUG:
 				print("PARRIED %s's blow — staggered for %.2fs, %s at %.0f stamina" % [
@@ -597,7 +629,7 @@ func _place_camera() -> void:
 	var back: float = lerp(4.6, 4.4, tall)
 
 	var focus := player.position + Vector3(0, 1.0, 0)
-	cam.position = focus + Vector3(0, height, back)
+	cam.position = focus + Vector3(0, height, back) + feel.offset()
 	cam.look_at(focus, Vector3.UP)
 
 # ── Interface ────────────────────────────────────────────────────────

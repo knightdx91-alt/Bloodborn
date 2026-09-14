@@ -251,6 +251,31 @@ Two things it got wrong first:
   reflect but a procedural sky, so `metallic` sits at 0.18 rather than
   0.75. Grounded iron is not a mirror anyway (L20).
 
+### Feel (`feel.gd`)
+
+`art-audio.md` §2: **"The camera is a participant. Framing, shake and
+depth of field are information channels — an exhausted character's
+camera behaves differently. Cheap, and it does work no HUD element is
+allowed to."**
+
+- **Hitstop** — a few frames of hesitation on a blow, scaled to how
+  heavy it was. Short on purpose: past about a tenth of a second it
+  stops reading as impact and starts reading as a dropped frame.
+- **A camera shove** along the blow, harder when you are the one taking
+  it, and a directionless rattle on a parry because nothing moved.
+- **Breathing.** Below about half stamina the view starts to sway. The
+  bar is the one thing `interface.md` §2 allows on screen, and this
+  says the same thing without it.
+
+> ⚠️ **All of it is presentation and none of it touches the rules.**
+> `combat.md` §7 makes damage server-authoritative and defensive
+> windows client-authoritative inside a tolerance envelope. A freeze
+> that stopped the phase machines would mean the 0.28s parry window was
+> not 0.28s on the client, and the server would be adjudicating against
+> timings the player never experienced. So hitstop pauses *animation*
+> and the clocks run on — verified: **55 frames of parry window with a
+> 0.12s freeze dropped into the middle of it, and 55 without.**
+
 ### Where the code lives
 
 - `world.gd` — the fight: who is where, who hit whom, input, camera.
@@ -260,6 +285,7 @@ Two things it got wrong first:
   the body that knows which it is.
 - `look.gd` — light, sky, haze, grade and palette. See above.
 - `armour.gd` — the per-slot harness. See above.
+- `feel.gd` — hitstop and the camera. See above.
 - `rules/` — the GDScript mirror of `sim/`. See L88.
 
 ### The debug readout

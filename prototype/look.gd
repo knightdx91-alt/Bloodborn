@@ -22,19 +22,19 @@ extends RefCounted
 
 ## Overcast daylight: a cold sky, a warm-ish low sun, and enough haze
 ## that distance reads.
-const SKY_TOP := Color(0.19, 0.25, 0.33)
+const SKY_TOP := Color(0.17, 0.25, 0.36)
 const SKY_HORIZON := Color(0.47, 0.50, 0.51)
 const GROUND_HORIZON := Color(0.21, 0.21, 0.18)
 const GROUND_BOTTOM := Color(0.13, 0.13, 0.12)
 
 const SUN_COLOR := Color(1.0, 0.94, 0.82)
 const FILL_COLOR := Color(0.46, 0.56, 0.72)
-const FOG_COLOR := Color(0.45, 0.49, 0.51)
+const FOG_COLOR := Color(0.44, 0.49, 0.53)
 
 ## The palette, in one place, because L86 makes each of the six wedges a
 ## different one of these and nothing else — "a screenshot is locatable".
 ## This is the drill yard: cold, damp, northern, nothing growing.
-const EARTH := Color(0.27, 0.28, 0.23)
+const EARTH := Color(0.25, 0.27, 0.20)
 const STONE := Color(0.35, 0.36, 0.35)
 const TIMBER := Color(0.22, 0.17, 0.12)
 const KERB := Color(0.25, 0.25, 0.23)
@@ -85,12 +85,16 @@ static func _sky(into: Node3D) -> void:
 	e.tonemap_exposure = 0.75
 	e.tonemap_white = 6.0
 
-	# The grade. Pulled off full saturation on purpose: L20 is grounded,
-	# and mud, wool and iron are not colourful.
+	# The grade. **Contrast, not desaturation** — art-audio.md §2 is
+	# blunt about this: "Dark here means *low light*, not desaturated
+	# mud. The grey-brown cliché is both a visual dead end and genuinely
+	# worse for reading a fight." The first pass here pulled saturation
+	# to 0.82 and produced exactly that cliché. The mood comes out of
+	# exposure and the contrast curve instead, and the colour stays.
 	e.adjustment_enabled = true
 	e.adjustment_brightness = 1.0
-	e.adjustment_contrast = 1.08
-	e.adjustment_saturation = 0.82
+	e.adjustment_contrast = 1.16
+	e.adjustment_saturation = 0.98
 
 	var env := WorldEnvironment.new()
 	env.environment = e
