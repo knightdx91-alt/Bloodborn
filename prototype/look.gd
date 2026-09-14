@@ -30,6 +30,11 @@ const GROUND_BOTTOM := Color(0.13, 0.13, 0.12)
 const SUN_COLOR := Color(1.0, 0.94, 0.82)
 const FILL_COLOR := Color(0.46, 0.56, 0.72)
 
+## Where the sun stands. Named rather than inline because aim_fill needs
+## it too — the fill has to know when the camera is looking INTO the sun.
+const SUN_ELEVATION := -0.59   # radians, ~34° above the horizon
+const SUN_YAW := -0.91         # radians, ~-52°
+
 ## The camera-following fill (see aim_fill).
 const FILL_NODE := "CameraFill"
 ## Above the horizon, so it reads as bounced sky rather than a footlight.
@@ -37,6 +42,18 @@ const FILL_ELEVATION := -0.35   # radians, ~20°
 ## Around from the view direction, far enough to shape the figure and not
 ## so far that it swings behind them again.
 const FILL_OFFSET := 0.70       # radians, ~40°
+## What the fill is worth with the sun behind the camera, where it is
+## only stopping the far edge from dissolving into the ground.
+const FILL_BASE := 0.26
+## What is ADDED when the camera is looking straight into the sun, where
+## it is the only thing lighting the face you can see.
+##
+## Large, and it has to be: at the base value a fighter with the sun
+## behind them rendered as a PURE BLACK CUT-OUT against a bright sky.
+## Chosen by photographing that exact frame at 0.26, 1.21, 1.80, 2.40 and
+## 3.20 — the armour plates and the sword start reading around 2.4, and
+## past that the yard stops looking backlit at all.
+const FILL_BACKLIT := 2.15
 const FOG_COLOR := Color(0.44, 0.49, 0.53)
 
 ## The palette, in one place, because L86 makes each of the six wedges a
@@ -112,7 +129,7 @@ static func _lights(into: Node3D) -> void:
 	# A low sun. Long shadows do more for legibility than any amount of
 	# geometry — they tell you where things are relative to the ground.
 	var sun := DirectionalLight3D.new()
-	sun.rotation_degrees = Vector3(-34, -52, 0)
+	sun.rotation = Vector3(SUN_ELEVATION, SUN_YAW, 0.0)
 	sun.light_color = SUN_COLOR
 	sun.light_energy = 1.05
 	sun.shadow_enabled = true
@@ -134,7 +151,6 @@ static func _lights(into: Node3D) -> void:
 	var fill := DirectionalLight3D.new()
 	fill.name = FILL_NODE
 	fill.light_color = FILL_COLOR
-	fill.light_energy = 0.26
 	fill.shadow_enabled = false
 	into.add_child(fill)
 	aim_fill(into, 0.0)
@@ -160,6 +176,33 @@ static func aim_fill(root: Node3D, camera_yaw: float) -> void:
 	# along the view direction is the flattest light there is — it erases
 	# the form it was added to rescue.
 	fill.rotation = Vector3(FILL_ELEVATION, camera_yaw + FILL_OFFSET, 0.0)
+
+	# And it gets STRONGER the further the camera turns into the sun.
+	#
+	# This is the case that was actually reported: stand so the sun is
+	# behind the fighter and the side you are looking at is the side the
+	# sun never reaches, so they go to a dark shape. A fill that is the
+	# same strength all the way round cannot fix that without being so
+	# strong everywhere else that it flattens the light the rest of the
+	# time — which art-audio.md §5 has already been burnt by once.
+	#
+	# So it is spent where it is needed and nowhere else: nothing extra
+	# with the sun behind you, everything when you are looking at it.
+	#
+	# Both directions are flattened to the ground. Elevation is not part
+	# of the question — the sun is 34° up whatever the camera does, and
+	# only the horizontal relationship decides which face is lit.
+	var looking := Vector2(-sin(camera_yaw), -cos(camera_yaw))
+	var sunward := Vector2(-sin(SUN_YAW), -cos(SUN_YAW))
+	# +1 when the camera looks the same way the light travels (the lit
+	# face is toward you), -1 when it stares into it (the lit face is
+	# away). Only the second half is a problem.
+	var backlit: float = clampf(-looking.dot(sunward), 0.0, 1.0)
+	# Squared, so the boost concentrates on the angles that are actually
+	# a problem and the scene keeps its normal light over most of the
+	# turn. A linear ramp put half the extra fill into the three-quarter
+	# angles, which never needed it.
+	fill.light_energy = FILL_BASE + FILL_BACKLIT * backlit * backlit
 
 ## Stone, timber, anything that is not ground. Same trick, tighter grain
 ## and a little less rough, so it reads as a different substance rather

@@ -196,20 +196,43 @@ swung around the yard as you looked would destroy the thing they are
 there for. A world light that tracks the viewer is not a time of day,
 it is a torch.
 
-> **Measured, and smaller than expected.** Photographing the fighter
-> from eight angles, the darkest side came out **1%** brighter with the
-> fill following than with it pinned where it used to be, and a sweep
-> from 0.0 to 1.2 fill energy moved it from 0.113 to 0.164 luminance —
-> comparable to the measurement noise. **Lighting was not what made a
-> side of the character hard to see.** The change is kept because it is
-> the right shape for an orbiting camera and costs nothing, not because
-> it fixed the complaint.
+**And it gets much stronger the further the camera turns into the sun.**
+This is the case that was actually reported: stand so the sun is behind
+the fighter and they render as a **pure black cut-out** against a bright
+sky. A fill that is the same strength all the way round cannot fix that
+without being so strong everywhere else that it flattens the light the
+rest of the time — which `art-audio.md` §5 has already been burnt by
+once. So it is spent where it is needed and nowhere else: nothing extra
+with the sun behind you, `FILL_BACKLIT` on top when you are staring into
+it, on a squared ramp so the three-quarter angles keep their normal
+light.
+
+> **Three measurements that were wrong before one that was right**, kept
+> here because the wrong ones are the instructive part.
 >
-> What the renders did show: the camera's full pitch range is fine —
-> at its lowest it sits at ground level looking up and the fighter
-> reads clearly. The likely reason that angle was never reached is that
-> the stick was inverted, so pushing it the intuitive way sent the
-> camera up instead of down.
+> 1. Orbiting the camera and averaging luminance in a box on the
+>    fighter. **Invalid:** the fight was still running, so the two passes
+>    compared different poses in different places. The numbers were
+>    noise.
+> 2. Freezing the scene and orbiting the camera. **Invalid:** a
+>    fixed-facing character shows a different part of its kit at every
+>    angle, so costume was confounded with light.
+> 3. Freezing the camera and sweeping the *sun*, measuring mean
+>    luminance. **Valid but measuring the wrong thing** — and it said
+>    backlighting made the fighter *brighter*, which is true and
+>    useless. Looking into the sun, the fog scatters light toward the
+>    camera; the figure gets paler while losing every feature. A pale
+>    silhouette reads no better than a dark one.
+>
+> What finally worked was **rendering the worst case and looking at
+> it** — low camera, sun dead ahead, fighter between. The silhouette was
+> obvious in one frame and invisible in every aggregate, because the
+> problem only appears where the background is *sky* rather than ground,
+> which needs the low camera angle none of the sweeps used.
+>
+> `FILL_BACKLIT` was then chosen by photographing that same frame at
+> 0.26, 1.21, 1.80, 2.40 and 3.20. The plates and the sword start
+> reading around 2.4; past that the yard stops looking backlit at all.
 
 **Steering is camera-relative.** Not a preference: the moment the
 camera can turn, a world-space "left" sends you somewhere that is not
