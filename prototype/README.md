@@ -363,7 +363,10 @@ the 2017 Air), open this folder as a project, press Play.
 
 ## Recording a video of it
 
-`demo.gd` plays a scripted run and writes every frame to disk.
+`demo.gd` plays a scripted run — walk and run, beat the dummy down, the
+enemy's three wind-ups named as they happen, a dodge through a blow, a
+parry into a free punish, and **a helm being battered off** — and writes
+every frame to disk.
 
 ```
 godot --path prototype --resolution 800x450 --fixed-fps 24 demo.tscn
@@ -379,7 +382,21 @@ it, a 3fps render produces a 3fps video of a game running at 3fps.
 
 This exists because a video is the only way anyone sees this project
 move — there is no PC to run it on, and a screenshot cannot show a
-0.28s parry window mattering.
+0.28s parry window mattering, or a piece of armour giving way after the
+tenth blow to the same place.
+
+> ⚠️ **A GDScript compile error here looks exactly like a hang.** The
+> engine loads nothing, prints nothing you will see, and sits there
+> until something kills it — so "no output and no frames after four
+> minutes" almost always means a typo, not a slow render. Run it once
+> at `--resolution 320x180` to find out in seconds. The same symptom
+> has three known causes: a bad call, a `class_name` the global cache
+> has not seen (`--import` fixes that), and a `#` comment in
+> `project.godot` where a `;` belongs.
+
+It runs to about a thousand frames now, which the software rasteriser
+takes some minutes to draw. That is fine and expected: `--fixed-fps`
+means the *output* is smooth however slowly each frame is made.
 
 ## Rebuilding it
 

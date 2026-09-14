@@ -83,6 +83,7 @@ func _ready() -> void:
 	await _beat_enemy()
 	await _beat_dodge()
 	await _beat_parry()
+	await _beat_armour()
 
 	print("rendered %d frames" % _frame)
 	get_tree().quit()
@@ -187,5 +188,47 @@ func _beat_parry() -> void:
 		else:
 			_steer(Vector2.ZERO)
 		await _tick()
+	for i in 8: await _tick()
+
+func _beat_armour() -> void:
+	_say("Aim by where you tap", "High and centred is an overhead. It goes for the helm.")
+	w.player.revive(); w.enemy.revive()
+	w.player.position = Vector3(2, 1, 8)
+	w.enemy.position = Vector3(2, 1, 5)
+	w._player_down = 0.0; w._enemy_down = 0.0
+	for i in 3: await get_tree().process_frame
+
+	var announced := false
+	for i in 300:
+		var to: Vector3 = w.enemy.global_position - w.player.global_position
+		to.y = 0.0
+		var heading: Vector3 = to.normalized()
+
+		if not w.player.is_busy():
+			# Answer his wind-ups so the beat is a fight rather than a
+			# demonstration dummy hitting back.
+			if w.enemy.attack.phase() == 1 \
+					and w.enemy.attack.elapsed() > w.enemy.attack.windup_seconds() - 0.12 \
+					and w.player.dodge.can_act():
+				if w.player.try_dodge(heading.cross(Vector3.UP)):
+					w._dodge_count += 1
+			elif to.length() > 1.5:
+				_steer(Vector2(heading.x, heading.z) * 0.45)
+			else:
+				_steer(Vector2.ZERO)
+				w.player.rotation.y = atan2(-heading.x, -heading.z)
+				# Every blow to the same place: that is the whole point.
+				if w.player.try_attack():
+					w.player.attack.arc = Attack.Arc.OVERHEAD
+					w._swing_count += 1
+		else:
+			_steer(Vector2.ZERO)
+
+		if not announced and w.enemy.harness.intact_pieces() < 4:
+			announced = true
+			_say("His helm is gone",
+				"L63: a broken piece comes off. The next overhead hurts twice as much.")
+		await _tick()
+
 	_say("Stage 1, built headless", "No editor, no GPU, nothing on the developer's machine.")
-	for i in 36: await _tick()
+	for i in 40: await _tick()
