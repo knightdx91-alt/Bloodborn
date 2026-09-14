@@ -82,10 +82,20 @@ jobs:
               -dname "CN=Android Debug,O=Android,C=US"
           fi
           # Editor Settings: Java + Android SDK paths (required even for non-Gradle exports).
+          # A fresh editor_settings file has no export/android keys, so append-or-replace.
           godot --headless --editor --quit-after 1 > /dev/null 2>&1 || true
           SETTINGS="$HOME/.config/godot/editor_settings-4.3.tres"
-          sed -i "s|^export/android/java_sdk_path = .*|export/android/java_sdk_path = \"$JAVA_HOME\"|" "$SETTINGS"
-          sed -i "s|^export/android/android_sdk_path = .*|export/android/android_sdk_path = \"$ANDROID_HOME\"|" "$SETTINGS"
+          touch "$SETTINGS"
+          set_kv() {
+            local key="$1" val="$2"
+            if grep -q "^${key} = " "$SETTINGS"; then
+              sed -i "s|^${key} = .*|${key} = \"${val}\"|" "$SETTINGS"
+            else
+              printf '%s = "%s"\n' "$key" "$val" >> "$SETTINGS"
+            fi
+          }
+          set_kv "export/android/java_sdk_path" "$JAVA_HOME"
+          set_kv "export/android/android_sdk_path" "$ANDROID_HOME"
           grep -E "^export/android/(java_sdk_path|android_sdk_path)" "$SETTINGS"
 
       - name: Export APK
