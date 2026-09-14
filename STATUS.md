@@ -12,14 +12,18 @@ of each working session.
 Design is **88 locked decisions** and **complete** — every structural
 question locked, every missing document written. Every system a player
 touches in their first hundred hours is specified, and most of it is
-**written, tested and running** as engine-free C# — 239 tests.
+**written, tested and running** as engine-free C# — 254 tests.
 
-**Stage 1 is two-thirds built and playable in any browser**: a
-character who walks and runs, a dodge with invulnerability frames, a
-sword against a training dummy — and **an enemy that fights back** with
-three readable attack shapes. That is `tech.md` §6 steps 1, 2, 3 and 5
-of six. **Step 6 is the parry**, the heart of the combat; **step 4 is
-the stamina tuning**, which needs you rather than me.
+**Stage 1 is built and playable in any browser**: a character who walks
+and runs, a dodge with invulnerability frames, a sword, a training
+dummy, an enemy that fights back with three readable attack shapes, and
+a parry that staggers him and buys a free punish. That is every
+construction step of `tech.md` §6.
+
+**What is left of Stage 1 is step 4, the stamina tuning — and it needs
+you rather than me.** See the finding below: right now the dodge
+answers everything for free, which means nothing else has a reason to
+exist.
 
 **The engine is Godot** (L54, revised 2026-09-14 from Unity). Decided
 on the evidence in `tech.md` §2a, not on preference — see the L54
@@ -66,10 +70,60 @@ Everything below can be done from the Claude Code app with no laptop.
 | | |
 |---|---|
 | **Design** | `design/` — 88 locks in `pillars.md`, which is the map to everything |
-| **Code** | `sim/` — the rules of the game as engine-free C#, 239 tests |
+| **Code** | `sim/` — the rules of the game as engine-free C#, 254 tests |
 | **Tuning** | `shared/tuning/combat.json` — every combat number, once, read by both `sim/` and the prototype |
 | **The plan** | `design/tech.md` §6 (build order), §8 (how the work divides) |
 | **Blocking** | `design/naming.md` §5 — trademark clearance, before anything public |
+
+## Done 2026-09-14 — the parry (step 6), and what it exposed
+
+**`tech.md` §6 Stage 1 step 6 is done. Every construction step of
+Stage 1 is now built and playable.** Hold a finger still to raise the
+guard (K or right-click on a keyboard).
+
+- **A 0.28s window**, wide enough to survive §7's ~100ms latency
+  envelope — L39 is the claim that 100ms feels like zero, and a window
+  near 100ms would be a lottery.
+- **Refunds most of its cost on success, nothing on failure.** That
+  asymmetry is the whole design.
+- **Failing costs more than not trying**: 0.55s caught out of position,
+  against the dodge's 0.35s.
+- **The committed attack cannot be parried**, even perfectly timed.
+- **0.9s stagger and a genuinely free punish.** Measured end to end:
+  parry a heavy, free again in 0.12s, punish lands for a quarter of his
+  health.
+- **15 new tests**, `sim/` now at 254.
+
+## ⚠️ The most useful thing Stage 1 produced: the dodge is dominant
+
+With all six steps in, a bot fought the same seeded enemy three ways.
+Over 30 seconds:
+
+| Strategy | Damage taken |
+|---|---|
+| Nothing at all | 342, died twice |
+| Parry everything | 188 — all of it from committed attacks |
+| **Dodge everything** | **0** |
+| §6's answers (dodge / parry / leave) | 0 |
+
+**Dodging answers all three shapes perfectly.** So on defence there is
+never a reason to parry, and §6's three answers collapse into one.
+Parry's justification has to be the punish rather than the defence —
+and no bot can settle whether that punish is worth the risk, because
+§9 says that is a controller question.
+
+**The likely cause is that one slow enemy applies no stamina
+pressure.** Dodges more than 1.2s apart never trigger the chain
+escalation, so they are free, and nothing ever forces a second dodge
+inside that window.
+
+**This makes step 4 a specific problem instead of a vague one:** find
+the pressure that makes a free answer stop being free. Untested
+candidates — a faster or a second enemy, a longer dodge recovery, a
+wider escalation window, a cost that does not fully reset.
+
+It is exactly the kind of finding Stage 1 exists to produce, and it
+arrived on schedule.
 
 ## Done 2026-09-14 — an enemy that fights back (step 5)
 
@@ -341,11 +395,15 @@ closed it, and both were already in the design:
 go. **Tap to swing. Tap with a second finger to dodge.** On a keyboard:
 WASD or arrows, Shift to sprint, Space to dodge, J to swing.
 
-**There is someone in the yard now, and he will kill you.** Watch his
-wind-up: a short one is a jab, a long one is a chop, a very long one is
-a whole-body swing you cannot parry and should simply not be standing
-in front of. Dodge as the wind-up ends and it passes straight through
-you. The training dummy is still there for practice.
+**Hold a finger still to raise your guard** (K or right-click on a
+keyboard). Time it against a chop and you turn it aside, stagger him,
+and get a free swing.
+
+**There is someone in the yard, and he will kill you.** Watch his
+wind-up: a short one is a jab (dodge it), a long one is a chop (parry
+it), a very long one is a whole-body swing you *cannot* parry and
+should simply not be standing in front of. The training dummy is still
+there for practice.
 
 The loop, with no PC involved at any point:
 
@@ -433,24 +491,24 @@ build and `prototype/rules/` is deleted the same day. Named on purpose
 has been written, and every structural question is locked. What remains
 falls into three piles, and none of it is design:
 
-1. **Stage 1 — steps 1, 2, 3 and 5 are done.** `tech.md` §6, six steps
-   from a character controller to a working parry. Move, look, dodge,
-   attack, and **an enemy that fights back** are all playable in a
-   browser.
-   - **Step 6 is the parry** — the hardest single-player piece and the
-     heart of the combat. The heavy attack exists to be parried and
-     currently cannot be, so this is the missing half of what step 5
-     set up.
-   - **Step 4 is the stamina tuning**, and it is the one that wants
-     you rather than me. The economy is wired; what is missing is
-     pressure. Measured in step 5: a player who dodges perfectly takes
-     zero damage, because spacing dodges avoids the escalation
-     entirely. Correct by design, but it means one slow enemy applies
-     no stamina pressure at all.
-   - Waiting on Muse, neither blocking: `SPEC-attack-clips.md` (three
-     distinct enemy attacks — **the more important one**, §6 calls it a
-     hard requirement) and `SPEC-dodge-clips.md` (four directional
-     dodges).
+1. **Stage 1 is built.** `tech.md` §6's six steps: move and look,
+   dodge, attack and hit, an enemy that fights back, and the parry —
+   all playable in a browser. **Only step 4 remains, and it is not
+   construction.**
+   - **Step 4 is the stamina tuning, and it needs you, not me.** The
+     economy is wired; what is missing is *pressure*. The finding
+     above makes it concrete: the dodge currently answers everything
+     for free, so nothing else has a reason to exist. **This is the
+     single highest-value thing left in Stage 1** — and `combat.md` §9
+     is explicit that it cannot be settled from this side.
+   - **Then Stage 2**, which is where L39 is actually passed or failed:
+     two clients and a server, then a latency slider tuned until 100ms
+     is indistinguishable from 0. Everything in `sim/` was written to
+     run on that server unchanged.
+   - Waiting on Muse, neither blocking: **`SPEC-attack-clips.md`** —
+     three distinct attack shapes *and a guard pose*, and §6 and L65
+     both call these hard requirements rather than polish — and
+     `SPEC-dodge-clips.md` (four directional dodges).
 2. **Trademark clearance on "Marrowmark"** (`naming.md` §5) — blocks
    anything public. Classes 9 and 41, plus a common-law sweep, plus an
    attorney.

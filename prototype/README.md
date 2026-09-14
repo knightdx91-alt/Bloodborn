@@ -1,10 +1,12 @@
 # Prototype — Godot
 
-`tech.md` §6 Stage 1, **steps 1 to 3 and 5**. A character you can walk
-and run around a grey room, a roll with invulnerability frames that
-costs stamina and punishes panic, a sword you can beat a training dummy
-down with — and **an enemy that fights back** with combat.md §6's three
-attack shapes.
+**`tech.md` §6 Stage 1, built.** A character you can walk and run
+around a grey room, a roll with invulnerability frames that costs
+stamina and punishes panic, a sword you can beat a training dummy down
+with, **an enemy that fights back** with combat.md §6's three attack
+shapes, and **a parry** that turns his chop aside and buys you a free
+swing. Only step 4's tuning pass is outstanding, and it needs a
+controller.
 
 Built entirely headless — no editor was opened to make this. It exists
 to answer a question that had been assumed settled: **whether the
@@ -26,6 +28,8 @@ engine work can happen without a capable PC.** It can.
   there is no persistent HUD).
 - **An enemy** that closes, telegraphs and swings. It dies, you die,
   both get back up.
+- **A parry.** A tight window, a refund if it lands and none if it
+  misses, and a stagger that buys a genuinely free swing.
 
 ### The enemy (step 5)
 
@@ -98,8 +102,31 @@ Controls:
 - **Attack** — **tap** to swing. Attacking is the commonest thing you
   do, so it gets the commonest gesture; a swing is committed anyway, so
   lifting a steering thumb to tap costs nothing.
+- **Parry** — **hold a finger still.** A tap is a swing, a drag is a
+  steer, and a press that does neither is a brace. It fires while the
+  finger is down rather than on release, because a guard that appeared
+  after you let go would be useless.
 - **Keyboard** — WASD or arrows, Shift to sprint, **Space** to dodge,
-  **J** or left-click to swing.
+  **J** or left-click to swing, **K** or right-click to parry.
+
+### The parry (step 6)
+
+0.28 seconds of open window — wide enough to survive `combat.md` §7's
+~100ms latency envelope, which L39 makes the gate the project turns on.
+It refunds most of its cost when it lands and nothing when it misses,
+and being caught out of position costs 0.55s against the dodge's 0.35s.
+**Failing has to cost more than not trying**, or mashing it would be
+correct play.
+
+A landed parry staggers the attacker for 0.9s and frees you in 0.12s,
+which is what makes §6's "free punish" free rather than merely fast.
+**The committed attack cannot be parried** — perfect timing included.
+
+> ⚠️ **The guard has no pose of its own yet.** It borrows the hit
+> reaction at half speed. L65 reads the guard *off the body* and
+> forbids any UI element to rescue it, which makes this a placeholder
+> for the most load-bearing pose in the design.
+> `assets/SPEC-attack-clips.md` asks for the real one.
 
 ### The swing
 
@@ -148,6 +175,22 @@ There is one roll clip, so the character turns to face the direction it
 dodges. That is wrong for L56's circling and
 `assets/SPEC-dodge-clips.md` asks for the four directional clips that
 fix it.
+
+### ⚠️ What Stage 1 found
+
+A bot fought the same seeded enemy three ways for 30 seconds:
+
+| Strategy | Damage taken |
+|---|---|
+| Nothing at all | 342, died twice |
+| Parry everything | 188 — all of it from committed attacks |
+| **Dodge everything** | **0** |
+
+**The dodge answers all three shapes perfectly**, so on defence there is
+never a reason to parry. Almost certainly because one slow enemy
+applies no stamina pressure: dodges more than 1.2s apart never trigger
+the chain escalation, so they are free. That is step 4's problem, and
+it is now a specific one — `design/tech.md` §6 has the detail.
 
 ### Where the code lives
 

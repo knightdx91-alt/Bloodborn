@@ -130,6 +130,10 @@ namespace Marrowmark.Sim.Tests
             AssertMatches(EnemyTacticsProfile.Default, "enemyTactics");
 
         [Fact]
+        public void Parry_tuning_matches_the_shared_file() =>
+            AssertMatches(ParryProfile.Default, "parry");
+
+        [Fact]
         public void The_prototypes_copy_is_identical_to_the_canonical_file()
         {
             var root = RepoRoot();
@@ -158,6 +162,7 @@ namespace Marrowmark.Sim.Tests
                 ("enemyHeavy", typeof(AttackProfile)),
                 ("enemyCommitted", typeof(AttackProfile)),
                 ("enemyTactics", typeof(EnemyTacticsProfile)),
+                ("parry", typeof(ParryProfile)),
             };
 
             foreach (var (section, type) in pairs)

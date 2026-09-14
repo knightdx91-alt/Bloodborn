@@ -56,6 +56,7 @@ var stamina: Stamina
 var health: Health
 var dodge: Dodge
 var attack: Attack
+var parry: Parry
 
 var anim: AnimationPlayer
 var skin: StandardMaterial3D
@@ -64,6 +65,7 @@ var skin_base_color := Color(1, 1, 1)
 var _dodge_dir := Vector3.FORWARD
 var _dodge_travelled := 0.0
 var _hurt_for := 0.0
+var _stagger_for := 0.0
 var _sword: Node3D
 
 signal died
@@ -123,21 +125,32 @@ func setup(max_health: float, tint: Color, carries_sword: bool = true) -> void:
 	health = Health.new(max_health)
 	dodge = Dodge.new()
 	attack = Attack.new()
+	parry = Parry.new()
 
-## True while a roll, a swing or a hit reaction owns the body.
+## True while a roll, a swing, a guard or a hit reaction owns the body.
 func is_busy() -> bool:
-	return not dodge.can_act() or not attack.can_act() or _hurt_for > 0.0
+	return not dodge.can_act() or not attack.can_act() or not parry.can_act() \
+		or _hurt_for > 0.0 or _stagger_for > 0.0
+
+## Opened up by a parry. combat.md §6 promises a free punish, and this is
+## what makes it free rather than merely fast.
+func is_staggered() -> bool:
+	return _stagger_for > 0.0
 
 func tick(delta: float) -> void:
 	dodge.tick(delta)
 	attack.tick(delta)
+	parry.tick(delta)
 	stamina.tick(delta)
 	if _hurt_for > 0.0:
 		_hurt_for = max(0.0, _hurt_for - delta)
+	if _stagger_for > 0.0:
+		_stagger_for = max(0.0, _stagger_for - delta)
 
 ## Move under the fighter's own steam, or under a dodge if one is running.
 func move(desired: Vector3, speed: float, delta: float) -> void:
-	if not attack.can_act() or _hurt_for > 0.0:
+	if not attack.can_act() or not parry.can_act() or _hurt_for > 0.0 \
+			or _stagger_for > 0.0:
 		# A swing is committed: combat.md §6 makes the wind-up a telegraph,
 		# and a telegraph you can walk out of tells nobody anything.
 		velocity.x = 0.0
@@ -206,6 +219,36 @@ func try_attack(section: String = "attack") -> bool:
 	anim.speed_scale = window / total
 	return true
 
+## Raise the guard. combat.md §6: the answer to a heavy.
+func try_parry() -> bool:
+	if is_busy():
+		return false
+	if not parry.try_start(stamina):
+		return false
+	# No guard-pose clip yet, so the hit reaction stands in for the brace.
+	# L65 reads the guard off the body and forbids any UI element to
+	# rescue it, which makes this a placeholder for the single most
+	# load-bearing pose in the design. assets/SPEC-attack-clips.md asks
+	# for the real one.
+	anim.play("hurt", 0.04)
+	anim.seek(HURT_START, true)
+	anim.speed_scale = 0.5
+	return true
+
+## Meet an incoming blow with whatever this fighter is doing about it.
+## Returns the Parry.Outcome — the caller applies the stagger, because
+## staggering is something that happens to the *attacker*.
+func meet(incoming: Attack) -> int:
+	return parry.meet(incoming, stamina)
+
+## Opened up by a parry that landed.
+func stagger(seconds: float) -> void:
+	attack.reset()
+	_stagger_for = seconds
+	anim.play("hurt", 0.05)
+	anim.seek(HURT_START, true)
+	anim.speed_scale = (HURT_END - HURT_START) / max(seconds, 0.01)
+
 ## Take a blow. Returns the damage actually taken — zero if the dodge's
 ## invulnerable window ate it, which is the whole point of the dodge.
 func hurt(amount: float) -> float:
@@ -232,7 +275,9 @@ func revive() -> void:
 	stamina.reset()
 	dodge.reset()
 	attack.reset()
+	parry.reset()
 	_hurt_for = 0.0
+	_stagger_for = 0.0
 	rotation = Vector3.ZERO
 	if anim != null:
 		anim.play("idle")

@@ -104,6 +104,11 @@ func spend_dodge(efficiency: float = 1.0) -> Dictionary:
 	_since_last_dodge = 0.0
 	return result
 
+## Return part of a spend. Does not clear the regeneration delay — a
+## refund is a reward, not a reset.
+func refund(amount: float) -> void:
+	_current = min(effective_max(), _current + max(amount, 0.0))
+
 ## One tick of sprinting (L55). False once the bar is empty.
 func sprint(delta: float, efficiency: float = 1.0) -> bool:
 	return _exert(_p.get("sprintDrainPerSecond", 8.0), delta, efficiency)

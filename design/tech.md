@@ -472,8 +472,9 @@ project. It stages cleanly, and each stage is independently playable:
 
 ### Stage 1 — learning the engine by building the real thing
 
-*Steps 1 to 3 and 5 are done and playable in a browser. Built in Godot,
-which as of 2026-09-14 is the engine (L54) rather than an experiment.*
+*Stage 1 is built and playable in a browser — every step except step 4's
+tuning pass, which needs a controller. Built in Godot, which as of
+2026-09-14 is the engine (L54) rather than an experiment.*
 
 1. ✅ **Move and look.** A character controller, a camera, a flat test
    room. Nothing from the design yet — this is the tutorial.
@@ -502,8 +503,13 @@ which as of 2026-09-14 is the engine (L54) rather than an experiment.*
    hard requirement, so this is a real gap —
    `assets/SPEC-attack-clips.md` asks for the three distinct clips that
    close it.
-6. **Parry.** The hardest single-player piece, and the heart of the
-   game's combat.
+6. ✅ **Parry.** The hardest single-player piece, and the heart of the
+   game's combat. A tight window that survives §7's latency envelope, a
+   refund on success and none on failure, an unparryable committed
+   attack, and a 0.9s stagger that is genuinely a free punish —
+   measured: parry, free again in 0.12s, punish lands.
+   **What it also surfaced, which is more important than the feature:**
+   see below.
 
 **Stage 1 is the honest test of whether this project happens.** It is
 months of work for someone learning, it is entirely single-player, and
@@ -519,6 +525,38 @@ to keep going.
 
 *This is where L39 is actually passed or failed. It cannot be
 attempted before Stage 1 exists.*
+
+> ### ⚠️ What Stage 1 found: the dodge is strictly dominant
+>
+> With all six steps in, a bot was run against the same seeded enemy
+> answering every attack three different ways. Over 30 seconds:
+>
+> | Strategy | Damage taken |
+> |---|---|
+> | Nothing at all | 342, died twice |
+> | Parry everything | 188 (all of it from committed attacks) |
+> | **Dodge everything** | **0** |
+> | §6's answers (dodge / parry / leave) | 0 |
+>
+> **Dodging answers all three shapes perfectly**, so on defence alone
+> there is never a reason to parry, and §6's vocabulary of three
+> answers collapses to one. Parry's justification has to be the punish
+> rather than the defence — and a bot cannot settle whether the punish
+> is worth the risk, because that is a feel question and §9 says so.
+>
+> **The cause is almost certainly that one slow enemy applies no
+> stamina pressure.** Dodges spaced more than 1.2s apart never trigger
+> the chain escalation, so they are effectively free, and nothing here
+> ever forces a second dodge inside that window. That is step 4's
+> problem to solve, and it is now a specific problem rather than a
+> vague one: **find the pressure that makes a free answer stop being
+> free.** Candidates, none of them tested: a faster or second enemy,
+> a longer dodge recovery, a wider escalation window, or a cost that
+> does not reset.
+>
+> This is the most valuable thing Stage 1 produced, and it is exactly
+> the kind of finding the stage exists to produce. **Judge it on feel,
+> not on the table above.**
 
 ### Stage 3 onward — the game
 9. **One crafting pipeline, end to end.** Ore to sword, every stage

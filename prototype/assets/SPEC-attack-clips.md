@@ -1,4 +1,4 @@
-# Spec: three enemy attack clips that read differently
+# Spec: three attack clips that read differently, and a guard
 
 **Read `SPEC-character-v3.md` first.** Its one rule applies without
 exception:
@@ -6,8 +6,8 @@ exception:
 > ### Every file must be a direct download from mixamo.com.
 > ### Do not open Blender. Do not rebuild, convert or re-export anything.
 
-Same X Bot character as before. This asks for **three clips**, and it
-is the most design-critical asset request so far.
+Same X Bot character as before. This asks for **four clips**, and it is
+the most design-critical asset request so far.
 
 ---
 
@@ -51,6 +51,7 @@ Place** if offered, everything else default.
 | `animations/attack_quick.fbx` | A short, sharp one-handed jab or slash. Minimal wind-up. It should look *cheap* — like something thrown away, not committed to |
 | `animations/attack_heavy.fbx` | A big overhead or diagonal chop with a clear **weight shift** — a shoulder dropping, a foot planting. The wind-up is the whole point and should be over half the clip |
 | `animations/attack_committed.fbx` | A whole-body swing: a spin, a lunge, a two-handed horizontal sweep. It should look like something that **cannot be stopped once started**, and like it would hurt |
+| `animations/guard.fbx` | A braced defensive stance — see below |
 
 Mixamo names that tend to fit (use your judgement, and say what you
 picked):
@@ -61,6 +62,29 @@ picked):
   a visible rear-back
 - Committed — "Great Sword Spinning Slash", "Sword And Shield Jump
   Attack", "Mma Kick"... anything whole-body
+
+---
+
+## And one more: the guard
+
+`animations/guard.fbx` — **a braced defensive stance.** Weight back,
+blade or shield up across the body, ready to turn something aside. A
+short loop or a still pose both work; it gets held rather than played
+through.
+
+This one is load-bearing for a different reason. `design/combat.md`
+§1 (L65) says the guard is read **off the body**:
+
+> No indicator, no marker, nothing on screen... **This makes animation
+> quality load-bearing rather than decorative**: if a guard pose does
+> not read at a glance, the combat does not work, and no UI element may
+> be added to rescue it.
+
+Right now the parry borrows the hit-reaction clip played at half speed,
+which is a placeholder for **the single most load-bearing pose in the
+design**. Any Mixamo clip with a clear braced stance will do far better
+— "Sword And Shield Block", "Sword And Shield Block Idle", or any
+guarding idle.
 
 ---
 

@@ -263,12 +263,13 @@ Full list at the bottom of `brainstorm.md`.
     Nine documents written that did not exist: `combat.md`, `tech.md`,
     `naming.md`, `crafting.md`, `onboarding.md`, `moderation.md`,
     `liveops.md`, `interface.md`, `art-audio.md`. A simulation library
-    (`sim/`) now implements and tests the rules — 239 tests, engine-free.
-    `tech.md` §6 Stage 1 steps 1, 2, 3 and 5 are built and playable in
-    a browser: an animated character that walks and runs, a dodge with
-    invulnerability frames, escalating cost and a punishable recovery,
-    a committed sword swing against a training dummy that reacts, and
-    an enemy that fights back with §6's three attack shapes.
+    (`sim/`) now implements and tests the rules — 254 tests, engine-free.
+    **`tech.md` §6 Stage 1 is built and playable in a browser**: an
+    animated character, a dodge with invulnerability frames and a
+    punishable recovery, a committed sword swing, an enemy that fights
+    back with §6's three attack shapes, and a parry that staggers him.
+    Only step 4's tuning pass remains, and `combat.md` §9 says it needs
+    a controller.
 
 **The design side is complete.** The original ten pillars are locked,
 P11 and P12 are locked down to their prototype-gated remainders, and
@@ -305,10 +306,9 @@ structural:
    buy eventually — PC is the first ship target (L53) and console SDKs
    are Windows-only later — but it **blocks nothing now**.
 2. **Build Stage 1** (`tech.md` §6) — single-player combat in six
-   steps, from a character controller to a working parry. **Steps 1–3
-   are done and playable** (move and look, dodge, attack and hit);
-   step 4 is the stamina tuning pass and step 5 is the first enemy
-   that swings back. `combat.md` §9's prototype is the target; its
+   steps, from a character controller to a working parry. **Built and
+   playable**, except step 4's stamina tuning, which needs a controller
+   and is now the highest-value thing left in the stage. `combat.md` §9's prototype is the target; its
    networked half (Stage 2) is what actually settles the L39 gate and
    cannot be attempted until Stage 1 exists. For someone learning an
    engine, Stage 1 *is* the learning.

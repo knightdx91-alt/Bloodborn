@@ -65,6 +65,7 @@ var _touch_started := 0
 var _touch_started_frame := 0
 var _touch_max_drag := 0.0
 var _touch_dodged := false
+var _touch_parried := false
 
 # Prototype scaffolding, not a design decision. interface.md §2 gives an
 # opponent no bars at all; these numbers exist to check the sums.
@@ -72,8 +73,9 @@ const SHOW_DEBUG := true
 var _phase_label: Label
 var _dodge_count := 0
 var _swing_count := 0
+var _parries := 0
+var _parry_attempts := 0
 var _last_release := "-"
-var _last_shape := "-"
 
 func _ready() -> void:
 	# Belt and braces with the project setting: an emulated click arrives
@@ -212,6 +214,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			_touch_started_frame = Engine.get_frames_drawn()
 			_touch_max_drag = 0.0
 			_touch_dodged = false
+			_touch_parried = false
 		elif event.pressed:
 			# A second finger, anywhere, dodges immediately. No button: the
 			# interface is meant to stay off the screen (L81), a thumb
@@ -234,18 +237,24 @@ func _unhandled_input(event: InputEvent) -> void:
 				_last_release = "held %dms / %d frames, drag %dpx" % [
 					held, frames, roundi(_touch_max_drag)]
 			var quick: bool = held <= TAP_MILLISECONDS or frames <= TAP_FRAMES
-			if quick and _touch_max_drag <= TAP_SLOP and not _touch_dodged:
+			if quick and _touch_max_drag <= TAP_SLOP and not _touch_dodged \
+					and not _touch_parried:
 				_try_attack()
 			_touch_id = -1
 			_touch_vec = Vector2.ZERO
+			_touch_parried = false
 	elif event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_SPACE:
 			_try_dodge()
 		elif event.keycode == KEY_J or event.keycode == KEY_ENTER:
 			_try_attack()
-	elif event is InputEventMouseButton and event.pressed \
-			and event.button_index == MOUSE_BUTTON_LEFT:
-		_try_attack()
+		elif event.keycode == KEY_K:
+			_try_parry()
+	elif event is InputEventMouseButton and event.pressed:
+		if event.button_index == MOUSE_BUTTON_LEFT:
+			_try_attack()
+		elif event.button_index == MOUSE_BUTTON_RIGHT:
+			_try_parry()
 	elif event is InputEventScreenDrag and event.index == _touch_id:
 		var offset: Vector2 = event.position - _touch_origin
 		_touch_max_drag = maxf(_touch_max_drag, offset.length())
@@ -274,6 +283,7 @@ func _physics_process(delta: float) -> void:
 	if player == null:
 		return
 
+	_check_hold()
 	player.tick(delta)
 	enemy.tick(delta)
 	tactics.tick(delta)
@@ -337,8 +347,6 @@ func _run_enemy(delta: float) -> void:
 			enemy.rotation.y = atan2(-heading.x, -heading.z)
 			if enemy.try_attack(EnemyTactics.section_for(decision["shape"])):
 				tactics.threw(decision["shape"])
-				if SHOW_DEBUG:
-					_last_shape = ["quick", "heavy", "COMMITTED"][decision["shape"]]
 			enemy.move(Vector3.ZERO, 0.0, delta)
 		EnemyTactics.Intent.CLOSE:
 			enemy.move(heading, ENEMY_SPEED, delta)
@@ -380,12 +388,35 @@ func _resolve_swing(who: Fighter, weapon_damage: float, is_player: bool) -> void
 		if target["dummy"]:
 			_hit_dummy(damage)
 		elif is_player:
-			_land(enemy, damage, "player")
+			_land(who, enemy, damage, "player")
 		else:
-			_land(player, damage, "enemy")
+			_land(who, player, damage, "enemy")
 		return
 
-func _land(victim: Fighter, damage: float, by: String) -> void:
+func _land(attacker: Fighter, victim: Fighter, damage: float, by: String) -> void:
+	# The guard gets first refusal. combat.md §6 makes parry the answer to
+	# a heavy, and the committed attack unparryable — the rule for which
+	# lives in sim/, not here.
+	match victim.meet(attacker.attack):
+		Parry.Outcome.PARRIED:
+			attacker.stagger(victim.parry.stagger_seconds())
+			_parries += 1
+			if SHOW_DEBUG:
+				print("PARRIED %s's blow — staggered for %.2fs, %s at %.0f stamina" % [
+					by, victim.parry.stagger_seconds(),
+					"you" if by == "enemy" else "the enemy",
+					victim.stamina.current()])
+			return
+		Parry.Outcome.UNPARRYABLE:
+			if SHOW_DEBUG:
+				print("guard was up, but that one cannot be parried")
+		Parry.Outcome.TOO_EARLY:
+			if SHOW_DEBUG:
+				print("guard came up too early")
+		Parry.Outcome.TOO_LATE:
+			if SHOW_DEBUG:
+				print("guard came up too late")
+
 	# The damage triangle (combat.md §4) is built and tested in sim/ and is
 	# deliberately not wired up here. It resolves a blow against armour
 	# class and hit location, and nobody in this yard is wearing anything.
@@ -422,6 +453,30 @@ func _tick_bodies(delta: float) -> void:
 			player.position = PLAYER_HOME
 			enemy.revive()
 			enemy.position = ENEMY_HOME
+
+## A finger held still is a raised guard. There is no event for "still
+## holding", so it is checked per frame — and it has to fire while the
+## finger is down rather than on release, because a guard that only
+## appeared after you let go would be useless.
+func _check_hold() -> void:
+	if _touch_id == -1 or _touch_parried or _touch_dodged:
+		return
+	if _touch_max_drag > TAP_SLOP:
+		return  # that is a steer, not a brace
+	var held := Time.get_ticks_msec() - _touch_started
+	var frames := Engine.get_frames_drawn() - _touch_started_frame
+	if held > TAP_MILLISECONDS and frames > TAP_FRAMES:
+		_touch_parried = true
+		_try_parry()
+
+func _try_parry() -> void:
+	if player == null or _player_down > 0.0:
+		return
+	if not player.try_parry():
+		return
+	_parry_attempts += 1
+	if SHOW_DEBUG:
+		print("guard up (%d)  stamina %.0f" % [_parry_attempts, player.stamina.current()])
 
 func _try_attack() -> void:
 	if player == null or _player_down > 0.0:
@@ -583,24 +638,29 @@ func _update_interface(delta: float) -> void:
 
 	const DODGE_NAMES := ["ready", "startup", "INVULNERABLE", "recovery"]
 	const SWING_NAMES := ["ready", "windup", "LIVE", "recovery"]
+	const GUARD_NAMES := ["-", "raising", "OPEN", "caught"]
 	_phase_label.text = (
-		"you: dodge %s  swing %s  stamina %d%%%s  health %d%%\n"
-		+ "enemy: %s %s  health %d%%   last shape: %s\n"
-		+ "dummy %d%%   dodges %d   swings %d   fps %d\n"
+		"you: dodge %s  swing %s  guard %s\n"
+		+ "    stamina %d%%%s  health %d%%\n"
+		+ "enemy: %s %s%s  health %d%%\n"
+		+ "dummy %d%%   dodges %d   swings %d   parried %d/%d   fps %d\n"
 		+ "last release: %s"
 	) % [
 		DODGE_NAMES[player.dodge.phase()],
 		SWING_NAMES[player.attack.phase()],
+		GUARD_NAMES[player.parry.phase()],
 		roundi(fraction * 100.0),
 		"  EXHAUSTED" if player.stamina.is_exhausted() else "",
 		roundi(player.health.fraction() * 100.0),
 		["quick", "heavy", "COMMITTED"][enemy.attack.shape()],
 		SWING_NAMES[enemy.attack.phase()],
+		"  STAGGERED" if enemy.is_staggered() else "",
 		roundi(enemy.health.fraction() * 100.0),
-		_last_shape,
 		roundi(_dummy_health / DUMMY_HEALTH * 100.0),
 		_dodge_count,
 		_swing_count,
+		_parries,
+		_parry_attempts,
 		roundi(Engine.get_frames_per_second()),
 		_last_release,
 	]
