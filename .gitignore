@@ -39,3 +39,8 @@ scratch/
 
 # Staging dir for the web export, from before it went straight to docs/.
 prototype/build/
+
+# Throwaway verification harnesses. demo.gd is kept on purpose and is not
+# one of these; anything called shot.* is a scratch render I left behind.
+prototype/shot.gd
+prototype/shot.tscn
