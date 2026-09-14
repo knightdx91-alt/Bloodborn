@@ -25,6 +25,10 @@ var _p: Dictionary
 var _phase: int = Phase.READY
 var _elapsed := 0.0
 var _recovery_length := 0.0
+## Fixed when the swing starts: a blow that sped up halfway because the
+## bar crossed a threshold would be unreadable, and §1's whole loop is
+## reading a commitment.
+var _swing_scale := 1.0
 var _hit_spent := false
 
 func _init(section: String = "attack") -> void:
@@ -47,8 +51,15 @@ func can_be_parried() -> bool:
 func damage_multiplier() -> float:
 	return _p.get("damageMultiplier", 1.0)
 
+## This swing's windup, exhaustion included. The animation follows these
+## rather than the raw profile, so a tired swing's clip slows with it
+## instead of desynchronising from the telegraph being read off it.
 func windup_seconds() -> float:
-	return _p.get("windupSeconds", 0.0)
+	return _p.get("windupSeconds", 0.0) * _swing_scale
+
+## Whether this swing was started out of breath.
+func is_labouring() -> bool:
+	return _swing_scale > 1.0
 
 func phase() -> int:
 	return _phase
@@ -65,16 +76,16 @@ func can_act() -> bool:
 	return _phase == Phase.READY
 
 func total_seconds() -> float:
-	return _p.get("windupSeconds", 0.0) \
-		+ _p.get("activeSeconds", 0.0) \
-		+ _p.get("recoverySeconds", 0.0)
+	return windup_seconds() \
+		+ _p.get("activeSeconds", 0.0) * _swing_scale \
+		+ _recovery_length
 
 ## How far through the wind-up, 0..1. The telegraph, and the animation
 ## layer's cue for how far the blade is drawn back.
 func windup_fraction() -> float:
 	if _phase == Phase.READY:
 		return 0.0
-	var windup: float = _p.get("windupSeconds", 0.0)
+	var windup: float = windup_seconds()
 	if windup <= 0.0:
 		return 1.0
 	return min(_elapsed / windup, 1.0)
@@ -92,9 +103,14 @@ func try_start(stamina: Stamina, efficiency: float = 1.0) -> bool:
 	_phase = Phase.WINDUP if _p.get("windupSeconds", 0.0) > 0.0 else Phase.ACTIVE
 	_elapsed = 0.0
 	_hit_spent = false
+	# Read AFTER paying, so the swing that empties you is itself slow —
+	# the cost lands on the blow that overspent, not the one after it.
+	_swing_scale = _p.get("exhaustedSwingMultiplier", 1.35) \
+		if stamina.is_exhausted() else 1.0
 	_recovery_length = _p.get("recoverySeconds", 0.45)
 	if not paid["afforded"]:
 		_recovery_length *= _p.get("exhaustedRecoveryMultiplier", 1.5)
+	_recovery_length *= _swing_scale
 
 	return true
 
@@ -104,8 +120,8 @@ func tick(delta: float) -> void:
 
 	_elapsed += delta
 
-	var windup_ends: float = _p.get("windupSeconds", 0.0)
-	var active_ends: float = windup_ends + _p.get("activeSeconds", 0.0)
+	var windup_ends: float = windup_seconds()
+	var active_ends: float = windup_ends + _p.get("activeSeconds", 0.0) * _swing_scale
 	var recovery_ends: float = active_ends + _recovery_length
 
 	if _elapsed >= recovery_ends:
@@ -136,6 +152,7 @@ func reach() -> float:
 	return _p.get("reach", 2.1)
 
 func reset() -> void:
+	_swing_scale = 1.0
 	_phase = Phase.READY
 	_elapsed = 0.0
 	_hit_spent = false

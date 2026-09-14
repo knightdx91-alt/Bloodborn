@@ -212,6 +212,16 @@ namespace Marrowmark.Sim.Combat
 
             _current = Math.Max(0f, _current - drain);
             _regenDelayRemaining = _profile.RegenDelaySeconds;
+
+            // Running yourself to a standstill IS exhaustion, and this did
+            // not used to say so: only an unaffordable discrete Spend set
+            // the flag, so a player who sprinted the bar flat kept full
+            // speed and a full-speed swing until they happened to try
+            // something they could not pay for. The summary above this
+            // method has always said the caller should be dropped "to a
+            // walk"; nothing ever made that true.
+            if (_current <= 0f) _exhausted = true;
+
             return _current > 0f;
         }
 

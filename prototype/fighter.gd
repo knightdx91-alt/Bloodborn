@@ -37,10 +37,28 @@ const ROLL_END := 1.30
 ## the live-blade window rather than anywhere in particular — so retuning
 ## a wind-up re-aims the animation automatically instead of silently
 ## desynchronising it from the telegraph a player is reading.
+## Measured off the clips rather than eyeballed: `from` is where the
+## right hand first rises above a tenth of its peak angular speed (the
+## moment the body stops being at rest), `peak` is where that speed
+## maxes (the strike), and `to` is where it settles for good.
 const SWINGS := {
-	"swing_heavy": {"peak": 0.85, "window": 1.00},
-	"swing_quick": {"peak": 0.76, "window": 0.80},
+	"swing_heavy": {"from": 0.42, "peak": 0.90, "to": 1.80},
+	"swing_quick": {"from": 0.02, "peak": 0.82, "to": 1.53},
 }
+
+## A clip pushed much past this reads as comical long before it stops
+## skating. When the tuning is faster than the animation can honestly go,
+## the rate clamps here and `_swing_strain` records by how much — the
+## number to move is then the tuning, not this.
+const SWING_RATE_MAX := 1.25
+const SWING_RATE_MIN := 0.70
+
+## Where in the heavy swing the blade is up and the body is braced —
+## between the clip's first motion and its strike. A stand-in for the
+## guard pose `assets/SPEC-attack-clips.md` asks for, and a far better
+## one than the hit reaction, which used to do this job and meant a
+## fighter bracing and a fighter being hit looked identical.
+const GUARD_POSE_AT := 0.72
 const HURT_START := 0.05
 const HURT_END := 0.40
 
@@ -86,6 +104,15 @@ var show_iframes := false
 ## Whether the player is still holding the guard up. A guard held past
 ## its window becomes a block rather than expiring.
 var _guard_held := false
+
+## Which clip the current swing is playing, and whether its rate has
+## already been handed over from the wind-up to the strike.
+var _swing_clip := ""
+var _swing_struck := false
+## How much faster than SWING_RATE_MAX the tuning asked the clip to run.
+## 1.0 means the animation kept up; above that, the swing is being shown
+## slower than it actually resolves, and the tuning is the thing to fix.
+var _swing_strain := 1.0
 ## Hitstop. Presentation only — see feel.gd for why the rules must not
 ## be frozen with it.
 var _frozen_for := 0.0
@@ -173,6 +200,7 @@ func tick(delta: float) -> void:
 		_hurt_for = max(0.0, _hurt_for - delta)
 	if _stagger_for > 0.0:
 		_stagger_for = max(0.0, _stagger_for - delta)
+	_tick_swing()
 	_tick_freeze(delta)
 	_show_iframes()
 
@@ -270,16 +298,47 @@ func try_attack(section: String = "attack") -> bool:
 	var key: String = "swing_quick" if swing.shape() == Attack.Shape.QUICK \
 		else "swing_heavy"
 	var clip: Dictionary = SWINGS[key]
-	var window: float = clip["window"]
-	var total: float = max(swing.total_seconds(), 0.01)
-	# Put the clip's fastest moment inside the live-blade window.
-	var live_at: float = (swing.windup_seconds() + total * 0.0) / total
-	var start: float = clamp(clip["peak"] - window * live_at, 0.0, 2.0)
+	var windup: float = maxf(swing.windup_seconds(), 0.01)
 
-	anim.play(key, 0.05)
-	anim.seek(start, true)
-	anim.speed_scale = window / total
+	# The swing is played in two stages, wind-up then strike, so the
+	# clip's fastest moment lands on the live-blade window by
+	# construction rather than by arithmetic done once at the start.
+	#
+	# It used to be one stage, and it SEEKED PAST THE WIND-UP to make the
+	# peak line up — 0.5s into a 2.0s clip, which is halfway through the
+	# slash. Every swing therefore began by snapping the arm from
+	# standing to mid-cut in a single frame, and a 0.05s blend cannot
+	# hide that. Starting at the clip's own first movement instead means
+	# the pose it blends from is very nearly the pose it is already in.
+	_swing_clip = key
+	_swing_struck = false
+	var rate: float = (clip["peak"] - clip["from"]) / windup
+	_swing_strain = maxf(1.0, rate / SWING_RATE_MAX)
+
+	anim.play(key, 0.10)
+	anim.seek(clip["from"], true)
+	anim.speed_scale = clampf(rate, SWING_RATE_MIN, SWING_RATE_MAX)
 	return true
+
+## Hand the clip over from the wind-up to the follow-through the moment
+## the blade goes live, so the strike reads at a sane rate whatever the
+## recovery is tuned to.
+func _tick_swing() -> void:
+	if _swing_clip == "":
+		return
+	if attack.can_act():
+		_swing_clip = ""
+		_swing_struck = false
+		return
+	if _swing_struck or attack.phase() == Attack.Phase.WINDUP:
+		return
+	_swing_struck = true
+	if is_frozen():
+		return
+	var clip: Dictionary = SWINGS[_swing_clip]
+	var rest: float = maxf(attack.total_seconds() - attack.windup_seconds(), 0.01)
+	anim.speed_scale = clampf((clip["to"] - clip["peak"]) / rest,
+			SWING_RATE_MIN, SWING_RATE_MAX)
 
 ## Raise the guard. combat.md §6: the answer to a heavy — and, held past
 ## its window, §2's block.
@@ -289,14 +348,22 @@ func try_parry() -> bool:
 	if not parry.try_start(stamina):
 		return false
 	_guard_held = true
-	# No guard-pose clip yet, so the hit reaction stands in for the brace.
-	# L65 reads the guard off the body and forbids any UI element to
-	# rescue it, which makes this a placeholder for the single most
-	# load-bearing pose in the design. assets/SPEC-attack-clips.md asks
-	# for the real one.
-	anim.play("hurt", 0.04)
-	anim.seek(HURT_START, true)
-	anim.speed_scale = 0.5
+	# Still no guard-pose clip, but this no longer borrows the HIT
+	# REACTION to stand in for one, which was actively misleading: a
+	# fighter bracing and a fighter being struck played the same
+	# animation, so the sword came up by itself every time you were hit
+	# and the brace read as a flinch. Reported from play, and exactly the
+	# failure L65 warns about — the guard is read off the body, so a body
+	# that lies about it breaks the fight.
+	#
+	# Held on the heavy swing's own wind-up instead: blade up, weight
+	# back, and unmistakably not a flinch. assets/SPEC-attack-clips.md
+	# still asks for the real pose, which is the most load-bearing single
+	# clip in the design.
+	_swing_clip = ""
+	anim.play("swing_heavy", 0.12)
+	anim.seek(GUARD_POSE_AT, true)
+	anim.speed_scale = 0.0
 	return true
 
 ## Let the guard down. Holding it is what makes it a block.

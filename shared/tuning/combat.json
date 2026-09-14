@@ -45,13 +45,14 @@
     "maxEncumbrancePenalty": 0.4
   },
   "attack": {
-    "windupSeconds": 0.3,
+    "windupSeconds": 0.4,
     "activeSeconds": 0.12,
     "recoverySeconds": 0.45,
     "staminaCost": 14.0,
     "reach": 2.1,
     "arcDegrees": 110.0,
     "exhaustedRecoveryMultiplier": 1.5,
+    "exhaustedSwingMultiplier": 1.35,
     "shape": "Heavy",
     "damageMultiplier": 1.0
   },
@@ -71,6 +72,7 @@
     "reach": 1.9,
     "arcDegrees": 90.0,
     "exhaustedRecoveryMultiplier": 1.5,
+    "exhaustedSwingMultiplier": 1.35,
     "shape": "Quick",
     "damageMultiplier": 0.6
   },
@@ -82,6 +84,7 @@
     "reach": 2.3,
     "arcDegrees": 130.0,
     "exhaustedRecoveryMultiplier": 1.5,
+    "exhaustedSwingMultiplier": 1.35,
     "shape": "Heavy",
     "damageMultiplier": 1.5
   },
@@ -93,6 +96,7 @@
     "reach": 2.8,
     "arcDegrees": 200.0,
     "exhaustedRecoveryMultiplier": 1.5,
+    "exhaustedSwingMultiplier": 1.35,
     "shape": "Committed",
     "damageMultiplier": 2.2
   },

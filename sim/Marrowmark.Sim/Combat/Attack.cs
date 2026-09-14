@@ -35,6 +35,7 @@ namespace Marrowmark.Sim.Combat
         private AttackPhase _phase = AttackPhase.Ready;
         private float _elapsed;
         private float _recoveryLength;
+        private float _swingScale = 1f;
         private bool _hitSpent;
 
         public Attack(AttackProfile profile)
@@ -64,6 +65,21 @@ namespace Marrowmark.Sim.Combat
         public bool CanAct => _phase == AttackPhase.Ready;
 
         /// <summary>
+        /// This swing's windup, exhaustion included. The animation is
+        /// driven off these rather than off the profile, so a tired
+        /// swing's clip slows with it instead of desynchronising from
+        /// the telegraph the opponent is reading.
+        /// </summary>
+        public float WindupSeconds => _profile.WindupSeconds * _swingScale;
+
+        /// <summary>This swing's full length, exhaustion included.</summary>
+        public float TotalSeconds =>
+            WindupSeconds + _profile.ActiveSeconds * _swingScale + _recoveryLength;
+
+        /// <summary>Whether this swing was started out of breath.</summary>
+        public bool IsLabouring => _swingScale > 1f;
+
+        /// <summary>
         /// How far through the wind-up, 0..1. This is the telegraph, and
         /// the animation layer's cue for how far the blade has been drawn
         /// back.
@@ -73,8 +89,8 @@ namespace Marrowmark.Sim.Combat
             get
             {
                 if (_phase == AttackPhase.Ready) return 0f;
-                if (_profile.WindupSeconds <= 0f) return 1f;
-                var t = _elapsed / _profile.WindupSeconds;
+                if (WindupSeconds <= 0f) return 1f;
+                var t = _elapsed / WindupSeconds;
                 return t >= 1f ? 1f : t;
             }
         }
@@ -100,9 +116,25 @@ namespace Marrowmark.Sim.Combat
                 : AttackPhase.Active;
             _elapsed = 0f;
             _hitSpent = false;
-            _recoveryLength = paid.Afforded
+            // Fixed at the swing's start rather than read live, so a
+            // swing that begins tired stays tired all the way through.
+            // A blow that sped up halfway because the bar ticked over a
+            // threshold would be unreadable to the person answering it,
+            // and §1's whole loop is reading a commitment.
+            //
+            // Read AFTER paying, so the swing that empties you is itself
+            // slow — the cost lands on the swing that overspent, not the
+            // one after it.
+            _swingScale = stamina.IsExhausted
+                ? _profile.ExhaustedSwingMultiplier
+                : 1f;
+            // The unaffordable-swing penalty stacks on top, and only on
+            // the recovery: being tired slows everything, and swinging
+            // with nothing left is punished where §2 says it is.
+            _recoveryLength = (paid.Afforded
                 ? _profile.RecoverySeconds
-                : _profile.RecoverySeconds * _profile.ExhaustedRecoveryMultiplier;
+                : _profile.RecoverySeconds * _profile.ExhaustedRecoveryMultiplier)
+                * _swingScale;
 
             return true;
         }
@@ -114,8 +146,8 @@ namespace Marrowmark.Sim.Combat
 
             _elapsed += deltaSeconds;
 
-            var windupEnds = _profile.WindupSeconds;
-            var activeEnds = windupEnds + _profile.ActiveSeconds;
+            var windupEnds = WindupSeconds;
+            var activeEnds = windupEnds + _profile.ActiveSeconds * _swingScale;
             var recoveryEnds = activeEnds + _recoveryLength;
 
             if (_elapsed >= recoveryEnds)
@@ -162,6 +194,7 @@ namespace Marrowmark.Sim.Combat
 
         public void Reset()
         {
+            _swingScale = 1f;
             _phase = AttackPhase.Ready;
             _elapsed = 0f;
             _hitSpent = false;

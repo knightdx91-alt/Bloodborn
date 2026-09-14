@@ -115,11 +115,12 @@ Controls:
   a steer.
 - **Keyboard** — WASD or arrows, Shift to sprint, **Space** to dodge,
   **J** or left-click to swing, **K** or right-click to parry.
-- **Pad** — left stick moves, **right stick aims the cut**, **RB**
-  swings, **LB** holds the guard, **A** dodges, **left trigger**
-  sprints. Plug in a wired pad over OTG or pair one over Bluetooth;
-  Godot finds it with no setup. See below for why this is the scheme
-  that matters.
+- **Pad** — left stick moves, **right stick is the camera** (and aims
+  the cut while a swing winds up), **RB** swings, **LB** holds the
+  guard, **A** dodges, **left trigger** sprints, **Q/E** turn the
+  camera on a keyboard. Plug in a wired pad over OTG or pair one over
+  Bluetooth; Godot finds it with no setup. See below for why this is
+  the scheme that matters.
 
 ### The pad (step 6)
 
@@ -135,12 +136,35 @@ brace; that guessing is what made the parry feel automatic. A pad has a
 button for it, so there is nothing to speculate and nothing to hand
 back: the guard rises when you press LB and not before.
 
-The right stick aims, which is the pad's version of "where you tap is
-where you aim" — forward is the overhead, forward-and-across is a high
-cut, pulled back is a cut at the legs, and at rest it keeps the default
-so you can fight without touching it. That is also the closer reading
-of L64, which names Kingdom Come, where the stick direction *is* the
-cut. Still no reticle (L65).
+**The right stick is the camera, and it aims the cut — by taking
+turns.** It first shipped aiming only, and play answered in one
+sentence: *"I don't like that you can't move the camera."* Fair, and
+the two cannot share the stick, because "push left" cannot mean both
+*look* left and *cut* left at the same moment.
+
+So the cut gets the stick exactly while it needs it. **From the press
+until the blade goes live — the wind-up, and nothing else — the right
+stick aims and the camera holds still.** Everywhere else it is the
+camera. Forward is the overhead, forward-and-across a high cut, pulled
+back a cut at the legs; a stick returning to centre does not un-aim
+what you already chose. Still no reticle (L65).
+
+That is Mount & Blade's directional combat without its cost: there you
+hold the attack button to choose, which puts a delay on the commonest
+action in the game, whereas here the swing starts on the press and you
+steer it while it winds up. The camera holding still for those few
+tenths is a gain rather than a price — that is the moment you most want
+a steady view of what the other fighter is doing.
+
+**Lock-on was the other way out, and is rejected.** It needs an
+on-screen indicator to be legible and L65 forbids that kind of marker,
+and it degrades badly in crowds, which L25's war sizes make the normal
+case rather than the edge one.
+
+**Steering is camera-relative.** Not a preference: the moment the
+camera can turn, a world-space "left" sends you somewhere that is not
+left on screen, and the fight becomes unplayable the first time you
+orbit behind yourself.
 
 Buttons rather than triggers for attack and guard: a trigger arrives as
 an axis, so a press edge has to be invented from a threshold, and RB/LB
@@ -159,6 +183,71 @@ One number to suspect first: the speed ramp is squared, carried over
 from touch where a linear one made walking unreachable by thumb. A
 stick is finer than a drag, so if the walk feels too narrow on the pad,
 that curve is the reason and not the top speed.
+
+### What play found (step 6)
+
+Four things, all reported from a pad in hand, all of which had been
+invisible from this side of the loop.
+
+**The sword came up by itself when you were hit.** The guard had no
+clip of its own, so it borrowed the **hit reaction** as a stand-in —
+which meant a fighter bracing and a fighter being struck played the
+same animation. Every blow you took looked like you parrying it. That
+is precisely the failure L65 warns about: the guard is read off the
+body, so a body that lies about it breaks the fight. It now holds the
+heavy swing's own wind-up instead — blade up, weight back, and
+unmistakably not a flinch. `assets/SPEC-attack-clips.md` still asks for
+the real pose, which is the most load-bearing single clip in the
+design.
+
+**Swings were not smooth, and the cause was a one-frame snap.** The
+animation seeked **past the wind-up** to line the clip's fastest moment
+up with the live-blade window — 0.5s into a 2.0s clip, which is halfway
+through the slash. So every swing began by teleporting the arm from
+standing to mid-cut, and a 0.05s blend cannot hide that. The swing is
+now played in two stages, wind-up then strike, starting at the clip's
+own first movement: the pose it blends from is very nearly the pose it
+is already in.
+
+The clip timings behind that are **measured, not eyeballed** — the
+right hand's angular speed sampled across each clip, giving where the
+motion starts, peaks and settles:
+
+| clip | length | motion | strike |
+|---|---|---|---|
+| `swing_heavy` | 2.03s | 0.42 → 1.80 | 0.90 |
+| `swing_quick` | 1.67s | 0.02 → 1.53 | 0.82 |
+
+That measurement also caught a tuning fault the old code was papering
+over. The player's wind-up was **0.30s** against 0.48s of clip, so the
+animation had to run at 1.6× to keep up — well past the ~1.35× where a
+clip reads as comical. It is now **0.40s**, which is both playable at
+1.2× and closer to §6's "long wind-up with a visible weight shift". If
+the tuning ever outruns the clip again, `_swing_strain` records by how
+much, so the number to move is obvious.
+
+**Exhaustion did nothing you could see**, and there were two separate
+reasons. `EXHAUSTED_SPEED` multiplied the jog by 0.6 and landed on 2.4,
+still above the run threshold — so an exhausted fighter kept *running*,
+just slightly slower, and nothing on the body said they were finished.
+It is now a walking pace, below that threshold, so the walk animation
+actually plays.
+
+And the deeper one: **sustained drain never set the exhausted flag at
+all.** Only an unaffordable discrete spend did. A player who sprinted
+the bar flat kept full speed and a full-speed swing until they next
+tried to pay for something outright — so the commonest way to run
+yourself out was the one way that did nothing. `combat.md` §2's own
+docstring had always said the caller should be dropped "to a walk";
+nothing ever made that true.
+
+**Swings now labour when you are spent.** §2 only lengthened the
+*recovery*, which is the invisible half of the idea — the swing looks
+identical and you simply lose. The wind-up lengthens too, so being
+tired is something an opponent can read off you. Fixed at the swing's
+start rather than read live, because §1's loop is reading a
+commitment: a blow that sped up halfway because the bar crossed a
+threshold would be unanswerable.
 
 ### The guard (step 6)
 

@@ -118,6 +118,11 @@ func _exert(rate_per_second: float, delta: float, efficiency: float) -> bool:
 		return _current > 0.0
 	_current = max(0.0, _current - rate_per_second * delta * maxf(efficiency, 0.0))
 	_regen_delay_remaining = _p.get("regenDelaySeconds", 0.6)
+	# Running yourself to a standstill IS exhaustion. Sustained drain used
+	# to leave the flag alone, so sprinting the bar flat cost you nothing
+	# until you next tried to pay for something outright.
+	if _current <= 0.0:
+		_exhausted = true
 	return _current > 0.0
 
 func reset() -> void:

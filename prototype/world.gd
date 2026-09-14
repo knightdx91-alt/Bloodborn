@@ -29,7 +29,13 @@ const DUMMY_RESET_SECONDS := 3.0
 const SPEED := 4.0
 const SPRINT := 7.0
 const SPRINT_THRESHOLD := 5.0
-const EXHAUSTED_SPEED := 0.6
+## Out of breath, you walk. A pace, not a multiplier — and below
+## fighter.gd's WALK_TO_RUN, which is the point: the old rule multiplied
+## the jog by 0.6 and landed on 2.4, still above the run threshold, so an
+## exhausted fighter kept RUNNING, just slightly slower. Nothing on the
+## body said you were finished. §2 wants exhaustion to read as a fighter
+## running out of breath, and the animation is where that has to happen.
+const EXHAUSTED_WALK := 1.6
 const ENEMY_SPEED := 2.4
 
 var player: Fighter
@@ -103,6 +109,34 @@ const PAD_AIM_DEADZONE := 0.35
 var _pad_vec := Vector2.ZERO
 var _pad_aim := Vector2.ZERO
 var _pad_guarding := false
+
+# Camera orbit.
+#
+# The right stick is the camera, because that is what a right stick is on
+# every third-person pad game and the first thing play asked for. That
+# takes the stick away from aiming the cut, and the two genuinely cannot
+# share it: "push the stick left" cannot mean both *look* left and *cut*
+# left at the same moment.
+#
+# So they take turns, and the swing gets the stick exactly while it needs
+# it. From the instant you press RB until the blade goes live — the
+# wind-up, and nothing else — the right stick aims the cut and the camera
+# holds still. Everywhere else it is the camera.
+#
+# This is Mount & Blade's idea without its cost: there, you hold the
+# attack button down to choose a direction, which puts a delay on the
+# commonest action in the game. Here the swing starts on the press and
+# you steer it while it winds up, so nothing waits. The camera holding
+# still for 0.4s is not a compromise either — that is the moment you most
+# want a steady view of what the other fighter is doing.
+var _cam_yaw := 0.0
+var _cam_rise := 0.0
+const CAM_YAW_RATE := 2.8        # radians per second at full deflection
+const CAM_RISE_RATE := 2.2
+const CAM_RISE_MIN := -1.1
+const CAM_RISE_MAX := 3.2
+const CAM_STICK_DEADZONE := 0.18
+const CAM_KEY_RATE := 1.8
 
 # Prototype scaffolding, not a design decision. interface.md §2 gives an
 # opponent no bars at all; these numbers exist to check the sums.
@@ -416,7 +450,11 @@ func _steer() -> Vector3:
 	var stick := _pad_push()
 	if stick > PAD_WALK_DEADZONE:
 		dir = Vector3(_pad_vec.x, 0.0, _pad_vec.y)
-	return dir
+	# Steering is relative to the camera, not to the world. This is not a
+	# preference: the moment the camera can turn, a world-space "left"
+	# sends you somewhere that is not left on screen, and the fight
+	# becomes unplayable the first time you orbit behind yourself.
+	return dir.rotated(Vector3.UP, _cam_yaw)
 
 ## How far the left stick is pushed, with the dead zone taken out and
 ## the remainder stretched back over the full range — otherwise the
@@ -472,6 +510,7 @@ func _physics_process(delta: float) -> void:
 	# screen, and this says the same thing without using it.
 	feel.breathe(clamp(1.0 - player.stamina.fraction() * 2.2, 0.0, 1.0))
 
+	_tick_camera(delta)
 	_place_camera()
 	_update_interface(delta)
 
@@ -503,7 +542,7 @@ func _move_player(delta: float) -> void:
 
 	# At zero stamina you are not stunned, you are slow (combat.md §2).
 	if player.stamina.is_exhausted():
-		speed *= EXHAUSTED_SPEED
+		speed = minf(speed, EXHAUSTED_WALK)
 
 	# Sprinting drains. L55 keeps the rate low on purpose — disengage is a
 	# first-class answer, so fleeing has to stay affordable.
@@ -733,9 +772,11 @@ func _pad_status() -> String:
 		return "none connected"
 	const ARCS := ["overhead", "upper left", "upper right",
 		"lower left", "lower right", "thrust"]
-	return "%s   aim %s   move %.2f%s" % [
+	var stick: String = "AIMING %s" % ARCS[_arc_from_stick(_pad_aim)] \
+		if _aiming_a_cut() else "looking (yaw %d\u00b0)" % roundi(rad_to_deg(_cam_yaw))
+	return "%s   right stick: %s   move %.2f%s" % [
 		Input.get_joy_name(pads[0]),
-		ARCS[_arc_from_stick(_pad_aim)],
+		stick,
 		_pad_push(),
 		"   GUARD" if _pad_guarding else "",
 	]
@@ -825,6 +866,38 @@ func _tick_dummy(delta: float) -> void:
 
 # ── Camera ───────────────────────────────────────────────────────────
 
+## True exactly while a cut is winding up — the one window in which the
+## right stick means "where is this going" rather than "look over there".
+func _aiming_a_cut() -> bool:
+	return player != null and player.attack.phase() == Attack.Phase.WINDUP
+
+func _tick_camera(delta: float) -> void:
+	if _aiming_a_cut():
+		# Re-aimed every frame of the wind-up, so a flick mid-swing
+		# changes where the blow lands right up until the blade is live.
+		# L64 aims freely and L65 forbids a reticle, so the only feedback
+		# is the body — which is the whole bet.
+		# Only while the stick has an opinion. A stick returning to
+		# centre after a flick must not wipe the cut you just chose —
+		# you aimed it, and letting go is not un-aiming.
+		if _pad_aim.length() >= PAD_AIM_DEADZONE:
+			player.attack.arc = _arc_from_stick(_pad_aim)
+		return
+
+	var yaw: float = 0.0
+	var rise: float = 0.0
+	if absf(_pad_aim.x) > CAM_STICK_DEADZONE:
+		yaw -= _pad_aim.x * CAM_YAW_RATE
+	if absf(_pad_aim.y) > CAM_STICK_DEADZONE:
+		rise -= _pad_aim.y * CAM_RISE_RATE
+	if Input.is_key_pressed(KEY_Q):
+		yaw += CAM_KEY_RATE
+	if Input.is_key_pressed(KEY_E):
+		yaw -= CAM_KEY_RATE
+
+	_cam_yaw = wrapf(_cam_yaw + yaw * delta, -PI, PI)
+	_cam_rise = clampf(_cam_rise + rise * delta, CAM_RISE_MIN, CAM_RISE_MAX)
+
 func _place_camera() -> void:
 	# A portrait phone has a narrow horizontal field of view, so the camera
 	# pulls back on tall screens to keep the same amount of world on
@@ -842,7 +915,12 @@ func _place_camera() -> void:
 	var back: float = lerp(4.6, 4.4, tall)
 
 	var focus := player.position + Vector3(0, 1.0, 0)
-	cam.position = focus + Vector3(0, height, back) + feel.offset()
+	# Orbit, rather than a fixed chase: the offset is rotated about the
+	# focus, so the camera keeps its framing and only changes where it
+	# stands. _cam_rise trades height for distance instead of tilting,
+	# which keeps the fighter the same size in frame at every angle.
+	var offset := Vector3(0, height + _cam_rise, back - _cam_rise * 0.35)
+	cam.position = focus + offset.rotated(Vector3.UP, _cam_yaw) + feel.offset()
 	cam.look_at(focus, Vector3.UP)
 
 # ── Interface ────────────────────────────────────────────────────────

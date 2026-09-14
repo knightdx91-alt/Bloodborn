@@ -143,6 +143,31 @@ targets: you point, the arc follows, and the nearest zone snaps on a
 controller. Kingdom Come's system, and it shipped on consoles — thumb
 precision is the cost, not the barrier.
 
+> **How the stick carries it, settled 2026-09-14 from play.** The right
+> stick is the camera — that is what a right stick is, and the first
+> thing a pad in hand asked for. It cannot also be the aim: "push the
+> stick left" cannot mean both *look* left and *cut* left at the same
+> moment.
+>
+> **So they take turns, and the cut gets the stick exactly while it
+> needs it.** From the press until the blade goes live — the wind-up,
+> and nothing else — the right stick aims and the camera holds still.
+> Everywhere else it is the camera.
+>
+> This is Mount & Blade's directional combat without its cost. There you
+> hold the attack button down to choose, which puts a delay on the
+> commonest action in the game. Here the swing starts on the press and
+> you steer it while it winds up, so nothing waits — and the camera
+> holding still for those few tenths is a gain rather than a
+> compromise, because that is the moment you most want a steady view of
+> what the other fighter is doing.
+>
+> **Rejected: lock-on**, which is the other way to free the stick (and
+> Kingdom Come's own). Two reasons, both from this document's own
+> rules. It needs an on-screen indicator to be legible, and L65 forbids
+> exactly that kind of marker. And it degrades badly in crowds, which
+> L25's war sizes make the normal case rather than the edge one.
+
 **Direction is the other half of the telegraph, not a second system.**
 §6's shapes (quick, heavy, committed) and the arc are read from one
 animation: the weight shift says how hard, the wind-up says where. A
@@ -251,6 +276,33 @@ the game together.
 
 Exhaustion should read as a fighter running out of breath, not as a
 status effect with an icon.
+
+> **Amended 2026-09-14, from play.** Recovery frames alone were not
+> enough, and the reason is the sentence directly above them:
+> **recovery-only exhaustion is invisible.** The swing looks identical,
+> the walk looks identical, and the first thing that tells you you are
+> finished is being punished for it. That is a status effect without an
+> icon rather than a body running out of breath.
+>
+> Three changes, all of which put the tell on the body:
+>
+> - **The whole swing labours, not just its recovery.** Wind-up and
+>   active lengthen too, so a tired fighter telegraphs differently and
+>   an opponent can *read* that they are spent. The unaffordable-swing
+>   recovery penalty stacks on top of this, so swinging with nothing
+>   left is still punished where this section says it is.
+> - **You slow to a walk.** Not a multiplier on the jog — a walking
+>   pace, which matters because it has to cross the threshold where the
+>   *walk animation* plays. A jog at 60% is still a jog on screen and
+>   says nothing.
+> - **Sustained drain exhausts you.** Sprinting the bar flat now counts;
+>   it previously did not, so a player who ran themselves empty kept
+>   full speed and a full-speed swing until they next tried to pay for
+>   something outright. That was a bug, not a rule.
+>
+> The swing's slowdown is fixed when the swing starts rather than read
+> live, because §1's loop is reading a commitment: a blow that sped up
+> halfway because the bar crossed a threshold would be unanswerable.
 
 ## 3. Where skill lives (the L18 problem) **[core]**
 

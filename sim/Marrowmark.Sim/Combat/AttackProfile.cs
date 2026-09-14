@@ -77,6 +77,22 @@ namespace Marrowmark.Sim.Combat
         public float ArcDegrees;
 
         /// <summary>
+        /// How much longer the whole swing takes while the fighter is
+        /// out of breath — windup and active, not just recovery.
+        ///
+        /// §2 only lengthens the recovery, and that is the smaller half
+        /// of the idea. Recovery-only exhaustion is invisible until it
+        /// is punished: the swing looks identical and you simply lose.
+        /// A slower windup is exhaustion you can *see*, on the body,
+        /// which is what §2 actually asks for — "a fighter running out
+        /// of breath, not a status effect with an icon."
+        ///
+        /// Applies whenever the bar is spent, not only when this
+        /// particular swing could not be paid for.
+        /// </summary>
+        public float ExhaustedSwingMultiplier;
+
+        /// <summary>
         /// Recovery multiplier when the swing was not paid for. Swinging
         /// on an empty bar leaves you hanging there.
         /// </summary>
@@ -110,13 +126,14 @@ namespace Marrowmark.Sim.Combat
         /// </summary>
         public static AttackProfile Default => new AttackProfile
         {
-            WindupSeconds = 0.30f,
+            WindupSeconds = 0.40f,
             ActiveSeconds = 0.12f,
             RecoverySeconds = 0.45f,
             StaminaCost = 14f,
             Reach = 2.1f,
             ArcDegrees = 110f,
             ExhaustedRecoveryMultiplier = 1.5f,
+            ExhaustedSwingMultiplier = 1.35f,
             Shape = AttackShape.Heavy,
             DamageMultiplier = 1f,
         };
@@ -136,6 +153,7 @@ namespace Marrowmark.Sim.Combat
             Reach = 1.9f,
             ArcDegrees = 90f,
             ExhaustedRecoveryMultiplier = 1.5f,
+            ExhaustedSwingMultiplier = 1.35f,
             Shape = AttackShape.Quick,
             DamageMultiplier = 0.6f,
         };
@@ -155,6 +173,7 @@ namespace Marrowmark.Sim.Combat
             Reach = 2.3f,
             ArcDegrees = 130f,
             ExhaustedRecoveryMultiplier = 1.5f,
+            ExhaustedSwingMultiplier = 1.35f,
             Shape = AttackShape.Heavy,
             DamageMultiplier = 1.5f,
         };
@@ -174,6 +193,7 @@ namespace Marrowmark.Sim.Combat
             Reach = 2.8f,
             ArcDegrees = 200f,
             ExhaustedRecoveryMultiplier = 1.5f,
+            ExhaustedSwingMultiplier = 1.35f,
             Shape = AttackShape.Committed,
             DamageMultiplier = 2.2f,
         };
