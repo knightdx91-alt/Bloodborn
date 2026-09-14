@@ -178,6 +178,39 @@ on-screen indicator to be legible and L65 forbids that kind of marker,
 and it degrades badly in crowds, which L25's war sizes make the normal
 case rather than the edge one.
 
+**The pitch stick is not inverted** (`CAM_PITCH_INVERT`). The first
+build had it the other way round and it read as inverted, which is the
+only test a camera has to pass. It is a named constant rather than a
+buried sign because `interface.md` §7 makes remappable controls a
+*requirement* — listed beside subtitles and colourblind-safe cues, and
+never traded away for minimalism.
+
+**The fill light follows the camera; the sun does not.** An orbiting
+camera can be stood somewhere the key light is behind the fighter, so
+the fill is aimed from over the camera's shoulder — offset ~40°, so it
+still shapes the figure rather than flattening it — and whichever side
+you have orbited around to is the side that is lit.
+
+The sun stays put, and must: it carries the shadows, and shadows that
+swung around the yard as you looked would destroy the thing they are
+there for. A world light that tracks the viewer is not a time of day,
+it is a torch.
+
+> **Measured, and smaller than expected.** Photographing the fighter
+> from eight angles, the darkest side came out **1%** brighter with the
+> fill following than with it pinned where it used to be, and a sweep
+> from 0.0 to 1.2 fill energy moved it from 0.113 to 0.164 luminance —
+> comparable to the measurement noise. **Lighting was not what made a
+> side of the character hard to see.** The change is kept because it is
+> the right shape for an orbiting camera and costs nothing, not because
+> it fixed the complaint.
+>
+> What the renders did show: the camera's full pitch range is fine —
+> at its lowest it sits at ground level looking up and the fighter
+> reads clearly. The likely reason that angle was never reached is that
+> the stick was inverted, so pushing it the intuitive way sent the
+> camera up instead of down.
+
 **Steering is camera-relative.** Not a preference: the moment the
 camera can turn, a world-space "left" sends you somewhere that is not
 left on screen, and the fight becomes unplayable the first time you

@@ -29,6 +29,14 @@ const GROUND_BOTTOM := Color(0.13, 0.13, 0.12)
 
 const SUN_COLOR := Color(1.0, 0.94, 0.82)
 const FILL_COLOR := Color(0.46, 0.56, 0.72)
+
+## The camera-following fill (see aim_fill).
+const FILL_NODE := "CameraFill"
+## Above the horizon, so it reads as bounced sky rather than a footlight.
+const FILL_ELEVATION := -0.35   # radians, ~20°
+## Around from the view direction, far enough to shape the figure and not
+## so far that it swings behind them again.
+const FILL_OFFSET := 0.70       # radians, ~40°
 const FOG_COLOR := Color(0.44, 0.49, 0.53)
 
 ## The palette, in one place, because L86 makes each of the six wedges a
@@ -112,15 +120,46 @@ static func _lights(into: Node3D) -> void:
 	sun.directional_shadow_max_distance = 60.0
 	into.add_child(sun)
 
-	# A dim, cool fill from the other side. This is not decoration:
-	# combat.md §6 has the player reading attacks off the body, and a
-	# figure lit from one side only loses its far edge against the ground.
+	# A dim, cool fill — and it FOLLOWS THE CAMERA. See aim_fill().
+	#
+	# This is not decoration: combat.md §6 has the player reading attacks
+	# off the body, and a figure lit from one side only loses its far edge
+	# against the ground.
+	#
+	# It used to sit at a fixed 132°, opposite the sun, which was fine
+	# while the camera was fixed too. The moment the camera could orbit,
+	# there were angles you could stand at where both lights were behind
+	# the fighter and you were looking at an unreadable silhouette —
+	# reported from play as "you can't see a side of the character".
 	var fill := DirectionalLight3D.new()
-	fill.rotation_degrees = Vector3(-18, 132, 0)
+	fill.name = FILL_NODE
 	fill.light_color = FILL_COLOR
-	fill.light_energy = 0.22
+	fill.light_energy = 0.26
 	fill.shadow_enabled = false
 	into.add_child(fill)
+	aim_fill(into, 0.0)
+
+## Point the fill from over the camera's shoulder, so whichever side of
+## the fighter you have orbited around to is the side that is lit.
+##
+## The SUN does not move, and must not: it carries the shadows, and
+## shadows that swung around the yard as you looked would destroy the
+## thing they are there for — "long shadows do more for legibility than
+## any amount of geometry". A world light that tracks the viewer is not a
+## time of day, it is a torch, and the yard would stop reading as
+## outdoors at all.
+##
+## So the sun stays put and the fill does the following. That split is
+## the standard one for a reason: shadows stay honest, and the visible
+## face is never a silhouette.
+static func aim_fill(root: Node3D, camera_yaw: float) -> void:
+	var fill := root.get_node_or_null(NodePath(FILL_NODE)) as DirectionalLight3D
+	if fill == null:
+		return
+	# Offset from dead-on so it still SHAPES the figure. A light exactly
+	# along the view direction is the flattest light there is — it erases
+	# the form it was added to rescue.
+	fill.rotation = Vector3(FILL_ELEVATION, camera_yaw + FILL_OFFSET, 0.0)
 
 ## Stone, timber, anything that is not ground. Same trick, tighter grain
 ## and a little less rough, so it reads as a different substance rather

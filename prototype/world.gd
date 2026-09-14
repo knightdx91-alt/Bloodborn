@@ -137,6 +137,15 @@ var _cam_yaw := 0.0
 var _cam_pitch := 0.0
 const CAM_YAW_RATE := 2.8        # radians per second at full deflection
 const CAM_PITCH_RATE := 1.7
+## Which way up the pitch stick is. -1.0 is stick-up-tilts-the-camera-up,
+## which is what play asked for; +1.0 is the other convention.
+##
+## A constant rather than a buried sign because interface.md §7 makes
+## remappable controls a REQUIREMENT, not a nicety — it lists them beside
+## subtitles and colourblind-safe cues, and says accessibility is never
+## traded away for minimalism. This is the first setting that will need a
+## menu, and the number is already sitting here waiting for one.
+const CAM_PITCH_INVERT := -1.0
 ## Clamps on the FINAL pitch, so neither aspect can drive the camera
 ## through the floor or onto the back of the fighter's head.
 const CAM_PITCH_MIN := -0.30
@@ -908,11 +917,10 @@ func _tick_camera(delta: float) -> void:
 	if absf(_pad_aim.x) > CAM_STICK_DEADZONE:
 		yaw -= _pad_aim.x * CAM_YAW_RATE
 	if absf(_pad_aim.y) > CAM_STICK_DEADZONE:
-		# Stick up looks up: it lowers the camera toward the fighter's eye
-		# line rather than raising it. Invertible in one sign, and
-		# interface.md §7 makes remappable controls a requirement, so this
-		# becomes a setting rather than a constant.
-		pitch += _pad_aim.y * CAM_PITCH_RATE
+		# See CAM_PITCH_INVERT. The first build had this the other way
+		# round and it read as inverted, which is the only test that
+		# matters for a camera.
+		pitch += _pad_aim.y * CAM_PITCH_RATE * CAM_PITCH_INVERT
 	if Input.is_key_pressed(KEY_Q):
 		yaw += CAM_KEY_RATE
 	if Input.is_key_pressed(KEY_E):
@@ -920,6 +928,12 @@ func _tick_camera(delta: float) -> void:
 
 	_cam_yaw = wrapf(_cam_yaw + yaw * delta, -PI, PI)
 	_cam_pitch += pitch * delta
+
+	# The fill follows the camera so the side you have orbited around to
+	# is the side that is lit. The sun stays where it is — it carries the
+	# shadows, and shadows that swung as you looked would stop the yard
+	# reading as outdoors at all.
+	Look.aim_fill(self, _cam_yaw)
 
 ## Where the camera is looking, flattened to the ground.
 ##
