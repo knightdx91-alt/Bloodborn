@@ -222,6 +222,26 @@ tap window counts frames as well as milliseconds.
 **Or run the source.** Download Godot 4.3 (about 100MB, runs fine on
 the 2017 Air), open this folder as a project, press Play.
 
+## Recording a video of it
+
+`demo.gd` plays a scripted run and writes every frame to disk.
+
+```
+godot --path prototype --resolution 800x450 --fixed-fps 24 demo.tscn
+cat $(ls /tmp/demo/f*.jpg | sort) | ffmpeg -f image2pipe \
+    -vcodec mjpeg -framerate 24 -i pipe: -c:v libvpx -b:v 2200k \
+    -auto-alt-ref 0 -pix_fmt yuv420p file:out.webm
+```
+
+`--fixed-fps` is the part that makes it work: game time advances a
+fixed step per *rendered* frame, so the capture comes out smooth no
+matter how slowly the software rasteriser actually draws it. Without
+it, a 3fps render produces a 3fps video of a game running at 3fps.
+
+This exists because a video is the only way anyone sees this project
+move — there is no PC to run it on, and a screenshot cannot show a
+0.28s parry window mattering.
+
 ## Rebuilding it
 
 ```
