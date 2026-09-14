@@ -115,12 +115,12 @@ Controls:
   a steer.
 - **Keyboard** — WASD or arrows, Shift to sprint, **Space** to dodge,
   **J** or left-click to swing, **K** or right-click to parry.
-- **Pad** — left stick moves, **right stick is the camera** (and aims
-  the cut while a swing winds up), **RB** swings, **LB** holds the
-  guard, **A** dodges, **left trigger** sprints, **Q/E** turn the
-  camera on a keyboard. Plug in a wired pad over OTG or pair one over
-  Bluetooth; Godot finds it with no setup. See below for why this is
-  the scheme that matters.
+- **Pad** — left stick moves **and picks the cut**, **right stick is
+  the camera** (always), **RB** swings, **LB** holds the guard, **A**
+  dodges, **left trigger** sprints, **Q/E** turn the camera on a
+  keyboard. Plug in a wired pad over OTG or pair one over Bluetooth;
+  Godot finds it with no setup. See below for why this is the scheme
+  that matters.
 
 ### The pad (step 6)
 
@@ -136,25 +136,42 @@ brace; that guessing is what made the parry feel automatic. A pad has a
 button for it, so there is nothing to speculate and nothing to hand
 back: the guard rises when you press LB and not before.
 
-**The right stick is the camera, and it aims the cut — by taking
-turns.** It first shipped aiming only, and play answered in one
-sentence: *"I don't like that you can't move the camera."* Fair, and
-the two cannot share the stick, because "push left" cannot mean both
-*look* left and *cut* left at the same moment.
+**The camera is Skyrim's**, which is what was asked for, and it is worth
+being exact about what that means because one clause decides everything
+else:
 
-So the cut gets the stick exactly while it needs it. **From the press
-until the blade goes live — the wind-up, and nothing else — the right
-stick aims and the camera holds still.** Everywhere else it is the
-camera. Forward is the overhead, forward-and-across a high cut, pulled
-back a cut at the legs; a stick returning to centre does not un-aim
-what you already chose. Still no reticle (L65).
+1. The right stick is **always** the camera — yaw and pitch, orbiting
+   the fighter, never taken away for anything.
+2. It **never recentres**. It stays where you left it and the body
+   turns underneath it.
+3. **You aim with the camera.** Point it at someone and commit, and the
+   body turns to face where you were looking.
 
-That is Mount & Blade's directional combat without its cost: there you
-hold the attack button to choose, which puts a delay on the commonest
-action in the game, whereas here the swing starts on the press and you
-steer it while it winds up. The camera holding still for those few
-tenths is a gain rather than a price — that is the moment you most want
-a steady view of what the other fighter is doing.
+Rule 1 killed the previous scheme, which borrowed the stick during a
+wind-up and held the camera still. That is Mount & Blade's trick, it
+works, and it is not Skyrim — so it is gone, and the camera is live
+during a swing exactly as it is everywhere else.
+
+**Which moves the arcs onto the left stick: the direction you are
+stepping as you commit.** Step back for the overhead, step in for the
+thrust, lean to a side for the level cuts, back-and-across for the low
+ones. Standing still keeps the default, so you can ignore the whole
+thing and still fight. Still no reticle (L65).
+
+That is not a consolation prize. It is **Skyrim's own scheme** — its
+power attacks take their direction from the direction you are moving,
+not from the camera — and it is Mount & Blade's keyboard layout, where
+back-and-attack is the overhead and forward-and-attack is the thrust.
+It also lands on L56, which says techniques are *primarily how you
+move* and that momentum feeds attacks: tying the cut to the step makes
+footwork and attack one decision instead of two.
+
+**The cost, recorded rather than discovered later:** you cannot step one
+way and cut another. Chase someone down and your attack is a thrust,
+because that is the direction you are moving. In Mount & Blade that
+exact trade is considered a feature — footwork becomes the attack — but
+it is a real constraint and it is the first thing to revisit if fights
+start feeling like they are fighting you.
 
 **Lock-on was the other way out, and is rejected.** It needs an
 on-screen indicator to be legible and L65 forbids that kind of marker,

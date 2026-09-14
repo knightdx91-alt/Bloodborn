@@ -102,39 +102,45 @@ const PAD_SPRINT_PULL := 0.5
 
 ## Below this the left stick is at rest. Matches the touch threshold.
 const PAD_WALK_DEADZONE := 0.15
-## The right stick has to be *pushed* to re-aim — higher, because a
-## stick resting slightly off centre must not quietly change which arc
-## you are about to swing.
+## How far the left stick has to be leaning for the step to pick a cut.
+## Higher than the walking threshold on purpose: drifting a thumb while
+## you shuffle must not quietly change which arc you are about to swing,
+## so a deliberate lean is required and anything short of one keeps the
+## default.
 const PAD_AIM_DEADZONE := 0.35
-var _pad_vec := Vector2.ZERO
-var _pad_aim := Vector2.ZERO
+var _pad_vec := Vector2.ZERO   # left stick: moves, and the step that aims
+var _pad_aim := Vector2.ZERO   # right stick: camera, always
 var _pad_guarding := false
 
-# Camera orbit.
+# Camera orbit — Skyrim's, which is what was asked for.
 #
-# The right stick is the camera, because that is what a right stick is on
-# every third-person pad game and the first thing play asked for. That
-# takes the stick away from aiming the cut, and the two genuinely cannot
-# share it: "push the stick left" cannot mean both *look* left and *cut*
-# left at the same moment.
+# Three rules, and the third is the one with consequences:
 #
-# So they take turns, and the swing gets the stick exactly while it needs
-# it. From the instant you press RB until the blade goes live — the
-# wind-up, and nothing else — the right stick aims the cut and the camera
-# holds still. Everywhere else it is the camera.
+#  1. The right stick is ALWAYS the camera. Yaw and pitch, orbiting the
+#     fighter, never taken away for anything.
+#  2. It does not recentre itself. The camera stays where you left it,
+#     and the body turns under it.
+#  3. Because of (1), the right stick can never aim the cut.
 #
-# This is Mount & Blade's idea without its cost: there, you hold the
-# attack button down to choose a direction, which puts a delay on the
-# commonest action in the game. Here the swing starts on the press and
-# you steer it while it winds up, so nothing waits. The camera holding
-# still for 0.4s is not a compromise either — that is the moment you most
-# want a steady view of what the other fighter is doing.
+# The previous build had the stick aim during a wind-up and hold the
+# camera still. That is Mount & Blade's trick and it works, but it is not
+# what Skyrim does and Skyrim is what was asked for, so it is gone: the
+# camera is live during a swing exactly as it is everywhere else.
+#
+# Which moves the arcs onto the LEFT stick — see _arc_from_step. That is
+# Skyrim's own answer too: its power attacks take their direction from
+# the direction you are moving, not from the camera.
 var _cam_yaw := 0.0
-var _cam_rise := 0.0
+## Offset from the resting pitch the aspect ratio picks, rather than an
+## absolute angle — a phone in portrait looks down more steeply to begin
+## with, and should still be able to look up by the same amount.
+var _cam_pitch := 0.0
 const CAM_YAW_RATE := 2.8        # radians per second at full deflection
-const CAM_RISE_RATE := 2.2
-const CAM_RISE_MIN := -1.1
-const CAM_RISE_MAX := 3.2
+const CAM_PITCH_RATE := 1.7
+## Clamps on the FINAL pitch, so neither aspect can drive the camera
+## through the floor or onto the back of the fighter's head.
+const CAM_PITCH_MIN := -0.30
+const CAM_PITCH_MAX := 1.25
 const CAM_STICK_DEADZONE := 0.18
 const CAM_KEY_RATE := 1.8
 
@@ -380,7 +386,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			_touch_vec = Vector2.ZERO
 	elif event is InputEventJoypadButton and event.pressed:
 		match event.button_index:
-			PAD_ATTACK: _try_attack(_arc_from_stick(_pad_aim))
+			PAD_ATTACK: _swing_on_pad()
 			PAD_DODGE: _try_dodge()
 			PAD_GUARD:
 				# No speculative guard here, and nothing to take back. On
@@ -465,26 +471,44 @@ func _pad_push() -> float:
 		return 0.0
 	return clampf((raw - PAD_WALK_DEADZONE) / (1.0 - PAD_WALK_DEADZONE), 0.0, 1.0)
 
-## Where the right stick points is where you aim — the pad's answer to
-## "where you tap is where you aim", and the same five arcs (L64). Held
-## at rest it keeps the default, so you can fight without ever touching
-## it and still swing.
+## Which cut a swing makes, taken from the LEFT stick — the direction
+## you are stepping as you commit.
 ##
-## Screen space and stick space agree on sign: both count y downward, so
-## pushing the stick forward reads as high, which is the cut it makes.
-func _arc_from_stick(aim: Vector2) -> int:
-	if aim.length() < PAD_AIM_DEADZONE:
+## The right stick cannot do this any more, because it is the camera and
+## a Skyrim camera is never taken away. That is not a consolation prize:
+## it is Skyrim's own scheme, whose power attacks pick their direction
+## from the direction you are moving. It is Mount & Blade's keyboard
+## scheme too, where back-and-attack is the overhead and
+## forward-and-attack is the thrust.
+##
+## It also lands squarely on L56, which says techniques are primarily HOW
+## YOU MOVE and that momentum feeds attacks. Tying the cut to the step
+## makes footwork and attack one decision instead of two, which is what
+## that lock keeps asking for.
+##
+## Pulling back swings the big downward blows, stepping in is the thrust,
+## the sides are level cuts. Standing still keeps the default, so you can
+## fight without ever thinking about it. Still no reticle (L65).
+func _arc_from_step(step: Vector2) -> int:
+	if step.length() < PAD_AIM_DEADZONE:
 		return Attack.Arc.UPPER_RIGHT
-	var left: bool = aim.x < 0.0
-	if aim.y < -0.35:
-		# Straight forward is the overhead; forward and off to a side is
-		# still a high cut. The same split the tap makes.
-		if absf(aim.x) < 0.38:
-			return Attack.Arc.OVERHEAD
-		return Attack.Arc.UPPER_LEFT if left else Attack.Arc.UPPER_RIGHT
-	if aim.y > 0.35:
-		return Attack.Arc.LOWER_LEFT if left else Attack.Arc.LOWER_RIGHT
-	return Attack.Arc.UPPER_LEFT if left else Attack.Arc.UPPER_RIGHT
+
+	# Read in stick space, which is already camera-relative everywhere
+	# else. A cut that changed because the camera moved would be
+	# unlearnable.
+	var angle := atan2(step.x, -step.y)   # 0 = pushing away from you
+	var eighth: int = int(round(angle / (PI / 4.0))) % 8
+	if eighth < 0:
+		eighth += 8
+	match eighth:
+		0: return Attack.Arc.THRUST          # stepping in — the lunge
+		1: return Attack.Arc.UPPER_RIGHT
+		2: return Attack.Arc.UPPER_RIGHT
+		3: return Attack.Arc.LOWER_RIGHT
+		4: return Attack.Arc.OVERHEAD        # weight back, blade up, down
+		5: return Attack.Arc.LOWER_LEFT
+		6: return Attack.Arc.UPPER_LEFT
+		_: return Attack.Arc.UPPER_LEFT
 
 # ── The fight ────────────────────────────────────────────────────────
 
@@ -772,11 +796,11 @@ func _pad_status() -> String:
 		return "none connected"
 	const ARCS := ["overhead", "upper left", "upper right",
 		"lower left", "lower right", "thrust"]
-	var stick: String = "AIMING %s" % ARCS[_arc_from_stick(_pad_aim)] \
-		if _aiming_a_cut() else "looking (yaw %d\u00b0)" % roundi(rad_to_deg(_cam_yaw))
-	return "%s   right stick: %s   move %.2f%s" % [
+	return "%s   camera %d\u00b0/%d\u00b0   step %s   move %.2f%s" % [
 		Input.get_joy_name(pads[0]),
-		stick,
+		roundi(rad_to_deg(_cam_yaw)),
+		roundi(rad_to_deg(_cam_pitch)),
+		ARCS[_arc_from_step(_pad_vec)],
 		_pad_push(),
 		"   GUARD" if _pad_guarding else "",
 	]
@@ -803,6 +827,18 @@ func _arc_from(where: Vector2) -> int:
 	if y > 0.66:
 		return Attack.Arc.LOWER_LEFT if left else Attack.Arc.LOWER_RIGHT
 	return Attack.Arc.UPPER_LEFT if left else Attack.Arc.UPPER_RIGHT
+
+## A swing from the pad. Skyrim aims with the camera, so the body turns
+## to face where you are looking as it commits — you point the camera at
+## someone and swing at them — and the left stick says which cut it is.
+func _swing_on_pad() -> void:
+	if player == null or _player_down > 0.0 or player.is_busy():
+		return
+	# Turned BEFORE the swing starts, never during. move() deliberately
+	# refuses to turn a fighter mid-swing, because §6 makes the wind-up a
+	# telegraph and a telegraph you can steer tells nobody anything.
+	player.rotation.y = _cam_yaw
+	_try_attack(_arc_from_step(_pad_vec))
 
 func _try_attack(arc: int = Attack.Arc.UPPER_RIGHT) -> void:
 	if player == null or _player_down > 0.0:
@@ -866,37 +902,33 @@ func _tick_dummy(delta: float) -> void:
 
 # ── Camera ───────────────────────────────────────────────────────────
 
-## True exactly while a cut is winding up — the one window in which the
-## right stick means "where is this going" rather than "look over there".
-func _aiming_a_cut() -> bool:
-	return player != null and player.attack.phase() == Attack.Phase.WINDUP
-
 func _tick_camera(delta: float) -> void:
-	if _aiming_a_cut():
-		# Re-aimed every frame of the wind-up, so a flick mid-swing
-		# changes where the blow lands right up until the blade is live.
-		# L64 aims freely and L65 forbids a reticle, so the only feedback
-		# is the body — which is the whole bet.
-		# Only while the stick has an opinion. A stick returning to
-		# centre after a flick must not wipe the cut you just chose —
-		# you aimed it, and letting go is not un-aiming.
-		if _pad_aim.length() >= PAD_AIM_DEADZONE:
-			player.attack.arc = _arc_from_stick(_pad_aim)
-		return
-
 	var yaw: float = 0.0
-	var rise: float = 0.0
+	var pitch: float = 0.0
 	if absf(_pad_aim.x) > CAM_STICK_DEADZONE:
 		yaw -= _pad_aim.x * CAM_YAW_RATE
 	if absf(_pad_aim.y) > CAM_STICK_DEADZONE:
-		rise -= _pad_aim.y * CAM_RISE_RATE
+		# Stick up looks up: it lowers the camera toward the fighter's eye
+		# line rather than raising it. Invertible in one sign, and
+		# interface.md §7 makes remappable controls a requirement, so this
+		# becomes a setting rather than a constant.
+		pitch += _pad_aim.y * CAM_PITCH_RATE
 	if Input.is_key_pressed(KEY_Q):
 		yaw += CAM_KEY_RATE
 	if Input.is_key_pressed(KEY_E):
 		yaw -= CAM_KEY_RATE
 
 	_cam_yaw = wrapf(_cam_yaw + yaw * delta, -PI, PI)
-	_cam_rise = clampf(_cam_rise + rise * delta, CAM_RISE_MIN, CAM_RISE_MAX)
+	_cam_pitch += pitch * delta
+
+## Where the camera is looking, flattened to the ground.
+##
+## This is the direction a swing goes: Skyrim aims with the camera, so
+## you point it at someone and the body turns to match when you commit.
+## Steering is measured against this too — the moment a camera can turn,
+## a world-space "left" sends you somewhere that is not left on screen.
+func _camera_forward() -> Vector3:
+	return Vector3(-sin(_cam_yaw), 0.0, -cos(_cam_yaw))
 
 func _place_camera() -> void:
 	# A portrait phone has a narrow horizontal field of view, so the camera
@@ -914,12 +946,21 @@ func _place_camera() -> void:
 	var height: float = lerp(2.4, 6.0, tall)
 	var back: float = lerp(4.6, 4.4, tall)
 
+	# The aspect-derived framing becomes a distance and a resting pitch,
+	# so the stick tilts the camera AROUND the fighter instead of sliding
+	# it up and down. Holding the distance constant through the whole arc
+	# is what keeps the fighter the same size in frame whether you are
+	# looking at their boots or up past their shoulder.
+	var distance: float = sqrt(height * height + back * back)
+	var rest: float = atan2(height, back)
+	var pitch: float = clampf(rest + _cam_pitch, CAM_PITCH_MIN, CAM_PITCH_MAX)
+	# Fold the clamp back into the offset rather than letting it drift:
+	# holding the stick against the limit must not build up a debt you
+	# then have to unwind before the camera moves again.
+	_cam_pitch = pitch - rest
+
 	var focus := player.position + Vector3(0, 1.0, 0)
-	# Orbit, rather than a fixed chase: the offset is rotated about the
-	# focus, so the camera keeps its framing and only changes where it
-	# stands. _cam_rise trades height for distance instead of tilting,
-	# which keeps the fighter the same size in frame at every angle.
-	var offset := Vector3(0, height + _cam_rise, back - _cam_rise * 0.35)
+	var offset := Vector3(0.0, sin(pitch), cos(pitch)) * distance
 	cam.position = focus + offset.rotated(Vector3.UP, _cam_yaw) + feel.offset()
 	cam.look_at(focus, Vector3.UP)
 
