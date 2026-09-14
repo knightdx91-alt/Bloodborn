@@ -13,6 +13,13 @@ extends RefCounted
 enum Phase { READY, WINDUP, ACTIVE, RECOVERY }
 ## combat.md §6's three shapes. The player's swing uses "attack".
 enum Shape { QUICK, HEAVY, COMMITTED }
+## L64's arcs. Which one a blow travels along decides which piece of a
+## harness it meets, so "which piece failed" is a record of how its owner
+## was fought rather than a dice roll.
+enum Arc { OVERHEAD, UPPER_LEFT, UPPER_RIGHT, LOWER_LEFT, LOWER_RIGHT, THRUST }
+
+## The arc this swing is travelling along. Set when it is thrown.
+var arc: int = Arc.UPPER_RIGHT
 
 var _p: Dictionary
 var _phase: int = Phase.READY

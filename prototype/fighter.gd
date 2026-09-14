@@ -54,6 +54,7 @@ const TURN := 10.0
 
 var stamina: Stamina
 var health: Health
+var harness: ArmourSet
 var dodge: Dodge
 var attack: Attack
 var parry: Parry
@@ -94,7 +95,8 @@ signal died
 ## an enemy have no reason to be the same person.
 func setup(max_health: float, tint: Color, carries_sword: bool = true,
 		character: String = CHARACTER,
-		iron: Color = Look.IRON, leather: Color = Look.LEATHER) -> void:
+		iron: Color = Look.IRON, leather: Color = Look.LEATHER,
+		armour_class: String = "mail") -> void:
 	var body := (load(character) as PackedScene).instantiate()
 	# The capsule is two metres tall and centred on the origin, so the
 	# character hangs a metre below it to stand on its feet. Mixamo
@@ -142,6 +144,7 @@ func setup(max_health: float, tint: Color, carries_sword: bool = true,
 
 	stamina = Stamina.new()
 	health = Health.new(max_health)
+	harness = ArmourSet.new(armour_class)
 	dodge = Dodge.new()
 	attack = Attack.new()
 	parry = Parry.new()
@@ -303,16 +306,31 @@ func stagger(seconds: float) -> void:
 	anim.seek(HURT_START, true)
 	anim.speed_scale = (HURT_END - HURT_START) / max(seconds, 0.01)
 
-## Take a blow. Returns the damage actually taken — zero if the dodge's
-## invulnerable window ate it, which is the whole point of the dodge.
-func hurt(amount: float) -> float:
+## Take a blow along an arc. Returns { taken, slot, broke, bare }.
+##
+## The arc decides which piece of the harness meets it (L64), the damage
+## triangle decides what that piece is worth against this kind of blow
+## (§4), and a piece worn to nothing comes off then and there (L63).
+## Zero damage if the dodge's invulnerable window ate it, which is the
+## whole point of the dodge.
+func hurt(amount: float, arc: int = Attack.Arc.UPPER_RIGHT,
+		damage_type: String = "cut") -> Dictionary:
+	var miss := {"taken": 0.0, "slot": -1, "broke": false, "bare": false}
 	if dodge.is_invulnerable() or health.is_dead():
-		return 0.0
+		return miss
 
-	var taken := health.take(amount)
+	var slot := ArmourSet.slot_for(arc)
+	var blow := harness.resolve(slot, amount, damage_type)
+	if blow["broke"]:
+		# L63: it does not merely stop protecting. It comes off.
+		shed(slot)
+
+	var taken := health.take(blow["damage"])
+	var out := {"taken": taken, "slot": slot,
+		"broke": blow["broke"], "bare": blow["bare"]}
 	if health.is_dead():
 		died.emit()
-		return taken
+		return out
 
 	# A hit reaction interrupts whatever was happening, including a swing.
 	# Being hit mid-wind-up costing you the swing is most of what makes
@@ -322,7 +340,7 @@ func hurt(amount: float) -> float:
 	anim.play("hurt", 0.04)
 	anim.seek(HURT_START, true)
 	anim.speed_scale = 1.0
-	return taken
+	return out
 
 ## L63: a piece that breaks does not merely stop protecting — it comes
 ## off, and the slot is bare for the rest of the fight. The damage side
@@ -348,6 +366,7 @@ func revive() -> void:
 	dodge.reset()
 	attack.reset()
 	parry.reset()
+	harness.reset()
 	rearm()
 	_hurt_for = 0.0
 	_stagger_for = 0.0

@@ -263,7 +263,7 @@ Full list at the bottom of `brainstorm.md`.
     Nine documents written that did not exist: `combat.md`, `tech.md`,
     `naming.md`, `crafting.md`, `onboarding.md`, `moderation.md`,
     `liveops.md`, `interface.md`, `art-audio.md`. A simulation library
-    (`sim/`) now implements and tests the rules — 254 tests, engine-free.
+    (`sim/`) now implements and tests the rules — 257 tests, engine-free.
     **`tech.md` §6 Stage 1 is built and playable in a browser**: an
     animated character, a dodge with invulnerability frames and a
     punishable recovery, a committed sword swing, an enemy that fights

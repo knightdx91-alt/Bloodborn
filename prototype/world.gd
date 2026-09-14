@@ -93,7 +93,8 @@ func _ready() -> void:
 	# They multiply into the albedo, so when a real textured character
 	# arrives (SPEC-character-v4.md) they should go back to white rather
 	# than being kept — the character will bring its own colour.
-	player.setup(PLAYER_HEALTH, Color(0.66, 0.92, 0.84))
+	player.setup(PLAYER_HEALTH, Color(0.66, 0.92, 0.84), true, Fighter.CHARACTER,
+		Look.IRON, Look.LEATHER, "mail")
 	player.show_iframes = SHOW_DEBUG
 
 	enemy = Fighter.new()
@@ -105,7 +106,7 @@ func _ready() -> void:
 	# opponent no marker over their head, so the difference has to be in
 	# the silhouette and the value.
 	enemy.setup(ENEMY_HEALTH, Color(0.40, 0.62, 0.62), true, Fighter.CHARACTER,
-		Color(0.26, 0.27, 0.30), Color(0.16, 0.13, 0.10))
+		Color(0.26, 0.27, 0.30), Color(0.16, 0.13, 0.10), "light")
 	tactics = EnemyTactics.new(20260914)
 	feel = Feel.new()
 
@@ -285,7 +286,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			var quick: bool = held <= TAP_MILLISECONDS or frames <= TAP_FRAMES
 			if quick and _touch_max_drag <= TAP_SLOP and not _touch_dodged \
 					and not _touch_parried:
-				_try_attack()
+				_try_attack(_arc_from(_touch_origin))
 			_touch_id = -1
 			_touch_vec = Vector2.ZERO
 			_touch_parried = false
@@ -398,6 +399,12 @@ func _run_enemy(delta: float) -> void:
 			# teaches nothing.
 			enemy.rotation.y = atan2(-heading.x, -heading.z)
 			if enemy.try_attack(EnemyTactics.section_for(decision["shape"])):
+				# He aims as well. A heavy comes down overhead, a quick
+				# goes for the body, and the whole-body swing takes the
+				# legs — so a harness wears unevenly and which piece
+				# fails says something about the fight.
+				enemy.attack.arc = [Attack.Arc.UPPER_RIGHT,
+					Attack.Arc.OVERHEAD, Attack.Arc.LOWER_LEFT][decision["shape"]]
 				tactics.threw(decision["shape"])
 			enemy.move(Vector3.ZERO, 0.0, delta)
 		EnemyTactics.Intent.CLOSE:
@@ -496,13 +503,20 @@ func _land(attacker: Fighter, victim: Fighter, damage: float, by: String,
 	# The damage triangle (combat.md §4) is built and tested in sim/ and is
 	# deliberately not wired up here. It resolves a blow against armour
 	# class and hit location, and nobody in this yard is wearing anything.
-	var taken := victim.hurt(damage)
-	if SHOW_DEBUG:
-		if taken <= 0.0:
-			print("%s's blow passed through — i-frames" % by)
-		else:
-			print("%s hit for %.0f, target at %.0f%%" % [
-				by, taken, victim.health.fraction() * 100.0])
+	var landed := victim.hurt(damage, attacker.attack.arc)
+	if not SHOW_DEBUG:
+		return
+	if landed["taken"] <= 0.0:
+		print("%s's blow passed through — i-frames" % by)
+		return
+	const WHERE := ["the head", "the body", "an arm", "a leg"]
+	print("%s hit %s for %.0f%s, target at %.0f%%" % [
+		by, WHERE[landed["slot"]], landed["taken"],
+		"  (bare — no armour there)" if landed["bare"] else "",
+		victim.health.fraction() * 100.0])
+	if landed["broke"]:
+		print("   ^ that piece is GONE — %s is bare there now" % (
+			"the enemy" if by == "player" else "you"))
 
 func _tick_bodies(delta: float) -> void:
 	if enemy.health.is_dead() and _enemy_down <= 0.0:
@@ -554,14 +568,41 @@ func _try_parry() -> void:
 	if SHOW_DEBUG:
 		print("guard up (%d)  stamina %.0f" % [_parry_attempts, player.stamina.current()])
 
-func _try_attack() -> void:
+## Where you tap is where you aim. L64 gives five cutting arcs chosen by
+## free aim rather than a menu — Kingdom Come's system — and a screen is
+## already an aiming surface, so the tap carries it for nothing. High
+## centre goes overhead and finds the helm; low goes for the legs.
+##
+## L65 keeps this off the screen: there is no reticle and there will not
+## be one. You learn where you are aiming by watching where the blow
+## lands, which is the same way you learn everything else here.
+func _arc_from(where: Vector2) -> int:
+	var vp := get_viewport().get_visible_rect().size
+	var x: float = where.x / maxf(vp.x, 1.0)
+	var y: float = where.y / maxf(vp.y, 1.0)
+	var left: bool = x < 0.5
+	if y < 0.34:
+		# Straight down the middle is the overhead; off to a side up
+		# there is still a high cut.
+		if absf(x - 0.5) < 0.18:
+			return Attack.Arc.OVERHEAD
+		return Attack.Arc.UPPER_LEFT if left else Attack.Arc.UPPER_RIGHT
+	if y > 0.66:
+		return Attack.Arc.LOWER_LEFT if left else Attack.Arc.LOWER_RIGHT
+	return Attack.Arc.UPPER_LEFT if left else Attack.Arc.UPPER_RIGHT
+
+func _try_attack(arc: int = Attack.Arc.UPPER_RIGHT) -> void:
 	if player == null or _player_down > 0.0:
 		return
 	if not player.try_attack():
 		return
+	player.attack.arc = arc
 	_swing_count += 1
 	if SHOW_DEBUG:
-		print("swing %d  stamina %.0f" % [_swing_count, player.stamina.current()])
+		const ARCS := ["overhead", "upper left", "upper right",
+			"lower left", "lower right", "thrust"]
+		print("swing %d  %s  stamina %.0f" % [
+			_swing_count, ARCS[arc], player.stamina.current()])
 
 func _try_dodge() -> void:
 	if player == null or _player_down > 0.0:
@@ -717,8 +758,8 @@ func _update_interface(delta: float) -> void:
 	const GUARD_NAMES := ["-", "raising", "OPEN", "caught"]
 	_phase_label.text = (
 		"you: dodge %s  swing %s  guard %s\n"
-		+ "    stamina %d%%%s  health %d%%\n"
-		+ "enemy: %s %s%s  health %d%%\n"
+		+ "    stamina %d%%%s  health %d%%  armour %d/4\n"
+		+ "enemy: %s %s%s  health %d%%  armour %d/4\n"
 		+ "dummy %d%%   dodges %d   swings %d   parried %d/%d   fps %d\n"
 		+ "last release: %s"
 	) % [
@@ -728,10 +769,12 @@ func _update_interface(delta: float) -> void:
 		roundi(fraction * 100.0),
 		"  EXHAUSTED" if player.stamina.is_exhausted() else "",
 		roundi(player.health.fraction() * 100.0),
+		player.harness.intact_pieces(),
 		["quick", "heavy", "COMMITTED"][enemy.attack.shape()],
 		SWING_NAMES[enemy.attack.phase()],
 		"  STAGGERED" if enemy.is_staggered() else "",
 		roundi(enemy.health.fraction() * 100.0),
+		enemy.harness.intact_pieces(),
 		roundi(_dummy_health / DUMMY_HEALTH * 100.0),
 		_dodge_count,
 		_swing_count,

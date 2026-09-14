@@ -20,7 +20,12 @@
     "The three enemy* sections are combat.md section 6's attack shapes:",
     "quick, heavy and committed. A player is meant to tell them apart by",
     "their wind-ups alone, so those numbers ARE the telegraph \u2014 changing",
-    "one changes what the game teaches, not just how hard it is."
+    "one changes what the game teaches, not just how hard it is.",
+    "",
+    "damageTable is combat.md section 4's triangle and mirrors",
+    "DamageTable.Default exactly. Every unarmoured entry sits well clear",
+    "of every armoured one on purpose: if any armour were not clearly",
+    "better than none against every damage type, nobody would wear it."
   ],
   "stamina": {
     "max": 100.0,
@@ -108,5 +113,40 @@
     "recoverySeconds": 0.55,
     "successRecoverySeconds": 0.12,
     "staggerSeconds": 0.9
+  },
+  "damageTable": {
+    "_order": [
+      "none",
+      "light",
+      "mail",
+      "plate"
+    ],
+    "cut": {
+      "none": 1.75,
+      "light": 1.25,
+      "mail": 0.8,
+      "plate": 0.65
+    },
+    "pierce": {
+      "none": 1.6,
+      "light": 1.0,
+      "mail": 1.25,
+      "plate": 1.0
+    },
+    "blunt": {
+      "none": 1.5,
+      "light": 1.0,
+      "mail": 1.0,
+      "plate": 1.25
+    },
+    "torso": 1.0,
+    "limb": 0.75,
+    "head": 1.5
+  },
+  "armour": {
+    "playerClass": "Mail",
+    "enemyClass": "Light",
+    "maxCondition": 100.0,
+    "wearPerHit": 11.0
   }
 }

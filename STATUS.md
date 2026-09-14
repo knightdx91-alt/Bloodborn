@@ -12,7 +12,7 @@ of each working session.
 Design is **88 locked decisions** and **complete** — every structural
 question locked, every missing document written. Every system a player
 touches in their first hundred hours is specified, and most of it is
-**written, tested and running** as engine-free C# — 254 tests.
+**written, tested and running** as engine-free C# — 257 tests.
 
 **Stage 1 is built and playable in any browser**: a character who walks
 and runs, a dodge with invulnerability frames, a sword, a training
@@ -70,7 +70,7 @@ Everything below can be done from the Claude Code app with no laptop.
 | | |
 |---|---|
 | **Design** | `design/` — 88 locks in `pillars.md`, which is the map to everything |
-| **Code** | `sim/` — the rules of the game as engine-free C#, 254 tests |
+| **Code** | `sim/` — the rules of the game as engine-free C#, 257 tests |
 | **Tuning** | `shared/tuning/combat.json` — every combat number, once, read by both `sim/` and the prototype |
 | **The plan** | `design/tech.md` §6 (build order), §8 (how the work divides) |
 | **Blocking** | `design/naming.md` §5 — trademark clearance, before anything public |
@@ -186,6 +186,42 @@ thrown away.
 
 Nothing about that blocks the two characters above, which are wanted
 either way.
+
+## Done 2026-09-14 — armour that matters, and aiming
+
+**The damage triangle is live.** `combat.md` §4 now decides every blow,
+and it bites:
+
+| 28 of cut, on the body | | | 28 of blunt, on the body | |
+|---|---|---|---|---|
+| Through plate | 18.2 | | **Through plate** | **35.0** |
+| Through mail | 22.4 | | Through mail | 28.0 |
+| **Bare** | **49.0** | | Bare | 42.0 |
+
+**A mace is worse against plate than against mail.** That is the
+triangle working, and it is exactly the sort of thing L81 wants a
+player to learn by being hit rather than by reading a number.
+
+**And you aim now.** Where you tap is the arc — high and centred is an
+overhead and goes for the helm, low goes for the legs, either side is a
+cut to the body. That is L64's free aim, and a screen is already an
+aiming surface, so it cost nothing. **No reticle, and there will not be
+one** (L65).
+
+**So L63 finally means something.** Which piece meets a blow depends on
+where it was aimed, so which piece fails is a record of how its owner
+was fought. Keep going overhead and the helm goes — ten blows in the
+current tuning — and **the next overhead lands for 52.5 instead of
+24.0**. "Increasingly desperate" is now literally true, and you can see
+it: the helm is gone from the model.
+
+The numbers are not duplicated. The whole triangle lives in
+`shared/tuning/combat.json` and `DamageTableFileTests` fails the build
+if it drifts from `DamageTable.Default` — including a test that every
+unarmoured entry stays clear of every armoured one, because if any
+armour were not clearly better than none, nobody would wear it.
+
+**257 tests.**
 
 ## ✅ Stage 1's real finding: the vocabulary works
 

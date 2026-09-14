@@ -102,6 +102,12 @@ Controls:
 - **Attack** — **tap** to swing. Attacking is the commonest thing you
   do, so it gets the commonest gesture; a swing is committed anyway, so
   lifting a steering thumb to tap costs nothing.
+- **Aim by where you tap.** High and centred is an overhead and goes for
+  the helm; low goes for the legs; either side is a cut to the body.
+  L64 gives five arcs chosen by free aim rather than a menu, and a
+  screen is already an aiming surface. **There is no reticle and there
+  will not be one** (L65) — you learn where you are aiming by watching
+  where the blow lands.
 - **Parry** — **hold a finger still.** A tap is a swing, a drag is a
   steer, and a press that does neither is a brace. It fires while the
   finger is down rather than on release, because a guard that appeared
@@ -242,10 +248,36 @@ The visible ground runs 420m, far past the 30m yard. It used to stop at
 the wall, leaving a hard black band of nothing beyond the fence. You
 still cannot walk out there.
 
-### Armour (`armour.gd`)
+### Armour (`armour.gd`, `rules/armour_set.gd`)
 
 Grey-box plate, built from primitives and hung on the skeleton — a helm,
-pauldrons, a cuirass, vambraces, tassets, thigh guards and greaves.
+pauldrons, a cuirass, vambraces, tassets, thigh guards and greaves. **It
+is not decoration: it is the damage triangle.**
+
+`combat.md` §4's triangle now decides every blow, and it bites:
+
+| 28 damage of cut, on the body | |
+|---|---|
+| Through plate | 18.2 |
+| Through mail | 22.4 |
+| **Bare** | **49.0** |
+
+| 28 damage of blunt, on the body | |
+|---|---|
+| **Through plate** | **35.0** |
+| Through mail | 28.0 |
+| Bare | 42.0 |
+
+**A mace is worse against plate than against mail.** That is the
+triangle doing its job, and it is the kind of thing a player learns by
+being hit rather than by reading a number — which is what §4 and L81
+both want.
+
+**Where you aim decides which piece meets the blow** (L64), so which
+piece fails is a record of how its owner was fought. Keep going overhead
+and their helm goes — ten blows, in the current tuning — and **the next
+overhead lands for 52.5 instead of 24.0.** L63's "increasingly
+desperate" is now literally true.
 
 **The geometry is a placeholder. The structure is not.** L63 tracks
 armour across **head, torso, arms and legs**, each with its own
