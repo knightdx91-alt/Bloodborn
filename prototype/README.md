@@ -188,7 +188,10 @@ first.
 
 ## Status
 
-This is a **prototype**, not a commitment. `design/tech.md` §2 locks
-Unity (L54), and that lock is under review — see the challenge recorded
-there. This folder exists to make the comparison concrete rather than
-theoretical.
+**This is the project now.** `design/tech.md` §2 locks Godot (L54,
+revised 2026-09-14) — this folder started as an experiment to make the
+engine comparison concrete, and it won the argument.
+
+It is still a *prototype* in the sense that matters: `tech.md` §6
+Stage 1 is a route to `combat.md` §9's gate, and nothing here is built
+to last. But it is no longer a candidate for deletion.

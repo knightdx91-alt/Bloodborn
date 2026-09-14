@@ -14,9 +14,10 @@ was established.
 Offer these, and plan accordingly:
 
 - **Mac (the 2017 MacBook Air).** Can build and run the C# in `sim/`
-  themselves — `dotnet test` works. Cannot run Unity, and this will not
-  change on this machine. Code review, running tests, and file work all
-  possible. Fine for long output.
+  themselves — `dotnet test` works — and **can run the Godot editor and
+  play native builds**, which it could never do with Unity. Code
+  review, running tests, and file work all possible. Fine for long
+  output.
 - **Phone (Claude Code app).** No local execution of anything. Favour
   design questions, locking decisions, doc work, and code that *you*
   write and verify in your own environment — you have a .NET SDK, so
@@ -25,7 +26,9 @@ Offer these, and plan accordingly:
   Lead with the answer.
 - **A new machine.** If the hardware has changed, that is significant
   news: update the constraints section of `STATUS.md`, and revisit
-  whether `design/tech.md` §6 Stage 1 (Unity) is now reachable.
+  **L88** — better hardware is its named exit condition, the point at
+  which the prototype moves to Godot's .NET build and the GDScript
+  mirror in `prototype/rules/` is deleted.
 
 Current hardware facts live in `STATUS.md` under "Known constraints" —
 read that rather than assuming, and keep it accurate as things change.

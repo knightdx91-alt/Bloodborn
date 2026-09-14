@@ -9,7 +9,7 @@ of each working session.
 
 ## The one-line version
 
-Design is **87 locked decisions** and **complete** — every structural
+Design is **88 locked decisions** and **complete** — every structural
 question locked, every missing document written. Every system a player
 touches in their first hundred hours is specified, and most of it is
 **written, tested and running** as engine-free C# — 218 tests.
@@ -20,9 +20,9 @@ against a training dummy that reacts. That is `tech.md` §6 steps 1 to 3
 of six. **Step 4 is the stamina tuning pass; step 5 is the first enemy
 that swings back.**
 
-⚠️ **The engine lock (Unity, L54) is under review** — the prototype is
-Godot, because the whole build-and-play loop runs there without a PC.
-Not decided.
+**The engine is Godot** (L54, revised 2026-09-14 from Unity). Decided
+on the evidence in `tech.md` §2a, not on preference — see the L54
+section below.
 
 ## Device check
 
@@ -51,7 +51,8 @@ Everything below can be done from the Claude Code app with no laptop.
 
 **What needs the Mac:**
 - Running `dotnet test` yourself.
-- Anything involving Unity, whenever that becomes possible.
+- Opening the Godot editor, if you ever want to — it runs fine there,
+  though nothing so far has required it.
 
 **Good phone-session prompts:**
 - "Read STATUS.md and let's continue."
@@ -63,7 +64,7 @@ Everything below can be done from the Claude Code app with no laptop.
 
 | | |
 |---|---|
-| **Design** | `design/` — 87 locks in `pillars.md`, which is the map to everything |
+| **Design** | `design/` — 88 locks in `pillars.md`, which is the map to everything |
 | **Code** | `sim/` — the rules of the game as engine-free C#, 218 tests |
 | **Tuning** | `shared/tuning/combat.json` — every combat number, once, read by both `sim/` and the prototype |
 | **The plan** | `design/tech.md` §6 (build order), §8 (how the work divides) |
@@ -207,7 +208,7 @@ rebuild, which is exactly what breaks it.
 **Design.** Raised **P12** (the Incarnate marks and the Age of Gods)
 from an idea to a written pillar. Locked **L40–L87** — the ascension
 gate, epoch advancement, P12's rules, five of P11's calls, Switch 2
-only, the title, PC-first, Unity, stamina as exertion, combat mobility
+only, the title, PC-first, the engine, stamina as exertion, combat mobility
 and archetypes, the encumbrance budget, armour on the road, durability
 and breakage, directional combat, the crafting model, recipe discovery,
 onboarding, skill-by-use, moderation, live-ops, the interface, and art direction.
@@ -332,62 +333,38 @@ readout shows fps — **worth a glance on the actual phone**, because
 that number is the one thing here that cannot be checked from this
 side.
 
-## ⚠️ L54 is under review
+## ✅ L54 is settled — the engine is Godot
 
-A Godot project was built, exported and play-tested **entirely inside
-the assistant's environment** — authored as text, built headless with
-no GPU, exported to web, driven with simulated keypresses, and visually
-verified. The full development loop, with nothing done on the
-developer's machine. That is not possible with Unity.
+**Revised 2026-09-14, from Unity.** The full reasoning and sources are
+in `tech.md` §2 and §2a. The short version:
 
-**One of the three open questions is now closed, and it turned out not
-to be a deciding one.** The loop has carried a rigged character,
-blended locomotion, a dodge, a weapon on a bone, a hitbox and a target
-that reacts — and diagnosed three broken asset deliveries and four
-input bugs by measurement. What it cannot do is judge feel, at 3–4 fps
-with no GPU. **But no engine choice fixes that**, so it should not
-weigh on L54 either way.
+**What decided it.** The whole build-and-play loop runs on Godot with
+nothing on your machine — authored as text, built headless with no GPU,
+exported, driven with simulated input, looked at, published. Stage 1
+steps 1–3 exist because of that. Unity cannot be operated this way.
 
-**Both remaining questions are now researched (2026-09-14), and
-neither landed where the doc assumed.** `tech.md` §2a has the detail
-and the sources.
+**The two questions that were holding it, both researched, neither
+favouring Unity:**
 
-- **Asset ecosystem — dissolved.** Unity's own documentation says
-  Asset Store assets **may be used in other engines**, Godot named,
-  subject to the EULA (no redistribution, no cost-sharing, per-asset
-  licences can override). Art, animation and audio transfer; materials
-  and prefabs need rebuilding per pack; **editor tools and C# plugins
-  do not transfer at all.** That last is the real gap — and it is the
-  half this project is least exposed to, because §1 buys *content* and
-  hand-writes systems anyway.
-- **Console cost — inverted.** W4 Consoles (built by the Godot
-  founders) is **$2,000/year for all three platforms** at this
-  project's size, no revenue share, source included. Unity **requires
-  Unity Pro to ship on console at all — $2,310 per seat per year** as
-  of January 2026, and Microsoft issues no platform key, so Xbox means
-  paying Unity regardless. Switch 2 is early beta at W4, which matters
-  because L53 is Switch 2 only. The honest counterweight is vendor
-  concentration, not money.
+- **Asset ecosystem — mostly dissolved.** Unity's own documentation
+  permits Asset Store assets in other engines, so the store is not
+  Unity-only. Art, animation and audio transfer; materials and prefabs
+  are rebuilt per pack; **editor tools and C# plugins never transfer.**
+  That tooling gap is real — and it is the half this project is least
+  exposed to, because §1 buys content and hand-writes systems.
+- **Console cost — inverted.** W4 Consoles is **$2,000/yr for all three
+  platforms**, no revenue share. Unity **requires Unity Pro to ship on
+  console at all — $2,310 per seat per year.**
 
-**Recommendation on file: flip L54 to Godot** — with a stated exit for
-the double-writing, because that should never be allowed to happen by
-drift. **Not done. It is a lock and it is your call.**
+**What was given up, honestly:** a thinner tooling ecosystem; one small
+vendor (W4) carrying all three console ports, with Switch 2 still in
+beta there; and **C# not reaching the web export**, which is why rules
+are written twice.
 
-**And a fourth consideration has since appeared, against Godot:** its
-web export cannot run C#, so every rule the prototype exercises is
-written twice (see the step-2 notes above). Not fatal, and it does not
-touch shipping — but a real bill if Godot wins.
-
-**Where that leaves it.** The original case for Unity was two things:
-everything-is-text, and asset-marketplace depth for `tech.md` §1's
-buy-the-content strategy. Godot wins the first outright. The second
-still stands, along with the console path (L53). **So the trade is
-about timing:** Unity's advantages land at Stage 3+, a year out;
-Godot's land today, and compound every week.
-
-Recorded in `tech.md` §2 with what would settle it. **Not decided.**
-`prototype/` is Godot because that is what can be built now, and is
-explicitly not a commitment.
+**That last one is now governed by L88**, with a named exit: when you
+can routinely run native builds, the prototype moves to Godot's .NET
+build and `prototype/rules/` is deleted the same day. Named on purpose
+— it is exactly the kind of cost that becomes permanent by drift.
 
 ## Next, in order
 
@@ -406,8 +383,6 @@ falls into three piles, and none of it is design:
    - **Step 5 is one enemy with three attack shapes**, and it is the
      one that makes the dodge mean something: nothing has ever swung
      back. The hit-reaction clip is already in the repo.
-   - Unity versions of step 1 remain staged in `unity/Scripts/` against
-     L54 landing that way.
    - Waiting on Muse: `prototype/assets/SPEC-dodge-clips.md`, four
      directional dodge clips. Not blocking anything.
 2. **Trademark clearance on "Marrowmark"** (`naming.md` §5) — blocks
@@ -448,15 +423,14 @@ Roughly 25 remain. The ones that unblock the most:
 ## Known constraints
 
 - **Hardware.** MacBook Air 2017, Monterey 12.7.6, dual-core i5, 8GB,
-  Intel HD Graphics 6000, **Unity 6.6 installed**. Corrected
-  2026-09-08: this machine **can** run Unity for Stage 1. Grey-box
-  scenes and code are fine; iteration is slow and 8GB is the pinch
-  point, but it is not a blocker. It becomes one around Stage 3.
-  **Pin Unity 6.6** — Intel Mac support is deprecated there and removed
-  at 6.8. A better machine is wanted eventually, and a Windows PC is
-  the right buy when it happens (PC is the first ship target, L53, and
-  console SDKs are Windows-only later) — but it is no longer blocking
-  anything.
+  Intel HD Graphics 6000. **Godot 4 runs comfortably on it** — ~100MB,
+  no compile cycle — but in practice nothing has needed it: Stage 1
+  steps 1–3 were built without that machine being switched on. A better
+  machine is still wanted eventually, and a **Windows PC** is the right
+  buy when it happens (PC is the first ship target, L53, and console
+  SDKs are Windows-only later). **It blocks nothing now.**
+  *(The old Unity 6.6 / Intel-Mac-deprecation constraint is moot as of
+  L54's revision.)*
 - **Solo developer, new to gamedev, AAA ambition, multi-year horizon.**
   The strategy that makes that viable is `tech.md` §1: build systems to
   full ambition, buy or generate content volume.

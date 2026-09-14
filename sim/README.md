@@ -6,8 +6,8 @@ anything that is logic rather than rendering lives here.
 
 ## Why this exists separately
 
-1. **It runs anywhere.** No GPU, no Unity licence, no editor. It builds
-   and tests on any machine, which means the rules of the game can be
+1. **It runs anywhere.** No GPU, no engine, no editor. It builds and
+   tests on any machine, which means the rules of the game can be
    written and proven before there is a game to put them in.
 2. **The server needs the same code.** `design/tech.md` §3 puts
    authoritative simulation on zone servers. Those servers run this
@@ -17,13 +17,27 @@ anything that is logic rather than rendering lives here.
    (`design/combat.md` §9); *rules* are judged with tests. This is where
    the rules get pinned down.
 
-`Marrowmark.Sim` targets **netstandard2.1**, which Unity 6 consumes
-directly. When the Unity project exists, this drops in unchanged.
+`Marrowmark.Sim` targets **netstandard2.1**, which both Godot's .NET
+build and Unity consume directly. The engine is Godot (L54).
+
+> ⚠️ **Godot's web export cannot run C#**, and the web build is how the
+> prototype is played without a PC. So `prototype/rules/` mirrors the
+> parts of this library the prototype exercises, in GDScript. **This
+> library stays the authority** — it is what the zone servers will run
+> and what the tests cover — and **the tuning is never mirrored**:
+> every number lives once in `shared/tuning/combat.json`, guarded in
+> both directions by `TuningFileTests`.
+>
+> **L88 governs this, including the exit:** when native builds become
+> routine, the prototype moves to Godot's .NET build and
+> `prototype/rules/` is deleted the same day. Mirror nothing the
+> prototype does not actually exercise.
 
 ## Rules
 
-- **Nothing here may reference `UnityEngine`.** Ever. That is the whole
-  point. If something needs the engine, it belongs in `game/`, not here.
+- **Nothing here may reference an engine.** Not `UnityEngine`, not
+  `Godot`. Ever. That is the whole point. If something needs the
+  engine, it belongs in `prototype/`, not here.
 - **Time is passed in, never read from a global clock.** Every method
   that advances state takes `deltaSeconds`. This keeps the library
   deterministic, testable, and safe to run on a server tick.
@@ -128,6 +142,6 @@ the tests fail, naming the matchup and the number. The drift usually
 happens somewhere other than where it shows, which is the reason this
 exists.
 
-Next candidates, all pure logic and all buildable before Unity exists:
+Next candidates, all pure logic and none of them needing an engine:
 crafting material properties and rolled stats (L4) — the flagship
 system — and the skill-by-use curve (L18/L40).

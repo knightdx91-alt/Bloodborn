@@ -42,58 +42,110 @@ content volume.** Concretely —
   and mystery over authored quest volume — that lock was written for
   design reasons and pays off enormously here.
 
-## 2. Engine: Unity **[DECIDED — L54]**
+## 2. Engine: Godot 4 **[DECIDED — L54, revised 2026-09-14]**
 
-**Unity, URP, current LTS.** Chosen 2026-09-08 over Unreal 5, which
-this document previously recommended. The reasoning changed when two
-facts entered it: the developer is **new to gamedev**, and an **AI
-collaborator is a major part of the labour**. Both point the same way.
+**Godot 4, GL Compatibility renderer, current stable.** Revised from
+Unity on 2026-09-14, after the two questions holding the review were
+researched — §2a has the evidence and the sources, and this section
+states the decision.
 
-**Why Unity here:**
+**Why Godot here:**
 
-- **Everything is text.** C# scripts, scenes and prefabs (YAML), and
-  editor tooling are all readable and writable by an AI collaborator.
-  Unreal's Blueprints are binary `.uasset` files — opaque, and also
-  the way most solo Unreal developers actually work. Choosing Unreal
-  would mean a collaborator blind to a large share of the project.
-- **One language everywhere.** §3 makes clear the MMO server is custom
-  work regardless of engine. In Unity that server is C# — the same
-  language as the client, sharing the same data structures and
-  potentially the same simulation code. For one person, a single
-  language across client, server, and tools is worth more than any
-  rendering feature.
-- **The gentlest learning curve of the serious engines**, with the
-  deepest tutorial ecosystem — which matters when the developer is
-  learning the craft and the project simultaneously.
-- **Faster iteration.** No C++ compile cycle between having an idea
-  and seeing it.
+- **The whole build-and-play loop runs without the developer's
+  machine.** The project is authored as text, built headless against a
+  software rasteriser with no GPU, exported to the web, driven with
+  simulated input and *looked at* — then published, so it can be played
+  on a phone. Stage 1 steps 1–3 exist because of this. **Unity cannot
+  be operated this way**, and on a solo project where an AI
+  collaborator is a large share of the labour, that is not a
+  convenience — it is the difference between the engine work happening
+  and not happening.
+- **Everything is text, more so than Unity.** Scenes, scripts and
+  config are all plain text. Unity's YAML is text too; Unreal's
+  Blueprints are binary `.uasset`, which is why this document stopped
+  recommending Unreal long before it stopped recommending Unity.
+- **It runs on the hardware that exists.** A 2017 MacBook Air runs the
+  Godot editor comfortably. This removes what `pillars.md` listed as
+  the project's first hardware blocker.
+- **Cheaper to ship on console**, which was assumed to be the reverse:
+  W4 Consoles is $2,000/yr for all three platforms with no revenue
+  share, against Unity Pro at $2,310 per seat per year, which Unity
+  *requires* to publish on console at all. §2a.
+- **No licence, no runtime fee, no revenue share**, and the engine
+  cannot be relicensed out from under the project — which on a
+  multi-year solo build is worth more than it looks.
 
-**The honest cost.** Unreal's Nanite and Lumen remove weeks of manual
-optimization per environment, and that solo-art-leverage argument —
-the original reason this document said Unreal — remains true. Unity
-will mean more hand-optimization and a lower out-of-box visual
-ceiling. **This is the right trade for Marrowmark specifically**,
-because the game's distinctiveness is its systems (economy, crafting,
-war, secrecy) rather than its fidelity, and systems are exactly what
-the collaboration is good at.
+**The honest cost — four things, all real:**
 
-**Render pipeline: URP**, not HDRP. URP scales across every target in
-L15/L51 including Switch 2, is far lighter to learn, and its ceiling
-with good art direction is well above what this project needs. HDRP
-would look better on PC and hurt everywhere else.
+- **A thinner tooling ecosystem.** Godot's Asset Library is around
+  three thousand items against Unity's tens of thousands. Bought
+  *content* is unaffected (§2a: Unity's own store permits cross-engine
+  use), but editor extensions, inventory and dialogue systems, shader
+  editors and inspector tooling are written here or done without.
+  **This project is unusually insulated** — §1 buys content and
+  hand-writes systems — but it is not free.
+- **C# does not reach the web export**, so rules the prototype
+  exercises are written twice. **L88** governs this, including the exit
+  condition, because it must not become permanent by drift. Detail
+  below.
+- **Console ports run through one small vendor.** W4 Consoles is built
+  by the people who built Godot, which is reassuring, but it is a
+  concentration risk Unity does not carry. **Switch 2 is in early beta
+  there** and L53 targets Switch 2 only — a schedule risk to watch,
+  not a blocker at this distance.
+- **Unreal's art leverage is still given up**, exactly as the Unity
+  lock gave it up. Nanite and Lumen remove weeks of manual
+  optimisation per environment. **This remains the right trade for
+  Marrowmark specifically**, because the game's distinctiveness is its
+  systems rather than its fidelity — and it is a trade this project
+  made two engine decisions ago.
 
-**Version:** take the current **Unity 6 LTS** from Unity Hub. Pin it
-and do not chase releases mid-project — engine upgrades are a cost
-with no gameplay upside.
+**Renderer: GL Compatibility.** It runs on everything in L15/L51
+including Switch 2 and the developer's own hardware, and it is what the
+headless build loop rasterises in software. Forward+ is available later
+if the art direction demands it; nothing yet does.
 
-*A funded studio with an art team would likely still choose Unreal.
-This decision is correct for these constraints, not universally.*
+**Version:** take current stable and pin it. Engine upgrades are a cost
+with no gameplay upside — though note W4 Consoles tracks 4.4–4.6, so
+the pin should stay inside what it supports.
 
-### ⚠️ L54 under review — the Godot challenge (2026-09-13)
+*A funded studio with an art team would still choose Unreal, and a
+studio with staff to spare would reasonably still choose Unity. This
+decision is correct for these constraints — one person, no PC, an AI
+collaborator doing a large share of the work — not universally.*
 
-**New evidence has undermined one of the two reasons Unity was
-chosen.** Recorded here rather than acted on, because a locked engine
-should not change by drift.
+### The record: how this got here
+
+Kept because the reasoning matters more than the conclusion, and
+because a lock that flips should show its working.
+
+**2026-09-08 — Unreal 5 → Unity (original L54).** Two facts changed the
+recommendation: the developer is new to gamedev, and an AI collaborator
+is a major part of the labour. Unreal's Blueprints are binary and
+opaque to a collaborator; Unity is all text, puts client, server and
+tools in one language, and has the gentlest learning curve of the
+serious engines.
+
+**2026-09-13 — the Godot challenge.** A full build-and-play loop was
+demonstrated inside the assistant's environment with nothing on the
+developer's machine. That undermined "everything is text" as a Unity
+advantage outright — Godot wins it — and revealed that the assumption
+underneath *both* original arguments, that the developer would do all
+engine work, was false.
+
+**2026-09-14 — the research, and the flip.** §2a. The marketplace
+argument mostly dissolved and the console argument inverted. Neither
+remaining question favoured Unity once looked at.
+
+**What did not change at any point:** no engine's built-in networking
+is MMO-scale, Godot's included. The zone-server layer in §3 is code to
+be written, not a package to install. That was true of Unreal, true of
+Unity, and is true now.
+
+### The 2026-09-13 evidence, in full
+
+**Recorded when it was still a challenge to a locked decision**, and
+kept as written.
 
 **What was demonstrated.** A Godot 4.3 project was built, exported and
 **play-tested end to end inside the assistant's own environment**, with
@@ -130,7 +182,7 @@ the console path — land at **Stage 3 and beyond**, a year or more out.
 Godot's advantage lands **today**, and compounds every week: it is the
 difference between the engine work happening and not happening.
 
-**Not yet decided.** What would settle it:
+**What would settle it** — both since answered, in §2a:
 
 - ~~Whether Godot's asset ecosystem can actually carry §1's strategy,
   or whether Unity Asset Store purchases can be converted at
@@ -158,8 +210,9 @@ difference between the engine work happening and not happening.
 ## 2a. L54 — the research, and a recommendation (2026-09-14)
 
 Both remaining questions are answered. **Neither landed where §2
-assumed**, and the recommendation below is to flip L54 to Godot. It is
-a lock, so it does not flip without a decision.
+assumed.** The recommendation was to flip L54 to Godot; **that decision
+was taken on 2026-09-14** and §2 now states it. This section is the
+evidence it rested on.
 
 ### Question 1: can Godot's ecosystem carry §1's buy-the-content strategy?
 
@@ -259,8 +312,9 @@ Unity does not carry. That is a real difference — it is just not a
 
 ### Where this leaves L54
 
-The original case for Unity was two arguments. Here is what is left of
-them, with the two later findings:
+The original case for Unity was two arguments. Here is what was left
+of them, with the two later findings — the state of play at the moment
+the decision was taken:
 
 | Argument | Status |
 |---|---|
@@ -270,13 +324,11 @@ them, with the two later findings:
 | Assistant can build end to end | **Godot, decisively.** Stage 1 steps 1–3 exist because of it |
 | C# does not reach the web | **Against Godot.** Rules written twice while the web build is the play surface — see below |
 
-**Recommendation: flip L54 to Godot**, and accept the mirroring cost
-with a stated exit — either the web loop is dropped once there is
-better hardware, or the simulation moves to GDScript and C# stops being
-the authority. **That is the one thing that should not be allowed to
-happen by drift.**
-
-**This has not been done.** L54 is a lock and locks change on purpose.
+**Decided 2026-09-14: L54 is Godot.** The mirroring cost is accepted
+with a named exit, which is **L88** — when the developer can routinely
+run native builds, the prototype moves to Godot's .NET build and
+`prototype/rules/` is deleted the same day. Naming the exit is the
+point: this is the kind of cost that becomes permanent by drift.
 
 ### A fourth consideration: C# does not reach the web (2026-09-13)
 
@@ -315,9 +367,9 @@ either the web loop is dropped once there is better hardware, or the
 simulation is written in GDScript and C# stops being the authority.
 **Either is a decision, and neither should happen by drift.**
 
-**Interim position:** the prototype in `prototype/` is Godot, because
-that is what can be built now. L54 stands until the questions above are
-answered, and the prototype is explicitly not a commitment.
+**Interim position at the time:** the prototype is Godot because that
+is what can be built now, and is explicitly not a commitment.
+*Superseded 2026-09-14 — it is the commitment now.*
 
 ## 3. Server architecture
 
@@ -420,9 +472,8 @@ project. It stages cleanly, and each stage is independently playable:
 
 ### Stage 1 — learning the engine by building the real thing
 
-*Steps 1 to 3 are done and playable in a browser (2026-09-13), built in
-Godot because that is what could be built without a PC. See the L54
-review in §2 — the prototype is not a commitment.*
+*Steps 1 to 3 are done and playable in a browser. Built in Godot,
+which as of 2026-09-14 is the engine (L54) rather than an experiment.*
 
 1. ✅ **Move and look.** A character controller, a camera, a flat test
    room. Nothing from the design yet — this is the tutorial.
@@ -492,14 +543,12 @@ One developer, new to gamedev, working with an AI collaborator. The
 division of labour is not negotiable — it follows from what each side
 can physically do.
 
-> ⚠️ **Rewritten 2026-09-13.** This section previously said the
-> collaborator could not see a viewport, press Play, or look at the
-> game. **That is no longer true**, and the difference is the whole
-> reason L54 is under review. What follows describes both paths,
-> because which one applies depends on an engine choice that is not
-> settled.
+> ⚠️ **Rewritten 2026-09-13, updated 2026-09-14.** This section
+> previously said the collaborator could not see a viewport, press
+> Play, or look at the game. **That is no longer true**, and the
+> difference is a large part of why L54 is now Godot.
 
-### On the Godot path — what has actually been happening
+### What actually happens
 
 The collaborator authors the project as text, builds it headless
 against a software rasteriser with no GPU, exports it to the web, loads
@@ -520,19 +569,18 @@ hand* is unmeasurable there — and at that frame rate, input timing
 itself misreports, which has to be designed around rather than assumed
 away. Screenshots are stills. Nothing here judges feel.
 
-### On the Unity path — what the division would be
+**What is still yours by necessity.** Nothing about the loop above
+removes the need for a human to open the editor when something is
+genuinely visual — laying out a level by eye, judging a material, or
+any moment where "does this look right" is the question. The loop
+reduces that surface; it does not erase it.
 
-**The collaborator can:** write and read every C# script, scene and
-prefab file (all text in Unity), the server backend, editor tooling
-that automates repetitive setup, and tests. It can explain any of it,
-which is the part that matters most while learning.
-
-**The collaborator cannot:** open the editor, drag anything, press
-Play, or look at the result. Anything that must happen in the Unity GUI
-— importing assets, wiring a scene, configuring an animator, tuning a
-material — is yours, though editor scripts can shrink that surface a
-lot. **This is the asymmetry that put L54 under review:** the same work
-on the Godot side happens end to end without you.
+> **For the record, because it is why L54 moved:** on Unity this
+> division would be far worse. The collaborator could write every C#
+> script, scene and prefab file and explain all of it, but could not
+> open the editor, press Play, or look at the result — so nothing would
+> be known to work until the developer pulled it. That asymmetry, more
+> than any feature comparison, is what settled the engine.
 
 **And one thing is permanently yours: judging feel.** `combat.md` §9's
 gate is *"does this feel BotW-good at 100ms."* No one who cannot hold
@@ -540,7 +588,7 @@ the controller can answer that. The collaborator builds it; you decide
 whether it is right. Treat its combat numbers as first guesses to be
 overwritten, never as tuning.
 
-**The loop, on the Godot path:**
+**The loop:**
 1. You describe what should happen, or point at what feels wrong.
 2. The collaborator writes it, builds it, verifies it by rendering and
    by driving the real build, and publishes it.
@@ -548,33 +596,29 @@ overwritten, never as tuning.
    recovery is too long", which is the half of this it cannot do.
 4. Repeat.
 
-**The loop, on the Unity path:** as above, but step 2 stops at
-"writes it", and you pull and press Play before anything is known to
-work at all.
-
-> **Hardware note (2026-09-08).** An earlier draft said the
-> development Mac could not run Unity. That was an overstatement. A
-> 2017 MacBook Air on Unity 6.6 handles Stage 1 — grey rooms, a
-> capsule, a few dummies — perfectly adequately. Iteration is slow
-> (recompile and domain reload on a dual-core) and 8GB is the pinch
-> point, but it is not a blocker. It becomes one around Stage 3, when
-> towns stream and bought assets accumulate. Intel Mac support is
-> deprecated at 6.6 and **removed at 6.8**, so pin the version.
+> **Hardware note (revised 2026-09-14).** The hardware question has
+> stopped being interesting, which is itself part of why L54 moved.
+> **Godot 4 runs comfortably on the 2017 MacBook Air** — a ~100MB
+> download, no compile cycle, no domain reload — and more to the point,
+> Stage 1 steps 1–3 were built without that machine being switched on.
 >
-> **For the Stage 1 prototype specifically, use the Built-In Render
-> Pipeline rather than URP** (L54). URP compiles a large shader library
-> up front, which is the single slowest thing this hardware will do,
-> and nothing in Stage 1 needs it. Switching later costs nothing when
-> there is no art to convert.
+> A better machine is still wanted eventually, and a **Windows PC** is
+> the right buy when it happens: PC is the first ship target (L53) and
+> console SDKs are Windows-only later. It blocks nothing now.
+>
+> *Superseded: this note previously argued about Unity 6.6 on Intel
+> Macs, and about Built-In versus URP. Neither applies.*
 
-**Getting started on Unity, concretely** — if L54 is confirmed:
-- Install **Unity Hub**, then the current **Unity 6 LTS**.
-- Create a **3D (Built-In Render Pipeline)** project — see the hardware
-  note above, which is the reason, and which overrides L54's original
-  URP line for Stage 1. Pin the version; do not upgrade mid-project.
-- Put it in this repository under `game/`, and set up **Git LFS**
-  before committing any binary assets — retrofitting LFS after the
-  fact means rewriting history.
+**Getting started, concretely:**
+- **The project already exists.** `prototype/` is it. Download **Godot
+  4** (about 100MB, runs fine on the 2017 Air), open that folder as a
+  project, press Play. Nothing needs creating.
+- Pin the version, and keep the pin inside what **W4 Consoles**
+  supports (currently 4.4–4.6) so the console path stays open.
+- Set up **Git LFS** before committing any large binary assets —
+  retrofitting LFS after the fact means rewriting history. Note
+  `.gitattributes` already unsets LFS under `docs/`, because GitHub
+  Pages serves LFS pointers rather than files.
 - The design docs stay in `design/`. They are the specification the
   code is written against, and they stay authoritative: when code and
   a lock disagree, the lock wins or the lock changes on purpose.

@@ -29,10 +29,25 @@ headless) and validated through FBX re-import (`tools/validate.py`).
 
 ## Animations (`animations/`)
 
-Downloaded 2026-09-12 from Mixamo (free account, Adobe sign-in),
-FBX-for-Unity, animation-only (no skin), 30 fps. Mixamo assets are free
-to use in commercial and non-commercial projects per Adobe's Mixamo
-terms; credited here, not redistributed as a standalone asset pack.
+**Re-downloaded 2026-09-13** from Mixamo with the X Bot character
+selected, per `SPEC-character-v3.md`: plain **FBX**, **Without Skin**,
+**30 fps**, **In Place** on the walk and run, everything else default.
+Mixamo assets are free to use in commercial and non-commercial projects
+per Adobe's Mixamo terms; credited here, not redistributed as a
+standalone asset pack.
+
+> **Download settings, for next time.** Plain **FBX**, not Mixamo's
+> "FBX for Unity" option — the engine is Godot (L54) and that option
+> applies Unity-specific conventions. **Select the character first**;
+> that is what makes the clip skeleton identical to the character's
+> rather than merely similarly named, and it is the whole reason these
+> play with no retargeting.
+
+> ⚠️ **Pull down what this project needs while Mixamo is up.** It is
+> still running as of mid-2026, but with repeated multi-day outages
+> through 2025, its companion product Fuse already discontinued, and no
+> published roadmap. The animation plan (`tech.md` §1: ~300–400 clips)
+> rests on it. See `tech.md` §2a.
 
 | File | Mixamo name | Notes |
 |---|---|---|
