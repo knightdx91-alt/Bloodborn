@@ -11,6 +11,8 @@ extends RefCounted
 ## Where the target is, the caller works out and asks `reaches()`.
 
 enum Phase { READY, WINDUP, ACTIVE, RECOVERY }
+## combat.md §6's three shapes. The player's swing uses "attack".
+enum Shape { QUICK, HEAVY, COMMITTED }
 
 var _p: Dictionary
 var _phase: int = Phase.READY
@@ -18,8 +20,28 @@ var _elapsed := 0.0
 var _recovery_length := 0.0
 var _hit_spent := false
 
-func _init() -> void:
-	_p = Tuning.load_section("attack")
+func _init(section: String = "attack") -> void:
+	_p = Tuning.load_section(section)
+
+## Which of §6's shapes this is.
+func shape() -> int:
+	match String(_p.get("shape", "Heavy")).to_lower():
+		"quick": return Shape.QUICK
+		"committed": return Shape.COMMITTED
+		_: return Shape.HEAVY
+
+## combat.md §6: the committed attack cannot be parried. A rule, not a
+## tuning value — it is what makes disengage a distinct answer.
+func can_be_parried() -> bool:
+	return shape() != Shape.COMMITTED
+
+## Scales the attacker's weapon damage. Raw damage still comes from the
+## weapon (combat.md §3); this is what commitment buys.
+func damage_multiplier() -> float:
+	return _p.get("damageMultiplier", 1.0)
+
+func windup_seconds() -> float:
+	return _p.get("windupSeconds", 0.0)
 
 func phase() -> int:
 	return _phase

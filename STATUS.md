@@ -12,13 +12,14 @@ of each working session.
 Design is **88 locked decisions** and **complete** — every structural
 question locked, every missing document written. Every system a player
 touches in their first hundred hours is specified, and most of it is
-**written, tested and running** as engine-free C# — 218 tests.
+**written, tested and running** as engine-free C# — 239 tests.
 
-**Stage 1 is half built and playable in any browser**: a character who
-walks and runs, a dodge with invulnerability frames, and a sword
-against a training dummy that reacts. That is `tech.md` §6 steps 1 to 3
-of six. **Step 4 is the stamina tuning pass; step 5 is the first enemy
-that swings back.**
+**Stage 1 is two-thirds built and playable in any browser**: a
+character who walks and runs, a dodge with invulnerability frames, a
+sword against a training dummy — and **an enemy that fights back** with
+three readable attack shapes. That is `tech.md` §6 steps 1, 2, 3 and 5
+of six. **Step 6 is the parry**, the heart of the combat; **step 4 is
+the stamina tuning**, which needs you rather than me.
 
 **The engine is Godot** (L54, revised 2026-09-14 from Unity). Decided
 on the evidence in `tech.md` §2a, not on preference — see the L54
@@ -65,10 +66,67 @@ Everything below can be done from the Claude Code app with no laptop.
 | | |
 |---|---|
 | **Design** | `design/` — 88 locks in `pillars.md`, which is the map to everything |
-| **Code** | `sim/` — the rules of the game as engine-free C#, 218 tests |
+| **Code** | `sim/` — the rules of the game as engine-free C#, 239 tests |
 | **Tuning** | `shared/tuning/combat.json` — every combat number, once, read by both `sim/` and the prototype |
 | **The plan** | `design/tech.md` §6 (build order), §8 (how the work divides) |
 | **Blocking** | `design/naming.md` §5 — trademark clearance, before anything public |
+
+## Done 2026-09-14 — an enemy that fights back (step 5)
+
+**`tech.md` §6 Stage 1 step 5 is done and playable.** There is someone
+in the yard who closes, telegraphs and swings, and who can kill you.
+
+It throws `combat.md` §6's three shapes:
+
+| Shape | Wind-up | Reach | Damage | Answer |
+|---|---|---|---|---|
+| Quick | 0.22s | 1.9m | ×0.6 | Dodge |
+| Heavy | 0.62s | 2.3m | ×1.5 | Parry (step 6) |
+| Committed | 1.00s | 2.8m | ×2.2 | Leave. **Unparryable by rule** |
+
+**This is the step that makes the dodge mean something.** Measured:
+standing still for 30 seconds costs **342 damage and two deaths**;
+dodging each wind-up costs **none of it**.
+
+- **The enemy is not clever, on purpose.** §6 claims a player reads all
+  three shapes in the first hour — an opponent that picked optimally
+  would jab forever and teach nothing. So it cycles with a bias, leans
+  on quick attacks up close and long ones at range, and is capped at
+  three quick attacks in a row.
+- **Seeded and deterministic**, because §7 makes damage
+  server-authoritative and the server has to agree about what the enemy
+  did.
+- **Being hit interrupts your swing.** Most of what makes reading a
+  telegraph worth anything.
+- **21 new tests**, `sim/` now at 239.
+
+`world.gd` was 762 lines and would have been past a thousand, so the
+body, rig, clips and combat state came out into **`fighter.gd`**. The
+player and the enemy are the same type — `combat.md` §8 promises one
+ruleset rather than two, and the cheapest way to keep that promise is
+for nothing in the body to know which it is.
+
+### A bug worth recording
+
+The enemy has a rule that it will not reach for an expensive swing while
+broke, and a rule that it must stop after three quick attacks in a row.
+**The first silently defeated the second**: every forced heavy got
+downgraded straight back to a quick, chains ran to five and beyond, and
+**a player fighting a tired enemy would never have been taught to
+parry at all.** A test caught it, not a playthrough.
+
+The fix was to let the chain cap win. An enemy overextending into a
+heavy it cannot afford is *good* — that is the punish window a player
+is supposed to learn to wait for.
+
+### ⚠️ Where step 5 does not yet meet §6
+
+The heavy and the committed **share one clip** at different speeds, so
+they are told apart by timing rather than by shape. §6 calls animation
+readability a *hard requirement, not a stretch goal* — and confusing a
+parryable attack with an unparryable one is the worst confusion this
+design has. `prototype/assets/SPEC-attack-clips.md` asks Muse for the
+three distinct clips that close it.
 
 ## Done 2026-09-13 — attack and hit (step 3)
 
@@ -283,8 +341,11 @@ closed it, and both were already in the design:
 go. **Tap to swing. Tap with a second finger to dodge.** On a keyboard:
 WASD or arrows, Shift to sprint, Space to dodge, J to swing.
 
-Walk over to the training dummy and hit it. Four clean blows put it
-down, and panic-rolling four times in a row empties you.
+**There is someone in the yard now, and he will kill you.** Watch his
+wind-up: a short one is a jab, a long one is a chop, a very long one is
+a whole-body swing you cannot parry and should simply not be standing
+in front of. Dodge as the wind-up ends and it passes straight through
+you. The training dummy is still there for practice.
 
 The loop, with no PC involved at any point:
 
@@ -372,19 +433,24 @@ build and `prototype/rules/` is deleted the same day. Named on purpose
 has been written, and every structural question is locked. What remains
 falls into three piles, and none of it is design:
 
-1. **Stage 1 — steps 1 to 3 are done.** `tech.md` §6, six steps from a
-   character controller to a working parry. Move, look, **dodge** and
-   **attack** are finished and playable in a browser. **Step 4 is the
-   stamina economy** — attacks, dodges and sprint all draw on it
-   already, so this is the tuning pass: make panic-rolling actually
-   punish, and find out whether a fight has a shape. It is the first
-   step that is mostly judgement rather than construction, and the
-   first that would really rather have a controller.
-   - **Step 5 is one enemy with three attack shapes**, and it is the
-     one that makes the dodge mean something: nothing has ever swung
-     back. The hit-reaction clip is already in the repo.
-   - Waiting on Muse: `prototype/assets/SPEC-dodge-clips.md`, four
-     directional dodge clips. Not blocking anything.
+1. **Stage 1 — steps 1, 2, 3 and 5 are done.** `tech.md` §6, six steps
+   from a character controller to a working parry. Move, look, dodge,
+   attack, and **an enemy that fights back** are all playable in a
+   browser.
+   - **Step 6 is the parry** — the hardest single-player piece and the
+     heart of the combat. The heavy attack exists to be parried and
+     currently cannot be, so this is the missing half of what step 5
+     set up.
+   - **Step 4 is the stamina tuning**, and it is the one that wants
+     you rather than me. The economy is wired; what is missing is
+     pressure. Measured in step 5: a player who dodges perfectly takes
+     zero damage, because spacing dodges avoids the escalation
+     entirely. Correct by design, but it means one slow enemy applies
+     no stamina pressure at all.
+   - Waiting on Muse, neither blocking: `SPEC-attack-clips.md` (three
+     distinct enemy attacks — **the more important one**, §6 calls it a
+     hard requirement) and `SPEC-dodge-clips.md` (four directional
+     dodges).
 2. **Trademark clearance on "Marrowmark"** (`naming.md` §5) — blocks
    anything public. Classes 9 and 41, plus a common-law sweep, plus an
    attorney.

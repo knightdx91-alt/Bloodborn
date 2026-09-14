@@ -472,7 +472,7 @@ project. It stages cleanly, and each stage is independently playable:
 
 ### Stage 1 — learning the engine by building the real thing
 
-*Steps 1 to 3 are done and playable in a browser. Built in Godot,
+*Steps 1 to 3 and 5 are done and playable in a browser. Built in Godot,
 which as of 2026-09-14 is the engine (L54) rather than an experiment.*
 
 1. ✅ **Move and look.** A character controller, a camera, a flat test
@@ -481,13 +481,27 @@ which as of 2026-09-14 is the engine (L54) rather than an experiment.*
    window. This is the first real piece of `combat.md` §1.
 3. ✅ **Attack and hit.** One weapon, committed animation, a hitbox, a
    training dummy that reacts.
-4. **Stamina.** The §2 economy: attacks, dodges, sprint. Tune it until
-   panic-rolling actually punishes. *All three already draw on the bar,
-   so this is a tuning pass rather than construction — and the first
-   step that would rather have a controller than a screenshot.*
-5. **One enemy, three attack shapes.** §6's vocabulary — quick, heavy,
-   committed — readable by animation and sound alone. *The step that
-   makes the dodge mean anything: so far nothing has ever swung back.*
+4. **Stamina — wired, not tuned.** The §2 economy: attacks, dodges,
+   sprint. All three draw on the bar, and the enemy pays for its swings
+   out of the same one. **What is left is the tuning**, and it is the
+   first step that needs a controller rather than a screenshot. One
+   observation already on file from step 5: a player who dodges every
+   wind-up perfectly takes *zero* damage, because spacing dodges out
+   avoids the chain escalation entirely. That is correct by design —
+   spacing is the counterplay — but it means a single slow enemy
+   applies no stamina pressure at all, and pressure is what this step
+   has to find.
+5. ✅ **One enemy, three attack shapes.** §6's vocabulary — quick,
+   heavy, committed — with distinct wind-ups, reach, arc and damage,
+   and the committed attack unparryable by rule. *The dodge is no
+   longer a trick: standing still for 30 seconds costs 342 damage and
+   two deaths; dodging the wind-ups costs none of it.*
+   **Caveat on §6's actual requirement:** the heavy and the committed
+   currently share one clip at different speeds, so they are told apart
+   by timing rather than by shape. §6 calls animation readability a
+   hard requirement, so this is a real gap —
+   `assets/SPEC-attack-clips.md` asks for the three distinct clips that
+   close it.
 6. **Parry.** The hardest single-player piece, and the heart of the
    game's combat.
 

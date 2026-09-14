@@ -61,7 +61,39 @@ namespace Marrowmark.Sim.Tests
                     $"on {typeof(T).Name}. Add it, or the prototype will silently use a " +
                     "different number from the server.");
 
-                var expected = (float)field.GetValue(profile)!;
+                var actual = field.GetValue(profile)!;
+
+                // Enums are compared by name, so the file stays readable —
+                // "committed" says what it is; 2 does not.
+                if (field.FieldType.IsEnum)
+                {
+                    Assert.True(
+                        string.Equals(value.GetString(), actual.ToString(),
+                            StringComparison.OrdinalIgnoreCase),
+                        $"shared/tuning/combat.json has {section}.{key} = " +
+                        $"\"{value.GetString()}\", but {typeof(T).Name} has \"{actual}\".");
+                    continue;
+                }
+
+                if (field.FieldType == typeof(int))
+                {
+                    Assert.True(
+                        value.GetInt32() == (int)actual,
+                        $"shared/tuning/combat.json has {section}.{key} = " +
+                        $"{value.GetInt32()}, but {typeof(T).Name} has {actual}.");
+                    continue;
+                }
+
+                if (field.FieldType == typeof(bool))
+                {
+                    Assert.True(
+                        value.GetBoolean() == (bool)actual,
+                        $"shared/tuning/combat.json has {section}.{key} = " +
+                        $"{value.GetBoolean()}, but {typeof(T).Name} has {actual}.");
+                    continue;
+                }
+
+                var expected = (float)actual;
                 Assert.True(
                     Math.Abs(value.GetSingle() - expected) < 0.0001f,
                     $"shared/tuning/combat.json has {section}.{key} = {value.GetSingle()}, " +
@@ -80,6 +112,22 @@ namespace Marrowmark.Sim.Tests
         [Fact]
         public void Attack_tuning_matches_the_shared_file() =>
             AssertMatches(AttackProfile.Default, "attack");
+
+        [Fact]
+        public void Every_enemy_attack_shape_matches_the_shared_file()
+        {
+            // combat.md §6's three shapes. The prototype animates each one
+            // differently and has to agree with the server about how long
+            // each windup lasts, or the telegraph a player learns to read
+            // is not the one that decides whether they were hit.
+            AssertMatches(AttackProfile.Quick, "enemyQuick");
+            AssertMatches(AttackProfile.Heavy, "enemyHeavy");
+            AssertMatches(AttackProfile.Committed, "enemyCommitted");
+        }
+
+        [Fact]
+        public void Enemy_tactics_match_the_shared_file() =>
+            AssertMatches(EnemyTacticsProfile.Default, "enemyTactics");
 
         [Fact]
         public void The_prototypes_copy_is_identical_to_the_canonical_file()
@@ -106,6 +154,10 @@ namespace Marrowmark.Sim.Tests
                 ("stamina", typeof(StaminaProfile)),
                 ("dodge", typeof(DodgeProfile)),
                 ("attack", typeof(AttackProfile)),
+                ("enemyQuick", typeof(AttackProfile)),
+                ("enemyHeavy", typeof(AttackProfile)),
+                ("enemyCommitted", typeof(AttackProfile)),
+                ("enemyTactics", typeof(EnemyTacticsProfile)),
             };
 
             foreach (var (section, type) in pairs)

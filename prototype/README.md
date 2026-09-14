@@ -1,9 +1,10 @@
 # Prototype — Godot
 
-`tech.md` §6 Stage 1, **steps 1 to 3**. A character you can walk and run
-around a grey room, a roll with invulnerability frames that costs
-stamina and punishes panic, and a sword you can beat a training dummy
-down with.
+`tech.md` §6 Stage 1, **steps 1 to 3 and 5**. A character you can walk
+and run around a grey room, a roll with invulnerability frames that
+costs stamina and punishes panic, a sword you can beat a training dummy
+down with — and **an enemy that fights back** with combat.md §6's three
+attack shapes.
 
 Built entirely headless — no editor was opened to make this. It exists
 to answer a question that had been assumed settled: **whether the
@@ -23,6 +24,37 @@ engine work can happen without a capable PC.** It can.
 - **A stamina bar that is not always there.** It fades in when the bar
   moves and fades out once you are full and rested (`interface.md` §2:
   there is no persistent HUD).
+- **An enemy** that closes, telegraphs and swings. It dies, you die,
+  both get back up.
+
+### The enemy (step 5)
+
+It throws `combat.md` §6's three shapes, and they are meant to be told
+apart on sight:
+
+| Shape | Wind-up | Reach | Damage | Answer |
+|---|---|---|---|---|
+| Quick | 0.22s | 1.9m | ×0.6 | Dodge |
+| Heavy | 0.62s | 2.3m | ×1.5 | Parry (step 6) |
+| Committed | 1.00s | 2.8m | ×2.2 | Leave. **Unparryable** |
+
+**This is the step that makes the dodge mean something.** Standing
+still for 30 seconds costs 342 damage and two deaths; dodging each
+wind-up costs none of it.
+
+The enemy is not clever, deliberately. §6 claims a player reads all
+three shapes in the first hour — an opponent that picked optimally
+would jab forever and teach nothing, so it cycles with a bias instead
+and is capped at three quick attacks in a row. It is seeded and
+deterministic, because `combat.md` §7 makes damage server-authoritative
+and the server has to be able to agree about what the enemy did.
+
+> ⚠️ **The heavy and the committed currently share one clip** at
+> different speeds, so they are told apart by timing rather than by
+> shape. §6 calls animation readability a *hard requirement*, and
+> confusing a parryable attack with an unparryable one is the worst
+> confusion available here. `assets/SPEC-attack-clips.md` asks for the
+> three distinct clips that close it.
 - **A sword, and a training dummy that reacts.** The swing is
   committed, the blade is live for a tenth of a second, and the dummy
   rocks back, flashes, and eventually topples.
@@ -116,6 +148,15 @@ There is one roll clip, so the character turns to face the direction it
 dodges. That is wrong for L56's circling and
 `assets/SPEC-dodge-clips.md` asks for the four directional clips that
 fix it.
+
+### Where the code lives
+
+- `world.gd` — the fight: who is where, who hit whom, input, camera.
+- `fighter.gd` — one combatant, player or enemy. They are the same type
+  on purpose: `combat.md` §8 promises one ruleset rather than two, and
+  the cheapest way to keep that promise is for there to be nothing in
+  the body that knows which it is.
+- `rules/` — the GDScript mirror of `sim/`. See L88.
 
 ### The debug readout
 

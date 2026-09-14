@@ -16,9 +16,12 @@
     "",
     "Every value here is a placeholder with the right relationships between",
     "them. combat.md section 9: feel is judged with a controller, never",
-    "derived on paper."
+    "",
+    "The three enemy* sections are combat.md section 6's attack shapes:",
+    "quick, heavy and committed. A player is meant to tell them apart by",
+    "their wind-ups alone, so those numbers ARE the telegraph \u2014 changing",
+    "one changes what the game teaches, not just how hard it is."
   ],
-
   "stamina": {
     "max": 100.0,
     "regenPerSecond": 25.0,
@@ -36,7 +39,6 @@
     "jumpCost": 6.0,
     "maxEncumbrancePenalty": 0.4
   },
-
   "attack": {
     "windupSeconds": 0.3,
     "activeSeconds": 0.12,
@@ -44,9 +46,10 @@
     "staminaCost": 14.0,
     "reach": 2.1,
     "arcDegrees": 110.0,
-    "exhaustedRecoveryMultiplier": 1.5
+    "exhaustedRecoveryMultiplier": 1.5,
+    "shape": "Heavy",
+    "damageMultiplier": 1.0
   },
-
   "dodge": {
     "startupSeconds": 0.05,
     "invulnerableSeconds": 0.3,
@@ -54,5 +57,49 @@
     "distance": 2.6,
     "exhaustedDistanceFraction": 0.45,
     "exhaustedRecoveryMultiplier": 1.6
+  },
+  "enemyQuick": {
+    "windupSeconds": 0.22,
+    "activeSeconds": 0.1,
+    "recoverySeconds": 0.3,
+    "staminaCost": 9.0,
+    "reach": 1.9,
+    "arcDegrees": 90.0,
+    "exhaustedRecoveryMultiplier": 1.5,
+    "shape": "Quick",
+    "damageMultiplier": 0.6
+  },
+  "enemyHeavy": {
+    "windupSeconds": 0.62,
+    "activeSeconds": 0.14,
+    "recoverySeconds": 0.7,
+    "staminaCost": 22.0,
+    "reach": 2.3,
+    "arcDegrees": 130.0,
+    "exhaustedRecoveryMultiplier": 1.5,
+    "shape": "Heavy",
+    "damageMultiplier": 1.5
+  },
+  "enemyCommitted": {
+    "windupSeconds": 1.0,
+    "activeSeconds": 0.18,
+    "recoverySeconds": 1.1,
+    "staminaCost": 30.0,
+    "reach": 2.8,
+    "arcDegrees": 200.0,
+    "exhaustedRecoveryMultiplier": 1.5,
+    "shape": "Committed",
+    "damageMultiplier": 2.2
+  },
+  "enemyTactics": {
+    "engageRange": 2.2,
+    "pressureRange": 1.6,
+    "recoverBetweenAttacksSeconds": 1.1,
+    "maxQuickChain": 3,
+    "quickWeightClose": 0.55,
+    "heavyWeightClose": 0.3,
+    "quickWeightFar": 0.35,
+    "heavyWeightFar": 0.4,
+    "committedWeightAfterChain": 0.35
   }
 }

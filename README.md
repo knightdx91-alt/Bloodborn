@@ -20,19 +20,21 @@ opens, `brainstorm.md` §10).
 > ▶ **Play the prototype:** <https://knightdx91-alt.github.io/Bloodborn/>
 > Works in any browser, nothing to install. Drag to steer, tap to
 > swing, tap with a second finger to dodge — or WASD, Space and J on a
-> keyboard. `tech.md` §6 Stage 1, **steps 1 to 3**: an animated
-> character, a dodge with invulnerability frames, and a sword against a
-> training dummy. Built headless, no editor involved at any point.
+> keyboard. `tech.md` §6 Stage 1, **steps 1, 2, 3 and 5**: an animated
+> character, a dodge with invulnerability frames, a sword against a
+> training dummy, and **an enemy that fights back**. Built headless, no
+> editor involved at any point.
 
 **The design side is complete** — every structural question is locked
 and every document that was missing has been written. What remains is
 not design.
 
-**Stage 1 is half built.** [`design/tech.md`](design/tech.md) §6 walks
-from a character controller to a working parry in six steps. **Steps 1
-to 3 are done and playable** — move and look, dodge, attack and hit.
-Step 4 is the stamina tuning pass and step 5 is the first enemy that
-swings back. That is the road to the L39 gate
+**Stage 1 is two-thirds built.** [`design/tech.md`](design/tech.md) §6
+walks from a character controller to a working parry in six steps.
+**Steps 1, 2, 3 and 5 are done and playable** — move and look, dodge,
+attack and hit, and an enemy that fights back with three readable
+attack shapes. Step 6 is the parry; step 4 is the stamina tuning pass.
+That is the road to the L39 gate
 ([`design/combat.md`](design/combat.md) §9) — the one result that can
 kill or confirm the whole project.
 
@@ -60,8 +62,8 @@ things stand, what's next, and what can be done without a laptop.
 | [`design/vision.md`](design/vision.md) | **Start here.** The one-page pitch and the five promises. |
 | [`design/pillars.md`](design/pillars.md) | The decision log — all 88 locks (L1–L88), pillar status, and the next-phase plan. The map to everything else. |
 | [`design/feasibility-review.md`](design/feasibility-review.md) | Build-and-play sanity check: developer risk register, six player-archetype simulations, systemic stress tests, verdict and staged production path. |
-| [`prototype/`](prototype/) | **The game, such as it is** — the Godot project, Stage 1 steps 1–3, built headless with no editor. Started as the experiment that settled L54. |
-| [`sim/`](sim/) | The rules of the game as engine-free C#, with 218 tests. Runs anywhere; the zone servers will run this same code. |
+| [`prototype/`](prototype/) | **The game, such as it is** — the Godot project, Stage 1 steps 1–3 and 5, built headless with no editor. Started as the experiment that settled L54. |
+| [`sim/`](sim/) | The rules of the game as engine-free C#, with 239 tests. Runs anywhere; the zone servers will run this same code. |
 | [`shared/tuning/`](shared/tuning/) | Every combat number, once. Both `sim/` and the prototype read it, and a test fails the build if they drift — Godot's web export cannot run C#, so the rules are mirrored in GDScript and the tuning deliberately is not. |
 | [`design/art-audio.md`](design/art-audio.md) | Art as the interface: what must read at a glance, why the look lives in the treatment rather than the assets, and what audio carries that the eye cannot. |
 | [`design/interface.md`](design/interface.md) | Minimalist by rule: nothing permanently on screen, legibility as a skill, maps as player-made goods, and the companion app as the pressure valve. |
