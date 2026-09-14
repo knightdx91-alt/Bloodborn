@@ -23,7 +23,9 @@ construction step of `tech.md` §6.
 **What is left of Stage 1 is step 4, the stamina tuning — and it needs
 you rather than me.** See the finding below: right now the dodge
 answers everything for free, which means nothing else has a reason to
-exist.
+exist. **The instrument for it now exists**: the APK plus a wired Xbox
+pad, so the numbers get judged on the scheme that ships rather than on
+touch, which ships nowhere.
 
 **The engine is Godot** (L54, revised 2026-09-14 from Unity). Decided
 on the evidence in `tech.md` §2a, not on preference — see the L54
@@ -633,6 +635,13 @@ because Pages serves LFS pointers rather than files.
 `combat.md` §9's gate — does a parry land right at 100ms — still needs
 a human holding a controller.
 
+**There is now a controller.** A wired Xbox pad over OTG, into the
+Android APK — and the pad is wired (left stick moves, right stick aims
+the cut, RB swings, LB guards, A dodges, left trigger sprints). That
+closes the "no controller" half of this limit: §9's gate is now
+answerable, by you, on the actual shipping input scheme rather than a
+thumb. What follows still stands for *my* side of the loop.
+
 **And the limit is sharper than "no controller".** This browser has no
 GPU and renders at **3–4 fps**. At that rate input timing itself
 misreports: a 70ms tap measures as a second-long press. That had to be
@@ -746,6 +755,14 @@ Roughly 25 remain. The ones that unblock the most:
   SDKs are Windows-only later). **It blocks nothing now.**
   *(The old Unity 6.6 / Intel-Mac-deprecation constraint is moot as of
   L54's revision.)*
+- **Input for tuning: a wired Xbox pad, over OTG into the phone.** This
+  matters more than it sounds. The ship targets are PC and three
+  consoles (L15, L51) and none of them is a phone, so **touch was never
+  the scheme whose feel had to be right** — it is how the game is
+  reachable on the machine to hand. With the Android APK pipeline in
+  place, the pad makes the *actual* shipping scheme playable, so feel
+  tuned now transfers instead of being thrown away. Step 4's stamina
+  numbers were waiting on exactly this.
 - **Solo developer, new to gamedev, AAA ambition, multi-year horizon.**
   The strategy that makes that viable is `tech.md` §1: build systems to
   full ambition, buy or generate content volume.

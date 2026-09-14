@@ -115,6 +115,50 @@ Controls:
   a steer.
 - **Keyboard** — WASD or arrows, Shift to sprint, **Space** to dodge,
   **J** or left-click to swing, **K** or right-click to parry.
+- **Pad** — left stick moves, **right stick aims the cut**, **RB**
+  swings, **LB** holds the guard, **A** dodges, **left trigger**
+  sprints. Plug in a wired pad over OTG or pair one over Bluetooth;
+  Godot finds it with no setup. See below for why this is the scheme
+  that matters.
+
+### The pad (step 6)
+
+**This is the scheme whose feel actually has to be right.** L15 and L51
+ship to PC, Xbox, PlayStation and Switch 2, and none of them is a
+phone — so touch is already a test rig, not a target. Tuning windows
+against a thumb and hoping they survive the move to a stick is the
+wrong way round.
+
+It also answers the guard complaint at the root. On touch the guard has
+to be *guessed at*, because one thumb has to mean steer, swing and
+brace; that guessing is what made the parry feel automatic. A pad has a
+button for it, so there is nothing to speculate and nothing to hand
+back: the guard rises when you press LB and not before.
+
+The right stick aims, which is the pad's version of "where you tap is
+where you aim" — forward is the overhead, forward-and-across is a high
+cut, pulled back is a cut at the legs, and at rest it keeps the default
+so you can fight without touching it. That is also the closer reading
+of L64, which names Kingdom Come, where the stick direction *is* the
+cut. Still no reticle (L65).
+
+Buttons rather than triggers for attack and guard: a trigger arrives as
+an axis, so a press edge has to be invented from a threshold, and RB/LB
+is the genre convention anyway. The triggers stay free for §6's heavy
+and committed attacks, which are the things that will want a squeeze.
+
+**Verified by synthesised joypad events** rather than by hand, since
+there is no pad on this machine: all five arcs map from the right
+stick, RB swings in the aimed arc, LB raises the guard on press and
+holds it into a block for 1.2s and drops it on release, A dodges in the
+steered direction, and the stick's push reads analogue. The check that
+matters most is the negative one — **left alone for 2.5 seconds, the
+guard never came up by itself.**
+
+One number to suspect first: the speed ramp is squared, carried over
+from touch where a linear one made walking unreachable by thumb. A
+stick is finer than a drag, so if the walk feels too narrow on the pad,
+that curve is the reason and not the top speed.
 
 ### The guard (step 6)
 

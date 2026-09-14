@@ -73,6 +73,35 @@ var _touch_max_drag := 0.0
 var _touch_dodged := false
 var _touch_guarding := false
 
+# Pad input. The shipping platforms are PC and three consoles (L15,
+# L51) and none of them is a phone, so the pad — not the thumb — is the
+# scheme whose feel actually has to be right. Touch stays because it is
+# the only way to play this on the machine that is to hand.
+#
+# Buttons rather than triggers for attack and guard, which is both the
+# genre convention (RB/LB, R1/L1) and the practical choice: a trigger
+# arrives as an axis, so a press edge has to be invented from a
+# threshold. The triggers are left free for §6's heavy and committed
+# attacks, which are the things that will want a squeeze.
+const PAD := 0
+const PAD_ATTACK := JOY_BUTTON_RIGHT_SHOULDER
+const PAD_GUARD := JOY_BUTTON_LEFT_SHOULDER
+const PAD_DODGE := JOY_BUTTON_A
+## Held, so it is polled rather than edged — which is what a trigger is
+## good at, and why sprint gets one.
+const PAD_SPRINT_AXIS := JOY_AXIS_TRIGGER_LEFT
+const PAD_SPRINT_PULL := 0.5
+
+## Below this the left stick is at rest. Matches the touch threshold.
+const PAD_WALK_DEADZONE := 0.15
+## The right stick has to be *pushed* to re-aim — higher, because a
+## stick resting slightly off centre must not quietly change which arc
+## you are about to swing.
+const PAD_AIM_DEADZONE := 0.35
+var _pad_vec := Vector2.ZERO
+var _pad_aim := Vector2.ZERO
+var _pad_guarding := false
+
 # Prototype scaffolding, not a design decision. interface.md §2 gives an
 # opponent no bars at all; these numbers exist to check the sums.
 const SHOW_DEBUG := true
@@ -306,6 +335,29 @@ func _unhandled_input(event: InputEvent) -> void:
 				_try_attack(_arc_from(_touch_origin))
 			_touch_id = -1
 			_touch_vec = Vector2.ZERO
+	elif event is InputEventJoypadButton and event.pressed:
+		match event.button_index:
+			PAD_ATTACK: _try_attack(_arc_from_stick(_pad_aim))
+			PAD_DODGE: _try_dodge()
+			PAD_GUARD:
+				# No speculative guard here, and nothing to take back. On
+				# touch the guard has to be guessed at, because the same
+				# thumb means steer, swing and brace; a pad has a button
+				# for it, so the parry is exactly as manual as an input
+				# gets — you hold it when you mean it and not before.
+				_pad_guarding = true
+				_try_parry()
+	elif event is InputEventJoypadButton and not event.pressed \
+			and event.button_index == PAD_GUARD:
+		_pad_guarding = false
+		if player != null:
+			player.lower_guard()
+	elif event is InputEventJoypadMotion:
+		match event.axis:
+			JOY_AXIS_LEFT_X: _pad_vec.x = event.axis_value
+			JOY_AXIS_LEFT_Y: _pad_vec.y = event.axis_value
+			JOY_AXIS_RIGHT_X: _pad_aim.x = event.axis_value
+			JOY_AXIS_RIGHT_Y: _pad_aim.y = event.axis_value
 	elif event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_SPACE:
 			_try_dodge()
@@ -350,7 +402,42 @@ func _steer() -> Vector3:
 	# Touch overrides keys when a finger is down.
 	if _touch_id != -1 and _touch_vec.length() > 0.15:
 		dir = Vector3(_touch_vec.x, 0.0, _touch_vec.y)
+	# A pushed stick overrides both. Last writer wins on purpose: whatever
+	# you are actually holding is what you meant.
+	var stick := _pad_push()
+	if stick > PAD_WALK_DEADZONE:
+		dir = Vector3(_pad_vec.x, 0.0, _pad_vec.y)
 	return dir
+
+## How far the left stick is pushed, with the dead zone taken out and
+## the remainder stretched back over the full range — otherwise the
+## first fifth of the throw is dead and a walk sits in a sliver.
+func _pad_push() -> float:
+	var raw: float = _pad_vec.length()
+	if raw <= PAD_WALK_DEADZONE:
+		return 0.0
+	return clampf((raw - PAD_WALK_DEADZONE) / (1.0 - PAD_WALK_DEADZONE), 0.0, 1.0)
+
+## Where the right stick points is where you aim — the pad's answer to
+## "where you tap is where you aim", and the same five arcs (L64). Held
+## at rest it keeps the default, so you can fight without ever touching
+## it and still swing.
+##
+## Screen space and stick space agree on sign: both count y downward, so
+## pushing the stick forward reads as high, which is the cut it makes.
+func _arc_from_stick(aim: Vector2) -> int:
+	if aim.length() < PAD_AIM_DEADZONE:
+		return Attack.Arc.UPPER_RIGHT
+	var left: bool = aim.x < 0.0
+	if aim.y < -0.35:
+		# Straight forward is the overhead; forward and off to a side is
+		# still a high cut. The same split the tap makes.
+		if absf(aim.x) < 0.38:
+			return Attack.Arc.OVERHEAD
+		return Attack.Arc.UPPER_LEFT if left else Attack.Arc.UPPER_RIGHT
+	if aim.y > 0.35:
+		return Attack.Arc.LOWER_LEFT if left else Attack.Arc.LOWER_RIGHT
+	return Attack.Arc.UPPER_LEFT if left else Attack.Arc.UPPER_RIGHT
 
 # ── The fight ────────────────────────────────────────────────────────
 
@@ -392,10 +479,17 @@ func _move_player(delta: float) -> void:
 	# on purpose: a linear ramp put almost the whole stick above walking
 	# pace, so the walk was unreachable by thumb.
 	var speed := SPEED
-	if Input.is_key_pressed(KEY_SHIFT):
+	var stick := _pad_push()
+	if Input.is_key_pressed(KEY_SHIFT) \
+			or Input.get_joy_axis(PAD, PAD_SPRINT_AXIS) > PAD_SPRINT_PULL:
 		speed = SPRINT
-	elif _touch_id != -1:
-		var t: float = clamp(pushed, 0.0, 1.0)
+	elif stick > 0.0 or _touch_id != -1:
+		# How far you push is how fast you go, on stick as on thumb. The
+		# curve is squared because a linear ramp put almost the whole
+		# throw above walking pace and the walk was unreachable. A stick
+		# is finer than a drag, so this is the first number to suspect if
+		# the pad feels different from the phone.
+		var t: float = clamp(stick if stick > 0.0 else pushed, 0.0, 1.0)
 		speed = lerp(SPEED * 0.32, SPRINT, t * t)
 
 	# At zero stamina you are not stunned, you are slow (combat.md §2).
@@ -621,6 +715,22 @@ func _try_parry() -> void:
 	if SHOW_DEBUG:
 		print("guard up (%d)  stamina %.0f" % [_parry_attempts, player.stamina.current()])
 
+## Prototype scaffolding. It exists because "the pad does nothing" has
+## two completely different causes — the cable, or the mapping — and
+## from inside the fight they look identical.
+func _pad_status() -> String:
+	var pads := Input.get_connected_joypads()
+	if pads.is_empty():
+		return "none connected"
+	const ARCS := ["overhead", "upper left", "upper right",
+		"lower left", "lower right", "thrust"]
+	return "%s   aim %s   move %.2f%s" % [
+		Input.get_joy_name(pads[0]),
+		ARCS[_arc_from_stick(_pad_aim)],
+		_pad_push(),
+		"   GUARD" if _pad_guarding else "",
+	]
+
 ## Where you tap is where you aim. L64 gives five cutting arcs chosen by
 ## free aim rather than a menu — Kingdom Come's system — and a screen is
 ## already an aiming surface, so the tap carries it for nothing. High
@@ -814,7 +924,8 @@ func _update_interface(delta: float) -> void:
 		+ "    stamina %d%%%s  health %d%%  armour %d/4\n"
 		+ "enemy: %s %s%s  health %d%%  armour %d/4\n"
 		+ "dummy %d%%   dodges %d   swings %d   parried %d/%d   fps %d\n"
-		+ "last release: %s"
+		+ "last release: %s\n"
+		+ "pad: %s"
 	) % [
 		DODGE_NAMES[player.dodge.phase()],
 		SWING_NAMES[player.attack.phase()],
@@ -835,4 +946,5 @@ func _update_interface(delta: float) -> void:
 		_parry_attempts,
 		roundi(Engine.get_frames_per_second()),
 		_last_release,
+		_pad_status(),
 	]
