@@ -192,34 +192,49 @@ weapon-dependent — "a two-handed maul has an overhead and two side arcs
 and no thrust worth the name" — so it wants a weapon-aware input rather
 than a spare stick direction.
 
-**The pitch stick is not inverted** (`CAM_PITCH_INVERT`), and it took
-two goes. Reported as inverted, I introduced the constant at **-1.0**
-and wrote a comment claiming that was stick-up-looks-up. It is not:
--1.0 *is* the inverted one, so the flip went the wrong way **and** the
-comment documented the opposite of the code, which is why a re-read did
-not catch it. Reported again, and this time measured rather than
-reasoned about — hold the stick up, assert the camera's height goes
-*down*. `+1.0`.
+**Which way up the sticks are is a setting, not a constant.** Toggle
+*Camera up/down* and *Camera left/right* on the menu; it persists to
+`user://settings.cfg` and both scenes read it.
 
-It is a named constant rather than a buried sign because `interface.md`
-§7 makes remappable controls a *requirement*, listed beside subtitles
-and colourblind-safe cues and never traded for minimalism.
+> It was a constant. It was flipped twice from the code side and
+> reported inverted both times — at which point the honest conclusion
+> is that **whether a stick feels inverted is not a fact to be derived,
+> it is a preference**, and it belongs to whoever is holding the pad.
+> The second flip also revealed that the first had gone the wrong way
+> *and* carried a comment claiming the opposite, which is why re-reading
+> it caught nothing.
+>
+> `interface.md` §7 wanted this anyway: remappable controls sit beside
+> subtitles and colourblind-safe cues as accessibility that is "never
+> traded away for minimalism". This is the first of them.
 
-**The camera cannot sink through the ground.** Tilting fully down used
+**The camera cannot sink through the ground.****The camera cannot sink through the ground.** Tilting fully down used
 to put the seat below y=0 and show the world from underneath. The
 **pitch** is floored rather than the height, which keeps the orbit a
 circle — clamping height alone would slide the camera inward and change
 how big the fighter looks as you tilt. Both scenes hold at 0.6
 clearance.
 
-**A chase camera must not live under the thing it is chasing.**
-Thornfield's was a child of the walker, which turns constantly to face
-where you are going; the camera inherited every degree of that while
-its position was being rewritten each frame, so the two fought —
-jittery while walking, and a hard jerk whenever you reversed and the
-body swung through 180°. It is parented to the scene now. The drill
-yard never had this, its camera being a child of the world, which is
-why the fault was town-only.
+**The town camera jerked, and it took two goes to find out why.**
+
+The first suspect was parenting: it was a child of the walker, which
+turns constantly to face where you are going, so it inherited every
+degree of that while its position was rewritten each frame. Real, and
+fixed — but not the jerk.
+
+The jerk was **which callback it ran in.** The body moves on the fixed
+physics tick and Godot 4.3 does not interpolate 3D bodies between
+ticks, so a camera following in `_process` samples a target that is
+*stepping*; the `lerp` chasing it then adds a lag that overshoots and
+snaps whenever you change direction — which is why reversing was the
+worst case, exactly as reported.
+
+It is now placed in `_physics_process`, immediately after
+`move_and_slide()`, and set outright rather than lerped toward.
+Measured: the camera's offset from the walker changes by **0.0000 m**
+frame to frame through a full reversal. The drill yard never had this
+because `world.gd` has always placed its camera inside
+`_physics_process`.
 
 **Lock-on stays rejected.** It needs an on-screen indicator to be
 legible and L65 forbids that kind of marker, and it degrades badly in

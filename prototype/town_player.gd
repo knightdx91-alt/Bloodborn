@@ -32,14 +32,8 @@ const CAM_DISTANCE := 8.5
 const CAM_HEIGHT := 5.2
 const CAM_YAW_RATE := 2.8
 const CAM_PITCH_RATE := 1.7
-## +1.0 is stick-up-looks-up, the standard convention.
-##
-## This was set to -1.0 in both scenes after "the camera is inverted"
-## was reported — and -1.0 IS the inverted one, so the flip went the
-## wrong way and the comment claiming otherwise was simply wrong.
-## Stick up must LOWER the camera toward the fighter's eye line, which
-## is what +1.0 does.
-const CAM_PITCH_INVERT := 1.0
+## Which way up the sticks are lives in Settings, not here — see the
+## note in world.gd. Toggle it on the menu; it persists.
 const CAM_PITCH_MIN := -0.20
 const CAM_PITCH_MAX := 1.15
 const CAM_STICK_DEADZONE := 0.18
@@ -182,9 +176,9 @@ func _tick_camera(delta: float) -> void:
 	var rx := Input.get_joy_axis(PAD, JOY_AXIS_RIGHT_X)
 	var ry := Input.get_joy_axis(PAD, JOY_AXIS_RIGHT_Y)
 	if absf(rx) > CAM_STICK_DEADZONE:
-		yaw -= rx * CAM_YAW_RATE
+		yaw -= rx * CAM_YAW_RATE * Settings.yaw_sign()
 	if absf(ry) > CAM_STICK_DEADZONE:
-		pitch += ry * CAM_PITCH_RATE * CAM_PITCH_INVERT
+		pitch += ry * CAM_PITCH_RATE * Settings.pitch_sign()
 	if Input.is_key_pressed(KEY_Q):
 		yaw += CAM_KEY_RATE
 	if Input.is_key_pressed(KEY_BRACKETRIGHT):
@@ -262,7 +256,9 @@ func _input(event: InputEvent) -> void:
 	elif event is InputEventScreenDrag:
 		var dr := event as InputEventScreenDrag
 		if dr.index == _look_id:
-			_look_drag += Vector2(-dr.relative.x, -dr.relative.y) * CAM_DRAG_RATE
+			_look_drag += Vector2(
+				-dr.relative.x * Settings.yaw_sign(),
+				-dr.relative.y * Settings.pitch_sign()) * CAM_DRAG_RATE
 			return
 		if dr.index == _stick_id:
 			var off := dr.position - _stick_origin
@@ -342,11 +338,25 @@ func _physics_process(delta: float) -> void:
 	velocity.y -= 22.0 * delta
 	move_and_slide()
 
-
-func _process(delta: float) -> void:
+	# The camera is placed HERE, in the physics step, immediately after
+	# the body has moved — and set outright rather than lerped toward.
+	#
+	# It used to run in _process and chase the seat with a lerp, which
+	# produced exactly the reported jerk. The body moves on the fixed
+	# physics tick and Godot 4.3 does not interpolate 3D bodies between
+	# them, so a camera following at display rate samples a target that
+	# is stepping; the lerp then adds a lag that overshoots and snaps
+	# whenever you change direction, which is why reversing was the worst
+	# case.
+	#
+	# The drill yard never had this: world.gd has always placed its
+	# camera inside _physics_process. Same fix, same place.
 	_tick_camera(delta)
-	_cam.global_position = _cam.global_position.lerp(_camera_seat(), 12.0 * delta)
+	_cam.global_position = _camera_seat()
 	_cam.look_at(_focus(), Vector3.UP)
+
+
+func _process(_delta: float) -> void:
 	_near = null
 	if ConversationUI.current == null:
 		var pop := get_parent().get_node_or_null("Population")

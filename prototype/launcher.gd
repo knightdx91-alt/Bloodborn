@@ -27,6 +27,8 @@ var _title: Label
 var _sub: Label
 var _buttons: Array[Button] = []
 var _pad: Label
+var _invert_y: Button
+var _invert_x: Button
 
 
 func _ready() -> void:
@@ -63,6 +65,22 @@ func _ready() -> void:
 	_buttons.append(_big_button("Thornfield", "res://town.tscn"))
 	for b in _buttons:
 		_vb.add_child(b)
+
+	# Camera preferences. These are here rather than baked into the
+	# scenes because the pitch direction was flipped twice from the code
+	# side and reported inverted both times — which is the point at which
+	# it stops being a number to get right and becomes a setting to
+	# offer. interface.md §7 asks for exactly this.
+	_invert_y = _toggle_button(
+		func(): return Settings.invert_y(),
+		func(on): Settings.set_invert_y(on),
+		"Camera up/down")
+	_invert_x = _toggle_button(
+		func(): return Settings.invert_x(),
+		func(on): Settings.set_invert_x(on),
+		"Camera left/right")
+	_vb.add_child(_invert_y)
+	_vb.add_child(_invert_x)
 
 	# Something must HOLD FOCUS or a pad has nothing to press.
 	#
@@ -126,6 +144,14 @@ func _relayout() -> void:
 	for b in _buttons:
 		b.custom_minimum_size = Vector2(button_w, button_h)
 		b.add_theme_font_size_override("font_size", int(44.0 * scale))
+	# The settings sit below the scene choices and are deliberately
+	# smaller: they are things you set once, not the reason you opened
+	# the app.
+	for b in [_invert_y, _invert_x]:
+		if b == null:
+			continue
+		b.custom_minimum_size = Vector2(button_w, maxf(52.0 * scale, MIN_BUTTON_HEIGHT))
+		b.add_theme_font_size_override("font_size", int(22.0 * scale))
 
 	var side: int = int(maxf(16.0, vp.x * 0.04))
 	_margin.add_theme_constant_override("margin_left", side)
@@ -133,6 +159,29 @@ func _relayout() -> void:
 	_margin.add_theme_constant_override("margin_top",
 		int(maxf(12.0, DisplayServer.get_display_safe_area().position.y)))
 	_margin.add_theme_constant_override("margin_bottom", 12)
+
+
+## A setting you can see the state of without pressing it. The label
+## says what it currently IS, not what pressing would do — a toggle that
+## describes its own action rather than its own state is the reason
+## nobody trusts settings menus.
+func _toggle_button(get_it: Callable, set_it: Callable, label: String) -> Button:
+	var b := Button.new()
+	var refresh := func():
+		b.text = "%s: %s" % [label, "inverted" if get_it.call() else "normal"]
+	refresh.call()
+	b.pressed.connect(func():
+		set_it.call(not get_it.call())
+		refresh.call())
+	var ring := StyleBoxFlat.new()
+	ring.bg_color = Color(0.22, 0.26, 0.22)
+	ring.border_width_left = 3
+	ring.border_width_right = 3
+	ring.border_width_top = 3
+	ring.border_width_bottom = 3
+	ring.border_color = Color(0.55, 0.78, 0.55)
+	b.add_theme_stylebox_override("focus", ring)
+	return b
 
 
 func _on_pad_changed(_device: int, _connected: bool) -> void:

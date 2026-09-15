@@ -149,21 +149,15 @@ var _cam_yaw := 0.0
 var _cam_pitch := 0.0
 const CAM_YAW_RATE := 2.8        # radians per second at full deflection
 const CAM_PITCH_RATE := 1.7
-## Which way up the pitch stick is. +1.0 is stick-up-looks-up, the
-## standard convention.
+## Which way up the sticks are now lives in Settings, not here.
 ##
-## This was -1.0, set after "the camera is inverted" was reported — and
-## -1.0 IS the inverted one, so the flip went the wrong way and the
-## comment claiming otherwise was wrong. Reported again, and checked
-## this time rather than reasoned about: stick up must LOWER the camera
-## toward the fighter's eye line.
-##
-## A constant rather than a buried sign because interface.md §7 makes
-## remappable controls a REQUIREMENT, not a nicety — it lists them beside
-## subtitles and colourblind-safe cues, and says accessibility is never
-## traded away for minimalism. This is the first setting that will need a
-## menu, and the number is already sitting here waiting for one.
-const CAM_PITCH_INVERT := 1.0
+## It was a constant, flipped twice from this side and reported
+## inverted both times. Whether a stick feels inverted is not a fact to
+## be derived — it is a preference, and it belongs to whoever is holding
+## the pad. interface.md §7 required this anyway: remappable controls
+## sit beside subtitles and colourblind-safe cues as accessibility that
+## is "never traded away for minimalism". Toggle it on the menu; it
+## persists.
 ## Clamps on the FINAL pitch, so neither aspect can drive the camera
 ## through the floor or onto the back of the fighter's head.
 const CAM_PITCH_MIN := -0.30
@@ -967,12 +961,9 @@ func _tick_camera(delta: float) -> void:
 	var yaw: float = 0.0
 	var pitch: float = 0.0
 	if absf(_pad_aim.x) > CAM_STICK_DEADZONE:
-		yaw -= _pad_aim.x * CAM_YAW_RATE
+		yaw -= _pad_aim.x * CAM_YAW_RATE * Settings.yaw_sign()
 	if absf(_pad_aim.y) > CAM_STICK_DEADZONE:
-		# See CAM_PITCH_INVERT. The first build had this the other way
-		# round and it read as inverted, which is the only test that
-		# matters for a camera.
-		pitch += _pad_aim.y * CAM_PITCH_RATE * CAM_PITCH_INVERT
+		pitch += _pad_aim.y * CAM_PITCH_RATE * Settings.pitch_sign()
 	if Input.is_key_pressed(KEY_Q):
 		yaw += CAM_KEY_RATE
 	if Input.is_key_pressed(KEY_E):
