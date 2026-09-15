@@ -160,6 +160,50 @@ at 0.98 and the mood comes out of exposure and the contrast curve.
 - The Mixamo specs already written: characters, attack shapes, a guard
   pose, directional dodges. All free downloads.
 
+## Thornfield landed — 2026-09-15, from a parallel session
+
+**There is a town now**, built in a separate line of work (`[acheron]`
+commits) while combat was being fixed. `project.godot` now boots a
+**launcher** that offers the Drill Yard or Thornfield; combat files were
+left untouched and the yard still runs exactly as before. Both scenes
+were verified to instantiate cleanly — 91 nodes and 439 nodes.
+
+What is in it, from the code rather than from a document:
+
+- **`town.gd`** — harvest-town geometry and dressing from real CC0
+  Quaternius kits, with the licence evidence recorded beside them.
+- **`npc/`** — 9 conversational townsfolk plus ~25 for crowd barks,
+  standing where their work is (`onboarding.md` §5). Conversation is
+  text: walk up, hold to talk, pick a topic. The model emits an intent
+  from a **whitelist** and the game validates it; anything binding ends
+  in a confirm panel.
+- **`town_systems/`** — the two market-square boards generating
+  contracts **from actual world state** (`content.md` §3), rumours that
+  carry source, age and distortion, the shrine as respawn (`lore.md`
+  §3), and apprenticeship as `onboarding.md` §1's "you begin as
+  somebody's hired hand". All reading one seeded `world_state.gd`.
+
+It is grounded work — it cites the design documents throughout and
+honours L29 by giving directions as landmarks rather than markers.
+
+### ⚠️ Three things about it that need a decision, not a fix
+
+1. **It arrived with no documentation.** 379 files and ~31,000 lines,
+   and not one markdown file. Nothing in `design/`, nothing in
+   `STATUS.md` until this entry, which was written by reading the code.
+2. **Two files cite a "plan §4" that does not exist** in `design/` —
+   `npc/conversation.gd` and `npc/bark_bank.gd` both rest their
+   whitelist-intent design on it. Either that document is missing or the
+   reference is to something outside the repository.
+3. **It puts game RULES in GDScript only, which inverts L88.** The
+   contract generation, rumour distortion, world state and
+   apprenticeship flags are real rules with no C# counterpart and **no
+   tests** — `sim/` has no town, npc or rumour code at all. L88 is
+   explicit that `sim/` stays authoritative and the prototype *mirrors*
+   it. Either the town is understood to be a throwaway UX sketch, or
+   these rules need to move to `sim/` before they grow. **That is a
+   fork worth choosing deliberately rather than drifting into.**
+
 ## What play found — 2026-09-14, first session with a pad
 
 Five reports, in the order they came. Worth reading as a group, because
