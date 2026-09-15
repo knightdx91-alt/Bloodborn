@@ -143,30 +143,39 @@ targets: you point, the arc follows, and the nearest zone snaps on a
 controller. Kingdom Come's system, and it shipped on consoles — thumb
 precision is the cost, not the barrier.
 
-> **How the stick carries it, settled 2026-09-15 from play.** The
-> **right stick is the camera and also aims the cut.** It orbits the
-> fighter, never recentres, and you aim by pointing it — the body turns
-> to face where you were looking as it commits. For the length of a
-> **wind-up only**, the stick aims the cut while the camera holds still,
-> so a flick re-aims a blow already in the air.
+> **How the pad carries it, settled 2026-09-15 after three attempts.**
+> The **right stick is the camera and nothing borrows it** — it keeps
+> working during a swing, yaw and pitch both. **The arc is read off the
+> camera's own pitch**: up for the head, level for the body, down for
+> the legs, with the body turning to face where you look as it commits.
 >
-> **This moved twice.** It was built this way; then a Skyrim camera was
-> requested and it was removed, on the grounds that Skyrim's camera is
-> never taken away — putting the arcs on the LEFT stick, taking their
-> direction from the way you step, which is Skyrim's own scheme for
-> power attacks. The recorded cost was that you cannot step one way and
-> cut another.
+> **The left-and-right choice is gone and costs nothing mechanically.**
+> The table above is why: upper left and upper right both land on the
+> torso, lower left and lower right both land on the legs. Which side a
+> cut came from never changed what it hit, only which animation played,
+> so the side now alternates on its own and every bit of the depth L63
+> is built on survives.
 >
-> Play overruled it: *"the camera should be controlled by the right joy
-> stick, the targeting, not the left."* The strictness was an
-> over-reading of the request. A camera that yields the stick for four
-> tenths of a second while you commit is still a Skyrim camera; **a cut
-> you cannot aim independently of your feet is not free aim**, which is
-> what L64 requires.
+> **The wrong two attempts, since they will otherwise be retried.** It
+> began as *the stick aims during a wind-up while the camera holds
+> still*. A Skyrim camera was then requested, so the arcs moved to the
+> LEFT stick, taking direction from the way you step — Skyrim's own
+> scheme for power attacks. Play rejected that: targeting belongs on the
+> right stick. The wind-up trick returned, and play rejected it too, on
+> the correct ground that **Skyrim's camera does not change when you
+> attack**.
 >
-> **Rejected: lock-on**, the other way to free the stick (and Kingdom
-> Come's own). It needs an on-screen indicator to be legible and L65
-> forbids exactly that kind of marker; and it degrades badly in crowds,
+> A stick cannot mean two things at one instant. The resolution was to
+> stop treating the aim as a second meaning for the stick and read it
+> off the camera, which is what this section asked for in the first
+> place — "you point, the arc follows".
+>
+> **Open: the thrust has no pad input.** It was a stick direction under
+> the superseded scheme. §1b already makes the thrust weapon-dependent,
+> so it wants a weapon-aware input rather than a spare direction.
+>
+> **Rejected: lock-on.** It needs an on-screen indicator to be legible
+> and L65 forbids that kind of marker; and it degrades badly in crowds,
 > which L25's war sizes make the normal case rather than the edge one.
 
 **Direction is the other half of the telegraph, not a second system.**

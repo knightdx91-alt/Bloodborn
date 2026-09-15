@@ -140,38 +140,57 @@ brace; that guessing is what made the parry feel automatic. A pad has a
 button for it, so there is nothing to speculate and nothing to hand
 back: the guard rises when you press LB and not before.
 
-**The right stick is the camera, and it also aims the cut.** It orbits
-the fighter, never recentres, and the body turns to face where you are
-looking as it commits — so you point the camera at someone and swing at
-them. And for the length of a **wind-up** — from the press until the
-blade goes live, and nowhere else — the stick aims the cut instead,
-while the camera holds still. A flick re-aims a swing that is already
-in the air, right up until the blade is live.
+**The right stick is the camera, and nothing ever borrows it.** It
+orbits the fighter, never recentres, and keeps working during a swing —
+yaw and pitch both.
 
-Push away for the overhead, pull back for the thrust, either side for
-the level cuts, back-and-across for the low ones. Centred keeps the
-default, so you can fight without touching it. Still no reticle (L65).
+**You aim by looking.** The arc is read off the camera's own pitch:
+tilt up and the blow goes for the head, look level and it goes for the
+body, tilt down and it goes for the legs. The body turns to face where
+you are looking as it commits. Still no reticle (L65).
 
-> **This moved twice, and the second move was play overruling me.**
+**The left-and-right choice is gone, and it costs nothing mechanically.**
+§1b's own table is why:
+
+| Arc | Lands on |
+|---|---|
+| Overhead | Head |
+| Upper left **or** upper right | Torso |
+| Lower left **or** lower right | Legs |
+
+Which side a cut came from never changed what it hit — it only changed
+which animation played. So the side alternates on its own now, the way
+a fighter actually swings, and every bit of the depth L63's per-slot
+armour is built on survives: head, torso, legs, all still chosen by the
+player.
+
+> **This took three attempts, and the wrong two are the instructive
+> part.**
 >
-> It was built this way first. Then a **Skyrim camera** was asked for,
-> and I removed it on the grounds that Skyrim's camera is never taken
-> away — which put the arcs on the **left** stick, taking their
-> direction from the way you step, as Skyrim's own power attacks do. I
-> recorded the cost at the time: you cannot step one way and cut
-> another.
+> It began as *the stick aims during a wind-up while the camera holds
+> still* — Mount & Blade's trick. Then a **Skyrim camera** was asked
+> for, so the arcs moved to the **left** stick, taking their direction
+> from the way you step, as Skyrim's power attacks do. Play rejected
+> that: targeting belongs on the right stick. So the wind-up trick came
+> back — and play rejected **that** too, correctly: *"Skyrim's camera
+> doesn't change when you attack."*
 >
-> Play rejected exactly that: *"the camera should be controlled by the
-> right joy stick, the targeting, not the left."* Fair, and the
-> strictness was mine rather than the request's. **A camera that yields
-> the stick for four tenths of a second while you commit to a blow is
-> still recognisably a Skyrim camera; a cut you cannot aim independently
-> of your feet is not a cut you can use.**
+> It does not. Calling a 0.4s freeze "still recognisably a Skyrim
+> camera" was defending a compromise rather than describing Skyrim.
 >
-> What it buys back is what L64 actually asks for — free aim, separate
-> from where you happen to be walking. What it costs is a camera that
-> holds during the wind-up, which is as often a gain: that is the moment
-> you most want a steady view of the other fighter.
+> The two requirements looked irreconcilable, because a stick cannot
+> mean two things at one instant. The way out was to stop treating the
+> aim as a second meaning for the **stick** and read it off the
+> **camera** instead. Nothing is borrowed, nothing freezes, and you aim
+> the way §1b already said you should: by pointing at what you want to
+> hit.
+
+**The thrust has no home on the pad for now.** It was the "pull back"
+direction under the old scheme and pitch alone has nowhere to put it.
+That is survivable rather than ideal: §1b already makes the thrust
+weapon-dependent — "a two-handed maul has an overhead and two side arcs
+and no thrust worth the name" — so it wants a weapon-aware input rather
+than a spare stick direction.
 
 **Lock-on stays rejected.** It needs an on-screen indicator to be
 legible and L65 forbids that kind of marker, and it degrades badly in

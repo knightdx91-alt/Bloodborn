@@ -112,37 +112,36 @@ const PAD_WALK_DEADZONE := 0.15
 ## default.
 const PAD_AIM_DEADZONE := 0.35
 var _pad_vec := Vector2.ZERO   # left stick: movement, and only that
-var _pad_aim := Vector2.ZERO   # right stick: camera, and the cut
+var _pad_aim := Vector2.ZERO   # right stick: the camera, and only that
 var _pad_guarding := false
 
-# Camera orbit — Skyrim's, and the right stick also aims the cut.
+# Camera orbit — Skyrim's, and never taken away for anything.
 #
-#  1. The right stick is the camera. Yaw and pitch, orbiting the fighter.
+#  1. The right stick is the camera. Yaw and pitch, orbiting the
+#     fighter. Nothing else ever borrows it.
 #  2. It does not recentre itself. The camera stays where you left it,
 #     and the body turns under it.
-#  3. You aim with the camera: the body turns to face where you are
+#  3. You aim BY LOOKING: the arc is read off the camera's own pitch
+#     (see _arc_from_look), and the body turns to face where you are
 #     looking as it commits.
-#  4. And for the length of a WIND-UP — from the press until the blade
-#     goes live, and nowhere else — the stick aims the cut instead,
-#     while the camera holds still.
 #
-# Rule 4 is the one that moved twice, so the reasoning is worth keeping.
-# It was built this way, then removed when a Skyrim camera was asked for
-# on the grounds that Skyrim's camera is never taken away — which put
-# the arcs on the LEFT stick, taking their direction from the way you
-# step, as Skyrim's own power attacks do.
+# This took three attempts and the third is the one that holds, so the
+# wrong two are worth keeping rather than quietly deleting.
 #
-# Play rejected that: "the camera should be controlled by the right joy
-# stick, the targeting, not the left." Reasonable, and the earlier
-# strictness was mine rather than the request's. A camera that yields
-# the stick for four tenths of a second while you commit to a blow is
-# still recognisably a Skyrim camera; a cut you cannot aim independently
-# of your feet is not a cut you can use.
+# It began as "the stick aims during a wind-up while the camera holds
+# still" — Mount & Blade's trick. Then a Skyrim camera was asked for, so
+# the arcs went onto the LEFT stick, taking their direction from the way
+# you step, as Skyrim's power attacks do. Play rejected that: targeting
+# belongs on the right stick. So the wind-up trick came back — and play
+# rejected THAT too, correctly: "Skyrim's camera doesn't change when you
+# attack." It does not. Calling a 0.4s freeze "still recognisably a
+# Skyrim camera" was defending a compromise, not describing Skyrim.
 #
-# What that buys back is the thing L64 actually asks for — free aim,
-# separate from where you happen to be walking. What it costs is a
-# camera that holds during the wind-up, which is a gain as often as not:
-# that is the moment you most want a steady view of the other fighter.
+# The two requirements looked irreconcilable — the stick cannot mean two
+# things at one instant — and the way out was to stop treating the aim
+# as a second meaning for the STICK and read it off the CAMERA instead.
+# Nothing is borrowed, nothing freezes, and you aim the way §1b already
+# says you should: by pointing at what you want to hit.
 var _cam_yaw := 0.0
 ## Offset from the resting pitch the aspect ratio picks, rather than an
 ## absolute angle — a phone in portrait looks down more steeply to begin
@@ -521,26 +520,48 @@ func _pad_push() -> float:
 ## Pulling back swings the big downward blows, stepping in is the thrust,
 ## the sides are level cuts. Standing still keeps the default, so you can
 ## fight without ever thinking about it. Still no reticle (L65).
-func _arc_from_aim(aim: Vector2) -> int:
-	if aim.length() < PAD_AIM_DEADZONE:
-		return Attack.Arc.UPPER_RIGHT
+## Which cut a swing makes, from WHERE YOU ARE LOOKING.
+##
+## The camera is never taken away — not for a wind-up, not for
+## anything — because that is what was asked for and because Skyrim's
+## camera genuinely does not change when you attack. So the aim cannot
+## be a second meaning for the stick; it has to be a reading of the
+## camera itself. Tilt up and the blow goes for the head, look level and
+## it goes for the body, tilt down and it goes for the legs.
+##
+## **The left-and-right choice is gone, and it costs nothing.** §1b's
+## own table is why: overhead lands on the head, upper left AND upper
+## right both land on the torso, lower left AND lower right both land on
+## the legs. Which side a cut comes from never changed what it hit — it
+## only changed which animation played. So the side now alternates on
+## its own, the way a fighter actually swings, and every bit of the
+## mechanical depth L63 and L64 are built on survives intact.
+##
+## Measured against the RESTING pitch rather than an absolute angle,
+## because a phone in portrait starts out looking down more steeply and
+## "level" has to mean the same thing on both.
+const LOOK_HIGH := -0.20   # radians above rest: going for the head
+const LOOK_LOW := 0.20     # below rest: going for the legs
+var _cut_from_left := false
 
-	# Read in stick space, which is already camera-relative everywhere
-	# else. A cut that changed because the camera moved would be
-	# unlearnable.
-	var angle := atan2(aim.x, -aim.y)   # 0 = pushing away from you
-	var eighth: int = int(round(angle / (PI / 4.0))) % 8
-	if eighth < 0:
-		eighth += 8
-	match eighth:
-		0: return Attack.Arc.OVERHEAD        # push away — blade up, down
-		1: return Attack.Arc.UPPER_RIGHT
-		2: return Attack.Arc.UPPER_RIGHT
-		3: return Attack.Arc.LOWER_RIGHT
-		4: return Attack.Arc.THRUST          # pull back — the point
-		5: return Attack.Arc.LOWER_LEFT
-		6: return Attack.Arc.UPPER_LEFT
-		_: return Attack.Arc.UPPER_LEFT
+func _arc_from_look() -> int:
+	if _cam_pitch <= LOOK_HIGH:
+		return Attack.Arc.OVERHEAD
+	# Alternate, so consecutive cuts read as a fighter working rather
+	# than one animation on repeat.
+	_cut_from_left = not _cut_from_left
+	if _cam_pitch >= LOOK_LOW:
+		return Attack.Arc.LOWER_LEFT if _cut_from_left else Attack.Arc.LOWER_RIGHT
+	return Attack.Arc.UPPER_LEFT if _cut_from_left else Attack.Arc.UPPER_RIGHT
+
+## What the NEXT cut would be, without advancing the alternation. For
+## the readout only — asking must not change the answer.
+func _arc_preview() -> int:
+	if _cam_pitch <= LOOK_HIGH:
+		return Attack.Arc.OVERHEAD
+	if _cam_pitch >= LOOK_LOW:
+		return Attack.Arc.LOWER_RIGHT if _cut_from_left else Attack.Arc.LOWER_LEFT
+	return Attack.Arc.UPPER_RIGHT if _cut_from_left else Attack.Arc.UPPER_LEFT
 
 # ── The fight ────────────────────────────────────────────────────────
 
@@ -832,7 +853,7 @@ func _pad_status() -> String:
 		Input.get_joy_name(pads[0]),
 		roundi(rad_to_deg(_cam_yaw)),
 		roundi(rad_to_deg(_cam_pitch)),
-		ARCS[_arc_from_aim(_pad_aim)],
+		ARCS[_arc_preview()],
 		_pad_push(),
 		"   GUARD" if _pad_guarding else "",
 	]
@@ -870,7 +891,7 @@ func _swing_on_pad() -> void:
 	# refuses to turn a fighter mid-swing, because §6 makes the wind-up a
 	# telegraph and a telegraph you can steer tells nobody anything.
 	player.rotation.y = _cam_yaw
-	_try_attack(_arc_from_aim(_pad_aim))
+	_try_attack(_arc_from_look())
 
 func _try_attack(arc: int = Attack.Arc.UPPER_RIGHT) -> void:
 	if player == null or _player_down > 0.0:
@@ -934,22 +955,7 @@ func _tick_dummy(delta: float) -> void:
 
 # ── Camera ───────────────────────────────────────────────────────────
 
-## True exactly while a cut is winding up — the one window in which the
-## right stick means "where is this going" rather than "look over there".
-func _aiming_a_cut() -> bool:
-	return player != null and player.attack.phase() == Attack.Phase.WINDUP
-
-
 func _tick_camera(delta: float) -> void:
-	if _aiming_a_cut():
-		# Re-aimed every frame of the wind-up, so a flick changes where
-		# the blow lands right up until the blade is live — and only
-		# while the stick has an opinion, since letting go is not
-		# un-aiming.
-		if _pad_aim.length() >= PAD_AIM_DEADZONE:
-			player.attack.arc = _arc_from_aim(_pad_aim)
-		return
-
 	var yaw: float = 0.0
 	var pitch: float = 0.0
 	if absf(_pad_aim.x) > CAM_STICK_DEADZONE:
