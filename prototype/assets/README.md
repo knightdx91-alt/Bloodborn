@@ -112,3 +112,38 @@ runs along its own −Z, not +Y, and the dummy stands up on its own
 without help. The prototype measures both rather than guessing: blade
 direction from the longest side of the bounding box, grip from the line
 across the character's knuckles.
+
+## Character textures are VRAM-compressed, and why that is not about download size
+
+The twelve Mixamo character textures (paladin, skeleton zombie,
+nightshade) are `compress/mode=2` — **VRAM Compressed**, not Lossless.
+
+They arrived as Lossless, which sounds like the careful choice and is
+the expensive one. Lossless means the texture is decompressed to full
+RGBA *in video memory*, so what a file costs on disk says nothing about
+what it costs to have on screen. All twelve are 2048×2048:
+
+| | |
+|---|---|
+| Per texture, uncompressed in VRAM (with mipmaps) | ~21 MB |
+| **All three characters, uncompressed** | **~255 MB** |
+| The same textures as ETC2/ASTC | ~32 MB |
+
+The drill yard loads all three at once, so that was the full 255 MB
+resident on a phone — where the GPU shares system RAM, and a number
+like that buys stutter, thermal throttling, or the OS killing the app
+on a mid-range device. `import_etc2_astc` was already true in
+`project.godot`; the per-texture import mode was quietly overriding it.
+
+**The download saving is the small half** — 61.1 → 56.0 MB on the web
+export, because the web build does not use ETC2/ASTC and barely
+benefits. The APK should do considerably better. The ~223 MB of VRAM is
+the part that matters, and it is on the platform the game is actually
+played on.
+
+Checked by rendering all three side by side before and after: no
+visible difference, which is the expected result at any distance a
+fight happens from.
+
+**To revert**, set `compress/mode=0` in the twelve
+`assets/models/*_N.png.import` files and re-import.

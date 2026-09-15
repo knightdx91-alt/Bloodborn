@@ -3,9 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bksuguu0awbcu"
-path="res://.godot/imported/skeleton_zombie_4.png-66e81680044704724dae12154d155243.ctex"
+path.s3tc="res://.godot/imported/skeleton_zombie_4.png-66e81680044704724dae12154d155243.s3tc.ctex"
+path.etc2="res://.godot/imported/skeleton_zombie_4.png-66e81680044704724dae12154d155243.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "645d9a9ce0474f6f6654ac4e37f4b83a"
@@ -14,11 +16,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/models/skeleton_zombie_4.png"
-dest_files=["res://.godot/imported/skeleton_zombie_4.png-66e81680044704724dae12154d155243.ctex"]
+dest_files=["res://.godot/imported/skeleton_zombie_4.png-66e81680044704724dae12154d155243.s3tc.ctex", "res://.godot/imported/skeleton_zombie_4.png-66e81680044704724dae12154d155243.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

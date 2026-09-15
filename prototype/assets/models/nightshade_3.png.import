@@ -3,9 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dsy5oomwar3ht"
-path="res://.godot/imported/nightshade_3.png-065fa0aaac8d757049e07c0a858db55b.ctex"
+path.s3tc="res://.godot/imported/nightshade_3.png-065fa0aaac8d757049e07c0a858db55b.s3tc.ctex"
+path.etc2="res://.godot/imported/nightshade_3.png-065fa0aaac8d757049e07c0a858db55b.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "6487f383a1fe9dfa6300f9b09204e488"
@@ -14,11 +16,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/models/nightshade_3.png"
-dest_files=["res://.godot/imported/nightshade_3.png-065fa0aaac8d757049e07c0a858db55b.ctex"]
+dest_files=["res://.godot/imported/nightshade_3.png-065fa0aaac8d757049e07c0a858db55b.s3tc.ctex", "res://.godot/imported/nightshade_3.png-065fa0aaac8d757049e07c0a858db55b.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

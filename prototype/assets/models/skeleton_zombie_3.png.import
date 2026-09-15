@@ -3,9 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dj01na1el8dfy"
-path="res://.godot/imported/skeleton_zombie_3.png-7d27e1fbe3589ef4865128b36dfe55b7.ctex"
+path.s3tc="res://.godot/imported/skeleton_zombie_3.png-7d27e1fbe3589ef4865128b36dfe55b7.s3tc.ctex"
+path.etc2="res://.godot/imported/skeleton_zombie_3.png-7d27e1fbe3589ef4865128b36dfe55b7.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "0f0991028df802d200cb8198340415d3"
@@ -14,11 +16,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/models/skeleton_zombie_3.png"
-dest_files=["res://.godot/imported/skeleton_zombie_3.png-7d27e1fbe3589ef4865128b36dfe55b7.ctex"]
+dest_files=["res://.godot/imported/skeleton_zombie_3.png-7d27e1fbe3589ef4865128b36dfe55b7.s3tc.ctex", "res://.godot/imported/skeleton_zombie_3.png-7d27e1fbe3589ef4865128b36dfe55b7.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1
