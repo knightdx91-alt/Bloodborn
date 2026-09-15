@@ -13,6 +13,13 @@ const SPEED := 4.5
 const TALK_RANGE := 3.0
 const STICK_RADIUS := 60.0
 
+## Pad. Matches world.gd so the two scenes do not want different hands:
+## left stick walks, A talks, Start goes back to the launcher.
+const PAD := 0
+const PAD_DEADZONE := 0.15
+const PAD_TALK := JOY_BUTTON_A
+const PAD_LEAVE := JOY_BUTTON_START
+
 var systems: Dictionary = {}
 
 var _anim: AnimationPlayer
@@ -149,8 +156,25 @@ func _input(event: InputEvent) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey:
 		var k := event as InputEventKey
-		if k.pressed and not k.echo and k.keycode == KEY_E:
-			_try_talk()
+		if k.pressed and not k.echo:
+			if k.keycode == KEY_E:
+				_try_talk()
+			elif k.keycode == KEY_ESCAPE:
+				_leave()
+	elif event is InputEventJoypadButton and event.pressed:
+		match event.button_index:
+			PAD_TALK: _try_talk()
+			PAD_LEAVE: _leave()
+
+
+## Back to the launcher. Without this, picking Thornfield was a one-way
+## door — there was no way to reach the drill yard again short of killing
+## the app, which on a phone means the task switcher.
+func _leave() -> void:
+	if ConversationUI.current != null:
+		ConversationUI.current.close()
+		return
+	get_tree().change_scene_to_file("res://launcher.tscn")
 
 
 func _input_dir() -> Vector2:
@@ -165,6 +189,15 @@ func _input_dir() -> Vector2:
 		kv.y += 1.0
 	if _stick_vec.length() > 0.2:
 		kv = _stick_vec
+	# And the pad. The town used to take WASD and the on-screen stick
+	# only, which meant that on the APK — the way this is actually played
+	# — a plugged-in controller did nothing at all here while working
+	# fine in the yard. Same axes and the same dead zone as world.gd.
+	var pad := Vector2(
+		Input.get_joy_axis(PAD, JOY_AXIS_LEFT_X),
+		Input.get_joy_axis(PAD, JOY_AXIS_LEFT_Y))
+	if pad.length() > PAD_DEADZONE:
+		kv = pad
 	return kv
 
 

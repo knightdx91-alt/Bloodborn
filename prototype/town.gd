@@ -238,10 +238,32 @@ func _house(pos: Vector3, yaw: float, wm: int, dm: int, opts: Dictionary = {}) -
 
 # ---------------------------------------------------------------- terrain ---
 
+const GROUND := 500.0
+
+
 func _terrain() -> void:
 	# Base ground: dry harvest grass.
-	_quad(Vector3.ZERO, Vector2(500, 500),
-		_ground_mat(Color(0.38, 0.40, 0.22), 60.0))
+	#
+	# The visual plane and the FLOOR YOU STAND ON, which used to be only
+	# the first of those. _quad builds a MeshInstance3D and nothing else,
+	# so the town had 153 static bodies — every building and prop — and
+	# no ground at all: 71 of 81 probe points across Thornfield were open
+	# sky, and the walker fell through the world on arrival.
+	#
+	# Same shape as the drill yard's: a thin box just under the surface,
+	# matched to the visible plane so there is no invisible ledge to walk
+	# off at the edge of the grass.
+	var ground := StaticBody3D.new()
+	ground.name = "Ground"
+	add_child(ground)
+	_quad(Vector3.ZERO, Vector2(GROUND, GROUND),
+		_ground_mat(Color(0.38, 0.40, 0.22), 60.0), 0.0, ground)
+	var col := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = Vector3(GROUND, 0.4, GROUND)
+	col.shape = box
+	col.position = Vector3(0, -0.2, 0)
+	ground.add_child(col)
 
 
 func _roads() -> void:

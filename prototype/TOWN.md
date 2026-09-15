@@ -162,6 +162,40 @@ errand lines, Sarella's words over the shrine stone, and the seed of
 Thornfield's own boars and caravans. Those are content. `sim/` stays
 engine-free and town-free — it knows what a town is, not which one.
 
+## ⚠️ The QA pass, 2026-09-15 — five things that did not work
+
+Found by checking the thing you actually boot into, rather than the
+rules underneath it.
+
+1. **Thornfield had no floor.** `_terrain()` built a 500×500
+   `PlaneMesh` — a `MeshInstance3D`, purely visual. The town had **153
+   static bodies and not one of them was ground**: 71 of 81 probe
+   points across the map were open sky, and the walker fell through the
+   world on arrival, reaching y = −43 within two seconds of the scene
+   loading. The file header claimed "walkable collision is included";
+   that was true of the buildings and of nothing else. Now a thin
+   collision box under the visible plane, matched to its extent, same
+   shape as the yard's.
+2. **The shrine respawned you underground.** With no floor, the only
+   thing under the respawn point was a building at y = 2. Fixed by the
+   floor.
+3. **The pad did nothing in town.** WASD and the on-screen stick only,
+   so on the APK — which is how this is actually played — a plugged-in
+   controller worked in the yard and was dead here. Left stick walks
+   and **A** talks, matching `world.gd` so the two scenes do not want
+   different hands.
+4. **Picking a scene was a one-way door**, in both directions: no way
+   back to the launcher short of killing the app, which on a phone
+   means the task switcher. **Start**, or Escape, now returns. In town
+   it closes an open conversation first, so it never throws away a
+   dialogue you were reading.
+5. **The menu clipped.** 72px of title and two 110px buttons came to
+   more than 450px of content, and "Thornfield" was cut off the bottom
+   of a short window. The launcher now scales to the viewport on **both
+   axes** — scaling on height alone blew the title out to 858px inside
+   a 720px-wide phone and dragged the buttons off both edges — and is
+   checked at ten screen shapes from 360×640 to 1600×2560.
+
 ## Still open
 
 - **The world state is seeded once and never persists.** Nothing

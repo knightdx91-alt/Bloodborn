@@ -95,6 +95,9 @@ const PAD := 0
 const PAD_ATTACK := JOY_BUTTON_RIGHT_SHOULDER
 const PAD_GUARD := JOY_BUTTON_LEFT_SHOULDER
 const PAD_DODGE := JOY_BUTTON_A
+## Back to the launcher. Picking a scene used to be a one-way door on
+## both sides — no way to reach the town again short of killing the app.
+const PAD_LEAVE := JOY_BUTTON_START
 ## Held, so it is polled rather than edged — which is what a trigger is
 ## good at, and why sprint gets one.
 const PAD_SPRINT_AXIS := JOY_AXIS_TRIGGER_LEFT
@@ -394,6 +397,9 @@ func _unhandled_input(event: InputEvent) -> void:
 			_touch_id = -1
 			_touch_vec = Vector2.ZERO
 	elif event is InputEventJoypadButton and event.pressed:
+		if event.button_index == PAD_LEAVE:
+			_leave()
+			return
 		match event.button_index:
 			PAD_ATTACK: _swing_on_pad()
 			PAD_DODGE: _try_dodge()
@@ -423,6 +429,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			_try_attack()
 		elif event.keycode == KEY_K:
 			_try_parry()
+		elif event.keycode == KEY_ESCAPE:
+			_leave()
 	elif event is InputEventKey and not event.pressed and event.keycode == KEY_K:
 		player.lower_guard()
 	elif event is InputEventMouseButton and event.pressed:
@@ -446,6 +454,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		_touch_vec = offset / TOUCH_RANGE
 		if _touch_vec.length() > 1.0:
 			_touch_vec = _touch_vec.normalized()
+
+## Back to the launcher.
+func _leave() -> void:
+	get_tree().change_scene_to_file("res://launcher.tscn")
+
 
 func _steer() -> Vector3:
 	var dir := Vector3.ZERO
