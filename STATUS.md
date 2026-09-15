@@ -3,7 +3,7 @@
 Short, current, and written to be read on a phone. Updated at the end
 of each working session.
 
-**Last updated:** 2026-09-13
+**Last updated:** 2026-09-15
 
 ---
 
@@ -12,7 +12,7 @@ of each working session.
 Design is **88 locked decisions** and **complete** — every structural
 question locked, every missing document written. Every system a player
 touches in their first hundred hours is specified, and most of it is
-**written, tested and running** as engine-free C# — 267 tests.
+**written, tested and running** as engine-free C# — 279 tests.
 
 **Stage 1 is built and playable in any browser**: a character who walks
 and runs, a dodge with invulnerability frames, a sword, a training
@@ -23,9 +23,16 @@ construction step of `tech.md` §6.
 **What is left of Stage 1 is step 4, the stamina tuning — and it needs
 you rather than me.** See the finding below: right now the dodge
 answers everything for free, which means nothing else has a reason to
-exist. **The instrument for it now exists**: the APK plus a wired Xbox
-pad, so the numbers get judged on the scheme that ships rather than on
-touch, which ships nowhere.
+exist. **The instrument exists and has been used**: an Android APK and
+a wired Xbox pad, so the scheme being judged is the one that ships
+rather than touch, which ships nowhere.
+
+**The first real play session happened 2026-09-14, and it found five
+things I could not have found from here** — see "What play found"
+below. Four were bugs, two of them genuine faults in `sim/` rather
+than presentation. **The stamina numbers themselves are still
+unjudged**: play kept hitting things that were broken before it could
+get to whether the economy feels right.
 
 **The engine is Godot** (L54, revised 2026-09-14 from Unity). Decided
 on the evidence in `tech.md` §2a, not on preference — see the L54
@@ -152,6 +159,77 @@ at 0.98 and the mood comes out of exposure and the contrast curve.
 - **Impact and footstep particles**, which Godot makes without assets.
 - The Mixamo specs already written: characters, attack shapes, a guard
   pose, directional dodges. All free downloads.
+
+## What play found — 2026-09-14, first session with a pad
+
+Five reports, in the order they came. Worth reading as a group, because
+the pattern is that **none of them were visible from this side of the
+loop** and two were faults in the rules rather than the presentation.
+
+1. **"It seems like it automatically parries."** It did. The guard rose
+   on a 260ms timer after any touch, so the moment was never yours and
+   resting a thumb cost 15 stamina. Now held, not fired — and holding
+   it past the window is `combat.md` §1/§2's **blocking**, which had
+   been specified and never built.
+2. **"The swinging doesn't feel smooth."** The animation seeked *past
+   the wind-up* to line the clip's fastest moment up with the live
+   window — half a second into a two-second clip, which is mid-slash.
+   Every swing began by teleporting the arm. Measuring the clips to fix
+   it also proved the wind-up was tuned faster than the animation can
+   honestly play, so it went 0.30s → 0.40s.
+3. **"When you get hit your sword comes up like you're parrying."** The
+   guard had no clip and borrowed the **hit reaction**, so bracing and
+   being struck looked identical. Exactly the failure L65 warns about.
+4. **"When stamina is depleted you should slow to a walk, and swings
+   should get slower."** Two faults. The exhausted speed was a 0.6
+   multiplier that landed *above* the run threshold, so a spent fighter
+   kept running. And **sustained drain never set the exhausted flag at
+   all** — sprinting the bar flat, the commonest way to run out, did
+   nothing until you next tried to pay for something outright.
+5. **"I don't like that you can't move the camera"**, then **"with the
+   sun behind them the character is really dark."** Both fixed, and the
+   second one twice: see below.
+
+### ⚠️ The lesson, because it repeated twice in one session
+
+**I twice told you a thing was fine after measuring it, and was twice
+wrong.** On the backlighting I ran three aggregate measurements, called
+lighting "not the problem", and was flatly wrong — rendering the worst
+case showed a **pure black cut-out**. The aggregates missed it because
+the silhouette only appears where the background is *sky*, which needs
+a low camera angle none of the sweeps used.
+
+**Look at the frame before averaging over it.** An aggregate can only
+answer the question you thought to ask.
+
+## Where the camera and the arcs landed — 2026-09-14
+
+The camera is **Skyrim's**, by request: the right stick is always the
+camera, it never recentres, and you aim by pointing it. That one clause
+decides the rest — a camera never taken away cannot also be the aim, so
+**the five arcs come from the LEFT stick**, the direction you step as
+you commit. Back for the overhead, in for the thrust, sides for the
+level cuts.
+
+That is Skyrim's own scheme (its power attacks take direction from
+movement) and Mount & Blade's keyboard layout, and it lands on L56 —
+techniques are *primarily how you move*. **The cost is recorded in
+`combat.md` §1b:** you cannot step one way and cut another, so chasing
+someone means thrusting.
+
+### ⚠️ The five arcs are currently invisible
+
+**The arc decides which armour slot takes the blow, and nothing else.**
+The swing clip is chosen by *shape* — quick or heavy — so an overhead,
+a low cut and a thrust all play the same animation. Nothing on the body
+distinguishes them.
+
+That is not cosmetic. L64 aims freely and **L65 forbids a reticle**, so
+the design's stated way of learning where you are aiming is to *watch
+where the blow lands*. Right now there is nothing to watch, which makes
+the whole directional system unlearnable rather than merely unpolished.
+It is the strongest argument yet for `SPEC-attack-clips.md`, and it did
+not exist as an argument before the arcs moved to the stick.
 
 ## Next after step 4: characters that look like people
 
@@ -698,6 +776,13 @@ falls into three piles, and none of it is design:
      any one answer is strictly better — and says no. **What is left
      is genuinely feel**, and `combat.md` §9 is explicit that it needs
      a controller: run it, and tell me when a fight feels wrong.
+     **Still unjudged as of 2026-09-15.** The first play session spent
+     itself on five things that were broken before the economy could be
+     felt at all; those are fixed, so the next session can actually
+     reach the question.
+   - **The arcs need animations before they mean anything** — see the
+     warning above. This is now the highest-value blocked item, and it
+     is blocked on Muse rather than on either of us.
    - **Then Stage 2**, which is where L39 is actually passed or failed:
      two clients and a server, then a latency slider tuned until 100ms
      is indistinguishable from 0. Everything in `sim/` was written to
@@ -724,11 +809,6 @@ model are all pure logic and all buildable without an engine.
 ## Open questions worth a phone session
 
 Roughly 25 remain. The ones that unblock the most:
-
-- **L54 itself — the engine.** Both open questions are researched
-  (`tech.md` §2a) and the recommendation is Godot. **All that is left
-  is deciding**, and every week it stays open is another week of rules
-  written twice.
 
 - **Technique design (L56).** Techniques are now the main expression of
   progression and the main source of mobility — how many per weapon
