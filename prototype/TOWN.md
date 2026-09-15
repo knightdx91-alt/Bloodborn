@@ -196,6 +196,23 @@ rules underneath it.
    a 720px-wide phone and dragged the buttons off both edges — and is
    checked at ten screen shapes from 360×640 to 1600×2560.
 
+## ⚠️ Reported from play, 2026-09-15 — waist deep in the road
+
+The walker spawned buried to the waist. `_build_body()` offset the model
+`Vector3(0, -1.0, 0)`, copied from `world.gd` — where it is correct,
+because the yard's capsule is **2m centred on the node origin** and the
+model genuinely does have to hang a metre below it to stand on its feet.
+
+The town's capsule is different: 1.8 tall and offset *up* by 0.9, so its
+bottom sits on the node origin. The paladin's own feet are also on its
+origin — measured, y 0.000 to 1.725 — so the correct offset here is
+**zero**, and the inherited −1.0 sank the visible body exactly one metre
+into a 1.725m character.
+
+It went unnoticed because the town had no floor until the same day: the
+walker fell straight past the problem. **Fixing one bug is what exposed
+the other**, which is the usual shape of it.
+
 ## Still open
 
 - **The world state is seeded once and never persists.** Nothing

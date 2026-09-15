@@ -49,8 +49,18 @@ func _build_body() -> void:
 	col.position = Vector3(0, 0.9, 0)
 	add_child(col)
 	var mdl := (load(MODEL) as PackedScene).instantiate() as Node3D
-	# Mixamo capsule hangs a metre below the origin; characters face +Z.
-	mdl.position = Vector3(0, -1.0, 0)
+	# The model's feet sit on ITS OWN origin — measured, not assumed: the
+	# paladin mesh spans y 0.000 to 1.725. The capsule above is 1.8 tall
+	# and offset up by half of that, so its bottom is on the node origin
+	# too, and the two line up with no offset at all.
+	#
+	# This carried a -1.0 here, copied from world.gd where the capsule is
+	# 2m CENTRED on the origin and the model genuinely does have to hang
+	# a metre below it. With this capsule that sank the visible body one
+	# metre into the floor — waist deep, reported from play. It went
+	# unnoticed because the town had no floor to stand on until today,
+	# so the walker fell past the problem.
+	mdl.position = Vector3.ZERO
 	add_child(mdl)
 	var skel := _find(mdl, "Skeleton3D")
 	_anim = AnimationPlayer.new()

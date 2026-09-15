@@ -26,6 +26,7 @@ var _vb: VBoxContainer
 var _title: Label
 var _sub: Label
 var _buttons: Array[Button] = []
+var _pad: Label
 
 
 func _ready() -> void:
@@ -63,6 +64,12 @@ func _ready() -> void:
 	for b in _buttons:
 		_vb.add_child(b)
 
+	_pad = Label.new()
+	_pad.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_pad.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_vb.add_child(_pad)
+	Input.joy_connection_changed.connect(_on_pad_changed)
+
 	_margin = margin
 	_relayout()
 	get_viewport().size_changed.connect(_relayout)
@@ -90,6 +97,10 @@ func _relayout() -> void:
 	_sub.add_theme_font_size_override("font_size", int(32.0 * scale))
 	_vb.add_theme_constant_override("separation", int(28.0 * scale))
 
+	if _pad != null:
+		_pad.add_theme_font_size_override("font_size", int(20.0 * scale))
+		_pad.custom_minimum_size = Vector2(minf(420.0 * scale, vp.x * 0.86), 0)
+
 	var button_h: float = maxf(110.0 * scale, MIN_BUTTON_HEIGHT)
 	var button_w: float = minf(420.0 * scale, vp.x * 0.86)
 	for b in _buttons:
@@ -102,6 +113,31 @@ func _relayout() -> void:
 	_margin.add_theme_constant_override("margin_top",
 		int(maxf(12.0, DisplayServer.get_display_safe_area().position.y)))
 	_margin.add_theme_constant_override("margin_bottom", 12)
+
+
+func _on_pad_changed(_device: int, _connected: bool) -> void:
+	_refresh_pad()
+
+
+func _process(_delta: float) -> void:
+	# Polled as well as signalled. In a BROWSER the Gamepad API does not
+	# report a controller until a button is pressed on it while the page
+	# has focus — a deliberate fingerprinting guard — so a pad plugged in
+	# before the page loaded is invisible and no connection signal ever
+	# fires. Polling is what notices it the moment they press something.
+	_refresh_pad()
+
+
+func _refresh_pad() -> void:
+	if _pad == null:
+		return
+	var pads := Input.get_connected_joypads()
+	if pads.is_empty():
+		_pad.text = "No controller. If one is plugged in, press a button on it."
+		_pad.modulate = Color(0.85, 0.65, 0.45)
+	else:
+		_pad.text = "Controller: %s" % Input.get_joy_name(pads[0])
+		_pad.modulate = Color(0.55, 0.78, 0.55)
 
 
 func _go(scene: String) -> void:
