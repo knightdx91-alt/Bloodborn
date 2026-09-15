@@ -192,6 +192,35 @@ weapon-dependent — "a two-handed maul has an overhead and two side arcs
 and no thrust worth the name" — so it wants a weapon-aware input rather
 than a spare stick direction.
 
+**The pitch stick is not inverted** (`CAM_PITCH_INVERT`), and it took
+two goes. Reported as inverted, I introduced the constant at **-1.0**
+and wrote a comment claiming that was stick-up-looks-up. It is not:
+-1.0 *is* the inverted one, so the flip went the wrong way **and** the
+comment documented the opposite of the code, which is why a re-read did
+not catch it. Reported again, and this time measured rather than
+reasoned about — hold the stick up, assert the camera's height goes
+*down*. `+1.0`.
+
+It is a named constant rather than a buried sign because `interface.md`
+§7 makes remappable controls a *requirement*, listed beside subtitles
+and colourblind-safe cues and never traded for minimalism.
+
+**The camera cannot sink through the ground.** Tilting fully down used
+to put the seat below y=0 and show the world from underneath. The
+**pitch** is floored rather than the height, which keeps the orbit a
+circle — clamping height alone would slide the camera inward and change
+how big the fighter looks as you tilt. Both scenes hold at 0.6
+clearance.
+
+**A chase camera must not live under the thing it is chasing.**
+Thornfield's was a child of the walker, which turns constantly to face
+where you are going; the camera inherited every degree of that while
+its position was being rewritten each frame, so the two fought —
+jittery while walking, and a hard jerk whenever you reversed and the
+body swung through 180°. It is parented to the scene now. The drill
+yard never had this, its camera being a child of the world, which is
+why the fault was town-only.
+
 **Lock-on stays rejected.** It needs an on-screen indicator to be
 legible and L65 forbids that kind of marker, and it degrades badly in
 crowds, which L25's war sizes make the normal case.
