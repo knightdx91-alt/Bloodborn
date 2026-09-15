@@ -143,37 +143,31 @@ targets: you point, the arc follows, and the nearest zone snaps on a
 controller. Kingdom Come's system, and it shipped on consoles — thumb
 precision is the cost, not the barrier.
 
-> **How the stick carries it, settled 2026-09-14 from play.** The
-> camera is **Skyrim's**: the right stick is always the camera, it never
-> recentres, and you aim by pointing it — the body turns to face where
-> you were looking as it commits.
+> **How the stick carries it, settled 2026-09-15 from play.** The
+> **right stick is the camera and also aims the cut.** It orbits the
+> fighter, never recentres, and you aim by pointing it — the body turns
+> to face where you were looking as it commits. For the length of a
+> **wind-up only**, the stick aims the cut while the camera holds still,
+> so a flick re-aims a blow already in the air.
 >
-> That is the clause with consequences. A camera that is never taken
-> away cannot also be the aim, so **the arcs come from the LEFT stick —
-> the direction you are stepping as you commit.** Back for the overhead,
-> in for the thrust, a lean to either side for the level cuts,
-> back-and-across for the low ones; standing still keeps the default.
+> **This moved twice.** It was built this way; then a Skyrim camera was
+> requested and it was removed, on the grounds that Skyrim's camera is
+> never taken away — putting the arcs on the LEFT stick, taking their
+> direction from the way you step, which is Skyrim's own scheme for
+> power attacks. The recorded cost was that you cannot step one way and
+> cut another.
 >
-> This is Skyrim's own scheme, whose power attacks take their direction
-> from the direction you are moving, and Mount & Blade's keyboard layout
-> besides. It also lands on **L56**: techniques are *primarily how you
-> move*, and momentum feeds attacks, so tying the cut to the step makes
-> footwork and attack one decision rather than two.
->
-> **The cost:** you cannot step one way and cut another. Chasing someone
-> down means thrusting, because that is where you are going. Mount &
-> Blade treats that trade as a feature; it is recorded here as the first
-> thing to revisit if fights start feeling like they fight back.
->
-> **An earlier build** gave the stick to aiming during the wind-up and
-> held the camera still — Mount & Blade's actual trick. It works, and it
-> is not Skyrim, and play asked for Skyrim.
+> Play overruled it: *"the camera should be controlled by the right joy
+> stick, the targeting, not the left."* The strictness was an
+> over-reading of the request. A camera that yields the stick for four
+> tenths of a second while you commit is still a Skyrim camera; **a cut
+> you cannot aim independently of your feet is not free aim**, which is
+> what L64 requires.
 >
 > **Rejected: lock-on**, the other way to free the stick (and Kingdom
-> Come's own). Two reasons, both from this document's own rules. It
-> needs an on-screen indicator to be legible, and L65 forbids exactly
-> that kind of marker. And it degrades badly in crowds, which L25's war
-> sizes make the normal case rather than the edge one.
+> Come's own). It needs an on-screen indicator to be legible and L65
+> forbids exactly that kind of marker; and it degrades badly in crowds,
+> which L25's war sizes make the normal case rather than the edge one.
 
 **Direction is the other half of the telegraph, not a second system.**
 §6's shapes (quick, heavy, committed) and the arc are read from one

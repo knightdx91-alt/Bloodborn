@@ -140,129 +140,42 @@ brace; that guessing is what made the parry feel automatic. A pad has a
 button for it, so there is nothing to speculate and nothing to hand
 back: the guard rises when you press LB and not before.
 
-**The camera is Skyrim's**, which is what was asked for, and it is worth
-being exact about what that means because one clause decides everything
-else:
+**The right stick is the camera, and it also aims the cut.** It orbits
+the fighter, never recentres, and the body turns to face where you are
+looking as it commits — so you point the camera at someone and swing at
+them. And for the length of a **wind-up** — from the press until the
+blade goes live, and nowhere else — the stick aims the cut instead,
+while the camera holds still. A flick re-aims a swing that is already
+in the air, right up until the blade is live.
 
-1. The right stick is **always** the camera — yaw and pitch, orbiting
-   the fighter, never taken away for anything.
-2. It **never recentres**. It stays where you left it and the body
-   turns underneath it.
-3. **You aim with the camera.** Point it at someone and commit, and the
-   body turns to face where you were looking.
+Push away for the overhead, pull back for the thrust, either side for
+the level cuts, back-and-across for the low ones. Centred keeps the
+default, so you can fight without touching it. Still no reticle (L65).
 
-Rule 1 killed the previous scheme, which borrowed the stick during a
-wind-up and held the camera still. That is Mount & Blade's trick, it
-works, and it is not Skyrim — so it is gone, and the camera is live
-during a swing exactly as it is everywhere else.
-
-**Which moves the arcs onto the left stick: the direction you are
-stepping as you commit.** Step back for the overhead, step in for the
-thrust, lean to a side for the level cuts, back-and-across for the low
-ones. Standing still keeps the default, so you can ignore the whole
-thing and still fight. Still no reticle (L65).
-
-That is not a consolation prize. It is **Skyrim's own scheme** — its
-power attacks take their direction from the direction you are moving,
-not from the camera — and it is Mount & Blade's keyboard layout, where
-back-and-attack is the overhead and forward-and-attack is the thrust.
-It also lands on L56, which says techniques are *primarily how you
-move* and that momentum feeds attacks: tying the cut to the step makes
-footwork and attack one decision instead of two.
-
-**The cost, recorded rather than discovered later:** you cannot step one
-way and cut another. Chase someone down and your attack is a thrust,
-because that is the direction you are moving. In Mount & Blade that
-exact trade is considered a feature — footwork becomes the attack — but
-it is a real constraint and it is the first thing to revisit if fights
-start feeling like they are fighting you.
-
-**Lock-on was the other way out, and is rejected.** It needs an
-on-screen indicator to be legible and L65 forbids that kind of marker,
-and it degrades badly in crowds, which L25's war sizes make the normal
-case rather than the edge one.
-
-**Menus work on a pad, which took two separate fixes.** Reported from
-play as "controller detected, still can't do anything" — with a
-screenshot of the menu happily naming the controller underneath two
-buttons that would not respond.
-
-1. **Nothing held focus.** Godot focuses no Control on its own, and its
-   `ui_*` actions act on whatever is focused, so there was nothing for a
-   button press to land on. The launcher now focuses its first entry,
-   conversations focus the first topic, and boards focus the way out.
-   The confirm panel focuses **"Think it over"** rather than "Do it" —
-   L49 makes that panel the gate on anything binding, and a gate whose
-   default answer is yes is not a gate.
-2. **`ui_accept` had no gamepad button at all.** Godot's defaults give
-   `ui_up`/`ui_down` the d-pad and the left stick, but `ui_accept` gets
-   Enter, Keypad Enter and Space and nothing else. So a pad could move
-   the highlight and never press anything — which reads as a dead
-   controller even while the game is detecting it perfectly. A is now
-   bound to accept and B to cancel, in `project.godot`.
-
-Defining an action there **replaces** Godot's built-in rather than
-adding to it, so the keyboard events are repeated in the binding;
-leaving them out would have fixed the pad by breaking Enter and Space.
-Verified by driving the menu with a synthesised pad — focus lands,
-d-pad moves it, A presses the highlighted entry and not some other one
-— and then separately with Enter and with Space.
-
-**The pitch stick is not inverted** (`CAM_PITCH_INVERT`). The first
-build had it the other way round and it read as inverted, which is the
-only test a camera has to pass. It is a named constant rather than a
-buried sign because `interface.md` §7 makes remappable controls a
-*requirement* — listed beside subtitles and colourblind-safe cues, and
-never traded away for minimalism.
-
-**The fill light follows the camera; the sun does not.** An orbiting
-camera can be stood somewhere the key light is behind the fighter, so
-the fill is aimed from over the camera's shoulder — offset ~40°, so it
-still shapes the figure rather than flattening it — and whichever side
-you have orbited around to is the side that is lit.
-
-The sun stays put, and must: it carries the shadows, and shadows that
-swung around the yard as you looked would destroy the thing they are
-there for. A world light that tracks the viewer is not a time of day,
-it is a torch.
-
-**And it gets much stronger the further the camera turns into the sun.**
-This is the case that was actually reported: stand so the sun is behind
-the fighter and they render as a **pure black cut-out** against a bright
-sky. A fill that is the same strength all the way round cannot fix that
-without being so strong everywhere else that it flattens the light the
-rest of the time — which `art-audio.md` §5 has already been burnt by
-once. So it is spent where it is needed and nowhere else: nothing extra
-with the sun behind you, `FILL_BACKLIT` on top when you are staring into
-it, on a squared ramp so the three-quarter angles keep their normal
-light.
-
-> **Three measurements that were wrong before one that was right**, kept
-> here because the wrong ones are the instructive part.
+> **This moved twice, and the second move was play overruling me.**
 >
-> 1. Orbiting the camera and averaging luminance in a box on the
->    fighter. **Invalid:** the fight was still running, so the two passes
->    compared different poses in different places. The numbers were
->    noise.
-> 2. Freezing the scene and orbiting the camera. **Invalid:** a
->    fixed-facing character shows a different part of its kit at every
->    angle, so costume was confounded with light.
-> 3. Freezing the camera and sweeping the *sun*, measuring mean
->    luminance. **Valid but measuring the wrong thing** — and it said
->    backlighting made the fighter *brighter*, which is true and
->    useless. Looking into the sun, the fog scatters light toward the
->    camera; the figure gets paler while losing every feature. A pale
->    silhouette reads no better than a dark one.
+> It was built this way first. Then a **Skyrim camera** was asked for,
+> and I removed it on the grounds that Skyrim's camera is never taken
+> away — which put the arcs on the **left** stick, taking their
+> direction from the way you step, as Skyrim's own power attacks do. I
+> recorded the cost at the time: you cannot step one way and cut
+> another.
 >
-> What finally worked was **rendering the worst case and looking at
-> it** — low camera, sun dead ahead, fighter between. The silhouette was
-> obvious in one frame and invisible in every aggregate, because the
-> problem only appears where the background is *sky* rather than ground,
-> which needs the low camera angle none of the sweeps used.
+> Play rejected exactly that: *"the camera should be controlled by the
+> right joy stick, the targeting, not the left."* Fair, and the
+> strictness was mine rather than the request's. **A camera that yields
+> the stick for four tenths of a second while you commit to a blow is
+> still recognisably a Skyrim camera; a cut you cannot aim independently
+> of your feet is not a cut you can use.**
 >
-> `FILL_BACKLIT` was then chosen by photographing that same frame at
-> 0.26, 1.21, 1.80, 2.40 and 3.20. The plates and the sword start
-> reading around 2.4; past that the yard stops looking backlit at all.
+> What it buys back is what L64 actually asks for — free aim, separate
+> from where you happen to be walking. What it costs is a camera that
+> holds during the wind-up, which is as often a gain: that is the moment
+> you most want a steady view of the other fighter.
+
+**Lock-on stays rejected.** It needs an on-screen indicator to be
+legible and L65 forbids that kind of marker, and it degrades badly in
+crowds, which L25's war sizes make the normal case.
 
 **Steering is camera-relative.** Not a preference: the moment the
 camera can turn, a world-space "left" sends you somewhere that is not
