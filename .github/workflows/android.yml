@@ -48,10 +48,16 @@ jobs:
           distribution: temurin
           java-version: "17"
 
+      # `~` and not `$HOME`: actions/cache does NOT shell-expand, so
+      # `$HOME/...` was a literal path segment resolved against the
+      # workspace — a directory that never exists. The restore silently
+      # missed and the save refused with "Path(s) specified in the action
+      # for caching do(es) not exist", so every build re-downloaded the
+      # 600MB template pack while looking like it was cached.
       - name: Cache Godot export templates
         uses: actions/cache@v4
         with:
-          path: $HOME/.local/share/godot/export_templates
+          path: ~/.local/share/godot/export_templates
           key: godot-export-templates-4.3-stable
 
       - name: Install Godot 4.3 and export templates
