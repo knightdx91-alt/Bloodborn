@@ -125,9 +125,9 @@ what it costs to have on screen. All twelve are 2048×2048:
 
 | | |
 |---|---|
-| Per texture, uncompressed in VRAM (with mipmaps) | ~21 MB |
-| **All three characters, uncompressed** | **~255 MB** |
-| The same textures as ETC2/ASTC | ~32 MB |
+| Per texture, uncompressed in VRAM (RGBA8, with mipmaps) | ~21 MB |
+| **All three characters, uncompressed** | **~256 MB** |
+| The same textures as ETC2/ASTC (8 bpp, so exactly 4×) | ~64 MB |
 
 The drill yard loads all three at once, so that was the full 255 MB
 resident on a phone — where the GPU shares system RAM, and a number
@@ -135,11 +135,18 @@ like that buys stutter, thermal throttling, or the OS killing the app
 on a mid-range device. `import_etc2_astc` was already true in
 `project.godot`; the per-texture import mode was quietly overriding it.
 
-**The download saving is the small half** — 61.1 → 56.0 MB on the web
-export, because the web build does not use ETC2/ASTC and barely
-benefits. The APK should do considerably better. The ~223 MB of VRAM is
-the part that matters, and it is on the platform the game is actually
-played on.
+**The download saving is small, and that is inherent rather than a
+disappointment.** Web export 61.1 → 55.2 MB; APK 107 → 101 MB.
+
+PNG is a good *variable-rate* lossless compressor, and ETC2/ASTC are
+*fixed-rate* at 8 bits per pixel — so on disk a well-compressed PNG can
+be smaller than its compressed form, and swapping them barely moves the
+download. (A prediction that the APK would do "considerably better"
+than the web build was made here and was wrong: both saved about 6 MB.)
+
+**The ~192 MB of VRAM is the entire point.** Fixed-rate is exactly what
+makes it a win in memory: 32 bpp becomes 8 bpp, always, which no amount
+of PNG cleverness can do because the GPU cannot sample a PNG.
 
 Checked by rendering all three side by side before and after: no
 visible difference, which is the expected result at any distance a
