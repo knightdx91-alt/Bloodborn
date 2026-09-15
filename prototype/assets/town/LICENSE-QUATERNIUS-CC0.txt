@@ -10,3 +10,15 @@ Packs used (free Standard versions, downloaded 2026-09-14):
 
 Textures were downscaled (BaseColor/Diffuse to 1024px, others to 512px)
 for the Android build size budget. No other modifications.
+
+CC0 evidence (verified 2026-09-14 before commit):
+- Medieval Village MegaKit: official itch page
+  (https://quaternius.itch.io/medieval-village-megakit) states CC0 1.0.
+- Farm Buildings: official itch page
+  (https://quaternius.itch.io/lowpoly-farm-buildings) states "CC0 License"
+  linking https://creativecommons.org/publicdomain/zero/1.0/.
+- Stylized Nature MegaKit: License_Standard.txt inside the downloaded
+  archive states "CC0 1.0 Universal (CC0 1.0) Public Domain Dedication".
+- Fantasy Props MegaKit: License_Standard.txt inside the downloaded
+  archive states "CC0 1.0 Universal (CC0 1.0) Public Domain Dedication".
+
