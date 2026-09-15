@@ -71,16 +71,45 @@ jobs:
           godot --version
 
       - name: Configure Godot Android export
+        env:
+          ANDROID_KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
         run: |
           set -eux
-          # Debug keystore at Godot's default location (preset leaves keystore fields empty).
-          mkdir -p "$HOME/.local/share/godot/keystores"
-          if [ ! -f "$HOME/.local/share/godot/keystores/debug.keystore" ]; then
-            keytool -genkey -v -keystore "$HOME/.local/share/godot/keystores/debug.keystore" \
+          # The signing key, and why this matters more than it looks.
+          #
+          # Android refuses to install an APK over one signed by a
+          # DIFFERENT key. So if the key changes between builds, every
+          # update means uninstall-then-reinstall, which also throws away
+          # whatever the app had saved.
+          #
+          # This used to generate one with `if [ ! -f ... ]` guarding it —
+          # which does nothing, because every run starts on a fresh
+          # runner with an empty $HOME. keytool therefore fired on EVERY
+          # build and produced a new random key each time.
+          #
+          # Order of preference, first one wins:
+          #   1. ANDROID_KEYSTORE_B64 secret — correct, and the only
+          #      option that keeps the key out of a public repo.
+          #   2. ci/debug.keystore committed in the repo — stable, and
+          #      public along with everything else here.
+          #   3. Generate one, and say loudly that updates will break.
+          KS_DIR="$HOME/.local/share/godot/keystores"
+          mkdir -p "$KS_DIR"
+          KS="$KS_DIR/debug.keystore"
+          if [ -n "${ANDROID_KEYSTORE_B64:-}" ]; then
+            echo "$ANDROID_KEYSTORE_B64" | base64 -d > "$KS"
+            echo "signing key: from the ANDROID_KEYSTORE_B64 secret"
+          elif [ -f "$GITHUB_WORKSPACE/ci/debug.keystore" ]; then
+            cp "$GITHUB_WORKSPACE/ci/debug.keystore" "$KS"
+            echo "signing key: ci/debug.keystore from the repo"
+          else
+            echo "::warning::No stable signing key. Generating a throwaway one, so this build CANNOT be installed over the previous one — you will have to uninstall first. Add an ANDROID_KEYSTORE_B64 secret or commit ci/debug.keystore to fix this."
+            keytool -genkey -v -keystore "$KS" \
               -alias androiddebugkey -storepass android -keypass android \
               -keyalg RSA -keysize 2048 -validity 10000 \
               -dname "CN=Android Debug,O=Android,C=US"
           fi
+          keytool -list -keystore "$KS" -storepass android | tail -2
           # Editor Settings: Java + Android SDK paths (required even for non-Gradle exports).
           # A fresh editor_settings file has no export/android keys, so append-or-replace.
           godot --headless --editor --quit-after 1 > /dev/null 2>&1 || true
@@ -102,6 +131,13 @@ jobs:
         run: |
           set -eux
           mkdir -p dist
+          # Version code climbs with the run number, so Android can tell
+          # one build from the next and the phone's app info shows which
+          # one is installed. Android allows a same-version reinstall but
+          # refuses a DOWNGRADE, so this must never go backwards.
+          sed -i "s|^version/code=.*|version/code=${GITHUB_RUN_NUMBER}|" prototype/export_presets.cfg
+          sed -i "s|^version/name=.*|version/name=\"0.1.${GITHUB_RUN_NUMBER}\"|" prototype/export_presets.cfg
+          grep -E "^version/(code|name)" prototype/export_presets.cfg
           godot --headless --path prototype --export-debug "Android" "$GITHUB_WORKSPACE/dist/marrowmark.apk"
           ls -la dist/
 
@@ -110,6 +146,11 @@ jobs:
           set -eux
           BT="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)"
           "$BT/apksigner" verify --verbose dist/marrowmark.apk
+          # Print the signer certificate digest. Two builds that install
+          # over each other have the SAME digest here — it is the one
+          # line that tells you whether updating will work, so it goes in
+          # every build log rather than being worked out after the fact.
+          "$BT/apksigner" verify --print-certs dist/marrowmark.apk | grep -i "SHA-256 digest" || true
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
