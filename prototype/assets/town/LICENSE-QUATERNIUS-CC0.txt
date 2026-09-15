@@ -1,0 +1,12 @@
+Environment models in this directory are by Quaternius (https://quaternius.com),
+released under Creative Commons CC0 1.0 Universal (public domain).
+https://creativecommons.org/publicdomain/zero/1.0/
+
+Packs used (free Standard versions, downloaded 2026-09-14):
+- Medieval Village MegaKit (modular walls/roofs/props) — kit/
+- Farm Buildings (barns, silos, fences, well, windmill) — farm/
+- Stylized Nature MegaKit (trees, bushes, grass, rocks) — nature/
+- Fantasy Props MegaKit (stalls, barrels, crates, smithy, etc.) — props/
+
+Textures were downscaled (BaseColor/Diffuse to 1024px, others to 512px)
+for the Android build size budget. No other modifications.
