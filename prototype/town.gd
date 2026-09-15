@@ -43,7 +43,14 @@ func _ready() -> void:
 	_orchard()
 	_scatter()
 	# Thornfield's people and systems (T4/T5): NPCs, boards, shrine, rumors.
-	TownPopulation.populate(self)
+	var systems: Dictionary = TownPopulation.populate(self)
+	# Playable walker: third-person stroller + talk button (town_player.gd).
+	var walker := TownWalker.new()
+	walker.name = "TownWalker"
+	walker.systems = systems
+	walker.position = Vector3(0.0, 0.5, 42.0)
+	walker.rotation.y = PI  # face the town center
+	add_child(walker)
 
 
 # ---------------------------------------------------------------- assets ---
