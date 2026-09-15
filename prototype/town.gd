@@ -42,6 +42,8 @@ func _ready() -> void:
 	_delve_mouth()
 	_orchard()
 	_scatter()
+	# Thornfield's people and systems (T4/T5): NPCs, boards, shrine, rumors.
+	TownPopulation.populate(self)
 
 
 # ---------------------------------------------------------------- assets ---
