@@ -24,7 +24,7 @@ yard's 91.
 | Piece | Where | What it is |
 |---|---|---|
 | Town geometry and dressing | `town.gd` | Harvest-town layout from CC0 Quaternius kits. Licence evidence is recorded in `assets/town/LICENSE-QUATERNIUS-CC0.txt` |
-| Walking around | `town_player.gd` | A town-speed player, separate from the yard's fighter |
+| Walking around | `town_player.gd` | A town-speed player, separate from the yard's fighter. Left stick or WASD walks, **right stick orbits the camera**, a finger on the right half of the screen does the same, **A** talks, **Start** leaves |
 | People | `npc/roster.gd`, `npc/npc.gd` | 9 conversational townsfolk and ~25 for crowd barks, standing where their work is (`onboarding.md` §5) |
 | Ambient talk | `npc/bark_bank.gd` | Epoch-filtered lines, so what you overhear changes as the world does |
 | Conversation | `npc/conversation.gd` | Walk up, hold to talk, pick a topic. See the gate below |
@@ -212,6 +212,28 @@ into a 1.725m character.
 It went unnoticed because the town had no floor until the same day: the
 walker fell straight past the problem. **Fixing one bug is what exposed
 the other**, which is the usual shape of it.
+
+## The camera, added 2026-09-15 — it had none
+
+Reported after the drill yard's camera was fixed: *"the camera is still
+the case as it was."* Correct, and in this scene it had never been
+anything else. Thornfield had a **fixed follow camera** at a hardcoded
+offset that never read a stick — and when pad support was added here
+for walking and talking, the camera was simply forgotten. So the yard's
+fix landed and the town's camera did not move, because there was
+nothing there to move.
+
+It now orbits exactly as the yard's does, and for the same reasons:
+constant distance so the walker stays the same size in frame, a clamped
+pitch, no recentring. Walking became **camera-relative** at the same
+time, which is not optional — the moment a camera can turn, a
+world-space "forward" sends you somewhere that is not forward on
+screen.
+
+Touch gets it too: a finger on the **right half** of the screen swings
+the camera, mirroring the left half's walking stick. A phone with no
+controller is the commonest way this is played, and it had no way to
+look around at all.
 
 ## Still open
 

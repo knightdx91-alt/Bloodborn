@@ -20,6 +20,33 @@ const PAD_DEADZONE := 0.15
 const PAD_TALK := JOY_BUTTON_A
 const PAD_LEAVE := JOY_BUTTON_START
 
+## Camera orbit, matching world.gd's so the two scenes do not want
+## different hands.
+##
+## The town had NO camera control of any kind: a fixed follow at a
+## hardcoded offset that never read the stick. Pad support was added
+## here for walking and talking and the camera was simply forgotten, so
+## "the camera is still the same" was exactly right — in this scene it
+## had never been anything else.
+const CAM_DISTANCE := 8.5
+const CAM_HEIGHT := 5.2
+const CAM_YAW_RATE := 2.8
+const CAM_PITCH_RATE := 1.7
+const CAM_PITCH_INVERT := -1.0
+const CAM_PITCH_MIN := -0.20
+const CAM_PITCH_MAX := 1.15
+const CAM_STICK_DEADZONE := 0.18
+const CAM_KEY_RATE := 1.8
+## How far a finger on the RIGHT half of the screen swings the camera.
+const CAM_DRAG_RATE := 0.006
+var _cam_yaw := 0.0
+var _cam_pitch := 0.0
+var _look_id := -1
+## Accumulated by a finger on the right half of the screen, spent once
+## per frame. Touch has no camera otherwise, and a phone without a pad
+## is the commonest way this is played.
+var _look_drag := Vector2.ZERO
+
 var systems: Dictionary = {}
 
 var _anim: AnimationPlayer
@@ -89,8 +116,47 @@ func _build_camera() -> void:
 	_cam = Camera3D.new()
 	_cam.far = 400.0
 	add_child(_cam)
-	_cam.global_position = global_position + Vector3(0, 5.2, 6.8)
-	_cam.look_at(global_position + Vector3(0, 1.4, 0))
+	_cam_pitch = atan2(CAM_HEIGHT, CAM_DISTANCE)
+	_cam.global_position = _camera_seat()
+	_cam.look_at(_focus(), Vector3.UP)
+
+
+func _focus() -> Vector3:
+	return global_position + Vector3(0, 1.4, 0)
+
+
+## Where the camera stands: an orbit at constant distance, so the walker
+## stays the same size in frame at every angle.
+func _camera_seat() -> Vector3:
+	var dist: float = sqrt(CAM_DISTANCE * CAM_DISTANCE + CAM_HEIGHT * CAM_HEIGHT)
+	var off := Vector3(0.0, sin(_cam_pitch), cos(_cam_pitch)) * dist
+	return _focus() + off.rotated(Vector3.UP, _cam_yaw)
+
+
+## Where the camera looks, flattened. Walking is measured against this:
+## the moment a camera can turn, a world-space "forward" sends you
+## somewhere that is not forward on screen.
+func _camera_forward() -> Vector3:
+	return Vector3(-sin(_cam_yaw), 0.0, -cos(_cam_yaw))
+
+
+func _tick_camera(delta: float) -> void:
+	var yaw: float = 0.0
+	var pitch: float = 0.0
+	var rx := Input.get_joy_axis(PAD, JOY_AXIS_RIGHT_X)
+	var ry := Input.get_joy_axis(PAD, JOY_AXIS_RIGHT_Y)
+	if absf(rx) > CAM_STICK_DEADZONE:
+		yaw -= rx * CAM_YAW_RATE
+	if absf(ry) > CAM_STICK_DEADZONE:
+		pitch += ry * CAM_PITCH_RATE * CAM_PITCH_INVERT
+	if Input.is_key_pressed(KEY_Q):
+		yaw += CAM_KEY_RATE
+	if Input.is_key_pressed(KEY_BRACKETRIGHT):
+		yaw -= CAM_KEY_RATE
+	_cam_yaw = wrapf(_cam_yaw + yaw * delta + _look_drag.x, -PI, PI)
+	_cam_pitch = clampf(_cam_pitch + pitch * delta + _look_drag.y,
+		CAM_PITCH_MIN, CAM_PITCH_MAX)
+	_look_drag = Vector2.ZERO
 
 
 func _circle_panel(d: float, color: Color) -> Panel:
@@ -149,12 +215,19 @@ func _input(event: InputEvent) -> void:
 				_stick_origin = t.position
 				_stick_vec = Vector2.ZERO
 				_show_stick(t.position)
+			elif _look_id == -1 and t.position.x >= vw * 0.5:
+				_look_id = t.index
 		elif t.index == _stick_id:
 			_stick_id = -1
 			_stick_vec = Vector2.ZERO
 			_hide_stick()
+		elif t.index == _look_id:
+			_look_id = -1
 	elif event is InputEventScreenDrag:
 		var dr := event as InputEventScreenDrag
+		if dr.index == _look_id:
+			_look_drag += Vector2(-dr.relative.x, -dr.relative.y) * CAM_DRAG_RATE
+			return
 		if dr.index == _stick_id:
 			var off := dr.position - _stick_origin
 			if off.length() > STICK_RADIUS:
@@ -214,10 +287,15 @@ func _input_dir() -> Vector2:
 func _physics_process(delta: float) -> void:
 	var dir := _input_dir()
 	if dir.length() > 0.15:
-		var d := dir.normalized()
+		# Rotated into camera space. Without this, turning the camera
+		# leaves "forward" pointing somewhere that is not forward on
+		# screen, and the town becomes unwalkable the first time you
+		# orbit behind yourself.
+		var d2: Vector2 = dir.normalized().rotated(-_cam_yaw)
+		var d := Vector3(d2.x, 0.0, d2.y)
 		velocity.x = d.x * SPEED
-		velocity.z = d.y * SPEED
-		rotation.y = lerp_angle(rotation.y, atan2(d.x, d.y), 12.0 * delta)
+		velocity.z = d.z * SPEED
+		rotation.y = lerp_angle(rotation.y, atan2(d.x, d.z), 12.0 * delta)
 		if _anim.current_animation != "walk":
 			_anim.play("walk")
 	else:
@@ -230,9 +308,9 @@ func _physics_process(delta: float) -> void:
 
 
 func _process(delta: float) -> void:
-	_cam.global_position = _cam.global_position.lerp(
-		global_position + Vector3(0, 5.2, 6.8), 6.0 * delta)
-	_cam.look_at(global_position + Vector3(0, 1.4, 0))
+	_tick_camera(delta)
+	_cam.global_position = _cam.global_position.lerp(_camera_seat(), 12.0 * delta)
+	_cam.look_at(_focus(), Vector3.UP)
 	_near = null
 	if ConversationUI.current == null:
 		var pop := get_parent().get_node_or_null("Population")
