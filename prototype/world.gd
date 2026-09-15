@@ -149,20 +149,28 @@ var _cam_yaw := 0.0
 var _cam_pitch := 0.0
 const CAM_YAW_RATE := 2.8        # radians per second at full deflection
 const CAM_PITCH_RATE := 1.7
-## Which way up the pitch stick is. -1.0 is stick-up-tilts-the-camera-up,
-## which is what play asked for; +1.0 is the other convention.
+## Which way up the pitch stick is. +1.0 is stick-up-looks-up, the
+## standard convention.
+##
+## This was -1.0, set after "the camera is inverted" was reported — and
+## -1.0 IS the inverted one, so the flip went the wrong way and the
+## comment claiming otherwise was wrong. Reported again, and checked
+## this time rather than reasoned about: stick up must LOWER the camera
+## toward the fighter's eye line.
 ##
 ## A constant rather than a buried sign because interface.md §7 makes
 ## remappable controls a REQUIREMENT, not a nicety — it lists them beside
 ## subtitles and colourblind-safe cues, and says accessibility is never
 ## traded away for minimalism. This is the first setting that will need a
 ## menu, and the number is already sitting here waiting for one.
-const CAM_PITCH_INVERT := -1.0
+const CAM_PITCH_INVERT := 1.0
 ## Clamps on the FINAL pitch, so neither aspect can drive the camera
 ## through the floor or onto the back of the fighter's head.
 const CAM_PITCH_MIN := -0.30
 const CAM_PITCH_MAX := 1.25
 const CAM_STICK_DEADZONE := 0.18
+## How far above the ground the camera is kept.
+const CAM_GROUND_CLEARANCE := 0.6
 const CAM_KEY_RATE := 1.8
 
 # Prototype scaffolding, not a design decision. interface.md §2 gives an
@@ -1012,12 +1020,21 @@ func _place_camera() -> void:
 	var distance: float = sqrt(height * height + back * back)
 	var rest: float = atan2(height, back)
 	var pitch: float = clampf(rest + _cam_pitch, CAM_PITCH_MIN, CAM_PITCH_MAX)
+
+	var focus := player.position + Vector3(0, 1.0, 0)
+	# Floored so the camera never sinks through the ground and shows the
+	# world from underneath. The PITCH is clamped rather than the height,
+	# which keeps the orbit a circle: clamping height alone would slide
+	# the camera inward and change how big the fighter looks as you tilt.
+	var floor_limit: float = asin(clampf(
+		(CAM_GROUND_CLEARANCE - focus.y) / maxf(distance, 0.01), -1.0, 1.0))
+	pitch = maxf(pitch, floor_limit)
+
 	# Fold the clamp back into the offset rather than letting it drift:
 	# holding the stick against the limit must not build up a debt you
 	# then have to unwind before the camera moves again.
 	_cam_pitch = pitch - rest
 
-	var focus := player.position + Vector3(0, 1.0, 0)
 	var offset := Vector3(0.0, sin(pitch), cos(pitch)) * distance
 	cam.position = focus + offset.rotated(Vector3.UP, _cam_yaw) + feel.offset()
 	cam.look_at(focus, Vector3.UP)

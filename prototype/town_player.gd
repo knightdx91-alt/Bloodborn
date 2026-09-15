@@ -32,10 +32,20 @@ const CAM_DISTANCE := 8.5
 const CAM_HEIGHT := 5.2
 const CAM_YAW_RATE := 2.8
 const CAM_PITCH_RATE := 1.7
-const CAM_PITCH_INVERT := -1.0
+## +1.0 is stick-up-looks-up, the standard convention.
+##
+## This was set to -1.0 in both scenes after "the camera is inverted"
+## was reported — and -1.0 IS the inverted one, so the flip went the
+## wrong way and the comment claiming otherwise was simply wrong.
+## Stick up must LOWER the camera toward the fighter's eye line, which
+## is what +1.0 does.
+const CAM_PITCH_INVERT := 1.0
 const CAM_PITCH_MIN := -0.20
 const CAM_PITCH_MAX := 1.15
 const CAM_STICK_DEADZONE := 0.18
+## How far above the ground the camera is kept. Below this it sinks
+## through the floor and the world is seen from underneath.
+const GROUND_CLEARANCE := 0.6
 const CAM_KEY_RATE := 1.8
 ## How far a finger on the RIGHT half of the screen swings the camera.
 const CAM_DRAG_RATE := 0.006
@@ -115,7 +125,19 @@ func _clip(path: String) -> Animation:
 func _build_camera() -> void:
 	_cam = Camera3D.new()
 	_cam.far = 400.0
-	add_child(_cam)
+	# Parented to the SCENE, not to the walker.
+	#
+	# It used to be a child of this body — which turns constantly, by
+	# lerp_angle, to face wherever you are walking. The camera inherited
+	# every degree of that while its global_position was being rewritten
+	# each frame, so the two fought: jittery while walking, and a hard
+	# jerk whenever you reversed and the body swung through 180°.
+	#
+	# A chase camera must not live under the thing it is chasing.
+	var host: Node = get_tree().current_scene
+	if host == null:
+		host = get_parent()
+	host.add_child(_cam)
 	_cam_pitch = atan2(CAM_HEIGHT, CAM_DISTANCE)
 	_cam.global_position = _camera_seat()
 	_cam.look_at(_focus(), Vector3.UP)
@@ -129,8 +151,22 @@ func _focus() -> Vector3:
 ## stays the same size in frame at every angle.
 func _camera_seat() -> Vector3:
 	var dist: float = sqrt(CAM_DISTANCE * CAM_DISTANCE + CAM_HEIGHT * CAM_HEIGHT)
-	var off := Vector3(0.0, sin(_cam_pitch), cos(_cam_pitch)) * dist
+	var pitch: float = _floored_pitch(dist)
+	var off := Vector3(0.0, sin(pitch), cos(pitch)) * dist
 	return _focus() + off.rotated(Vector3.UP, _cam_yaw)
+
+
+## The pitch, floored so the camera never sinks through the ground.
+##
+## Tilting all the way down put the seat below y=0 and the world was
+## seen from underneath. Clamping the PITCH rather than the resulting
+## height keeps the orbit a circle — clamping the height alone would
+## slide the camera inward and change how big the walker looks as you
+## tilt.
+func _floored_pitch(dist: float) -> float:
+	var limit: float = asin(clampf(
+		(GROUND_CLEARANCE - _focus().y) / maxf(dist, 0.01), -1.0, 1.0))
+	return maxf(_cam_pitch, limit)
 
 
 ## Where the camera looks, flattened. Walking is measured against this:
