@@ -9,77 +9,53 @@ extends RefCounted
 static var _open_ui: CanvasLayer = null
 
 
-## Build the contract list from world state, fresh every time.
+## The board's postings, dressed for Thornfield.
+##
+## The RULE — what work exists and what it pays — now lives in
+## rules/contract_board.gd, mirroring sim/Marrowmark.Sim/Town (L88).
+## What is left here is the prose, which is where it belongs: a second
+## town phrases the same contract differently and should not have to
+## re-derive which contracts there are.
 static func contracts(state: TownWorldState) -> Array:
 	var out: Array = []
-	for region in state.boar_pressure:
-		var p := int(state.boar_pressure[region])
-		if p <= 0:
-			continue
-		var cid := "cull-" + String(region).replace(" ", "-")
-		out.append({
-			"id": cid,
-			"kind": "cull",
-			"title": "Cull the boars — %s" % region,
-			"detail": "Blood-warped boars press at %s (pressure %d of 5). Thin them before they reach the farms." % [region, p],
-			"pay": 4 + p * 3,
-			"taken": state.contracts_taken.has(cid),
-		})
-	for c in state.caravans:
-		if String(c["status"]) != "mustering":
-			continue
-		var cid2 := "escort-" + String(c["id"])
-		out.append({
-			"id": cid2,
-			"kind": "escort",
-			"title": "Guard the %s wagon" % String(c["dest"]),
-			"detail": "A wagon musters at the carter's yard for %s. They want %d guards. Coin, not promises." % [String(c["dest"]), int(c["guards"])],
-			"pay": 10 + int(c["guards"]) * 4,
-			"taken": state.contracts_taken.has(cid2),
-		})
-	if state.harvest_demand > 0:
-		out.append({
-			"id": "harvest-vance",
-			"kind": "harvest",
-			"title": "Harvest hands — Vance farm",
-			"detail": "Drover Vance wants %d hands for the harvest, up the north road past the burnt mill. Coin's honest and the beer's honest." % state.harvest_demand,
-			"pay": 5,
-			"taken": state.contracts_taken.has("harvest-vance"),
-		})
-	for j in state.smithing_jobs:
-		var cid3 := String(j["id"])
-		out.append({
-			"id": cid3,
-			"kind": "smithing",
-			"title": "Smithing: %s" % String(j["work"]),
-			"detail": "Odo's commission, at the smithy west of the square. He corrects; you learn.",
-			"pay": int(j["pay"]),
-			"taken": state.contracts_taken.has(cid3),
-		})
+	for c in ContractBoardRules.generate(state):
+		var row: Dictionary = (c as Dictionary).duplicate()
+		match int(c["kind"]):
+			ContractBoardRules.Kind.CULL:
+				row["kind"] = "cull"
+				row["title"] = "Cull the boars — %s" % String(c["subject"])
+				row["detail"] = ("Blood-warped boars press at %s (pressure %d of 5). "
+					+ "Thin them before they reach the farms.") % [
+						String(c["subject"]), int(c["magnitude"])]
+			ContractBoardRules.Kind.ESCORT:
+				row["kind"] = "escort"
+				row["title"] = "Guard the %s wagon" % String(c["subject"])
+				row["detail"] = ("A wagon musters at the carter's yard for %s. "
+					+ "They want %d guards. Coin, not promises.") % [
+						String(c["subject"]), int(c["magnitude"])]
+			ContractBoardRules.Kind.HARVEST:
+				row["kind"] = "harvest"
+				row["title"] = "Harvest hands — Vance farm"
+				row["detail"] = ("Drover Vance wants %d hands for the harvest, up the "
+					+ "north road past the burnt mill. Coin's honest and the beer's "
+					+ "honest.") % int(c["magnitude"])
+			_:
+				row["kind"] = "smithing"
+				row["title"] = "Smithing: %s" % String(c["subject"])
+				row["detail"] = "Odo's commission, at the smithy west of the square. He corrects; you learn."
+		out.append(row)
 	return out
 
 
 ## The market board lists only what's warehoused in Thornfield
 ## (economy.md §3): grain, cloth, ale, tools.
 static func market_goods(state: TownWorldState) -> Array:
-	var out: Array = []
-	for good in state.warehoused:
-		var g: Dictionary = state.warehoused[good]
-		out.append({
-			"good": String(good),
-			"qty": int(g["qty"]),
-			"price": int(g["price"]),
-			"unit": String(g["unit"]),
-		})
-	return out
+	return ContractBoardRules.market(state)
 
 
 ## Take a contract: binding, so the conversation layer confirms first.
 static func take(state: TownWorldState, contract_id: String) -> bool:
-	if state.contracts_taken.has(contract_id):
-		return false
-	state.contracts_taken.append(contract_id)
-	return true
+	return ContractBoardRules.take(state, contract_id)
 
 
 static func open_contracts_ui(state: TownWorldState) -> void:

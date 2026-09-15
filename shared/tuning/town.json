@@ -1,0 +1,20 @@
+{
+  "board": {
+    "cullBasePay": 4,
+    "cullPayPerPressure": 3,
+    "escortBasePay": 10,
+    "escortPayPerGuard": 4,
+    "harvestPay": 5
+  },
+  "rumour": {
+    "drinkPrice": 2,
+    "distortionPerHour": 0.002,
+    "maxDistortion": 0.9,
+    "hedgeAbove": 0.5,
+    "freshnessWeight": 100.0,
+    "distortionPenalty": 10.0
+  },
+  "shrine": {
+    "shrineToll": 4
+  }
+}

@@ -116,19 +116,57 @@ an adversarial world into a popularity contest".
   survives leaving the scene.
 - **The rules live only here.** See below — this is the open question.
 
-## ⚠️ The open question: L88
+## L88, settled — the rules moved
 
-`world_state.gd`, `boards.gd`, `rumors.gd`, `apprenticeship.gd` and the
-toll arithmetic in `shrine.gd` are **real game rules with no C#
-counterpart and no tests.** `sim/` has no town, npc or rumour code at
-all.
+**The town's rules now live in `sim/Marrowmark.Sim/Town/`, in C#, with
+tests.** What stayed in GDScript is the prose and the presentation,
+which is where the line belongs.
 
-**L88 is explicit that `sim/` stays authoritative and the prototype
-mirrors it**, and the reason is written into the lock: rules in two
-places drift, and rules in the engine-facing copy cannot be tested or
-reused by the server Stage 2 is about to build. Contract generation
-from world state is precisely the kind of thing that will need to run
-server-side.
+| Rule | Authority | Mirror |
+|---|---|---|
+| World state shape | `Town/TownState.cs` | `town_systems/world_state.gd` |
+| What work exists, what it pays, taking it | `Town/ContractBoard.cs` | `rules/contract_board.gd` |
+| Rumour ranking, ageing, the drink | `Town/RumourMill.cs` | `rules/rumour_mill.gd` |
+| One master, binding | `Town/Apprenticeship.cs` | `rules/town_rules.gd` |
+| The shrine's toll | `Town/Shrine.cs` | `rules/town_rules.gd` |
+| The numbers | `shared/tuning/town.json` | `rules/town.json` |
 
-Either Thornfield is understood to be a throwaway UX sketch, or these
-move. It is a fork worth choosing rather than drifting into.
+`town_systems/boards.gd`, `rumors.gd`, `apprenticeship.gd` and
+`shrine.gd` are now **thin prose layers** over those mirrors. The board
+still says "Blood-warped boars press at the Hedges west (pressure 3 of
+5)"; it no longer decides that the contract exists or that it pays 13.
+
+**Where the line is drawn, and why there.** `Contract` carries the
+facts — kind, subject, magnitude, pay, taken — and no title or detail.
+A test asserts that, because prose creeping back into the rules is the
+failure that would make a second town unable to reuse any of this. A
+different town phrases the same cull differently; it should not have to
+re-derive which culls there are.
+
+**What the port added that the GDScript did not have:**
+
+- **27 tests**, where there were none.
+- **`Take` now refuses work that is not posted.** It previously appended
+  any string handed to it, so a mistyped id — or a model reaching for a
+  contract that had been withdrawn — booked a job nobody was offering.
+  This matters precisely because L49 lets the model reach for anything;
+  the gate has to be here.
+- **`Hire` now refuses a master who does not hire**, for the same reason.
+- **The market hides goods at zero quantity.** It previously listed
+  anything in the dictionary, including an empty cask rack, which is
+  the same lie about the world that `content.md` §3 forbids the contract
+  board from telling.
+
+**What it deliberately did not take:** the authored rumour text, the
+errand lines, Sarella's words over the shrine stone, and the seed of
+Thornfield's own boars and caravans. Those are content. `sim/` stays
+engine-free and town-free — it knows what a town is, not which one.
+
+## Still open
+
+- **The world state is seeded once and never persists.** Nothing
+  survives leaving the scene.
+- **`offer_contract` is doing double duty as "binding"**, so a two-penny
+  ale is tagged a contract offer. Gated correctly; the taxonomy wants
+  separating before a model generates the first one.
+- **NPC bodies** are still the blocky placeholder.

@@ -12,7 +12,7 @@ of each working session.
 Design is **88 locked decisions** and **complete** — every structural
 question locked, every missing document written. Every system a player
 touches in their first hundred hours is specified, and most of it is
-**written, tested and running** as engine-free C# — 279 tests.
+**written, tested and running** as engine-free C# — 313 tests.
 
 **Stage 1 is built and playable in any browser**: a character who walks
 and runs, a dodge with invulnerability frames, a sword, a training
@@ -188,21 +188,33 @@ honours L29 by giving directions as landmarks rather than markers.
 
 ### ⚠️ Three things about it that need a decision, not a fix
 
-1. **It arrived with no documentation.** 379 files and ~31,000 lines,
-   and not one markdown file. Nothing in `design/`, nothing in
-   `STATUS.md` until this entry, which was written by reading the code.
-2. **Two files cite a "plan §4" that does not exist** in `design/` —
-   `npc/conversation.gd` and `npc/bark_bank.gd` both rest their
-   whitelist-intent design on it. Either that document is missing or the
-   reference is to something outside the repository.
-3. **It puts game RULES in GDScript only, which inverts L88.** The
-   contract generation, rumour distortion, world state and
-   apprenticeship flags are real rules with no C# counterpart and **no
-   tests** — `sim/` has no town, npc or rumour code at all. L88 is
-   explicit that `sim/` stays authoritative and the prototype *mirrors*
-   it. Either the town is understood to be a throwaway UX sketch, or
-   these rules need to move to `sim/` before they grow. **That is a
-   fork worth choosing deliberately rather than drifting into.**
+1. ~~It arrived with no documentation.~~ **Written 2026-09-15:**
+   `prototype/TOWN.md`, from the code.
+2. ~~Two files cite a "plan §4" that does not exist.~~ **Resolved, and
+   it was our bug, not the town's.** The real source is
+   `brainstorm.md` §9.1 and §9.2 — and §9.2 still carried the
+   **pre-L49 intent whitelist**, naming `offer_contract`,
+   `share_rumor`, `refuse`, `set_disposition`, `none`, with no note
+   that L49 had removed it. Thornfield implemented that paragraph
+   faithfully and verbatim. §9.2 is now annotated, because a superseded
+   passage that does not say so gets implemented again by the next
+   person who reads it.
+3. ~~**It puts game RULES in GDScript only, which inverts L88.**~~
+   **Settled 2026-09-15 — the rules moved.** `sim/Marrowmark.Sim/Town/`
+   now owns the world state, contract generation, rumour ranking and
+   ageing, apprenticeship and the shrine's toll, with **27 tests** where
+   there were none, and `shared/tuning/town.json` guarded against drift
+   like `combat.json`. `prototype/rules/` mirrors it; the town systems
+   are now thin prose layers. See `prototype/TOWN.md`.
+
+   The port found three real bugs, all of the same shape — **rules that
+   trusted their caller.** `take()` appended any string handed to it, so
+   a withdrawn contract could still be booked; `hire()` accepted any
+   master, including one who does not hire; the market listed goods at
+   zero quantity, which is the same lie about the world that
+   `content.md` §3 forbids the board from telling. Each matters
+   specifically because **L49 lets a model reach for anything**, so the
+   gate has to be in the rule rather than in the caller.
 
 ## What play found — 2026-09-14, first session with a pad
 

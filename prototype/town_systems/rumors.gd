@@ -1,41 +1,46 @@
 class_name Rumors
 extends RefCounted
-## Rumor as search interface (content.md §3): buying Mara a drink is how
-## you search. Rumors carry source + age + distortion. Fresh rumors come
-## up first; old ones come up bent.
+## Thornfield's voice on top of the rumour rules.
+##
+## The RULE — ranking, ageing, what a drink costs — now lives in
+## rules/rumour_mill.gd, mirroring sim/Marrowmark.Sim/Town (L88). What
+## is left here is how a hedged rumour sounds when somebody says it out
+## loud, which is content and belongs with the town.
 
-const DRINK_PRICE := 2
+## How a teller signals they are not vouching for this one. content.md
+## §3 wants old rumours to come up *bent* rather than absent — a story
+## you cannot quite trust is still a lead.
+const HEDGE := " (Or that's how it came to me. Drink bends stories.)"
+
+const NOTHING := {
+	"text": "Nothing moving. Quiet as a chapel.",
+	"source": "the air",
+}
 
 
-## Free rumor from whoever will talk: freshest first.
+## Free rumour from whoever will talk: freshest first.
 static func search(state: TownWorldState) -> Dictionary:
-	var best: Dictionary = {}
-	var best_score := -1.0
-	for r in state.rumors:
-		var age := float(r["age"])
-		var score := 100.0 / (1.0 + age) - float(r["distortion"]) * 10.0
-		if score > best_score:
-			best_score = score
-			best = r
-	if best.is_empty():
-		return {"text": "Nothing moving. Quiet as a chapel.", "source": "the air"}
-	var out := best.duplicate()
-	if float(best["distortion"]) >= 0.5:
-		out["text"] = String(best["text"]) + " (Or that's how it came to me. Drink bends stories.)"
-	return out
+	return _dress(RumourMill.search(state))
 
 
-## Buying a drink: costs coin, returns the freshest rumor Mara's heard.
+## Buying a drink: costs coin, returns the freshest thing Mara's heard.
 static func buy_drink(state: TownWorldState) -> Dictionary:
-	if state.coin < DRINK_PRICE:
+	var r := RumourMill.buy_drink(state)
+	if not bool(r["paid"]):
 		return {"ok": false}
-	state.coin -= DRINK_PRICE
-	var r := search(state)
-	return {"ok": true, "text": r["text"], "source": r["source"]}
+	var said := _dress(r)
+	return {"ok": true, "text": said["text"], "source": said["source"]}
 
 
-## Time passes: rumors age, distortions creep up. Cheap epoch pressure.
+## Time passes: rumours age, distortions creep up.
 static func age_all(state: TownWorldState, hours: float) -> void:
-	for r in state.rumors:
-		r["age"] = float(r["age"]) + hours
-		r["distortion"] = minf(0.9, float(r["distortion"]) + hours * 0.002)
+	RumourMill.age_all(state, hours)
+
+
+static func _dress(r: Dictionary) -> Dictionary:
+	if not bool(r["found"]):
+		return NOTHING.duplicate()
+	var out: Dictionary = (r["rumour"] as Dictionary).duplicate()
+	if bool(r["hedged"]):
+		out["text"] = String(out["text"]) + HEDGE
+	return out
