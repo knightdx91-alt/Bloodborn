@@ -89,6 +89,10 @@ back.
 "Deploy from a branch" → branch `main`, folder `/docs` → Save. It takes
 a minute to go live, and works from a phone browser.)*
 
+**There is a second prototype: [Thornfield](TOWN.md)**, the town — NPCs,
+boards, rumour and a shrine. `launcher.tscn` boots first and offers
+either. This file is the drill yard.
+
 Controls:
 
 - **Touch** — press and drag anywhere to steer. How far you drag is how

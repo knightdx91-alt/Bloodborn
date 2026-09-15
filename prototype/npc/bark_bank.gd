@@ -1,7 +1,10 @@
 class_name BarkBank
 extends RefCounted
-## Authored bark lines for Thornfield's crowd — the 95% of speech volume
-## (plan §4). Epoch-filtered: each line carries the epoch range where it
+## Authored bark lines for Thornfield's crowd — the ~95% of NPC speech
+## volume that brainstorm.md §9.1 gives NO MODEL AT ALL, because 3,000
+## concurrent players at one turn per 90s is ~33 inferences a second
+## forever, on a game with no subscription (L27).
+## Epoch-filtered: each line carries the epoch range where it
 ## is true. Epoch 0 is the first harvest; epoch-1 lines exist to prove
 ## the filter, not because the prototype advances epochs.
 

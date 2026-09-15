@@ -451,10 +451,26 @@ Mic → speech-to-text → retrieval → model → text-to-speech → audio.
 The failure mode that kills projects like this: the model happily
 promises things the game cannot do.
 
-**The model never mutates world state.** It emits an intent from a
-whitelist — `offer_contract(id)`, `share_rumor(topic)`, `refuse`,
-`set_disposition(-1)`, `none` — and the game validates that intent
-against what that NPC is actually authorized to do right now.
+**The model never mutates world state.** It emits an intent, and the
+game validates that intent against what that NPC is actually authorized
+to do right now.
+
+> ⚠️ **Amended by L49 — the whitelist below is superseded.** This
+> section originally named a closed set of intents: `offer_contract(id)`,
+> `share_rumor(topic)`, `refuse`, `set_disposition(-1)`, `none`. **L49
+> removed that ceiling** — "no ceiling on what the model may propose; a
+> hard gate on what executes" — because the confirm panel already buys
+> the safety, and capping what an NPC may *reach for* spends
+> expressiveness that was already paid for.
+>
+> The load-bearing half of this section is untouched: the model never
+> mutates state, and anything binding stops at the panel.
+>
+> **This annotation exists because the cap was re-implemented.**
+> Thornfield's `npc/conversation.gd` carries those five intents
+> verbatim, faithfully, from this paragraph — which said nothing about
+> having been amended. A superseded passage that does not say so will be
+> implemented again by the next person to read it.
 
 Anything binding (coin, commission, contract, enrollment, war escrow)
 routes into a normal confirm panel. **You talk your way into the

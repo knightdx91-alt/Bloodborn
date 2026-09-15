@@ -1,9 +1,16 @@
 class_name ConversationUI
 extends CanvasLayer
 ## Text conversation: walk up, hold to talk, choose a topic.
-## The model emits an intent from a whitelist; the game validates it
-## (plan §4). Anything binding ends in a confirm panel. No LLM in the
-## prototype — voice cards are carried by the authored lines.
+## The model emits an intent; the game validates and executes it.
+## Anything binding ends in a confirm panel — L49, moderation.md §5.
+## No LLM in the prototype: voice cards are carried by the authored
+## lines, which proves the gate without the risk.
+##
+## NOTE: the INTENTS list below is a whitelist, and L49 deliberately
+## REMOVED that ceiling — "no ceiling on what the model may propose; a
+## hard gate on what executes". Harmless while every intent comes from
+## an authored card; wrong the moment a model is put behind it. See
+## TOWN.md.
 
 ## Intent whitelist. Anything else is refused, never executed.
 const INTENTS := ["offer_contract", "share_rumor", "refuse",
