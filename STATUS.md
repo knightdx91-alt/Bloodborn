@@ -12,7 +12,7 @@ of each working session.
 Design is **88 locked decisions** and **complete** — every structural
 question locked, every missing document written. Every system a player
 touches in their first hundred hours is specified, and most of it is
-**written, tested and running** as engine-free C# — 313 tests.
+**written, tested and running** as engine-free C# — 335 tests.
 
 **Stage 1 is built and playable in any browser**: a character who walks
 and runs, a dodge with invulnerability frames, a sword, a training
@@ -159,6 +159,49 @@ at 0.98 and the mood comes out of exposure and the contrast curve.
 - **Impact and footstep particles**, which Godot makes without assets.
 - The Mixamo specs already written: characters, attack shapes, a guard
   pose, directional dodges. All free downloads.
+
+## Stage 2 started — the latency spike, 2026-09-15
+
+`sim/Marrowmark.Sim/Net/` is a **deterministic model of L39 /
+`combat.md` §7** — no sockets, no threads, no clocks, so the identical
+fight replays at 0ms and 400ms and the results compare. First thing to
+collect on `tech.md`'s bet that everything in `sim/` runs on the server
+unchanged. Full write-up in `sim/NETWORKING.md`.
+
+§7 was a paragraph; it is now four promises with tests that fail if
+they break — the defender wins inside the envelope, the envelope is
+clamped so latency is never an advantage, attackers have no way to
+even *express* a hit claim, and death never rolls back.
+
+**The headline result:** a defender who parries perfectly takes **zero
+damage at 0, 50, 100, 150 and 200ms one-way** — identical fights.
+`combat.md` §9's gate, "does a parry land right at 100ms", is answered
+*yes* for the half that does not need a human.
+
+### ⚠️ And the thing the spike was worth building for
+
+**Past the clamp it is a cliff, not a slope.** §7 promises "a
+fair-feeling game against monsters and a disadvantaged one in PvP".
+What happens is that *every* defence fails — there is no band where a
+defender turns some blows and eats others, and the whole transition
+happens inside one tick of latency.
+
+The arithmetic is unavoidable as written: an honest claim is dated
+exactly one one-way trip back, and it is honoured while `age <=
+min(delay + tolerance, MaxEnvelope)`. The first term always passes, so
+the clamp alone decides — and a millisecond past it, a player can never
+parry anything again.
+
+**Recorded, not fixed.** L39 is a lock and §7 is explicit, so this is a
+decision rather than a bug. Three directions are written up in
+`sim/NETWORKING.md`: accept it and rewrite §7 to say there is a hard
+playable ceiling; clamp the *delay* rather than the envelope; or give
+partial credit past the clamp, which is the only one that produces an
+actual slope — and `combat.md` §1b already has the concept, where "an
+adjacent arc glances it partly aside".
+
+**Still not proven: feel.** Whether 100ms is *indistinguishable* from 0
+needs two machines and a person. §9 says so, and it remains true.
 
 ## Thornfield landed — 2026-09-15, from a parallel session
 
