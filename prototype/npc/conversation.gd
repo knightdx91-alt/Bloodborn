@@ -75,6 +75,12 @@ func _build() -> void:
 	leave.text = "Leave"
 	leave.pressed.connect(close)
 	vb.add_child(leave)
+	# A pad needs something focused to press. Prefer the first topic so
+	# that A talks rather than walking away.
+	if _topic_box.get_child_count() > 0:
+		(_topic_box.get_child(0) as Button).grab_focus()
+	else:
+		leave.grab_focus()
 
 
 func _on_topic(t: Dictionary) -> void:
@@ -138,6 +144,10 @@ func _show_confirm(line: String) -> void:
 	no.text = "Think it over"
 	no.pressed.connect(_on_decline)
 	hb.add_child(no)
+	# Focus the REFUSAL, not the commitment. L49 makes this panel the
+	# gate on anything binding, and a gate whose default answer is "yes"
+	# is not a gate — a stray A press must not sign anything.
+	no.grab_focus()
 
 
 func _on_sign() -> void:

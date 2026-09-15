@@ -182,6 +182,32 @@ on-screen indicator to be legible and L65 forbids that kind of marker,
 and it degrades badly in crowds, which L25's war sizes make the normal
 case rather than the edge one.
 
+**Menus work on a pad, which took two separate fixes.** Reported from
+play as "controller detected, still can't do anything" — with a
+screenshot of the menu happily naming the controller underneath two
+buttons that would not respond.
+
+1. **Nothing held focus.** Godot focuses no Control on its own, and its
+   `ui_*` actions act on whatever is focused, so there was nothing for a
+   button press to land on. The launcher now focuses its first entry,
+   conversations focus the first topic, and boards focus the way out.
+   The confirm panel focuses **"Think it over"** rather than "Do it" —
+   L49 makes that panel the gate on anything binding, and a gate whose
+   default answer is yes is not a gate.
+2. **`ui_accept` had no gamepad button at all.** Godot's defaults give
+   `ui_up`/`ui_down` the d-pad and the left stick, but `ui_accept` gets
+   Enter, Keypad Enter and Space and nothing else. So a pad could move
+   the highlight and never press anything — which reads as a dead
+   controller even while the game is detecting it perfectly. A is now
+   bound to accept and B to cancel, in `project.godot`.
+
+Defining an action there **replaces** Godot's built-in rather than
+adding to it, so the keyboard events are repeated in the binding;
+leaving them out would have fixed the pad by breaking Enter and Space.
+Verified by driving the menu with a synthesised pad — focus lands,
+d-pad moves it, A presses the highlighted entry and not some other one
+— and then separately with Enter and with Space.
+
 **The pitch stick is not inverted** (`CAM_PITCH_INVERT`). The first
 build had it the other way round and it read as inverted, which is the
 only test a camera has to pass. It is a named constant rather than a

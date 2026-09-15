@@ -64,6 +64,15 @@ func _ready() -> void:
 	for b in _buttons:
 		_vb.add_child(b)
 
+	# Something must HOLD FOCUS or a pad has nothing to press.
+	#
+	# Godot does not focus anything on its own, and its built-in ui_accept
+	# / ui_up / ui_down actions act on the focused Control. So the menu
+	# showed "Controller: connected" in green and then ignored every
+	# button on it, which is a worse failure than not detecting the pad at
+	# all — it looks like the game is broken rather than the cable.
+	_buttons[0].grab_focus()
+
 	_pad = Label.new()
 	_pad.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_pad.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -82,6 +91,17 @@ func _big_button(text: String, scene: String) -> Button:
 	var b := Button.new()
 	b.text = text
 	b.pressed.connect(_go.bind(scene))
+	# The default theme's focus ring is a thin dark outline on a dark
+	# button, which is invisible on a phone at arm's length. If the pad is
+	# the only way to move the selection, the selection has to be obvious.
+	var ring := StyleBoxFlat.new()
+	ring.bg_color = Color(0.22, 0.26, 0.22)
+	ring.border_width_left = 3
+	ring.border_width_right = 3
+	ring.border_width_top = 3
+	ring.border_width_bottom = 3
+	ring.border_color = Color(0.55, 0.78, 0.55)
+	b.add_theme_stylebox_override("focus", ring)
 	return b
 
 

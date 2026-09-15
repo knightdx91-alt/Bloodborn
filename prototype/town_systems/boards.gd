@@ -131,6 +131,9 @@ static func _open_list_ui(header: String, rows: Array, _state: TownWorldState,
 	close_b.text = "Step back"
 	close_b.pressed.connect(_close_ui)
 	vb.add_child(close_b)
+	# The board is read-only, so the only thing to press is the way out —
+	# and a pad needs it focused to press it at all.
+	close_b.grab_focus()
 
 
 static func _close_ui() -> void:
