@@ -448,11 +448,11 @@ func _ready() -> void:
 		ConversationUI.current.close()
 		await _settle()
 
-	print("--- one piece of work at a time ---")
-	# Reported from play: "once you accept the job from mara, it
-	# shouldn't let you choose the option for take me on — those options
-	# probably shouldn't appear at all if you've already accepted a job,
-	# why would it?"
+	print("--- you can carry more than one job ---")
+	# "One piece of work at a time" was implemented here and was WRONG:
+	# you can take as much work as you can find. The only thing that
+	# makes no sense is taking THE SAME job twice. This checks the
+	# distinction, in the direction the mistake went.
 	var busy := TownWorldState.new()
 	var master: TownNPC = null
 	var hire_topic := ""
@@ -469,56 +469,47 @@ func _ready() -> void:
 		for tp in master.topics:
 			if String(tp.get("effect", "")) == "take_contract":
 				other_job = String(tp.get("topic", ""))
-		ConversationUI.open(master, {"state": busy})
-		await _settle()
-		var offers_hire := false
-		for bb in _buttons(ConversationUI.current):
-			if (bb as Button).text == hire_topic:
-				offers_hire = true
-		_ok("and offers it while you are free", offers_hire,
-			"'%s' was not offered even with no work in hand" % hire_topic)
-		ConversationUI.current.close()
-		await _settle()
-
-		# Now take a job somewhere else entirely.
+		# Take a job somewhere else entirely, then come back.
 		Boards.take(busy, String(Boards.contracts(busy)[0]["id"]))
 		ConversationUI.open(master, {"state": busy})
 		await _settle()
-		var still_hire := false
-		var still_other := false
-		var left := 0
+		var offers_hire := false
+		var offers_other := false
 		for bb in _buttons(ConversationUI.current):
 			var bt := (bb as Button).text
-			left += 1
-			if bt.begins_with(hire_topic):
-				still_hire = true
-			if other_job != "" and bt.begins_with(other_job):
-				still_other = true
-		_ok("then stops offering to take you on", not still_hire,
-			"'%s' still offered while carrying work" % hire_topic)
+			if bt == hire_topic:
+				offers_hire = true
+			if other_job != "" and bt == other_job:
+				offers_other = true
+		_ok("carrying work does not stop an apprenticeship being offered",
+			offers_hire, "'%s' was withheld while carrying work" % hire_topic)
 		if other_job != "":
-			_ok("and stops offering other jobs too", not still_other,
-				"'%s' still offered while carrying work" % other_job)
-		_ok("but still has something to say", left > 0,
-			"the conversation went completely empty")
+			_ok("nor another job", offers_other,
+				"'%s' was withheld while carrying work" % other_job)
 		ConversationUI.current.close()
 		await _settle()
 
-		# And the board must not be the loophole.
+		# And the board still hands out second jobs — just not the same one.
 		Boards.open_contracts_ui(busy)
 		await _settle()
 		var board2 := UI.top_modal()
-		var takeable := 0
+		var pressable := 0
 		for bb in _buttons(board2):
 			if (bb as Button).text != "Step back":
-				takeable += 1
-		_ok("the board hands out nothing either", takeable == 0,
-			"%d job(s) still pressable while carrying work" % takeable)
-		var said_why := false
+				pressable += 1
+		_ok("the board still offers other jobs", pressable > 0,
+			"nothing pressable while carrying work")
+		# A taken row is deliberately NOT a button any more — it is a dim
+		# label, so it cannot be pressed and the board still does not lie
+		# about what work exists. So look for the text, not for a button:
+		# an earlier version of this check searched buttons only and
+		# reported the row missing when it was right there.
+		var taken_rows := 0
 		for l in board2.find_children("*", "Label", true, false):
-			if (l as Label).text.findn("carrying work") != -1:
-				said_why = true
-		_ok("and says why", said_why, "the board gave no reason")
+			if (l as Label).text.ends_with("taken"):
+				taken_rows += 1
+		_ok("and marks the one already taken", taken_rows >= 1,
+			"no '— taken' row on the board")
 		Boards._close_ui()
 		await _settle()
 

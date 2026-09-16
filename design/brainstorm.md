@@ -514,37 +514,27 @@ actually did.** "Escort the Vellmark wagon?" becoming "— taken", with
 somewhere to be and a time to be there, is a town that noticed, and
 reporting for duty is what the player wants at that moment anyway.
 
-**Withhold an offer that was never theirs to take.** While you are
-carrying accepted work, nobody offers you more of it — not another
-contract, not an apprenticeship — and the offer is *absent*, not greyed
-out. From play: *"those options probably shouldn't appear at all if
-you've already accepted a job, why would it?"* Exactly. A dressed-up
-"— unavailable" row is the game admitting it wrote a line it cannot
-honour; a man with sense simply does not make the offer, and talks about
-the road instead. **The board obeys the same rule as the people**, or it
-becomes the loophole that hands out what conversation refuses.
+**What the world contradicts is the same offer, not the next one.** You
+may carry as much work as you can find; a carter with two wagons to fill
+will happily give you both. What makes no sense is taking *the same* job
+twice.
 
-> ⚠️ **One piece of work at a time is a real constraint, and nothing
-> finishes yet.** `contracts_taken` only ever grows in the prototype —
-> there is no completion, no hand-in, no abandoning. So taking a single
-> contract currently closes the whole work economy for the rest of the
-> session. That is the correct behaviour under this rule and a dead end
-> in practice; completion is the next thing the town needs, and until it
-> exists this rule should be read as "the offers are right" rather than
-> "the loop is finished".
+> ⚠️ **"One piece of work at a time" was implemented and rejected.**
+> Read too broadly from a play report, it hid every other offer —
+> including apprenticeships — from anybody holding a single contract.
+> That is not what the fiction says: being hired to guard a wagon does
+> not stop a smith wanting his swords blunted. Recorded here because the
+> mistake is an easy one to make again: the rule is about the offer the
+> world has *answered*, not about the player being busy.
 
-**This is enforced, not merely written here.** Every effect an NPC can
-offer declares its availability rule in one table, and a test walks
-every topic on every NPC and fails on any effect with no entry. That
-machinery exists because of what happened to §9.2 above: its superseded
-whitelist was re-implemented verbatim by someone reading the paragraph
-without the amendment. A rule that lives only in prose gets un-followed
-by the next person to read the prose.
+**Withhold a topic entirely — return nothing rather than grey it — only
+when the offer is impossible.** A caravan that has already departed
+cannot be escorted at all, and an "— unavailable" row about it is the
+game admitting it wrote a line it cannot honour. Withholding is never
+for an offer that is merely inconvenient.
 
-**When a model is behind these NPCs, the same resolution runs on what it
-proposes.** Speech stays free (§9.2); the gate on execution stays where
-it is; and on top of both, the game never presents an offer the world
-has already answered.
+**The board obeys the same rule as the people**, or it is the loophole
+that hands out what conversation refuses.
 
 ### 9.3 What actually makes them feel alive
 

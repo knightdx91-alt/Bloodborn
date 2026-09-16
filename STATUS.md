@@ -181,7 +181,11 @@ Two more from play:
   contract becomes "— taken" and the job-giver tells you where to be; an
   apprenticeship already sworn says so, from your master and from a
   rival who declines to poach; a drink with no coin says "— no coin",
-  because completion is not the only contradiction. Every effect must
+  because completion is not the only contradiction. **You can carry as
+  many jobs as you can find** — "one piece of work at a time" was read
+  into a play report, implemented, and corrected the same session; the
+  rule is about the offer the world has *answered*, not about the player
+  being busy. Every effect must
   declare its availability rule in one table, and the harness fails on
   any effect that does not — prose alone did not hold L49's whitelist
   and will not hold this. The list rebuilds live, so taking a job on the

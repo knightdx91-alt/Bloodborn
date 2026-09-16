@@ -438,35 +438,36 @@ rather than covering them. It is centred by a `CenterContainer` rather
 than by a fixed offset, so a long set of terms grows the panel instead
 of walking it off the top of the screen.
 
-## One piece of work at a time — 2026-09-16
+## Take as many jobs as you can carry — 2026-09-16
 
-From play: *"once you accept the job from Mara, it shouldn't let you
-choose the option for take me on — those options probably shouldn't
-appear at all if you've already accepted a job, why would it?"*
+An over-correction, recorded because it is an easy mistake to repeat.
 
-Right on both counts, and it sharpened **L92**. The rule had one half:
-change a topic the world has answered. It now has two.
+A play report — *"once you accept the job from Mara, it shouldn't let
+you choose the option for take me on, those options probably shouldn't
+appear at all if you've already accepted a job"* — was read as **one
+piece of work at a time** and implemented: carrying any contract hid
+every other offer, apprenticeships included, and the board stopped
+handing anything out.
 
-- **Change** the thing the player actually did — "— taken", and where to
-  report.
-- **Withhold** an offer that was never theirs to take. While carrying
-  accepted work, no contract and no apprenticeship is offered, and the
-  topic is *absent* rather than greyed. A dressed-up "— unavailable" row
-  is the game admitting it wrote a line it cannot honour.
+That was wrong, and the correction was immediate: *"You should be able
+to take more than one job, but in the case of Carter, it doesn't make
+sense for you to be able to take the same job twice."*
 
-The board obeys the same rule — its rows stop being pressable and the
-status line says "You're carrying work already. Finish it before you
-take more." A rule that holds in conversation and not on the board is
-not a rule; the board would just be the loophole.
+**The rule is about the offer the world has ANSWERED, not about the
+player being busy.** Being hired to guard a wagon does not stop a smith
+wanting his swords blunted. Taking the same escort contract twice is the
+only thing that makes no sense — and that case was already right: it
+reads "— taken" and speaks a duty line.
 
-Conversations do not go empty: Odo keeps "Teach me the drill yard",
-Pell keeps "Road news?".
+So `_committed()` is gone from `conversation.gd` and the board's
+carrying-work clause with it. What remains of L92 is what was always
+correct: a topic the world has answered CHANGES; a topic the world makes
+IMPOSSIBLE may be withheld entirely; everything else is offered.
 
-> ⚠️ **Nothing finishes yet.** `contracts_taken` only grows — no
-> completion, no hand-in, no abandoning. So taking one contract now
-> closes the work economy for the rest of the session. That is this rule
-> working as specified and a dead end in practice. **Contract completion
-> is the next thing the town needs.**
+The harness now checks the distinction in the direction the mistake
+went — that carrying work does *not* withhold an apprenticeship or a
+second job, and that the board still offers other work while marking
+only the job already taken.
 
 ## Still open
 
@@ -477,6 +478,6 @@ Pell keeps "Road news?".
   separating before a model generates the first one.
 - **NPC bodies** are still the blocky placeholder.
 - **No contract completion.** Taken work can never be finished, handed
-  in, or abandoned, which under L92's one-job-at-a-time reading closes
-  the work economy after a single contract. The most valuable next
-  piece of town work.
+  in, or abandoned — `contracts_taken` only grows. Not the wall it
+  briefly was (you can still take other jobs), but the loop is open at
+  one end and closing it is the town's most valuable next piece.
