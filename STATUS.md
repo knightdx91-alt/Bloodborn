@@ -618,6 +618,60 @@ the strip and rebuilding each sheaf as fourteen thin stalks splaying at
 the top instead of five thick boxes at a wide spread. The checks could
 not have caught that, and did not.
 
+## Done 2026-09-16 — the Hedges is somewhere you walk to
+
+**Reported from play:** *"the hedges is a whole different place, it
+should be a place you can travel to from the main town."* Exactly right,
+and it was true in two ways at once:
+
+- The only way in was **a button on the launcher**. A scene menu, not a
+  road. The town it belongs to had no way out to it.
+- Coming back **dropped you in the middle of the square**, however far
+  out you had walked. Somewhere you cannot reach on foot and cannot
+  return from on foot is a level, whatever it is called.
+
+Now there is a **signpost on the north road, nine metres past the
+gate**, where the main road already leaves town — and the road itself,
+which used to stop dead at the hedge, runs on to meet it. Standing at it
+turns the Talk chip into "Take the west road", and A on the pad does
+here what it does in front of a person: the thing in front of you. No
+new button, no map screen, nothing over anybody's head.
+
+Travelling records the way home, so coming back puts you **on that road,
+facing the gate**. `TownState` holds that on the autoload rather than in
+`TownWorldState`, so it is not written to disk: where you are standing
+mid-journey is a handoff between two scenes, not a fact about
+Thornfield, and it should not survive a restart.
+
+`roadcheck.gd`, 13 checks.
+
+### Three things found by looking rather than reasoning
+
+- **The first placement was inside the gate.** Three metres past the
+  arch is among its posts, leaves and fence wings; standing there threw
+  the body sixty-four metres into the air. Found by a check that tried
+  to stand there.
+- **`travel()` could not be tested at all**, because it changes the
+  scene and so tore down the harness asking the question — the run
+  simply died mid-check. Split into `remember_way_home()` and the
+  journey: of the two things a departure does, only the second one is
+  untestable.
+- **The sign faced the wrong way.** Turned so its board pointed back up
+  the road, it showed its blank back to everyone walking out of town,
+  and its arm pointed east when the Hedges are west. Every check passed.
+  Only the frame said so.
+
+### And a reading that was about the harness
+
+These checks first sat at the end of `qacheck`, after a long sequence
+that stands up and tears down several towns. There the walker reported
+itself **thirty-eight metres in the air** at a spot where a ray down
+finds nothing but flat ground, and where a freshly built town puts it at
+y=1.000, on the floor, stable for as long as you watch. The number was
+about the harness, not the game. It now lives in its own file with one
+fresh town — because a check that lies is worse than no check, and this
+project has paid for that lesson more than once.
+
 ## Device check
 
 `CLAUDE.md` instructs the assistant to ask which device you are on at

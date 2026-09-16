@@ -91,6 +91,10 @@ var _guard_btn: Button
 var _touch_layer: CanvasLayer
 var _stick_radius := STICK_BASE
 var _near: TownNPC = null
+## The road out, when you are standing at one. Shares the Talk chip and
+## the pad's A: the verb is "the thing in front of you", and a second
+## button for it would be a second thing to learn for no gain.
+var _road: Waypost = null
 
 
 func _ready() -> void:
@@ -383,9 +387,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event is InputEventJoypadButton and event.pressed:
 		match event.button_index:
 			PAD_TALK:
-				# Talk if there is anyone to talk to; otherwise this is
-				# the dodge, which is what A does everywhere else.
-				if _near != null:
+				# Talk to whoever is there, take the road if you are
+				# standing at one, and otherwise dodge — which is what A
+				# does everywhere else.
+				if _near != null or _road != null:
 					_try_talk()
 				else:
 					_town_dodge()
@@ -506,6 +511,7 @@ func _physics_process(delta: float) -> void:
 
 func _process(_delta: float) -> void:
 	_near = null
+	_road = null
 	if not UI.modal_open():
 		var pop := get_parent().get_node_or_null("Population")
 		if pop != null:
@@ -516,7 +522,19 @@ func _process(_delta: float) -> void:
 					if d < best:
 						best = d
 						_near = n
-	_talk_btn.visible = _near != null and InputMode.is_touch()
+		# A person wins over a signpost. Somebody standing at the gate
+		# should still be talkable, and a post does not mind waiting.
+		if _near == null:
+			for n in get_parent().get_children():
+				if n is Waypost and (n as Waypost).in_reach(self):
+					_road = n as Waypost
+					break
+
+	_talk_btn.visible = (_near != null or _road != null) and InputMode.is_touch()
+	if _road != null:
+		_talk_btn.text = _road.label
+	elif _near != null:
+		_talk_btn.text = "Talk"
 
 
 func _on_talk_pressed() -> void:
@@ -524,8 +542,12 @@ func _on_talk_pressed() -> void:
 
 
 func _try_talk() -> void:
-	if _near != null and not UI.modal_open():
+	if UI.modal_open():
+		return
+	if _near != null:
 		_near.begin_talk(systems)
+	elif _road != null:
+		_road.travel(get_tree())
 
 
 func _find(node: Node, cls: String) -> Node:

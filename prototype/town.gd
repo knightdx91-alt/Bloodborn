@@ -46,6 +46,7 @@ func _ready() -> void:
 	_fields()
 	_hedge_ring()
 	_gates()
+	_waypost()
 	_market_square()
 	_district_buildings()
 	_cottages()
@@ -63,6 +64,14 @@ func _ready() -> void:
 	walker.systems = systems
 	walker.position = Vector3(0.0, 0.5, 42.0)
 	walker.rotation.y = PI  # face the town center
+	# ...unless you walked back in from somewhere. Coming home from the
+	# Hedges used to drop you in the middle of the square however far out
+	# you had gone, which is the other half of what made it a level menu
+	# rather than a place.
+	var arrival: Dictionary = TownState.take_arrival()
+	if not arrival.is_empty():
+		walker.position = arrival["at"]
+		walker.rotation.y = float(arrival["facing"])
 	add_child(walker)
 
 	# The field needs the town's state to report work to, and a blade to
@@ -301,7 +310,12 @@ func _terrain() -> void:
 func _roads() -> void:
 	var dirt := _ground_mat(Color(0.44, 0.37, 0.27), 24.0)
 	# North-south main road through both gates.
-	_quad(Vector3(0, 0.04, 0), Vector2(5, 112), dirt)
+	#
+	# It used to stop dead at the hedge, z -56 to 56, because there was
+	# nowhere outside the ring to go: the Hedges was a launcher button
+	# rather than a place. The north end now runs on to the waypost, so
+	# the road out of Thornfield leads somewhere on foot.
+	_quad(Vector3(0, 0.04, -9), Vector2(5, 130), dirt)
 	# East-west lane.
 	_quad(Vector3(0, 0.04, 18), Vector2(102, 4), dirt)
 	# Market square paving.
@@ -466,6 +480,38 @@ func _gate(pos: Vector3) -> void:
 	_solid(g, Vector3(-2.4, 1.75, 0), Vector3(0.6, 3.5, 0.6))
 	_solid(g, Vector3(2.4, 1.75, 0), Vector3(0.6, 3.5, 0.6))
 	_block(pos.x - 4, pos.z - 3, pos.x + 4, pos.z + 3)
+
+
+## The road out, and somewhere for it to go.
+##
+## The Hedges was reachable only from the launcher — a scene menu rather
+## than a place — so the town it belongs to had no road to it and you
+## could not walk there. This is that road: a post outside the north
+## gate, where the main road already leaves town.
+func _waypost() -> void:
+	var post := Waypost.new()
+	post.name = "HedgesRoad"
+	post.destination = "res://hedges.tscn"
+	post.label = "Take the west road"
+	post.reads = "The Hedges"
+	# Just inside the gate, so coming back puts you on the road home
+	# rather than in the middle of the square.
+	post.returns_to = Vector3(0.0, 1.0, -RING_R + 5.0)
+	# Beside the road and WELL CLEAR of the gate. The first placement put
+	# it three metres outside the arch, inside the gate's posts, leaves
+	# and fence wings — standing there launched the body sixty-four
+	# metres into the air, which the harness found by trying to stand
+	# there. The road is five metres wide, so 4.5 is off the ruts.
+	post.position = Vector3(4.5, 0.0, -RING_R - 9.0)
+	# Unrotated, so the board faces back down the road toward the gate —
+	# the direction anybody reading it is walking FROM. Turned the other
+	# way, as it first was, the sign showed its blank back to everyone
+	# leaving town, which the render caught and no check could have.
+	post.rotation.y = 0.0
+	# Facing into town on the way back. Fighter faces -Z, so PI is
+	# looking up the road at the gate.
+	post.returns_facing = PI
+	add_child(post)
 
 
 func _gates() -> void:
@@ -888,7 +934,7 @@ func _scatter() -> void:
 		var z := sin(a) * r
 		if _blocked(x, z, 0.5):
 			continue
-		if abs(x) < 3.5 and abs(z) < 56.0:  # main road
+		if abs(x) < 3.5 and abs(z) < 74.0:  # main road, incl. the way out
 			continue
 		if abs(z - 18.0) < 3.0 and abs(x) < 52.0:  # lane
 			continue
