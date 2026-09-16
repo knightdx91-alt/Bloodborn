@@ -305,7 +305,9 @@ func _play(clip: String) -> void:
 
 
 func _say_bark() -> void:
-	var pool := BarkBank.lines(bark_role, epoch)
+	var clock: WorldClock = TownState.clock()
+	var pool := BarkBank.lines(bark_role, epoch, TownState.current(),
+		clock.hour() if clock != null else -1.0)
 	if pool.is_empty():
 		_bark_in = _rng.randf_range(8.0, 16.0)
 		return
@@ -335,8 +337,32 @@ func say_line(text: String, hold: float = 3.0) -> void:
 
 
 ## Greeting, shaped by disposition behavior. Warmth, name use.
+## What they say when you walk up.
+##
+## **The town remembers, a little.** brainstorm.md §9.3 asks for memory
+## that is "small and lossy" — three to five facts, decaying, not a
+## transcript — and the smallest honest version of that is a greeting
+## that knows whether you have done anything for this town. You are a
+## stranger until you thin the Hedges, and then you are not.
+##
+## Deliberately not a reputation NUMBER: L47 refuses a disposition
+## score, and this reads through behaviour exactly as that lock asks.
 func greeting() -> String:
 	var who := display_name if uses_name else "traveler"
+	var state: TownWorldState = TownState.current()
+	var clock: WorldClock = TownState.clock()
+	var late: bool = clock != null and not RoutineRules.waking(clock.hour())
+
+	if state != null and int(state.culls_completed) > 0:
+		# Known, because of what you did rather than because of a number
+		# going up somewhere.
+		if late:
+			return "Still up? The Hedges sleep easier than you do, %s." % who
+		return "It's you. The Hedges are quieter for you — sit, if you like." \
+			if greeting_warm else "You again. The boars are fewer, I'll grant you that."
+
+	if late:
+		return "Late to be about, %s." % who
 	if greeting_warm:
 		return "Well met, %s." % who
 	return "What is it, %s." % who

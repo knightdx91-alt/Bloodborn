@@ -8,9 +8,27 @@ extends RefCounted
 ## is true. Epoch 0 is the first harvest; epoch-1 lines exist to prove
 ## the filter, not because the prototype advances epochs.
 
-## role -> Array of {text, e0, e1}
+## **A bark answers to the world, the same way a topic does (L92).**
+##
+## A line may carry `when`: a list of named conditions, all of which must
+## hold for it to be in the pool. A crowd that says "boars in the west
+## Hedges again" after you spent a morning clearing them is a crowd that
+## was not listening, and it undoes the work the board does silently.
+##
+## The conditions are deliberately few and named rather than arbitrary
+## expressions. Content should be able to reach for "night" without
+## being able to reach for anything at all.
+const CONDITIONS := ["day", "night", "boars_pressing", "boars_quiet",
+	"work_done", "you_took_work", "you_are_hired"]
+
+
+## role -> Array of {text, e0, e1, when}
 const LINES := {
 	"market": [
+		{"text": "Stalls are down. Come back when it's light and I'll not overcharge you. Much.",
+			"e0": 0, "e1": 99, "when": ["night"]},
+		{"text": "Road's safer than it was. That's worth something to a man with a cart.",
+			"e0": 0, "e1": 99, "when": ["work_done"]},
 		{"text": "Grain's two pennies the stone and that's fair, whatever Fenwick's face says.", "e0": 0, "e1": 99},
 		{"text": "Cloth up again. Thornfield feeds the looms and the looms know it.", "e0": 0, "e1": 99},
 		{"text": "You want ale, Tammas is your man. You want the price, ask Fenwick twice.", "e0": 0, "e1": 99},
@@ -18,6 +36,12 @@ const LINES := {
 		{"text": "Rain before noon and the road to Greywater turns to soup. Buy your grain today.", "e0": 0, "e1": 99},
 	],
 	"farmer": [
+		{"text": "Somebody's been thinning the west Hedges. First quiet week we've had.",
+			"e0": 0, "e1": 99, "when": ["work_done"]},
+		{"text": "Whoever took that cull paper earned it. The far field's still standing.",
+			"e0": 0, "e1": 99, "when": ["work_done", "day"]},
+		{"text": "Gate's barred and I'm not opening it. Boars don't knock.",
+			"e0": 0, "e1": 99, "when": ["night", "boars_pressing"]},
 		{"text": "Wheat's coming in heavy. My back knows it before the scales do.", "e0": 0, "e1": 99},
 		{"text": "Boars in the west Hedges again. We cull or we lose the far field — there's no third way.", "e0": 0, "e1": 99},
 		{"text": "Scarecrow's doing his best. The crows respect him. The boars don't.", "e0": 0, "e1": 99},
@@ -70,11 +94,59 @@ const LINES := {
 
 
 ## All lines valid for `role` at `epoch`.
-static func lines(role: String, epoch: int) -> Array:
+## Every line valid for this role, at this epoch, in this world, at this
+## hour. `state` and `hour` are optional so anything that only wants the
+## epoch filter still works.
+static func lines(role: String, epoch: int, state: TownWorldState = null,
+		hour: float = -1.0) -> Array:
 	var out: Array = []
 	if not LINES.has(role):
 		return out
 	for ln in LINES[role]:
-		if epoch >= int(ln["e0"]) and epoch <= int(ln["e1"]):
-			out.append(String(ln["text"]))
+		if epoch < int(ln["e0"]) or epoch > int(ln["e1"]):
+			continue
+		if not _holds(ln.get("when", []), state, hour):
+			continue
+		out.append(String(ln["text"]))
 	return out
+
+
+## Do all of a line's conditions hold? An unknown condition FAILS rather
+## than passing, so a typo silences one line instead of putting a lie in
+## somebody's mouth.
+static func _holds(conditions: Array, state: TownWorldState, hour: float) -> bool:
+	for c in conditions:
+		var name := String(c)
+		if not CONDITIONS.has(name):
+			push_warning("BarkBank: unknown condition '%s'" % name)
+			return false
+		if not _one(name, state, hour):
+			return false
+	return true
+
+
+static func _one(condition: String, state: TownWorldState, hour: float) -> bool:
+	match condition:
+		"day":
+			return hour < 0.0 or RoutineRules.waking(hour)
+		"night":
+			return hour >= 0.0 and not RoutineRules.waking(hour)
+		"boars_pressing":
+			if state == null: return false
+			for region in state.boar_pressure:
+				if int(state.boar_pressure[region]) >= 3:
+					return true
+			return false
+		"boars_quiet":
+			if state == null: return false
+			for region in state.boar_pressure:
+				if int(state.boar_pressure[region]) <= 0:
+					return true
+			return false
+		"work_done":
+			return state != null and int(state.culls_completed) > 0
+		"you_took_work":
+			return state != null and not state.contracts_taken.is_empty()
+		"you_are_hired":
+			return state != null and bool(state.hired)
+	return false

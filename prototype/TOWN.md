@@ -638,6 +638,42 @@ standing still.
 The blocky placeholder path is kept as a fallback, so the town still
 loads if the pack is ever missing.
 
+## The town notices — 2026-09-16
+
+`TownState` remembered every contract taken, every boar culled and every
+penny spent, and **not one line of dialogue or bark reflected any of
+it.** You could clear the west Hedges and walk back through a crowd
+still complaining about boars.
+
+**A bark answers to the world, the same way a topic does (L92).** A line
+may carry `when`: a list of named conditions, all of which must hold.
+The conditions are deliberately few and named rather than arbitrary
+expressions — content should be able to reach for "night" without being
+able to reach for anything at all — and **an unknown condition fails
+closed**, so a typo silences one line instead of putting a lie in
+somebody's mouth.
+
+What they notice now: the hour (the market packs down at night), boar
+pressure (barred gates when the Hedges are bad), and **work you actually
+finished**.
+
+**Finishing a cull had to start leaving a trace.** Handing a contract in
+*removes* it — the paper goes back and the pressure drops, and neither
+is a record that the work was done by anybody in particular.
+`TownState.CullsCompleted` is that record, in `sim/` and mirrored, and
+it persisted for free because the save enumerates fields by reflection.
+
+**Greetings remember, a little.** `brainstorm.md` §9.3 asks for memory
+that is "small and lossy", and the smallest honest version is a greeting
+that knows whether you have ever done anything for this town:
+
+> stranger — *"Well met, traveler."*
+> known — *"It's you. The Hedges are quieter for you — sit, if you like."*
+> at 2am — *"Still up? The Hedges sleep easier than you do, traveler."*
+
+Deliberately **not a reputation number**: L47 refuses a disposition
+score, and this reads through behaviour exactly as that lock asks.
+
 ## Still open
 
 - **The world state is seeded once and never persists.** Nothing

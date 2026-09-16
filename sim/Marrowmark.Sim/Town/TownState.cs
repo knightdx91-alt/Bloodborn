@@ -115,5 +115,14 @@ namespace Marrowmark.Sim.Town
 
         /// <summary>Pennies taken by the shrine on the last death.</summary>
         public int LastTollPaid;
+
+        /// <summary>How many culls have actually been finished and paid.
+        ///
+        /// Kept because handing a contract in REMOVES it — the paper goes
+        /// back and the pressure drops, and neither of those is a record
+        /// that the work was done by anybody in particular. The crowd
+        /// needs to know somebody has been thinning the boars in order to
+        /// say so.</summary>
+        public int CullsCompleted;
     }
 }

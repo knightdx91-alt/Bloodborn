@@ -108,6 +108,7 @@ static func hand_in(state: TownWorldState, contract_id: String) -> Dictionary:
 
 	var after := -1
 	if int(contract["kind"]) == ContractBoardRules.Kind.CULL:
+		state.culls_completed += 1
 		var region := String(contract.get("subject", ""))
 		if state.boar_pressure.has(region):
 			var relief := int(_p().get("cullPressureRelief", 1))

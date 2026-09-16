@@ -70,5 +70,10 @@ var coin: int = 12
 var apprentice_master: String = ""
 var hired: bool = false
 
+## How many culls have been finished and paid. Handing a contract in
+## REMOVES it, so without this there is no record that the work was ever
+## done by anybody — and the crowd cannot remark on what it cannot see.
+var culls_completed: int = 0
+
 var last_respawn: String = ""
 var respawns: int = 0

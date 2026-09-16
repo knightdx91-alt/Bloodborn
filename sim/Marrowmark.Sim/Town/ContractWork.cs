@@ -146,6 +146,7 @@ namespace Marrowmark.Sim.Town
             var after = -1;
             if (contract.Kind == ContractKind.Cull)
             {
+                state.CullsCompleted++;
                 var region = state.BoarPressure.FirstOrDefault(b => b.Region == contract.Subject);
                 if (region != null)
                 {
