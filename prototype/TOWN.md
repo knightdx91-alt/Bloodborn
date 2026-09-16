@@ -544,6 +544,34 @@ Two bugs the rendered frame and the harness caught between them:
   the hit reaction with no null check. A beast has no rig, so all four
   threw. Guarded now, and the humanoid path is unchanged.
 
+## The work loop closes — the hand-in, 2026-09-16
+
+Take a cull off the board, walk out to the Hedges, kill the boars, walk
+back, give the paper to the clerk, get paid — and the boars are thinner,
+so the next posting for that wood is a smaller job at a smaller price.
+**That is the loop, end to end, and it is the first time anything the
+player does has changed Thornfield.**
+
+**L92 gains a third case.** A topic the world has answered CHANGES; a
+topic the world makes impossible is WITHHELD; and now a topic the world
+CREATES, which no card authored. Finished work has to be offerable to
+somebody who never had a line about it, because a cull is taken off a
+board rather than from a person.
+
+**Who pays is declared by content, not known by code.** Clerk Fenwick's
+roster card carries `pays_contracts: true` — he keeps the board, so he
+is who finished work is handed to. `conversation.gd` never learns his
+name; a second town has its own clerk and should not have to be called
+Fenwick. The harness checks both halves: the clerk offers to settle, and
+**nobody else does**.
+
+**The consequence is spoken, not shown.** "The Hedges west is quieter
+for it. Not quiet. Quieter. The board will say so." No number goes down
+on screen. That is L80's first preference — put it in the world — and
+L29's refusal of markers doing the same job from the other side. The
+board then says something different because something different is
+true, which nobody announces at all.
+
 ## Still open
 
 - **The world state is seeded once and never persists.** Nothing
@@ -555,9 +583,11 @@ Two bugs the rendered frame and the harness caught between them:
 - **Only culls can be finished.** Escort, harvest and smithing refuse
   honestly because there is nowhere to do them. Each needs a place
   before it needs rules.
-- **No hand-in yet.** You can take a cull, walk to the Hedges, kill the
-  boars and walk back — and there is still nobody to give the paper to.
-  That is the last piece of the loop.
+- **Only culls close the loop.** Escort, harvest and smithing still
+  refuse honestly — there is nowhere to walk a wagon to and no forge to
+  stand at. Each needs a place before it needs anything else.
+- **Coin has almost nowhere to go.** Payment is a number going up; only
+  drink spends it. The economy that makes pay matter is later work.
 - **The Hedges is reached from the launcher**, not by walking out of
   Thornfield's west gate. L28 says distance is real; a menu entry is a
   prototype affordance, not the answer.

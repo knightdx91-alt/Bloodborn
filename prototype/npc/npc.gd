@@ -23,6 +23,8 @@ var uses_name := false
 var stays := true
 ## Conversation topics: Array of {topic, line, intent, intent_arg}.
 var topics: Array = []
+## Whether finished contract work can be handed in to this person.
+var pays_contracts := false
 ## Crowd barks: role key into BarkBank, "" for silent named NPCs.
 var bark_role: String = ""
 var epoch: int = 0
@@ -45,6 +47,7 @@ func setup(data: Dictionary) -> void:
 	voice_card = String(data.get("voice", ""))
 	topics = data.get("topics", [])
 	bark_role = String(data.get("barks", ""))
+	pays_contracts = bool(data.get("pays_contracts", false))
 	epoch = int(data.get("epoch", 0))
 	departs_after = float(data.get("departs_after", 0.0))
 	leave_target = data.get("leave_target", Vector3.ZERO)

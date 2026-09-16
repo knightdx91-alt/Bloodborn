@@ -84,6 +84,43 @@ static func duty_line(state: TownWorldState, contract_id: String) -> String:
 	return "\"That's yours already. See it done.\""
 
 
+## The Thornfield phrasing of one posting. The rule layer carries facts
+## only; this is where a contract gets a name a person would say.
+static func title_for(row: Dictionary) -> String:
+	match int(row.get("kind", -1)):
+		ContractBoardRules.Kind.CULL:
+			return "Cull the boars — %s" % String(row.get("subject", ""))
+		ContractBoardRules.Kind.ESCORT:
+			return "Guard the %s wagon" % String(row.get("subject", ""))
+		ContractBoardRules.Kind.HARVEST:
+			return "Harvest hands — Vance farm"
+		_:
+			return "Smithing: %s" % String(row.get("subject", ""))
+
+
+## What the clerk says when he pays you.
+##
+## The consequence is spoken, never shown as a number going down: the
+## boars being thinner is something a person tells you, which is L80's
+## first preference (put it in the world) and L29's refusal of markers
+## doing the same job from the other side.
+static func paid_line(title: String, paid: int, pressure_after: int) -> String:
+	var head := "Fenwick checks the paper against the board, grunts, and counts out %d pennies." % paid
+	if pressure_after < 0:
+		return head
+	if pressure_after == 0:
+		return (head + "\n\n\"That's %s clear. First time this season. "
+			+ "It won't last — it never does — but it's clear today.\"") % _where(title)
+	return (head + "\n\n\"%s is quieter for it. Not quiet. Quieter. "
+		+ "The board will say so.\"") % _where(title).capitalize()
+
+
+## The place a cull title is about, for the clerk to name.
+static func _where(title: String) -> String:
+	var mark := title.find("—")
+	return title.substr(mark + 1).strip_edges() if mark != -1 else "the wood"
+
+
 ## Take a contract: binding, so the conversation layer confirms first.
 static func take(state: TownWorldState, contract_id: String) -> bool:
 	var ok := ContractBoardRules.take(state, contract_id)

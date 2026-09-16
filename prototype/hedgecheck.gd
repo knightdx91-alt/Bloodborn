@@ -83,6 +83,93 @@ func _ready() -> void:
 	_ok("the work survives the walk back", ContractWorkRules.can_hand_in(after, id),
 		"progress lost between scenes: %s" % str(after.contract_progress))
 
+	# --- the hand-in ---
+	print("--- handing the paper in ---")
+	var town: Node3D = load("res://town.tscn").instantiate() as Node3D
+	add_child(town)
+	await get_tree().create_timer(2.5).timeout
+
+	var clerk: TownNPC = null
+	var anyone: TownNPC = null
+	for n in town.get_node("Population").get_children():
+		if not (n is TownNPC):
+			continue
+		if (n as TownNPC).pays_contracts and clerk == null:
+			clerk = n as TownNPC
+		elif anyone == null and (n as TownNPC).topics.size() > 0:
+			anyone = n as TownNPC
+	_ok("somebody keeps the board", clerk != null, "no NPC declares pays_contracts")
+	if clerk == null:
+		print("FAILED")
+		get_tree().quit()
+		return
+
+	var live: TownWorldState = TownState.current()
+	ConversationUI.open(clerk, {"state": live})
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var hand: Button = null
+	for b in ConversationUI.current.find_children("*", "Button", true, false):
+		if (b as Button).text.ends_with("— done"):
+			hand = b as Button
+	_ok("the clerk offers to settle finished work", hand != null,
+		"no '— done' topic on a man holding a finished cull")
+
+	# And nobody else does, because he is the one who keeps the paper.
+	if anyone != null:
+		ConversationUI.current.close()
+		await get_tree().process_frame
+		ConversationUI.open(anyone, {"state": live})
+		await get_tree().process_frame
+		var stray := false
+		for b in ConversationUI.current.find_children("*", "Button", true, false):
+			if (b as Button).text.ends_with("— done"):
+				stray = true
+		_ok("and nobody else does", not stray,
+			"%s offered to settle it too" % anyone.display_name)
+		ConversationUI.current.close()
+		await get_tree().process_frame
+		ConversationUI.open(clerk, {"state": live})
+		await get_tree().process_frame
+		for b in ConversationUI.current.find_children("*", "Button", true, false):
+			if (b as Button).text.ends_with("— done"):
+				hand = b as Button
+
+	if hand != null:
+		var coin_before: int = live.coin
+		var pressure_before: int = int(live.boar_pressure["the Hedges west"])
+		hand.pressed.emit()
+		await get_tree().process_frame
+		await get_tree().process_frame
+		_ok("handing it in pays", live.coin > coin_before,
+			"coin stayed at %d" % live.coin)
+		_ok("and the paper goes back", not live.contracts_taken.has(id),
+			"still carrying it")
+		_ok("and the boars are thinner",
+			int(live.boar_pressure["the Hedges west"]) == pressure_before - 1,
+			"pressure %d -> %d" % [pressure_before,
+				int(live.boar_pressure["the Hedges west"])])
+
+		# The board regenerates from the world, so the next posting for
+		# that wood is a smaller job at a smaller price.
+		var now_pay := 0
+		for c in ContractBoardRules.generate(live):
+			if String(c["id"]) == id:
+				now_pay = int(c["pay"])
+		_ok("and the next posting for that wood pays less",
+			now_pay > 0 and now_pay < 4 + 3 * pressure_before,
+			"pay is %d" % now_pay)
+
+		var gone := true
+		for b in ConversationUI.current.find_children("*", "Button", true, false):
+			if (b as Button).text.ends_with("— done"):
+				gone = false
+		_ok("and he stops offering to settle it", gone,
+			"the settled contract is still on his list")
+
+	if ConversationUI.current != null:
+		ConversationUI.current.close()
+
 	TownState.reset()
 	print("")
 	print("hedges: all clear" if _fails.is_empty() else "FAILED: %s" % ", ".join(_fails))

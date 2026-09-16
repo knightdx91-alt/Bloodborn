@@ -195,6 +195,33 @@ Two more from play:
   hides the panel it belongs to AND states the terms itself — either
   alone is useless, since hiding without restating just loses them.
 
+## Done 2026-09-16 — the work loop closes
+
+**Take a cull off the board, walk to the Hedges, kill the boars, walk
+back, hand the paper to the clerk, get paid — and the boars are thinner,
+so the next posting for that wood is a smaller job at a smaller price.**
+
+The first time anything a player does has changed Thornfield. Four
+pieces, each with its own checks:
+
+1. **`TownState`** — the town survives leaving the scene, and the app
+   closing. Fields persisted by reflection so a new one cannot be
+   silently forgotten.
+2. **`ContractWork`** (C#, 12 tests) and its GDScript mirror (12
+   matching) — progress, discharge, payment, and the consequence.
+   Finishing a cull drops the region's pressure, and the board is
+   *generated from* that pressure, so the work thinning is visible
+   without anybody being told.
+3. **The Hedges** — a mode on the drill yard rather than a fork of it,
+   with a boar built from primitives because every model in the asset
+   set is humanoid and a blood-warped boar wearing a Mixamo rig would be
+   a lie in the wrong direction.
+4. **The hand-in** — L92's third case: a topic the world *creates*.
+   Who pays is declared by content (`pays_contracts` on the clerk's
+   card), never known by code.
+
+19 end-to-end checks, plus 363 C# tests.
+
 ## Device check
 
 `CLAUDE.md` instructs the assistant to ask which device you are on at

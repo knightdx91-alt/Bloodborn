@@ -77,6 +77,11 @@ static func named() -> Array:
 			"voice": "Precise, ink-stained, hates repeating himself.",
 			"pos": Vector3(9.5, 0, 11), "yaw": 0.8,
 			"tunic": Color(0.25, 0.25, 0.32), "warm": false, "uses_name": false,
+			# He keeps the board, so he is who finished work is handed to.
+			# A capability the CONTENT declares, rather than an id
+			# hardcoded in the conversation layer — a second town has its
+			# own clerk and should not have to be called Fenwick.
+			"pays_contracts": true,
 			"topics": [
 				{"topic": "Show me the contracts.", "intent": "none", "effect": "open_contracts",
 					"line": "The contract board. Cull, escort, harvest, smithing — all from the world as it is. Read it yourself; I don't repeat myself."},

@@ -527,6 +527,14 @@ twice.
 > mistake is an easy one to make again: the rule is about the offer the
 > world has *answered*, not about the player being busy.
 
+**Create a topic the world needs said and no card authored.** Work
+finished out in the world has to be handed in to somebody who never had
+a line about it, because a contract is taken off a board rather than
+from a person. **Who can settle it is declared by content** — a
+capability on the roster card — and never known by the conversation
+code, so a second town has its own clerk rather than having to be called
+Fenwick.
+
 **Withhold a topic entirely — return nothing rather than grey it — only
 when the offer is impossible.** A caravan that has already departed
 cannot be escorted at all, and an "— unavailable" row about it is the
