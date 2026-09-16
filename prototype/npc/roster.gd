@@ -105,7 +105,7 @@ static func named() -> Array:
 			"topics": [
 				{"topic": "A delivery, from Odo.", "intent": "none", "effect": "",
 					"line": "Horseshoes? Let me count — twelve, fourteen... sixteen. Sixteen. Odo's shorted me twice before; he won't a third time. Tell him Vance counted."},
-				{"topic": "Harvest work?", "intent": "offer_contract", "effect": "take_contract", "effect_arg": "harvest-vance",
+				{"topic": "Harvest work?", "intent": "offer_contract", "effect": "take_contract", "effect_arg": "harvest",
 					"line": "Four hands wanted. Maybe six. Wheat doesn't wait and neither do I. You work, you eat, you're paid — in that order."},
 				{"topic": "How's the herd?", "intent": "none", "effect": "",
 					"line": "Forty-one head this morning. Forty-one last night. Boars took two last week and I count twice a day now. Everything gets counted. Everything."},

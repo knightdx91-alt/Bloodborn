@@ -65,6 +65,13 @@ func _ready() -> void:
 	walker.rotation.y = PI  # face the town center
 	add_child(walker)
 
+	# The field needs the town's state to report work to, and a blade to
+	# watch. Both exist by now and neither did when it was placed.
+	var reaping := find_child("Reaping", true, false) as Reaping
+	if reaping != null:
+		reaping.systems = systems
+		reaping.watch(walker)
+
 
 # ---------------------------------------------------------------- assets ---
 
@@ -700,6 +707,16 @@ func _carters_yard() -> void:
 		_put(_farm("Fence"), Vector3(x0, 0, z0 + k * 5.9), 0.0)
 		_put(_farm("Fence"), Vector3(x1, 0, z0 + k * 5.9), 0.0)
 	_block(x0 - 1, z0 - 1, x1 + 1, z1 + 1)
+
+	# Somewhere to do the harvest. Inside the fence, on the clear ground
+	# south of the barn — a player walking to the Vance farm because the
+	# board sent them there finds the work without being told where it
+	# is. Handed its systems and its reaper in _ready, because neither
+	# the town's state nor the player exists yet at this point.
+	var reaping := Reaping.new()
+	reaping.name = "Reaping"
+	reaping.position = Vector3(23.0, 0.0, 86.0)
+	add_child(reaping)
 
 # ----------------------------------------------------------------- cottages ---
 

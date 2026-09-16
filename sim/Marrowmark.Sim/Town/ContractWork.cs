@@ -43,6 +43,10 @@ namespace Marrowmark.Sim.Town
         /// <summary>The region's pressure after the cull, or -1 where the
         /// contract had no such consequence.</summary>
         public int PressureAfter = -1;
+
+        /// <summary>Hands the farm still wants after a harvest, or -1
+        /// where the contract had no such consequence.</summary>
+        public int DemandAfter = -1;
     }
 
     /// <summary>
@@ -71,10 +75,17 @@ namespace Marrowmark.Sim.Town
                 case ContractKind.Cull:
                     // Scales with the problem, exactly as the pay does.
                     return System.Math.Max(1, c.Magnitude * p.CullKillsPerPressure);
+                case ContractKind.Harvest:
+                    // A day's work for one pair of hands. Deliberately
+                    // NOT scaled by Magnitude: for a cull the magnitude
+                    // is the size of the problem and it is all yours, but
+                    // for a harvest it is how many people the farm wants
+                    // — and turning up does not make the field bigger.
+                    return System.Math.Max(1, p.HarvestSheaves);
                 default:
-                    // Escort, harvest and smithing are honest gaps: there
-                    // is nowhere to walk a wagon to or a forge to stand
-                    // at. They refuse rather than pay for nothing.
+                    // Escort and smithing are still honest gaps: there is
+                    // nowhere to walk a wagon to and no forge to stand at.
+                    // They refuse rather than pay for nothing.
                     return 0;
             }
         }
@@ -134,6 +145,43 @@ namespace Marrowmark.Sim.Town
             return want > 0 && Done(state, contractId) >= want;
         }
 
+        /// <summary>
+        /// Record sheaves cut, against a harvest contract the player is
+        /// actually carrying.
+        ///
+        /// Unkeyed, unlike <see cref="RecordCull"/>: a cull is reported
+        /// as "something died in a named place" because the woods are
+        /// many and the town has to work out which one you were paid
+        /// for. There is one harvest. Inventing a subject for it would
+        /// be symmetry for its own sake.
+        /// </summary>
+        public static int RecordHarvest(TownState state, int sheaves)
+            => RecordHarvest(state, sheaves, TownProfile.Default);
+
+        public static int RecordHarvest(TownState state, int sheaves, TownProfile p)
+        {
+            if (state == null || sheaves <= 0) return 0;
+            var contract = ContractBoard.Generate(state, p).FirstOrDefault(
+                c => c.Kind == ContractKind.Harvest && c.Taken);
+            // Cutting wheat you were not hired to cut is allowed. It is
+            // simply not work the town owes you for.
+            if (contract == null) return 0;
+
+            var row = state.ContractProgress.FirstOrDefault(r => r.ContractId == contract.Id);
+            if (row == null)
+            {
+                row = new ContractProgress { ContractId = contract.Id };
+                state.ContractProgress.Add(row);
+            }
+            // Capped, and returning the running total rather than the
+            // delta — the same answer RecordCull gives, because two
+            // functions this alike returning different things is a trap
+            // for whoever calls them next.
+            var want = Required(contract, p);
+            row.Done = System.Math.Min(want, row.Done + sheaves);
+            return row.Done;
+        }
+
         public static HandIn Hand(TownState state, string contractId)
             => Hand(state, contractId, TownProfile.Default);
 
@@ -160,6 +208,18 @@ namespace Marrowmark.Sim.Town
             state.ContractsTaken.Remove(contractId);
             state.ContractProgress.RemoveAll(r => r.ContractId == contractId);
 
+            var demandAfter = -1;
+            if (contract.Kind == ContractKind.Harvest)
+            {
+                // One pair of hands less wanted. Exactly the cull's
+                // shape: the board is generated from the world, so
+                // finishing the work changes the world and the posting
+                // follows. At zero the harvest is simply not on the
+                // board, because the farm is not asking.
+                state.HarvestDemand = System.Math.Max(0, state.HarvestDemand - 1);
+                demandAfter = state.HarvestDemand;
+            }
+
             var after = -1;
             if (contract.Kind == ContractKind.Cull)
             {
@@ -177,6 +237,7 @@ namespace Marrowmark.Sim.Town
                 Result = HandInResult.Paid,
                 Paid = contract.Pay,
                 PressureAfter = after,
+                DemandAfter = demandAfter,
             };
         }
 

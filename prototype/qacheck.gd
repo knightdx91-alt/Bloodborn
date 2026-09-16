@@ -424,6 +424,21 @@ func _ready() -> void:
 	_ok("every effect in the roster has a resolver", uncovered.is_empty(),
 		"no world-check for: %s" % ", ".join(uncovered))
 
+	# And every contract the roster OFFERS has to be one the board can
+	# actually generate. Vance offered "harvest-vance" for months while
+	# the board generated "harvest": taking it stored an id matching no
+	# posting, so the offer never read as taken, no work could be
+	# recorded against it, and handing it in answered "no such contract".
+	# Nothing failed loudly — the job simply stopped existing the moment
+	# it was accepted, and it stayed invisible only because harvest could
+	# not be finished at all.
+	var phantom := ConversationUI.unknown_contracts()
+	_ok("every contract the roster offers is one the board posts",
+		phantom.is_empty(),
+		"offered but never generated: %s — taking one of these puts an id "
+			% ", ".join(phantom)
+		+ "in contracts_taken that nothing in the world answers to")
+
 	# And a case that is neither a contract nor a hire, to show the
 	# mechanism is general rather than two special cases wearing a table.
 	var broke := TownWorldState.new()

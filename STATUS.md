@@ -491,33 +491,40 @@ synthetic tap has never produced a swing in this project, in any build
 only ever looked at the yard could not have caught this. 10 new checks,
 run in both scenes, attack/dodge/guard each proved to fire.
 
-### A measurement that may explain the Hedges, 2026-09-16
+### ✅ EXPLAINED — the Hedges, 2026-09-16
 
-Standing in the Hedges for 30 seconds and trying to swing once a second,
-against the charging boar:
+**`world.gd:910`. Every player swing in the Hedges aborted before it
+ever considered the boar.**
 
-- the player is **unable to act 62% of the time**
-- **9 of 30 swing attempts are refused** outright
-- health falls **120 → 65** without moving
+`_resolve_swing` builds its target list by reading the TRAINING DUMMY's
+position first. The dummy is created in `_build_yard()` and **does not
+exist in the Hedges** — so that line threw on every live frame of every
+swing, and a GDScript runtime error abandons the rest of the function.
+The enemy below it was never reached. Swings animated, stamina was
+spent, the sound played, and **the animal could not be hurt at all**.
 
-`try_attack` refuses while a fighter is hurt or staggered, so a boar
-that keeps you in that state makes every tap look ignored *while the
-input is arriving perfectly*. From the outside that is
-indistinguishable from a dead button — and it happens in the Hedges and
-not in the yard, where the sparring partner is far gentler.
+That is the report, exactly: tapping *does* swing in the yard and does
+nothing in the Hedges. The input was arriving the whole time.
 
-That is not proof, and it is not a bug in the controls. It is a
-candidate explanation for the report, and it is the aggression half of
-the step 4 tuning question — which needs a controller and a person, not
-another harness.
+Two things kept it hidden for as long as it lasted:
 
-**Still unexplained on its own terms:** play reports that tapping DOES
-swing in the yard and does not in the Hedges. Both scenes run `world.gd` through the same
-`_unhandled_input`, and neither builds any Control that could eat a
-touch — `_bar_root` is `MOUSE_FILTER_IGNORE` and the only other node on
-the touch layer is the Back chip. The buttons make it testable rather
-than solving it, and it stays open, written down, rather than being
-quietly assumed fixed.
+- **No harness could swing in the Hedges** until the touch buttons gave
+  it a way to. Every combat check ran in the drill yard, where the dummy
+  exists — so the one scene with the fault was the one nothing tested.
+- `_tick_dummy` has carried `if dummy == null: return` from the start.
+  The absence was *known*. It simply was not handled in the second
+  place that needed it.
+
+`boarcheck` now asserts a swing can hurt the boar: 110 → 61 fixed, and
+110 → 110 with the guard removed — eight swings from a metre away
+landing nothing, which is what play felt.
+
+**The earlier candidate was wrong, and worth recording as wrong.** The
+boar does pin you (unable to act 62% of the time, 9 of 30 swings
+refused, 120 → 65 health standing still) and that measurement is real
+— but it was not the cause. It was a plausible story that fit the
+symptom, and believing it would have cost a tuning pass on a boar that
+was not the problem.
 
 **The town is a different fault.** `town_player.gd` says in its own
 header: *"never touches combat"*. `TownWalker` is a `CharacterBody3D`
@@ -552,6 +559,64 @@ answering an input meant for the menu.
 not. Whether anything hostile comes into the town, and what happens if
 you swing at a townsperson, is a content and design question rather
 than a mechanical one, and is not answered here.
+
+## Done 2026-09-16 — the board honours a second kind of work
+
+**The harvest closes now.** The board has always offered four kinds of
+job — cull, escort, harvest, smithing — and honoured exactly one,
+because the Hedges was the only place the world gave you to do anything
+in. The Vance farm was already built, so the harvest is the one that
+could stop refusing.
+
+**The verb is the sword.** The player carries one in the town as of
+today, so reaping is a swing that lands on standing wheat rather than a
+new interaction nobody has been taught. `Reaping` reads the same three
+things a blow against a fighter reads — is the blade live, does it
+reach, has this swing already spent its hit — so a sheaf costs a real
+swing and the recovery after it, and mashing is no faster than the
+attack it is made of. The sheaves are further apart than a sword is
+long, so a day's work is walking as well as swinging.
+
+Finishing it has **the cull's shape**: `HarvestDemand` drops by one pair
+of hands, and at zero the posting is simply not on the board, because
+the farm is not asking. Nothing announces it.
+
+One deliberate asymmetry, and it is the interesting one. A cull's
+magnitude is the size of the problem and all of it is yours; a
+harvest's is how many *people* the farm wants — **and turning up does
+not make the field bigger**. So a day's work is a flat
+`harvestSheaves`, not `magnitude × anything`.
+
+10 xUnit tests, 16 GDScript checks — including the one that matters,
+that a contract can be **finished by playing** rather than by calling
+the rule directly: 6 sheaves in 10 swings, then hand-in-able.
+
+### ⚠️ And a bug that was already there
+
+**Vance offered `harvest-vance`. The board generates `harvest`.**
+Taking harvest work from him put an id into `contracts_taken` that
+matched no posting: the offer never read as taken, no work could be
+recorded against it, and handing it in answered *"no such contract"*.
+Nothing failed loudly — the job stopped existing the moment it was
+accepted.
+
+It survived because harvest could not be finished at all, so nobody
+ever reached the part that breaks. The moment harvest became real work,
+so did the bug.
+
+`qacheck` now checks every contract the roster OFFERS against the ones
+the board can actually generate — the sibling of L92's resolver rule,
+and for the same reason: two files agreeing by hand is not a rule.
+Proved by putting `harvest-vance` back and watching the check name it.
+
+### ⚠️ And the frame said what the numbers could not
+
+The first reaping field stood twenty-one sheaves on the farm's lawn and
+passed every check. Rendered, it was **yellow posts scattered on
+grass** — dropped timber, not a crop. Fixed by tilling the ground under
+the strip and rebuilding each sheaf as fourteen thin stalks splaying at
+the top instead of five thick boxes at a wide spread. The checks could
+not have caught that, and did not.
 
 ## Device check
 

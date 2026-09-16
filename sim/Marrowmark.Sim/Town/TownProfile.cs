@@ -29,6 +29,15 @@ namespace Marrowmark.Sim.Town
         /// <summary>Boars to kill per point of pressure before a cull can
         /// be handed in. The contract IS the problem, so the work scales
         /// with the problem exactly as the pay does.</summary>
+        /// <summary>
+        /// A day's work for one pair of hands, in sheaves.
+        ///
+        /// NOT scaled by HarvestDemand: demand is how many people the
+        /// farm wants, and you are one of them. Turning up does not make
+        /// the field bigger.
+        /// </summary>
+        public int HarvestSheaves;
+
         public int CullKillsPerPressure;
 
         /// <summary>How far one completed cull drops the region's
@@ -76,6 +85,7 @@ namespace Marrowmark.Sim.Town
             EscortBasePay = 10,
             EscortPayPerGuard = 4,
             HarvestPay = 5,
+            HarvestSheaves = 6,
             CullKillsPerPressure = 1,
             CullPressureRelief = 1,
             DrinkPrice = 2,

@@ -906,7 +906,22 @@ func _resolve_swing(who: Fighter, weapon_damage: float, is_player: bool) -> void
 
 	var targets: Array = []
 	if is_player:
-		if _dummy_down <= 0.0:
+		# THE DUMMY ONLY EXISTS IN THE DRILL YARD.
+		#
+		# Without this guard, reading its position in the Hedges threw on
+		# every live frame of every player swing — and a GDScript runtime
+		# error abandons the rest of the function, so the enemy below was
+		# never even considered. Swings animated, stamina was spent, and
+		# the boar was untouchable.
+		#
+		# That is very likely the thing reported from play as "there
+		# isn't a way to do combat when I'm in the hedges": the input was
+		# arriving and the swing was thrown, and nothing could ever come
+		# of it. It hid for as long as it did because no harness had a way
+		# to swing in the Hedges until the touch buttons gave it one —
+		# `_tick_dummy` has carried this same null check from the start,
+		# so the absence was known here and simply not handled.
+		if dummy != null and _dummy_down <= 0.0:
 			targets.append({"at": dummy.global_position, "radius": DUMMY_RADIUS, "dummy": true})
 		if _enemy_down <= 0.0:
 			targets.append({"at": enemy.global_position, "radius": 0.5, "dummy": false})

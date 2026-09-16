@@ -33,10 +33,19 @@ static func _p() -> Dictionary:
 ## How much work a contract wants. Zero means this kind cannot yet be
 ## progressed at all.
 static func required_for(contract: Dictionary) -> int:
-	if int(contract.get("kind", -1)) != ContractBoardRules.Kind.CULL:
-		return 0
-	var per := int(_p().get("cullKillsPerPressure", 1))
-	return maxi(1, int(contract.get("magnitude", 1)) * per)
+	var kind := int(contract.get("kind", -1))
+	if kind == ContractBoardRules.Kind.CULL:
+		var per := int(_p().get("cullKillsPerPressure", 1))
+		return maxi(1, int(contract.get("magnitude", 1)) * per)
+	if kind == ContractBoardRules.Kind.HARVEST:
+		# A day's work for one pair of hands. Deliberately NOT scaled by
+		# magnitude: for a cull the magnitude is the size of the problem
+		# and all of it is yours, but for a harvest it is how many PEOPLE
+		# the farm wants — and turning up does not make the field bigger.
+		return maxi(1, int(_p().get("harvestSheaves", 6)))
+	# Escort and smithing are still honest gaps: nowhere to walk a wagon
+	# to, no forge to stand at. They refuse rather than pay for nothing.
+	return 0
 
 
 static func required(state: TownWorldState, contract_id: String) -> int:
@@ -48,6 +57,29 @@ static func required(state: TownWorldState, contract_id: String) -> int:
 
 static func done(state: TownWorldState, contract_id: String) -> int:
 	return int(state.contract_progress.get(contract_id, 0))
+
+
+## Record sheaves cut, against a harvest the player is carrying.
+##
+## Unkeyed, unlike `record_cull`: a cull is reported as "something died
+## in a named place" because the woods are many and the town has to work
+## out which one you were paid for. There is one harvest, and inventing
+## a subject for it would be symmetry for its own sake.
+static func record_harvest(state: TownWorldState, sheaves: int) -> int:
+	if state == null or sheaves <= 0:
+		return 0
+	for c in ContractBoardRules.generate(state):
+		if int(c["kind"]) != ContractBoardRules.Kind.HARVEST:
+			continue
+		if not bool(c.get("taken", false)):
+			continue
+		var id := String(c["id"])
+		var want := required_for(c)
+		state.contract_progress[id] = mini(want, done(state, id) + sheaves)
+		return int(state.contract_progress[id])
+	# Cutting wheat nobody hired you for is allowed. It is not work the
+	# town owes you for.
+	return 0
 
 
 ## Record boars killed in a named region, against whichever cull the
@@ -108,6 +140,15 @@ static func hand_in(state: TownWorldState, contract_id: String) -> Dictionary:
 	state.contracts_taken.erase(contract_id)
 	state.contract_progress.erase(contract_id)
 
+	var demand_after := -1
+	if int(contract["kind"]) == ContractBoardRules.Kind.HARVEST:
+		# One pair of hands less wanted. Exactly the cull's shape: the
+		# board is generated from the world, so finishing the work
+		# changes the world and the posting follows. At zero the harvest
+		# is simply not posted, because the farm is not asking.
+		state.harvest_demand = maxi(0, state.harvest_demand - 1)
+		demand_after = state.harvest_demand
+
 	var after := -1
 	if int(contract["kind"]) == ContractBoardRules.Kind.CULL:
 		state.culls_completed += 1
@@ -117,7 +158,8 @@ static func hand_in(state: TownWorldState, contract_id: String) -> Dictionary:
 			state.boar_pressure[region] = maxi(0, int(state.boar_pressure[region]) - relief)
 			after = int(state.boar_pressure[region])
 
-	return {"result": HandInResult.PAID, "paid": pay, "pressure_after": after}
+	return {"result": HandInResult.PAID, "paid": pay, "pressure_after": after,
+		"demand_after": demand_after}
 
 
 ## Give the paper back, unfinished. Returns { result, forfeited }.

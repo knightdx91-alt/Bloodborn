@@ -319,5 +319,146 @@ namespace Marrowmark.Sim.Tests.Town
 
             Assert.Equal(HandInResult.NotTaken, ContractWork.Hand(s, c.Id).Result);
         }
+
+        // --- The harvest, which is the second kind of work that closes --
+        //
+        // Until now only culls could be finished, so the board offered
+        // four kinds of job and honoured one. These are about the second
+        // kind behaving like the first WITHOUT being a copy of it.
+
+        [Fact]
+        public void A_harvest_can_be_progressed_now()
+        {
+            var s = Thornfield();
+            s.HarvestDemand = 4;
+            var c = ContractBoard.Generate(s).First(x => x.Id == "harvest");
+            Assert.True(ContractWork.Required(c, TownProfile.Default) > 0,
+                "harvest still refuses, so the board still honours one kind of work");
+        }
+
+        /// <summary>
+        /// Magnitude means different things for the two kinds. For a cull
+        /// it is the size of the problem and all of it is yours; for a
+        /// harvest it is how many PEOPLE the farm wants, and turning up
+        /// does not make the field bigger.
+        /// </summary>
+        [Fact]
+        public void And_a_days_work_does_not_grow_with_the_number_of_hands_wanted()
+        {
+            var quiet = Thornfield();
+            quiet.HarvestDemand = 1;
+            var busy = Thornfield();
+            busy.HarvestDemand = 9;
+
+            Assert.Equal(
+                ContractWork.Required(quiet, "harvest", TownProfile.Default),
+                ContractWork.Required(busy, "harvest", TownProfile.Default));
+        }
+
+        [Fact]
+        public void Cutting_wheat_you_were_not_hired_for_is_not_progress()
+        {
+            var s = Thornfield();
+            s.HarvestDemand = 4;
+            Assert.Equal(0, ContractWork.RecordHarvest(s, 5));
+            Assert.Empty(s.ContractProgress);
+        }
+
+        [Fact]
+        public void Sheaves_count_once_you_are_hired()
+        {
+            var s = Thornfield();
+            s.HarvestDemand = 4;
+            s.ContractsTaken.Add("harvest");
+            Assert.Equal(3, ContractWork.RecordHarvest(s, 3));
+            Assert.Equal(3, ContractWork.Done(s, "harvest"));
+        }
+
+        [Fact]
+        public void And_stop_counting_at_what_was_asked_for()
+        {
+            var s = Thornfield();
+            s.HarvestDemand = 4;
+            s.ContractsTaken.Add("harvest");
+            var want = ContractWork.Required(s, "harvest", TownProfile.Default);
+            ContractWork.RecordHarvest(s, want + 40);
+            Assert.Equal(want, ContractWork.Done(s, "harvest"));
+        }
+
+        [Fact]
+        public void An_unfinished_harvest_pays_nothing()
+        {
+            var s = Thornfield();
+            s.HarvestDemand = 4;
+            s.ContractsTaken.Add("harvest");
+            ContractWork.RecordHarvest(s, 1);
+            Assert.Equal(HandInResult.NotFinished, ContractWork.Hand(s, "harvest").Result);
+        }
+
+        [Fact]
+        public void A_finished_harvest_pays_and_returns_the_paper()
+        {
+            var s = Thornfield();
+            s.HarvestDemand = 4;
+            s.ContractsTaken.Add("harvest");
+            ContractWork.RecordHarvest(s, 999);
+            var coin = s.Coin;
+
+            var h = ContractWork.Hand(s, "harvest");
+
+            Assert.Equal(HandInResult.Paid, h.Result);
+            Assert.True(h.Paid > 0);
+            Assert.Equal(coin + h.Paid, s.Coin);
+            Assert.DoesNotContain("harvest", s.ContractsTaken);
+        }
+
+        /// <summary>
+        /// The cull's shape, on the other crop: the board is generated
+        /// from the world, so finishing the work changes the world and
+        /// the posting follows. Nothing announces it.
+        /// </summary>
+        [Fact]
+        public void And_the_farm_wants_one_pair_of_hands_fewer()
+        {
+            var s = Thornfield();
+            s.HarvestDemand = 4;
+            s.ContractsTaken.Add("harvest");
+            ContractWork.RecordHarvest(s, 999);
+
+            var h = ContractWork.Hand(s, "harvest");
+
+            Assert.Equal(3, s.HarvestDemand);
+            Assert.Equal(3, h.DemandAfter);
+        }
+
+        [Fact]
+        public void And_a_farm_with_hands_enough_stops_asking()
+        {
+            var s = Thornfield();
+            s.HarvestDemand = 1;
+            s.ContractsTaken.Add("harvest");
+            ContractWork.RecordHarvest(s, 999);
+            ContractWork.Hand(s, "harvest");
+
+            Assert.Equal(0, s.HarvestDemand);
+            Assert.DoesNotContain(ContractBoard.Generate(s), c => c.Id == "harvest");
+        }
+
+        /// <summary>A cull must not be paid for cutting wheat, or the
+        /// other way about.</summary>
+        [Fact]
+        public void The_two_kinds_of_work_do_not_feed_each_other()
+        {
+            var s = Thornfield();
+            s.HarvestDemand = 4;
+            s.ContractsTaken.Add("harvest");
+            s.ContractsTaken.Add(WestCull);
+
+            ContractWork.RecordHarvest(s, 2);
+            Assert.Equal(0, ContractWork.Done(s, WestCull));
+
+            ContractWork.RecordCull(s, "the Hedges west", 2);
+            Assert.Equal(2, ContractWork.Done(s, "harvest"));
+        }
     }
 }

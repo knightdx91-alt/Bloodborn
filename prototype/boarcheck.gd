@@ -106,6 +106,44 @@ func _ready() -> void:
 			boar.global_position.distance_to(start) > 1.0,
 			"it never left home")
 
+	# --- and your sword actually reaches it -------------------------------
+	#
+	# Every player swing in the Hedges used to abort before it considered
+	# the boar at all: _resolve_swing read the TRAINING DUMMY's position
+	# first, the dummy exists only in the drill yard, and a GDScript
+	# runtime error abandons the rest of the function. Swings animated,
+	# stamina was spent, and the animal could not be hurt.
+	#
+	# Nothing caught it because no harness could swing in the Hedges
+	# until the touch buttons gave it a way to. This is that way.
+	if boar != null and you != null:
+		you.global_position = boar.global_position + Vector3(0, 0, 1.1)
+		you.look_at(boar.global_position, Vector3.UP)
+		for f in 6:
+			await get_tree().physics_frame
+
+		var boar_hp: float = boar.health.current()
+		var swung := false
+		for attempt in 8:
+			if h.call("_try_attack", Attack.Arc.UPPER_RIGHT):
+				pass
+			swung = true
+			for f in 30:
+				await get_tree().physics_frame
+				# Hold them together: this measures the SWING, not the
+				# boar's habit of running off to line up another charge.
+				you.global_position = boar.global_position + Vector3(0, 0, 1.1)
+				you.look_at(boar.global_position, Vector3.UP)
+			if boar.health.current() < boar_hp:
+				break
+
+		_ok("a swing in the Hedges can actually hurt the boar",
+			boar.health.current() < boar_hp,
+			"boar at %.0f after eight swings from a metre away — the "
+				% boar.health.current()
+			+ "blade passes straight through it")
+		print("      boar %.0f -> %.0f" % [boar_hp, boar.health.current()])
+
 	print("")
 	print("boar: all clear" if _fails.is_empty() else "FAILED: %s" % ", ".join(_fails))
 	get_tree().quit()

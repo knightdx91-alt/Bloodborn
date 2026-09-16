@@ -219,6 +219,38 @@ static func uncovered_effects() -> Array:
 	return missing
 
 
+## Contracts the roster offers that the board cannot generate.
+##
+## Vance offered `harvest-vance` for months while the board generated
+## `harvest`. Taking it put an id in `contracts_taken` that matched no
+## posting, so the offer never showed as taken, the work could never be
+## recorded against it, and handing it in answered "no such contract".
+## Nothing failed loudly; the job simply did not exist once accepted.
+##
+## It stayed invisible because harvest could not be finished at all, so
+## nobody reached the part that breaks. The moment harvest became real
+## work, so did the bug — which is the argument for checking names
+## against the world rather than trusting two files to agree.
+##
+## The harness fails on a non-empty answer.
+static func unknown_contracts() -> Array:
+	var state := TownWorldState.new()
+	var real: Array = []
+	for c in ContractBoardRules.generate(state):
+		real.append(String(c["id"]))
+
+	var missing: Array = []
+	for data in Roster.all():
+		for t in data.get("topics", []):
+			var row := t as Dictionary
+			if String(row.get("effect", "")) != "take_contract":
+				continue
+			var id := String(row.get("effect_arg", ""))
+			if id != "" and not real.has(id) and not missing.has(id):
+				missing.append(id)
+	return missing
+
+
 func _resolve(t: Dictionary) -> Dictionary:
 	var state: TownWorldState = _systems.get("state", null)
 	if state == null:

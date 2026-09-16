@@ -5,6 +5,7 @@
     "escortBasePay": 10,
     "escortPayPerGuard": 4,
     "harvestPay": 5,
+    "harvestSheaves": 6,
     "cullKillsPerPressure": 1,
     "cullPressureRelief": 1
   },
