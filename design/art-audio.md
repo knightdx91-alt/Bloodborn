@@ -72,6 +72,48 @@ This is not decoration either. It serves:
 - **The capitol as a mixing point** — the one place all six palettes
   meet, which is what a capitol should feel like.
 
+## 3b. Light moves, and it is an instrument **[L89]**
+
+**There is a day/night cycle, on one clock shared by everyone on a
+server.** Two players standing together see the same light, and "meet
+me at dusk" is a sentence that means something.
+
+**The sun rises east and sets west, everywhere, always.** That is the
+load-bearing part. L80 forbids an on-screen compass and puts
+information *in the world* by preference; a sun overhead is the oldest
+navigation instrument there is, and it costs no interface at all. With
+L82's player-made maps it completes the kit: **a map tells you what
+somebody knew, the sun tells you which way you are pointing**, and
+neither is a marker.
+
+It also does §3's job at a different scale. Regional palette makes a
+screenshot *locatable*; the hour makes it *datable*, and the two
+together mean a glance out of a window tells you where and when you
+are.
+
+### Night is a cost, and is priced as one
+
+**Night is genuinely dark.** §2's readability rules and `combat.md` §6
+both require an attack to be read off the body, and darkness attacks
+that directly — so night is when the world is most dangerous, carried
+light matters, and reaching a settlement before dark is worth doing.
+
+This is deliberately **not** cheated with bright moonlight or
+unexplained visibility. L20 has no tolerance for light that has no
+source, and a night you can fight in as if it were noon is a night
+that costs nothing and therefore means nothing.
+
+**Open, and flagged rather than assumed:**
+
+- How dark night actually gets before §6 breaks. This wants measuring
+  against a real fight, not choosing.
+- What a carried light costs — a hand, a slot, fuel, all three.
+- The day's real-time length. The principle: a normal session should
+  contain both, with night a meaningful fraction and less than half.
+
+**Not a weather system.** Rain, fog and storm are a separate and much
+larger commitment, and nothing here implies them.
+
 ## 4. Audio carries what the eye cannot **[L87]**
 
 Audio is the second information channel, and in one case it is the
@@ -180,6 +222,8 @@ rumour, and unmistakable once seen.
       the world simply a world? (Leaning: barely — a hint in the stone
       near the Godsgrave, nothing a player would name without knowing.)
 - [ ] Music: what earns it, and who writes it?
+- [ ] **How dark night gets before §6 stops working** (L89), what a
+      carried light costs, and the day's real-time length.
 - [ ] Which marketplace ecosystems, and what the unifying treatment
       concretely is — the open question `tech.md` §1 already carries,
       now with an art-direction answer attached.

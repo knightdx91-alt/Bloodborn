@@ -1,4 +1,10 @@
 extends Node3D
+
+## Where Thornfield's day starts. Late afternoon: the harvest light art
+## the town was built for, with dusk close enough to be worth watching.
+const DAY_STARTS_AT := 0.62
+var clock: WorldClock
+
 ## Thornfield — harvest-town visual pass (T1-T3 geometry + dressing).
 ##
 ## Real CC0 kit models (Quaternius packs, see assets/town/LICENSE-QUATERNIUS-CC0.txt)
@@ -25,6 +31,9 @@ var _blocks: Array = []  # Vector4(x0, z0, x1, z1) keep-clear rects for scatter
 func _ready() -> void:
 	_rng.seed = 20260914
 	Look.build(self)
+	# L89: one clock, and the town runs on the same one the yard does.
+	clock = WorldClock.new(DAY_STARTS_AT)
+	Look.set_time(self, clock)
 	# The yard's 60 m shadow range would clip the town's far side.
 	for c in get_children():
 		if c is DirectionalLight3D and (c as DirectionalLight3D).shadow_enabled:
@@ -877,3 +886,9 @@ func _scatter() -> void:
 			_put(_nature("RockPath_Round_Wide"),
 				Vector3(_rng.randf_range(-1, 1), 0, gz + (k - 1.5) * 2.2),
 				_rng.randf_range(0, TAU))
+
+
+func _process(delta: float) -> void:
+	if clock != null:
+		clock.tick(delta)
+		Look.set_time(self, clock)

@@ -169,6 +169,11 @@ const CAM_KEY_RATE := 1.8
 
 # Prototype scaffolding, not a design decision. interface.md §2 gives an
 # opponent no bars at all; these numbers exist to check the sums.
+## Where the day starts when you enter. Mid-morning: the light is
+## already interesting and you have a while before dusk.
+const DAY_STARTS_AT := 0.36
+var clock: WorldClock
+
 const SHOW_DEBUG := true
 var _phase_label: Label
 var _dodge_count := 0
@@ -218,6 +223,10 @@ func _build_yard() -> void:
 	# puts the look in the treatment rather than the assets, and this is
 	# that taken literally.
 	Look.build(self)
+	# L89: the day runs on a clock, and the clock is a rule (L88) rather
+	# than something the renderer keeps for itself.
+	clock = WorldClock.new(DAY_STARTS_AT)
+	Look.set_time(self, clock)
 
 	const YARD := 30.0  # half-extent of the drill yard
 
@@ -589,6 +598,8 @@ func _physics_process(delta: float) -> void:
 	# screen, and this says the same thing without using it.
 	feel.breathe(clamp(1.0 - player.stamina.fraction() * 2.2, 0.0, 1.0))
 
+	clock.tick(delta)
+	Look.set_time(self, clock)
 	_tick_camera(delta)
 	_place_camera()
 	_update_interface(delta)

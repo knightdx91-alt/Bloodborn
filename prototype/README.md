@@ -236,6 +236,49 @@ frame to frame through a full reversal. The drill yard never had this
 because `world.gd` has always placed its camera inside
 `_physics_process`.
 
+### The day moves (L89)
+
+The sun crosses the sky on a clock both scenes share, **rising east and
+setting west**, which is what makes it the compass L80 forbids on
+screen — L80's first preference is to put information in the world, and
+a sun overhead is the oldest instrument there is.
+
+The clock is a **rule**, not a renderer's private variable: it lives in
+`sim/Marrowmark.Sim/World/WorldClock.cs` with 14 tests, mirrored in
+`rules/world_clock.gd` (L88). Two players standing together have to see
+the same light, and a client inventing its own hour cannot promise
+that.
+
+Everything visual blends against one number, `daylight()` — sun angle,
+sun colour and energy, sky, ambient and fog — so nothing re-derives the
+hour for itself and drifts out of step.
+
+> **⚠️ Night was black, and that is the number L89 flagged open.**
+>
+> The first build rendered dusk as *nothing at all*, not even a
+> silhouette. `combat.md` §6 needs an attack read off the body, so that
+> is not atmosphere — it is the combat not working.
+>
+> The trap underneath it is worth remembering: ambient light here comes
+> from the **sky** (`AMBIENT_SOURCE_SKY`, contribution 1.0), so raising
+> ambient *energy* against a near-black night sky multiplies almost
+> nothing. The night sky itself has to carry light, which is also true
+> to life — a clear night sky is deep blue, not black.
+>
+> A sweep meant to find the right value measured nothing at all,
+> because `world.gd` re-applies `set_time` every physics frame and
+> overwrote the test's changes before each render. The answer came from
+> moving the constants and looking at the frames.
+>
+> Night is now lit by a deep blue sky and a **moon** — the same
+> directional light turned cold and weak once the sun is down. That is
+> not the "unexplained visibility" L89 rules out: L20 objects to light
+> with no source, and the moon is a source.
+>
+> **Still open:** whether this is dark enough to be worth fearing and
+> bright enough to fight in is a judgement that needs a real fight on a
+> real screen, not a rendered still.
+
 **Lock-on stays rejected.** It needs an on-screen indicator to be
 legible and L65 forbids that kind of marker, and it degrades badly in
 crowds, which L25's war sizes make the normal case.

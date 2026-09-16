@@ -1,0 +1,9 @@
+{
+  "day": {
+    "realSecondsPerDay": 5400.0,
+    "noonElevationDegrees": 62.0,
+    "midnightDepressionDegrees": 18.0,
+    "dayAboveDegrees": 6.0,
+    "nightBelowDegrees": -4.0
+  }
+}
