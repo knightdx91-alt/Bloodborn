@@ -130,6 +130,10 @@ namespace Marrowmark.Sim.Tests
             AssertMatches(EnemyTacticsProfile.Default, "enemyTactics");
 
         [Fact]
+        public void Beast_tactics_match_the_shared_file() =>
+            AssertMatches(BeastTacticsProfile.Boar, "beastTactics");
+
+        [Fact]
         public void Parry_tuning_matches_the_shared_file() =>
             AssertMatches(ParryProfile.Default, "parry");
 
@@ -162,6 +166,7 @@ namespace Marrowmark.Sim.Tests
                 ("enemyHeavy", typeof(AttackProfile)),
                 ("enemyCommitted", typeof(AttackProfile)),
                 ("enemyTactics", typeof(EnemyTacticsProfile)),
+                ("beastTactics", typeof(BeastTacticsProfile)),
                 ("parry", typeof(ParryProfile)),
             };
 

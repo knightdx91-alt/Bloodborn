@@ -312,6 +312,86 @@ The files are left in place rather than deleted: they are already in
 git history, so removing them reclaims nothing, and the spec now marks
 them clearly. Say the word if you would rather they go.
 
+## Fixed 2026-09-16 — Thornfield was wearing the wrong century
+
+**Smith Odo hammered iron in a yellow hard hat and a hi-vis safety vest.
+Clerk Fenwick kept the boards in a navy business suit. Brewer Tammas was
+in hi-vis too, and so were the wardens, the drovers, the granary hands
+and half the market crowd.**
+
+`modular-characters` is a **modern** character pack with a few fantasy
+extras — of its 21 bodies there is a spacesuit, a SWAT officer, beach
+shorts and flip-flops, a business suit, two mohawks and two hi-vis
+workers in hard hats. `npc.gd` picked from it **by filename**:
+`Male_Worker` sounds like a man who works, so it was used for the smith,
+the brewer, the wardens and the drovers. Nobody had ever looked at it.
+Found while rendering something else entirely, which is the point — a
+name in a dictionary does not look like anything.
+
+It survived because the fix for *variety* was to reach further into the
+pack, and the pack only gets more modern the further you reach.
+
+**Only three of the 21 bodies can dress a medieval town**:
+`Male_Adventurer`, `Female_Adventurer`, `Female_Medieval`. Three outfits
+for 34 people is a different problem, so the answer is the pack's own
+modularity: every model is built on the **same 62-bone rig** and split
+into the same four or five parts, so a head is portable. Reparent it and
+it deforms with the rest.
+
+On this rig a head is a face and hair and nothing else, so **11 of the 21
+carry no period at all** and sit on any outfit. The other ten wear
+something — hard hat, crown, witch's hat, visor, mohawk, dyed streak —
+and are excluded on exactly that ground. Eleven heads across three
+outfits is thirty-three distinguishable people, none of them in a hard
+hat.
+
+Evidence, because this is a class of bug that only a frame catches:
+
+- `assets/evidence/townsfolk-catalogue.png` — all 21, why most are out
+- `assets/evidence/townsfolk-heads.png` — the head slot on each
+- `assets/evidence/townsfolk-after-fix.png` — the swap, close enough to
+  see that the heads sit on the necks
+
+And `qacheck.gd` now asserts every outfit and head is on the vetted list,
+so the next person to add an NPC cannot reintroduce this by picking a
+promising filename.
+
+**Still open:** three outfits is thin, and the crowd reads uniform even
+with the colour wash. The real answer is a townsfolk pack that is
+actually medieval; this makes the town period-correct, not varied.
+
+## Fixed 2026-09-16 — the boar fought like a swordsman
+
+The Hedges shipped with the boar running `EnemyTactics` — the sparring
+partner's brain. It circled at the edge of its reach and threw a heavy
+overhead, a quick to the body and a whole-body sweep, because those are
+the three shapes a man with a sword has. A boar has one: it runs at you.
+
+`BeastTactics` (C#, 13 tests) and its GDScript mirror. The shape is
+different rather than tuned differently:
+
+- **A run cannot be steered.** Once it commits, the heading is captured
+  and never revised, so stepping aside works. That is the only reason a
+  charge is beatable, and it is the first thing the tests check.
+- **Every spent run ends in a wheel** — the punish window.
+- **Knife range means tusks**, because a charge needs room to build.
+- **An exhausted boar stops charging** and is reduced to its tusks: a
+  state change a player can *see*, rather than a number going down,
+  which is what `interface.md` §2 asks for.
+
+**A test found a real flaw in the rule, not just in itself.** The wheel
+was left to the caller — `Spent()` was right there — so a run that went
+its full distance without hitting anything simply started another, and
+the boar never turned round: one charge a minute instead of twenty. A
+punish window that exists only while every caller remembers to ask for
+it is not a rule, so the wheel now arrives by itself in `Tick`.
+
+`boarcheck.gd` is 12 checks and measures the fight in the Hedges: it
+closes from 8.1 m to 1.7 m peaking at **6.2 m/s**. Put back on the
+swordsman's brain, the same check reports 2.4 m/s — a walk — and fails.
+
+387 C# tests, ten Godot harnesses.
+
 ## Device check
 
 `CLAUDE.md` instructs the assistant to ask which device you are on at

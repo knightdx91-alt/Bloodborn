@@ -37,11 +37,24 @@ const SPRINT_THRESHOLD := 5.0
 ## running out of breath, and the animation is where that has to happen.
 const EXHAUSTED_WALK := 1.6
 const ENEMY_SPEED := 2.4
+## A charging boar is faster than a man can walk and faster than it can
+## turn — both on purpose. Outrunning it is not the answer; not being
+## there is.
+const CHARGE_SPEED := 6.2
+const STALK_SPEED := 1.6
+## How close the tusks reach during a run.
+const GORE_REACH := 1.5
 
 var player: Fighter
 var enemy: Fighter
 var cam: Camera3D
 var tactics: EnemyTactics
+## The Hedges only. A boar does not fight like a man with a sword, so it
+## does not get the man with a sword's brain.
+var beast: BeastTactics
+## The heading a run was committed to. Captured once, at the moment of
+## commitment, and never revised.
+var _charge_dir := Vector3.FORWARD
 var feel: Feel
 
 var dummy: Node3D
@@ -227,7 +240,7 @@ func _ready() -> void:
 		# placeholder it replaces lasted exactly as long as it took for
 		# a real boar to arrive.
 		enemy.setup_beast(ENEMY_HEALTH, "boar")
-		tactics = EnemyTactics.new(20260916)
+		beast = BeastTactics.new(20260916)
 		feel = Feel.new()
 		cam = Camera3D.new()
 		add_child(cam)
@@ -730,7 +743,10 @@ func _physics_process(delta: float) -> void:
 	_check_hold()
 	player.tick(delta)
 	enemy.tick(delta)
-	tactics.tick(delta)
+	if beast != null:
+		beast.tick(delta)
+	else:
+		tactics.tick(delta)
 
 	_move_player(delta)
 	_run_enemy(delta)
@@ -798,6 +814,10 @@ func _run_enemy(delta: float) -> void:
 	var distance := to_player.length()
 	var heading := to_player.normalized()
 
+	if beast != null:
+		_run_beast(delta, heading, distance)
+		return
+
 	var decision := tactics.decide(distance, enemy.stamina, enemy.is_busy())
 	match decision["intent"]:
 		EnemyTactics.Intent.ATTACK:
@@ -823,6 +843,59 @@ func _run_enemy(delta: float) -> void:
 				enemy.rotation.y = lerp_angle(
 					enemy.rotation.y, atan2(-heading.x, -heading.z), 6.0 * delta)
 			enemy.move(Vector3.ZERO, 0.0, delta)
+
+## The boar's side of the fight. Geometry here, rules in sim/.
+##
+## The difference from `_run_enemy` is the whole point. A swordsman turns
+## to face you every tick, because his telegraph is the wind-up and a
+## wind-up aimed elsewhere teaches nothing. A boar aims ONCE, at the
+## moment it commits, and then cannot correct — so the heading is
+## captured at the start of the run and the body is driven along it
+## whatever the player does next. Stepping out of the way is the answer,
+## and it only is one because of this.
+func _run_beast(delta: float, heading: Vector3, distance: float) -> void:
+	var was_charging := beast.is_charging()
+	var decision := beast.decide(distance, enemy.stamina, enemy.is_busy())
+
+	match decision["intent"]:
+		BeastTactics.Intent.CHARGE:
+			if not was_charging:
+				# Commit. This is the last moment it gets to aim.
+				_charge_dir = heading
+				enemy.rotation.y = atan2(-heading.x, -heading.z)
+				beast.charged(enemy.stamina)
+				Sound.swing(self, enemy.global_position + Vector3(0, 0.7, 0))
+			enemy.move(_charge_dir, CHARGE_SPEED, delta)
+			# Close enough during the run and the tusks land. Resolved
+			# here rather than by the blade sweep, because the weapon is
+			# the animal.
+			if distance <= GORE_REACH and not enemy.is_busy():
+				if enemy.try_attack("enemyHeavy"):
+					enemy.attack.arc = Attack.Arc.LOWER_LEFT
+					beast.spent()
+
+		BeastTactics.Intent.GORE:
+			enemy.rotation.y = atan2(-heading.x, -heading.z)
+			if enemy.try_attack("enemyQuick"):
+				enemy.attack.arc = Attack.Arc.LOWER_RIGHT
+				beast.gored()
+			enemy.move(Vector3.ZERO, 0.0, delta)
+
+		BeastTactics.Intent.WHEEL:
+			# Turning round. Slower than it can run, which is what makes
+			# this the window worth taking.
+			enemy.rotation.y = lerp_angle(
+				enemy.rotation.y, atan2(-heading.x, -heading.z), 3.0 * delta)
+			enemy.move(Vector3.ZERO, 0.0, delta)
+
+		BeastTactics.Intent.STALK:
+			enemy.rotation.y = lerp_angle(
+				enemy.rotation.y, atan2(-heading.x, -heading.z), 5.0 * delta)
+			enemy.move(heading, STALK_SPEED, delta)
+
+		_:
+			enemy.move(Vector3.ZERO, 0.0, delta)
+
 
 ## Geometry here, rules in sim/. The blade is live for a tenth of a second
 ## and connects at most once, so this asks once and the swing is spent
@@ -960,7 +1033,10 @@ func _tick_bodies(delta: float) -> void:
 		if _enemy_down <= 0.0:
 			enemy.revive()
 			enemy.position = ENEMY_HOME
-			tactics = EnemyTactics.new(Time.get_ticks_msec())
+			if beast != null:
+				beast = BeastTactics.new(Time.get_ticks_msec())
+			else:
+				tactics = EnemyTactics.new(Time.get_ticks_msec())
 
 	if _player_down > 0.0:
 		_player_down -= delta

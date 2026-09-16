@@ -564,6 +564,48 @@ func _ready() -> void:
 		ConversationUI.current.close()
 		await _settle()
 
+	# --- Nobody in Thornfield is dressed for the wrong century -----------
+	#
+	# `modular-characters` is a MODERN pack with a few fantasy extras: a
+	# spacesuit, a SWAT officer, beach shorts, a business suit, two
+	# mohawks and two hi-vis safety vests with hard hats. Bodies used to
+	# be picked from it by FILENAME, which is how Smith Odo came to hammer
+	# iron in a hard hat and Clerk Fenwick to keep the boards in a navy
+	# business suit — for months, because a name in a dictionary does not
+	# look like anything.
+	#
+	# So the vetted lists are the rule, and this is what makes them one.
+	# Every one of them has been rendered and looked at; the frames are in
+	# assets/evidence/.
+	var strays: Array[String] = []
+	for who in TownNPC.BODIES.values():
+		if not TownNPC.OUTFITS.has(String(who)):
+			strays.append("BODIES -> %s" % who)
+	for role in TownNPC.CROWD:
+		for who in TownNPC.CROWD[role]:
+			if not TownNPC.OUTFITS.has(String(who)):
+				strays.append("CROWD[%s] -> %s" % [role, who])
+	_ok("every townsperson wears a vetted outfit", strays.is_empty(),
+		"%s — not on OUTFITS, so nobody has looked at it"
+			% ", ".join(strays))
+
+	# The heads are dealt from HEADS, so the same rule has to hold there.
+	const HATTED := ["Female_Punk", "Female_SciFi", "Female_Witch",
+		"Female_Worker", "Male_Farmer", "Male_King", "Male_Punk",
+		"Male_Spacesuit", "Male_Swat", "Male_Worker"]
+	var hatted: Array[String] = []
+	for h in TownNPC.HEADS:
+		if HATTED.has(String(h)):
+			hatted.append(String(h))
+	_ok("and nobody is wearing a hard hat, a crown or a mohawk",
+		hatted.is_empty(),
+		"%s are in HEADS and each of them wears something" % ", ".join(hatted))
+
+	_ok("there are enough combinations to go round",
+		TownNPC.HEADS.size() * TownNPC.OUTFITS.size() >= 30,
+		"%d heads x %d outfits is not 34 distinguishable people"
+			% [TownNPC.HEADS.size(), TownNPC.OUTFITS.size()])
+
 	print("")
 	print("npc UI: all clear" if _fails.is_empty() else "FAILED: %s" % ", ".join(_fails))
 	get_tree().quit()

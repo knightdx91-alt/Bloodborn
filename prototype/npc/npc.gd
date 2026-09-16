@@ -22,29 +22,54 @@ const IDLE := "res://assets/animations/anim_Idle.fbx"
 ## a spacesuit, a SWAT officer and a hoodie, which are excellent and not
 ## for Thornfield.
 const FOLK := "res://assets/townsfolk/modular-characters/%s.glb"
+## The three outfits in this pack that a medieval town can wear.
+##
+## `modular-characters` is a MODERN character set with a few fantasy
+## extras — of its 21 bodies there is a spacesuit, a SWAT officer, beach
+## shorts and flip-flops, a business suit, two mohawks and two hi-vis
+## safety vests with hard hats. They were previously chosen here by
+## FILENAME, which is how Smith Odo came to hammer iron in a hard hat and
+## Clerk Fenwick to keep the boards in a navy business suit. Every entry
+## below has been rendered and looked at; see
+## `assets/evidence/townsfolk-catalogue.png`.
+const OUTFITS := ["Male_Adventurer", "Female_Adventurer", "Female_Medieval"]
+
+## Heads, which are portable — see `_swap_head`.
+##
+## On this rig a head is a face and hair and nothing else, so most of
+## them carry no period at all and will sit on any of the outfits above.
+## These are the ones wearing NOTHING: no hard hat, no crown, no witch's
+## hat, no visor, no mohawk, no dyed streak. Eight of the pack's 21 are
+## excluded on exactly that ground.
+const HEADS := ["Female_Adventurer", "Female_Casual", "Female_Formal",
+	"Female_Medieval", "Female_Soldier", "Female_Suit", "Male_Adventurer",
+	"Male_Beach", "Male_Casual_2", "Male_Casual_Hoodie", "Male_Suit"]
+
+## Who wears which outfit. Heads are dealt separately, so two people in
+## the same outfit are still two people.
 const BODIES := {
 	"mara": "Female_Medieval",
-	"odo": "Male_Worker",
-	"pell": "Male_Farmer",
-	"sarella": "Female_Witch",
-	"fenwick": "Male_Suit",
-	"vance": "Male_Farmer",
-	"tammas": "Male_Worker",
+	"odo": "Male_Adventurer",
+	"pell": "Male_Adventurer",
+	"sarella": "Female_Medieval",
+	"fenwick": "Male_Adventurer",
+	"vance": "Male_Adventurer",
+	"tammas": "Male_Adventurer",
 	"mira": "Female_Adventurer",
 	"lamp": "Male_Adventurer",
 	"vigil-rider": "Male_Adventurer",
 }
 ## For the crowd, by the role their barks come from.
 const CROWD := {
-	"market": ["Female_Medieval", "Male_Farmer", "Female_Worker"],
-	"farmer": ["Male_Farmer", "Female_Worker"],
+	"market": ["Female_Medieval", "Male_Adventurer", "Female_Adventurer"],
+	"farmer": ["Male_Adventurer", "Female_Adventurer"],
 	"child": ["Female_Adventurer", "Male_Adventurer"],
-	"warden": ["Male_Worker", "Male_Adventurer"],
-	"drover": ["Male_Farmer", "Male_Worker"],
-	"granary": ["Male_Worker", "Female_Worker"],
-	"brewery": ["Male_Worker", "Female_Medieval"],
-	"chapel": ["Female_Medieval", "Female_Witch"],
-	"apprentice": ["Male_Adventurer", "Male_Worker"],
+	"warden": ["Male_Adventurer", "Female_Adventurer"],
+	"drover": ["Male_Adventurer", "Female_Medieval"],
+	"granary": ["Male_Adventurer", "Female_Adventurer"],
+	"brewery": ["Male_Adventurer", "Female_Medieval"],
+	"chapel": ["Female_Medieval", "Female_Adventurer"],
+	"apprentice": ["Male_Adventurer", "Female_Adventurer"],
 }
 const TALK_RANGE := 3.0
 ## Metres per second on the way to a posting.
@@ -157,8 +182,11 @@ func _build_person(path: String, tunic: Color) -> void:
 	body.rotation_degrees = Vector3(0, 180, 0)
 	add_child(body)
 
-	# A wash of the tunic colour, so a crowd of six Male_Farmers is not
-	# six identical men. Multiplied into the texture rather than
+	# Three outfits would be three faces without this.
+	_swap_head(body, HEADS[abs(int(hash(npc_id + "head"))) % HEADS.size()])
+
+	# A wash of the tunic colour, so a crowd of six in the same tunic is
+	# not six identical people. Multiplied into the texture rather than
 	# replacing it, which would flatten them to silhouettes.
 	for mi in _all(body, "MeshInstance3D"):
 		var m := mi as MeshInstance3D
@@ -177,6 +205,62 @@ func _build_person(path: String, tunic: Color) -> void:
 		if _anim.has_animation("Walk"):
 			_anim.get_animation("Walk").loop_mode = Animation.LOOP_LINEAR
 		_anim.play("Idle")
+
+
+## The mesh that reaches highest: on this pack that is always the head.
+##
+## Measured off the MESH resource rather than the instance, because a
+## skinned MeshInstance3D reports a padded AABB that covers everywhere
+## the skin could deform to — which is most of the body, and would pick
+## the wrong part.
+func _head_of(body: Node3D) -> MeshInstance3D:
+	var best: MeshInstance3D = null
+	var best_top := -1e9
+	for node in _all(body, "MeshInstance3D"):
+		var mi := node as MeshInstance3D
+		if mi.mesh == null:
+			continue
+		var box: AABB = mi.mesh.get_aabb()
+		var top: float = box.position.y + box.size.y
+		if top > best_top:
+			best_top = top
+			best = mi
+	return best
+
+
+## Put somebody else's head on this body.
+##
+## Every model in `modular-characters` is built on the SAME 62-bone rig
+## and split into the same four or five parts, so a head is portable:
+## reparent it under this skeleton and it deforms with everything else.
+##
+## That portability is what makes three medieval outfits enough for a
+## town. Eleven period-neutral heads across three bodies is thirty-three
+## distinguishable people, and not one of them is in a hard hat — which
+## the previous approach, picking whole outfits by filename, could not
+## manage without reaching for the spacesuit half of the pack.
+func _swap_head(body: Node3D, head_model: String) -> void:
+	var skel := _find(body, "Skeleton3D") as Skeleton3D
+	if skel == null:
+		return
+	var mine := _head_of(body)
+	if mine == null:
+		return
+	var path: String = FOLK % head_model
+	if not ResourceLoader.exists(path):
+		return
+	var donor := (load(path) as PackedScene).instantiate() as Node3D
+	var theirs := _head_of(donor)
+	if theirs == null:
+		donor.free()
+		return
+
+	mine.visible = false
+	theirs.get_parent().remove_child(theirs)
+	skel.add_child(theirs)
+	theirs.owner = null
+	theirs.skeleton = theirs.get_path_to(skel)
+	donor.free()
 
 
 ## The blocky stand-in the town used before real people arrived.

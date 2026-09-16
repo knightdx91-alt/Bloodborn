@@ -155,5 +155,13 @@
     "enemyClass": "Light",
     "maxCondition": 100.0,
     "wearPerHit": 11.0
+  },
+  "beastTactics": {
+    "chargeRange": 9.0,
+    "goreRange": 1.8,
+    "chargeSeconds": 1.15,
+    "wheelSeconds": 1.35,
+    "recoverBetweenGoresSeconds": 1.4,
+    "chargeStaminaCost": 18.0
   }
 }

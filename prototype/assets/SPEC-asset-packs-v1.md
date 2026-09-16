@@ -102,6 +102,33 @@ only the frame does.
 Where a pack has not been rendered yet, it is listed below as a
 **candidate**, never as a recommendation.
 
+### ✅ RPG Characters, rendered — usable, with one number to change
+
+**In the repo at `assets/rpg-characters/` (6 characters, CC0) and this
+one passes.** Evidence: `evidence/rpg-characters-vs-paladin.png`, shown
+scaled to the paladin's height rather than at their authored size,
+because a wide shot of oversized models flatters everything.
+
+Adult proportions, muted palette — leather, steel, teal, brown. Stylised
+rather than realistic, so they read as a lighter register than the
+paladin, but they are the same *kind* of thing and could share a screen
+with him. Nothing about them is anachronistic or cartoon.
+
+- **Scale: authored at ~3.0 m, needs a uniform 0.58x.** That is a plain
+  scale, not a unit mismatch — nothing like the centimetre armatures
+  below, which need converting rather than scaling.
+- **32-bone rig, 11–15 clips each**, including `Idle` and `Run`.
+- **No `Walk` clip**, which is what `npc/npc.gd` plays. Anything using
+  these as townsfolk needs that gap closed first.
+
+### ❌ Knight Character — 5.60 m and untextured
+
+Same render. `KnightCharacter.fbx` is the undressed base body — the
+helmets, shoulder pads and weapons are separate files — so on its own it
+is a featureless grey mannequin, and it is **5.60 m** against the
+paladin's 1.73. Not usable without the dressing work, and the dressing
+work is only worth doing if something needs it.
+
 ### 2. Enemies — candidates, none rendered yet
 
 `brute.fbx` and `raider.fbx` work but are procedural placeholders.
