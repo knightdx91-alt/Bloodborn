@@ -211,6 +211,57 @@ pack were dropped — same meshes.
 Pulled from itch.io's free tier ($0); the pack's own zip is kept in
 the workspace library (`game-assets/packs/quaternius-knight/`).
 
+## KayKit (`kaykit/`)
+
+**Download, not generated** — nine KayKit packs by Kay Lousberg,
+committed 2026-09-16, all **CC0 1.0** (per-pack `License.txt`
+verified; see `kaykit/LICENSE-kaykit.txt`). GLB/glTF flavor only —
+FBX/OBJ/DAE duplicates dropped, same meshes. Every texture is a
+single 1024x1024 gradient atlas, so nothing needed downscaling for
+the phone prototype.
+
+Why KayKit: the Quaternius Ultimate Monsters were judged tonally
+wrong for this M-rated grounded dark-fantasy game (see
+`SPEC-asset-packs-v1.md`). KayKit's muted low-poly style fits the
+target look, and the character packs are properly rigged and
+animated.
+
+- `characters/` — 9 rigged characters with baked clips, ready to
+  play: 5 adventurers (`Barbarian`, `Knight`, `Mage`, `Rogue`,
+  `Rogue_Hooded`; 76 clips each — melee 1H/2H, ranged, movement,
+  hit-react, death) + 4 skeletons (`Skeleton_Mage`,
+  `Skeleton_Minion`, `Skeleton_Rogue`, `Skeleton_Warrior`; 95 clips
+  each). The natural enemy set and NPC/player candidates.
+- `animations/` — the free **Character Animations** library,
+  `Rig_Medium` GLBs: `CombatMelee`, `CombatRanged`, `General`,
+  `MovementAdvanced`, `MovementBasic`, `Simulation`, `Special`,
+  `Tools`. Built for the KayKit medium humanoid rig, so they
+  retarget onto the characters above.
+- `dungeon/` — 200+ modular dungeon pieces and props (walls,
+  floors, stairs, doors, chests, pillars, banners…).
+- `weapons/` — 25+ fantasy weapons (swords, axes, hammers, bows,
+  staves, wands, shields, spears; gltf+bin).
+- `halloween/` — spooky props: coffins, gravestones, pumpkins
+  (gltf+bin).
+- `furniture/` — interior furniture: beds, tables, chairs,
+  shelves (gltf+bin).
+- `hexagon/` — 200+ medieval buildings, decoration and hex tiles
+  in `buildings/{blue,green,neutral,red}/`, `decoration/`,
+  `tiles/{base,coast,rivers,roads}/` (gltf+bin).
+- `forest/` — trees, bushes, rocks and nature props (gltf+bin).
+- `medieval/` — 226 building GLBs in `objects/` + hex/square
+  ground-tile sets in `tiles/` (Medieval Builder Pack).
+
+Verified 2026-09-16: Godot 4.3 headless import spot-check —
+`Skeleton_Warrior.glb` (Skeleton3D + 95 clips),
+`Knight.glb` (Skeleton3D + 76 clips), `chest.glb`,
+`stairs.gltf.glb`, `coffin_decorated.gltf`, `table_medium.gltf`,
+`hex_grass.gltf` (all loadable with meshes). Zero check failures.
+
+Free tiers only — EXTRA/SOURCE paid tiers were not taken. Full
+pack originals (all formats) live in the workspace library
+(`game-assets/packs/kaykit-*/`).
+
 ## Animations (`animations/`)
 
 **Re-downloaded 2026-09-13** from Mixamo with the X Bot character
@@ -377,68 +428,3 @@ fight happens from.
 
 **To revert**, set `compress/mode=0` in the twelve
 `assets/models/*_N.png.import` files and re-import.
-
-## RPG Characters (`rpg-characters/`)
-
-**Downloads, not generated** — the Quaternius **RPG Characters** pack
-(Nov 2020), committed 2026-09-16, **CC0 1.0** (copied here as
-`rpg-characters/LICENSE.txt`). Six fantasy classes: **Cleric, Monk,
-Ranger, Rogue, Warrior, Wizard**. Meant for class-flavored NPCs,
-enemies, and player-class prototypes — the most combat-useful
-humanoid set in the repo for baked attack clips.
-
-**Format choice: glTF for the characters, FBX for the weapons.**
-The pack ships each class in FBX + OBJ + glTF + Blend plus a separate
-"Humanoid Rig Versions" folder (FBX + Blend only). The committed glTF
-versions are self-contained — mesh, skin, and textures embedded, with
-11–15 baked class-specific clips each (see below). OBJ/Blend
-duplicates dropped. The Humanoid Rig FBX versions stay in the
-workspace library (`game-assets/packs/quaternius-rpg-characters/`)
-for anyone who wants to drive these meshes with the Universal
-Animation Library clips instead; the baked class clips (bow
-draw/shoot, dagger combos, staff attacks) were judged more immediately
-useful than clip-library compatibility.
-
-Textures needed no downscaling — the pack's PNGs are 1024px (character)
-and 512px (weapon), all embedded in the glTFs.
-
-Clip lists (per-file names vary; enumerate with
-`AnimationPlayer.get_animation_list()`):
-
-- `Cleric.gltf` — 11 clips: Death, Idle, Idle_Weapon, PickUp, Punch,
-  RecieveHit, RecieveHit_Attacking, Run, Spell1, Staff_Attack, Walk
-- `Monk.gltf` — 11 clips: Attack, Attack2, Death, Idle,
-  Idle_Attacking, PickUp, RecieveHit, RecieveHit_2, Roll, Run, Walk
-- `Ranger.gltf` — 14 clips: Bow_Draw, Bow_Shoot, Death, Idle,
-  Idle_Attacking, Idle_Weapon, PickUp, Punch, RecieveHit,
-  RecieveHit_2, Roll, Run, Run_Holding, Walk
-- `Rogue.gltf` — 12 clips: Attacking_Idle, Dagger_Attack,
-  Dagger_Attack2, Death, Idle, PickUp, Punch, RecieveHit,
-  RecieveHit_2, Roll, Run, Walk
-- `Warrior.gltf` — 13 clips: Death, Idle, Idle_Attacking, Idle_Weapon,
-  PickUp, Punch, RecieveHit, RecieveHit_2, Roll, Run, Run_Weapon,
-  Sword_Attack, Sword_Attack2, Walk
-- `Wizard.gltf` — 15 clips: Death, Idle, Idle_Attacking, Idle_Weapon,
-  PickUp, Punch, RecieveHit, RecieveHit_2, Roll, Run, Run_Weapon,
-  Spell1, Spell2, Staff_Attack, Walk
-
-**Rig notes.** Each character is on Quaternius's simple ~33–39-bone
-rig (not the 65-bone Mixamo/humanoid rigs elsewhere in this folder),
-so Mixamo and animation-library clips will NOT retarget onto these —
-use their baked clips. Verified 2026-09-16 in Godot 4.3 headless: all
-six import with Skeleton3D + bound body Skin + AnimationPlayer, every
-surface materialized. Rigid accessories (staves, shoulder pads,
-cloaks, pouches, faces) are bone-parented but unskinned meshes — they
-follow their bones and render fine (same benign flag as the
-townsfolk Adventurer's sword).
-
-`weapons/` holds the 6 standalone weapon FBXs (Cleric_Staff,
-Ranger_Bow, Ranger_Arrow, Rogue_Dagger, Warrior_Sword, Wizard_Staff),
-all loadable with materials present. Upstream quirk:
-`Ranger_Arrow.fbx` and `Ranger_Bow.fbx` are byte-identical in the pack
-(both contain a bow mesh) — kept as-is.
-
-Pulled from Ray's phone: quaternius.com's Drive folder was
-quota-blocked for automation, so he downloaded the 31 MB zip and
-shared it; the full pack (all formats, Humanoid Rig versions,
-textures) lives in the workspace library.

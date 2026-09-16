@@ -1,0 +1,34 @@
+KayKit asset packs in this directory
+=====================================
+All packs below are by Kay Lousberg (KayKit), released under
+Creative Commons Zero (CC0 1.0) — free for personal and
+commercial use, no attribution required.
+http://creativecommons.org/publicdomain/zero/1.0/
+
+Included (free tiers only):
+- characters/: Character Pack Adventurers 1.0 (GitHub) — 5 rigged/
+  animated characters (Barbarian, Knight, Mage, Rogue, Rogue_Hooded),
+  76 clips each; Character Pack Skeletons 1.0 (GitHub) — 4 rigged/
+  animated skeletons (Mage, Minion, Rogue, Warrior), 95 clips each.
+- animations/: Character Animations 1.1 (itch.io free tier) —
+  Rig_Medium animation library, 8 GLBs (CombatMelee, CombatRanged,
+  General, MovementAdvanced, MovementBasic, Simulation, Special,
+  Tools). Designed for the KayKit medium humanoid rig.
+- dungeon/: Dungeon Remastered 1.0 (GitHub) — 200+ modular dungeon
+  pieces and props.
+- weapons/: Fantasy Weapon Bits 1.0 FREE (itch.io) — 25+ fantasy
+  weapons (gltf+bin).
+- halloween/: Halloween Bits 1.0 (GitHub) — spooky props (gltf+bin).
+- furniture/: Furniture Bits 1.0 (GitHub) — interior furniture
+  (gltf+bin).
+- hexagon/: Medieval Hexagon Pack 1.0 (GitHub) — 200+ medieval
+  buildings/decoration/hex tiles (gltf+bin).
+- forest/: Forest Nature Pack 1.0 FREE (itch.io) — trees, bushes,
+  rocks and nature props (gltf+bin).
+- medieval/: Medieval Builder Pack 1.0 (itch.io) — 226 building
+  GLBs + hex/square tile sets.
+
+All textures are single 1024x1024 gradient atlases (no downscale
+needed for the phone prototype). EXTRA/SOURCE paid tiers were NOT
+taken. Full pack originals (all formats) are archived in the
+workspace game-assets library, not in this repo.
