@@ -160,6 +160,77 @@ at 0.98 and the mood comes out of exposure and the contrast curve.
 - The Mixamo specs already written: characters, attack shapes, a guard
   pose, directional dodges. All free downloads.
 
+## The controls are settled — 2026-09-15/16, thirteen commits of play
+
+**Both prototypes are now playable on a phone with a wired pad**, which
+they were not at the start of the day. What follows is the list, kept
+because almost none of it was findable from this side.
+
+**Nothing could be installed twice.** The build signed every APK with a
+freshly generated key, so Android refused every update and each one
+meant uninstall-then-reinstall. The keystore step was guarded by
+`if [ ! -f ... ]`, which does nothing on a clean runner. A stable key
+lives in `ci/` now, with its own README on why a signing key is
+committed to a public repo and the rule that keeps that acceptable.
+
+**Thornfield had no floor.** A 500×500 plane mesh and no collision:
+153 static bodies, none of them ground, and the walker fell through the
+world on arrival. Then, once there was a floor to stand on, it stood
+**waist deep** in it — a −1.0 model offset copied from the yard, where
+the capsule is 2m centred on the origin and the offset is correct.
+
+**Thornfield had no camera**, either. A fixed follow at a hardcoded
+offset that never read a stick. Pad support was added here for walking
+and talking and the camera was simply forgotten.
+
+**Menus could not be operated by a pad at all.** Two faults stacked:
+nothing held focus, and Godot's default `ui_accept` has **no gamepad
+button** — it carries Enter, Keypad Enter and Space and nothing else.
+So a pad could move a highlight nobody could see and press nothing.
+
+**Picking a scene was a one-way door**, both directions, with no way
+back to the menu short of killing the app.
+
+**Character textures were costing ~256 MB of VRAM.** Twelve 2048×2048
+textures set to Lossless, which decompresses to full RGBA in video
+memory whatever the file size. Now VRAM-compressed: ~64 MB. The
+download barely moved (107 → 101 MB), and the prediction that it would
+was wrong — PNG is variable-rate and ETC2/ASTC are fixed-rate at 8 bpp,
+so the saving was never going to be on disk.
+
+### Where the camera and the aim landed, after three attempts
+
+The **right stick is the camera and nothing borrows it** — it keeps
+working mid-swing. **The arc is read off the camera's own pitch**: up
+for the head, level for the body, down for the legs.
+
+Losing the left/right choice costs nothing mechanically, which is the
+part worth remembering: `combat.md` §1b's table has upper-left and
+upper-right both landing on the torso, lower-left and lower-right both
+on the legs. **Which side a cut came from never changed what it hit.**
+So the side alternates on its own and every bit of the depth L63's
+per-slot armour needs survives.
+
+**Invert is a setting now, not a constant.** It was flipped twice from
+the code side and reported inverted both times, which is the point at
+which it stops being a number to get right: whether a stick feels
+inverted is a preference, and it belongs to whoever holds the pad.
+`interface.md` §7 asked for remappable controls anyway; this is the
+first of them.
+
+### ⚠️ The lesson, and it repeated all day
+
+**Three times I named a cause, fixed it, and was wrong.** Lighting was
+"not the problem" until one rendered frame showed a black cut-out. The
+camera jerk was "the parenting" until it kept jerking — the real cause
+was which callback the camera ran in, and the drill yard had the answer
+sitting in it the whole time. Each time the fix that worked came from
+**looking at the thing itself** rather than reasoning about it.
+
+The corollary, learnt the same way: a test that cannot fail is not a
+test. One ground-clamp check pushed the stick the direction that could
+never reach the clamp, and passed without exercising anything.
+
 ## Stage 2 started — the latency spike, 2026-09-15
 
 `sim/Marrowmark.Sim/Net/` is a **deterministic model of L39 /
