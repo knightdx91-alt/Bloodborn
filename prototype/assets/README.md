@@ -92,6 +92,56 @@ headless) and validated through FBX re-import (`tools/validate.py`).
 
 `preview.png` is a Blender render of the set.
 
+## Monsters (`monsters/`)
+
+**Downloads, not generated** — the Quaternius **Ultimate Monsters**
+pack, committed 2026-09-16, **CC0 1.0** (`monsters/LICENSE.txt`). Fifty
+rigged, animated monsters in three categories: `Big/` (16), `Blob/`
+(17), `Flying/` (17). Pulled from the Internet Archive snapshot of
+quaternius.com's distribution (the Drive folder was quota-blocked); the
+per-category folder layout is the pack's own, kept so the texture atlas
+sits next to its models.
+
+The glTF flavor: each `.gltf` is self-contained — mesh, skin, skeleton,
+animation clips, and the `Atlas_Monsters` texture are all embedded in
+the file (buffers and images ride as base64 `bufferView`s). The
+`Atlas_Monsters.png` in each folder is the same atlas as a standalone
+file, shipped for parity with the source pack; nothing references it.
+
+The rigs are simple stylized skeletons (a dozen-ish bones, not Mixamo),
+and — per `SPEC-character-v3.md` — each monster's clips were authored
+with its rig, so they bind by construction. No retargeting, no unit
+surprises.
+
+| Folder | Monsters |
+|---|---|
+| `Big/` | Alien, Birb, BlueDemon, Bunny, Cactoro, Demon, Dino, Fish, Frog, Monkroose, MushroomKing, Ninja, Orc, Orc_Skull, Tribal, Yeti |
+| `Blob/` | Alien, Birb, Cactoro, Cat, Chicken, Dog, Fish, GreenBlob, GreenSpikyBlob, Mushnub, Mushnub_Evolved, Ninja, Orc, Pigeon, PinkBlob, Wizard, Yeti |
+| `Flying/` | Alpaking, Alpaking_Evolved, Armabee, Armabee_Evolved, Demon, Dragon, Dragon_Evolved, Ghost, Ghost_Skull, Glub, Glub_Evolved, Goleling, Goleling_Evolved, Hywirl, Pigeon, Squidle, Tribal |
+
+Clips per monster are the Quaternius set — `Idle`, locomotion (`Walk`,
+`Run`, `Fast_Flying`, `Flying_Idle`), attacks (`Bite_Front`, `Headbutt`,
+`Punch`), `Death`, `HitReact`/`HitRecieve`, and gestures (`Yes`, `No`,
+`Dance`). Names vary per monster; list them with
+`AnimationPlayer.get_animation_list()` rather than assuming.
+
+Verified 2026-09-16: Godot 4.3 headless import on six samples (Alien,
+Demon, Cat, GreenBlob, Dragon, Ghost — two per category). All load as
+`PackedScene` with a `Skeleton3D`, `MeshInstance3D`s carrying bound
+`Skin`s, and an `AnimationPlayer` with ≥3 named clips including an
+idle. Zero check failures.
+
+Instancing one is the usual glTF path — find the player by type, since
+node names vary per monster:
+
+```
+var scene: PackedScene = load("res://assets/monsters/Big/Demon.gltf")
+var monster := scene.instantiate()
+add_child(monster)
+var player := monster.find_child("*", "AnimationPlayer", true, false)
+player.play("Idle")
+```
+
 ## Animations (`animations/`)
 
 **Re-downloaded 2026-09-13** from Mixamo with the X Bot character
