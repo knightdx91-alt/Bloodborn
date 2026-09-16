@@ -1,0 +1,225 @@
+class_name UI
+extends RefCounted
+## The one place a panel, a heading and a choice are defined.
+##
+## `interface.md` §1 (L80) puts the world first and allows a real
+## interface only where nothing else will do — the pack, the boards, a
+## conversation. Those few are therefore worth building properly rather
+## than leaving as default grey boxes, and they should all look like the
+## same game.
+##
+## Two rules this exists to enforce, both learnt from bugs:
+##
+##  1. **Nothing is sized in fixed pixels.** The launcher shipped a menu
+##     that fit the developer's window and clipped "Thornfield" off the
+##     bottom of a short one, and the conversation panel is a hardcoded
+##     520×300 that would do the same on a phone. Everything here scales
+##     to the viewport, on BOTH axes.
+##  2. **Everything focusable is visibly focused.** L15 ships to three
+##     consoles and `interface.md` §7 makes controller navigation a
+##     requirement; Godot's default focus ring is a thin dark outline on
+##     a dark button, which is invisible at arm's length.
+##
+## The palette is the world's own (look.gd): timber, iron, parchment.
+## art-audio.md §5 puts the look in the treatment rather than in bought
+## assets, and that applies to a dialogue box as much as to a field.
+
+## Designed against this, and scaled from it.
+const DESIGN_WIDTH := 640.0
+const DESIGN_HEIGHT := 720.0
+const MIN_SCALE := 0.55
+const MAX_SCALE := 1.6
+## Below this a touch target is a miss waiting to happen.
+const MIN_TAP := 48.0
+
+const PARCHMENT := Color(0.84, 0.79, 0.68)
+const INK := Color(0.13, 0.11, 0.09)
+const PANEL_DARK := Color(0.13, 0.11, 0.10, 0.96)
+const PANEL_EDGE := Color(0.42, 0.34, 0.24)
+const CHOICE_IDLE := Color(0.18, 0.16, 0.14, 0.95)
+const CHOICE_HOVER := Color(0.25, 0.22, 0.18, 0.98)
+const FOCUS_EDGE := Color(0.72, 0.62, 0.38)
+const DIM := Color(0.62, 0.58, 0.50)
+
+
+## One number everything else is multiplied by. Both axes constrain: a
+## scale taken from height alone blew a title out to 858px inside a
+## 720px-wide phone and dragged its buttons off both edges.
+## Takes any Node, deliberately: these panels hang off a CanvasLayer,
+## which is NOT a CanvasItem, so a CanvasItem parameter made every real
+## call site a compile error — and the one workaround written around it
+## fell back to a scale of 1.0 in silence.
+static func scale_for(node: Node) -> float:
+	var view: Viewport = node.get_viewport()
+	if view == null:
+		return 1.0
+	var vp: Vector2 = view.get_visible_rect().size
+	if vp.x <= 0.0 or vp.y <= 0.0:
+		return 1.0
+	return clampf(minf(vp.y / DESIGN_HEIGHT, vp.x / DESIGN_WIDTH),
+		MIN_SCALE, MAX_SCALE)
+
+
+static func _box(fill: Color, edge: Color, width: int, radius: int) -> StyleBoxFlat:
+	var b := StyleBoxFlat.new()
+	b.bg_color = fill
+	b.border_color = edge
+	b.border_width_left = width
+	b.border_width_right = width
+	b.border_width_top = width
+	b.border_width_bottom = width
+	b.corner_radius_top_left = radius
+	b.corner_radius_top_right = radius
+	b.corner_radius_bottom_left = radius
+	b.corner_radius_bottom_right = radius
+	b.content_margin_left = 18
+	b.content_margin_right = 18
+	b.content_margin_top = 14
+	b.content_margin_bottom = 14
+	return b
+
+
+## A panel to put things in: dark timber with a lit edge.
+static func panel() -> PanelContainer:
+	var p := PanelContainer.new()
+	p.add_theme_stylebox_override("panel", _box(PANEL_DARK, PANEL_EDGE, 2, 3))
+	return p
+
+
+static func heading(text: String, scale: float) -> Label:
+	var l := Label.new()
+	l.text = text
+	l.add_theme_color_override("font_color", PARCHMENT)
+	l.add_theme_font_size_override("font_size", int(26.0 * scale))
+	return l
+
+
+static func subheading(text: String, scale: float) -> Label:
+	var l := Label.new()
+	l.text = text
+	l.add_theme_color_override("font_color", DIM)
+	l.add_theme_font_size_override("font_size", int(17.0 * scale))
+	return l
+
+
+static func body(text: String, scale: float, wrap_to: float = 0.0) -> Label:
+	var l := Label.new()
+	l.text = text
+	l.add_theme_color_override("font_color", PARCHMENT)
+	l.add_theme_font_size_override("font_size", int(19.0 * scale))
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	if wrap_to > 0.0:
+		l.custom_minimum_size = Vector2(wrap_to, 0)
+	return l
+
+
+## Something you pick. Sized for a thumb, and unmistakably focused when
+## a controller is on it.
+static func choice(text: String, scale: float, width: float = 0.0) -> Button:
+	var b := Button.new()
+	b.text = text
+	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	b.add_theme_font_size_override("font_size", int(19.0 * scale))
+	b.add_theme_color_override("font_color", PARCHMENT)
+	b.add_theme_color_override("font_focus_color", Color.WHITE)
+	b.add_theme_color_override("font_hover_color", Color.WHITE)
+	b.add_theme_stylebox_override("normal", _box(CHOICE_IDLE, PANEL_EDGE, 1, 2))
+	b.add_theme_stylebox_override("hover", _box(CHOICE_HOVER, PANEL_EDGE, 1, 2))
+	b.add_theme_stylebox_override("pressed", _box(CHOICE_HOVER, FOCUS_EDGE, 2, 2))
+	# The focused box is filled AND edged, not merely outlined: an outline
+	# alone disappears against dark timber on a phone held at arm's
+	# length, and then a pad looks broken rather than unfocused.
+	b.add_theme_stylebox_override("focus", _box(CHOICE_HOVER, FOCUS_EDGE, 3, 2))
+	b.custom_minimum_size = Vector2(width, maxf(52.0 * scale, MIN_TAP))
+	return b
+
+
+# --- Modals ------------------------------------------------------------
+#
+# A conversation can open the contract board on top of itself, and the
+# player can walk away from either. Three things follow, and none of them
+# happen by default:
+#
+#   1. B must back out of whatever is on top, and ONLY what is on top.
+#   2. The panel underneath must stop taking focus, or the d-pad walks the
+#      highlight out of the front panel into buttons hidden behind it.
+#   3. The world must stop listening. Without this you stroll off
+#      mid-sentence with the stick, and the right stick swings the camera
+#      round behind the dialogue box.
+#
+# Every panel in the kit registers here, so `modal_open()` answers all
+# three with one call.
+
+static var _modals: Array[CanvasLayer] = []
+
+
+## True while any panel in the kit is on screen. The town player asks
+## this before reading a stick.
+static func modal_open() -> bool:
+	_prune()
+	return not _modals.is_empty()
+
+
+## The panel that owns the buttons right now. Only this one should act on
+## a cancel press.
+static func top_modal() -> CanvasLayer:
+	_prune()
+	return _modals[-1] if not _modals.is_empty() else null
+
+
+static func push_modal(layer: CanvasLayer) -> void:
+	_prune()
+	var below := top_modal()
+	if below != null:
+		_set_branch_focusable(below, false)
+	_modals.append(layer)
+
+
+static func pop_modal(layer: CanvasLayer) -> void:
+	_modals.erase(layer)
+	_prune()
+	var below := top_modal()
+	if below != null:
+		_set_branch_focusable(below, true)
+
+
+static func _prune() -> void:
+	var live: Array[CanvasLayer] = []
+	for m in _modals:
+		if is_instance_valid(m) and not m.is_queued_for_deletion():
+			live.append(m)
+	_modals = live
+
+
+## Turn a whole panel's focus off, and back on again with the highlight
+## where it was. Godot has no notion of a modal branch, so this is done
+## by hand rather than by a flag we could have set.
+static func _set_branch_focusable(layer: CanvasLayer, on: bool) -> void:
+	if on:
+		var was: Control = layer.get_meta("ui_focus_was", null) as Control
+		for c in layer.find_children("*", "Control", true, false):
+			var ctl := c as Control
+			if ctl.has_meta("ui_focus_mode"):
+				ctl.focus_mode = int(ctl.get_meta("ui_focus_mode")) as Control.FocusMode
+				ctl.remove_meta("ui_focus_mode")
+		if is_instance_valid(was) and was.focus_mode != Control.FOCUS_NONE:
+			was.grab_focus()
+			return
+		# Nothing remembered — take the first thing that can hold the
+		# highlight rather than leaving the panel with none. A menu with
+		# nothing selected reads as a broken pad.
+		for c in layer.find_children("*", "Control", true, false):
+			var first := c as Control
+			if first.focus_mode != Control.FOCUS_NONE and first.is_visible_in_tree():
+				first.grab_focus()
+				return
+		return
+	layer.set_meta("ui_focus_was", null)
+	for c in layer.find_children("*", "Control", true, false):
+		var ctl := c as Control
+		if ctl.focus_mode == Control.FOCUS_NONE:
+			continue
+		if ctl.has_focus():
+			layer.set_meta("ui_focus_was", ctl)
+		ctl.set_meta("ui_focus_mode", int(ctl.focus_mode))
+		ctl.focus_mode = Control.FOCUS_NONE

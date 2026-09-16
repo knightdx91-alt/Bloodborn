@@ -171,6 +171,12 @@ func _camera_forward() -> Vector3:
 
 
 func _tick_camera(delta: float) -> void:
+	# A menu owns the sticks while it is up. The right stick swinging the
+	# camera round behind a dialogue box is the same press doing two
+	# things at once, and it reads as the camera having a mind of its own.
+	if UI.modal_open():
+		_look_drag = Vector2.ZERO
+		return
 	var yaw: float = 0.0
 	var pitch: float = 0.0
 	var rx := Input.get_joy_axis(PAD, JOY_AXIS_RIGHT_X)
@@ -293,6 +299,11 @@ func _leave() -> void:
 
 
 func _input_dir() -> Vector2:
+	# Likewise the left stick: it is the menu's d-pad while a menu is
+	# open. Without this you walk out of the conversation you are holding
+	# — the same stick press both moves the highlight and moves you.
+	if UI.modal_open():
+		return Vector2.ZERO
 	var kv := Vector2.ZERO
 	if Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT):
 		kv.x -= 1.0
@@ -358,7 +369,7 @@ func _physics_process(delta: float) -> void:
 
 func _process(_delta: float) -> void:
 	_near = null
-	if ConversationUI.current == null:
+	if not UI.modal_open():
 		var pop := get_parent().get_node_or_null("Population")
 		if pop != null:
 			var best := TALK_RANGE
@@ -376,7 +387,7 @@ func _on_talk_pressed() -> void:
 
 
 func _try_talk() -> void:
-	if _near != null and ConversationUI.current == null:
+	if _near != null and not UI.modal_open():
 		_near.begin_talk(systems)
 
 

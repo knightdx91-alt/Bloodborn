@@ -40,47 +40,93 @@ static func open(npc: TownNPC, systems: Dictionary) -> void:
 	if root == null:
 		root = npc.get_tree().root
 	root.add_child(ui)
+	# Registered before _build() grabs focus, for the same reason the
+	# board is: the stack has to see where the highlight was underneath.
+	UI.push_modal(ui)
 	ui._build()
 	current = ui
 
 
 func _build() -> void:
-	var panel := PanelContainer.new()
-	panel.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
-	panel.position = Vector2(-260, -330)
-	panel.size = Vector2(520, 300)
-	panel.custom_minimum_size = Vector2(520, 300)
-	add_child(panel)
+	# Sized to the viewport, never in fixed pixels — the previous panel
+	# was a hardcoded 520x300, which is the same fault that clipped the
+	# launcher's second button off a short window.
+	var scale := UI.scale_for(self)
+	var vp: Vector2 = get_viewport().get_visible_rect().size
+	var width: float = minf(560.0 * scale, vp.x * 0.92)
+
+	var root := MarginContainer.new()
+	root.set_anchors_preset(Control.PRESET_FULL_RECT)
+	root.add_theme_constant_override("margin_left", int(maxf(12.0, vp.x * 0.03)))
+	root.add_theme_constant_override("margin_right", int(maxf(12.0, vp.x * 0.03)))
+	root.add_theme_constant_override("margin_bottom",
+		int(maxf(12.0, DisplayServer.get_display_safe_area().size.y * 0.02)))
+	add_child(root)
+
+	# Bottom of the screen, so the world above it stays visible. L80's
+	# order of preference puts the world first; a dialogue box that fills
+	# the screen stops you seeing the person you are talking to.
+	var bottom := VBoxContainer.new()
+	bottom.alignment = BoxContainer.ALIGNMENT_END
+	bottom.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	root.add_child(bottom)
+
+	var panel := UI.panel()
+	panel.custom_minimum_size = Vector2(width, 0)
+	panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	bottom.add_child(panel)
+
 	var vb := VBoxContainer.new()
-	vb.add_theme_constant_override("separation", 8)
+	vb.add_theme_constant_override("separation", int(8.0 * scale))
 	panel.add_child(vb)
-	var head := Label.new()
-	head.text = "%s — %s" % [_npc.display_name, _npc.role]
-	vb.add_child(head)
+
+	vb.add_child(UI.heading(_npc.display_name, scale))
+	vb.add_child(UI.subheading(_npc.role, scale))
+
 	_dialog = RichTextLabel.new()
 	_dialog.bbcode_enabled = false
 	_dialog.scroll_following = true
-	_dialog.custom_minimum_size = Vector2(500, 110)
+	_dialog.fit_content = true
+	_dialog.custom_minimum_size = Vector2(width - 60.0 * scale, 96.0 * scale)
+	_dialog.add_theme_color_override("default_color", UI.PARCHMENT)
+	_dialog.add_theme_font_size_override("normal_font_size", int(19.0 * scale))
 	_dialog.text = _npc.greeting()
 	vb.add_child(_dialog)
+
 	_topic_box = VBoxContainer.new()
-	_topic_box.add_theme_constant_override("separation", 4)
+	_topic_box.add_theme_constant_override("separation", int(5.0 * scale))
 	vb.add_child(_topic_box)
 	for t in _npc.topics:
-		var b := Button.new()
-		b.text = String(t.get("topic", "..."))
+		var b := UI.choice(String(t.get("topic", "...")), scale, width - 60.0 * scale)
 		b.pressed.connect(_on_topic.bind(t))
 		_topic_box.add_child(b)
-	var leave := Button.new()
-	leave.text = "Leave"
+
+	var leave := UI.choice("Leave", scale, width - 60.0 * scale)
 	leave.pressed.connect(close)
 	vb.add_child(leave)
+
 	# A pad needs something focused to press. Prefer the first topic so
 	# that A talks rather than walking away.
 	if _topic_box.get_child_count() > 0:
 		(_topic_box.get_child(0) as Button).grab_focus()
 	else:
 		leave.grab_focus()
+
+
+## B backs out of one layer at a time: out of the confirm panel if it is
+## up, out of the conversation otherwise. Only the panel on top acts, so
+## opening the board from here and pressing B returns you to the
+## conversation rather than dumping you into the street.
+func _unhandled_input(event: InputEvent) -> void:
+	if not event.is_action_pressed("ui_cancel"):
+		return
+	if UI.top_modal() != self:
+		return
+	get_viewport().set_input_as_handled()
+	if _confirm != null:
+		_on_decline()
+	else:
+		close()
 
 
 func _on_topic(t: Dictionary) -> void:
@@ -119,51 +165,78 @@ func _apply_disposition(arg: Variant) -> void:
 
 
 func _show_confirm(line: String) -> void:
-	_say(line + "\n\n[This binds you, or costs you coin. Go through with it?]")
-	_confirm = PanelContainer.new()
+	_say(line + "\n\n[This binds you, or costs you coin.]")
+	var scale := UI.scale_for(self)
+	var vp: Vector2 = get_viewport().get_visible_rect().size
+
+	# Nothing behind the gate may take focus while it is up. Otherwise
+	# the d-pad walks the highlight down out of "Think it over" and into
+	# the topic list behind it, and A then presses a button the player
+	# cannot see. L49 makes this panel the gate; a gate you can step
+	# around is not one.
+	_freeze_base(true)
+
+	_confirm = UI.panel()
 	_confirm.set_anchors_preset(Control.PRESET_CENTER)
-	_confirm.position = Vector2(-160, -60)
-	_confirm.custom_minimum_size = Vector2(320, 120)
+	var width: float = minf(360.0 * scale, vp.x * 0.86)
+	_confirm.custom_minimum_size = Vector2(width, 0)
+	_confirm.position = Vector2(-width * 0.5, -70.0 * scale)
 	add_child(_confirm)
+
 	var vb := VBoxContainer.new()
-	vb.add_theme_constant_override("separation", 8)
+	vb.add_theme_constant_override("separation", int(10.0 * scale))
 	_confirm.add_child(vb)
-	var q := Label.new()
-	q.text = "Go through with it?"
+
+	var q := UI.heading("Go through with it?", scale)
 	q.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vb.add_child(q)
-	var hb := HBoxContainer.new()
-	hb.add_theme_constant_override("separation", 12)
-	hb.alignment = BoxContainer.ALIGNMENT_CENTER
-	vb.add_child(hb)
-	var sign := Button.new()
-	sign.text = "Do it"
+
+	var sign := UI.choice("Do it", scale, width - 60.0 * scale)
+	sign.alignment = HORIZONTAL_ALIGNMENT_CENTER
 	sign.pressed.connect(_on_sign)
-	hb.add_child(sign)
-	var no := Button.new()
-	no.text = "Think it over"
+	vb.add_child(sign)
+
+	var no := UI.choice("Think it over", scale, width - 60.0 * scale)
+	no.alignment = HORIZONTAL_ALIGNMENT_CENTER
 	no.pressed.connect(_on_decline)
-	hb.add_child(no)
+	vb.add_child(no)
+
 	# Focus the REFUSAL, not the commitment. L49 makes this panel the
 	# gate on anything binding, and a gate whose default answer is "yes"
 	# is not a gate — a stray A press must not sign anything.
 	no.grab_focus()
 
 
-func _on_sign() -> void:
-	var t := _pending
-	_pending = {}
+## Focus off (and back on) for everything that is not the confirm panel.
+func _freeze_base(frozen: bool) -> void:
+	for c in find_children("*", "Button", true, false):
+		var b := c as Button
+		if _confirm != null and _confirm.is_ancestor_of(b):
+			continue
+		b.focus_mode = Control.FOCUS_NONE if frozen else Control.FOCUS_ALL
+
+
+func _dismiss_confirm() -> void:
 	if _confirm != null:
 		_confirm.queue_free()
 		_confirm = null
+	_freeze_base(false)
+	# Put the highlight back on the conversation, or a pad is left with
+	# nothing selected and the menu reads as dead.
+	if _topic_box != null and _topic_box.get_child_count() > 0:
+		(_topic_box.get_child(0) as Button).grab_focus()
+
+
+func _on_sign() -> void:
+	var t := _pending
+	_pending = {}
+	_dismiss_confirm()
 	_apply_effect(t)
 
 
 func _on_decline() -> void:
 	_pending = {}
-	if _confirm != null:
-		_confirm.queue_free()
-		_confirm = null
+	_dismiss_confirm()
 	_say("They nod, and the paper goes back in the drawer.")
 
 
@@ -207,4 +280,5 @@ func _say(text: String) -> void:
 func close() -> void:
 	if current == self:
 		current = null
+	UI.pop_modal(self)
 	queue_free()

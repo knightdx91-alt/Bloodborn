@@ -235,6 +235,51 @@ the camera, mirroring the left half's walking stick. A phone with no
 controller is the commonest way this is played, and it had no way to
 look around at all.
 
+## The interface pass, 2026-09-16 — L90, and what it was hiding
+
+The conversation was default Godot: grey boxes in a hardcoded 520×300
+panel. That is the same fixed-pixel fault that clipped the launcher, and
+on a phone it would have clipped the same way. Rebuilding it turned up
+four things that were not cosmetic at all.
+
+**The kit.** `ui.gd` is now the one place a panel, a heading and a choice
+are defined, and `interface.md` §8 (**L90**) is the specification it
+implements. Everything scales from one number taken from the viewport on
+both axes; every choice is at least 48px tall; a focused choice is
+filled and edged rather than outlined, because an outline vanishes
+against dark timber on a phone at arm's length.
+
+**`UI.scale_for()` did not compile.** It took a `CanvasItem`, and every
+panel in the game hangs off a `CanvasLayer`, which is not one. So the
+conversation script failed to parse entirely, and the single call site
+written around the error fell back to a scale of 1.0 in silence. Caught
+by the harness, not by reading — the file looked right.
+
+**Nothing backed out.** `ui_cancel` has had a B binding since the pad
+pass, and nothing listened to it. You could open a conversation and only
+leave it by finding "Leave" with the stick.
+
+**The confirm gate could be stepped around.** The panel was drawn on top
+of the topic list, but the topic buttons behind it stayed focusable — so
+the d-pad walked the highlight out of "Think it over", behind the panel,
+and A then pressed something invisible. Against **L49** that is signing
+a contract by accident. Focus is now trapped in the gate, and the gate
+opens on the refusal.
+
+**The walker never stopped.** The left stick both moved the menu
+highlight and walked you out of the conversation; the right stick swung
+the camera round behind the dialogue box. A menu now owns the sticks
+while it is up.
+
+**The board could not be read on a pad.** Its list is longer than the
+panel and its only focusable control is "Step back", so a controller
+reached the fifth contract and stopped. Up and down now scroll it.
+
+`qacheck.gd` checks all of this: three viewport shapes (900×600,
+1080×2400, 640×360), every button on screen and thumb-sized, the gate's
+focus trap, and B backing out one layer at a time with the board opened
+on top of a conversation.
+
 ## Still open
 
 - **The world state is seeded once and never persists.** Nothing

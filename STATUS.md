@@ -3,13 +3,13 @@
 Short, current, and written to be read on a phone. Updated at the end
 of each working session.
 
-**Last updated:** 2026-09-15
+**Last updated:** 2026-09-16
 
 ---
 
 ## The one-line version
 
-Design is **88 locked decisions** and **complete** — every structural
+Design is **90 locked decisions** and **complete** — every structural
 question locked, every missing document written. Every system a player
 touches in their first hundred hours is specified, and most of it is
 **written, tested and running** as engine-free C# — 335 tests.
@@ -37,6 +37,38 @@ get to whether the economy feels right.
 **The engine is Godot** (L54, revised 2026-09-14 from Unity). Decided
 on the evidence in `tech.md` §2a, not on preference — see the L54
 section below.
+
+## Done 2026-09-16 — the NPC menus, and L90
+
+The conversation with an NPC was default Godot in a hardcoded 520×300
+box. Rebuilding it found four things that were not cosmetic:
+
+- **The script did not compile.** `UI.scale_for()` took a `CanvasItem`;
+  every panel hangs off a `CanvasLayer`, which is not one.
+- **B did nothing.** Nothing listened for `ui_cancel`, so the only way
+  out of a conversation was to find "Leave" with the stick.
+- **The L49 confirm gate could be stepped around.** The topic buttons
+  behind it stayed focusable, so the d-pad walked the highlight off the
+  gate and A pressed a button hidden behind the panel — i.e. signed a
+  contract by accident.
+- **The walker never stopped.** The left stick moved the menu highlight
+  *and* walked you away mid-sentence; the right stick swung the camera
+  round behind the dialogue box.
+
+Also: the contract board's list is longer than its panel and its only
+focusable control is "Step back", so a pad reached the fifth contract
+and stopped. Up and down scroll it now.
+
+All of it is one specification — `interface.md` §8, **L90** — with one
+implementation, `prototype/ui.gd`, and a harness (`qacheck.gd`) that
+checks three viewport shapes, the focus trap, and B backing out one
+layer at a time. Nothing sized in fixed pixels, nothing focusable that
+isn't visibly focused, every choice at least 48px tall.
+
+**Not yet seen on the phone.** It is verified by harness and by looking
+at rendered frames at 900×600, 1080×2400 and 640×360 — which is exactly
+the kind of verification that has been wrong before. Next APK is the
+test.
 
 ## Device check
 

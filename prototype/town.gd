@@ -313,8 +313,12 @@ func _wheat_field(rect: Rect2) -> void:
 	# Procedural wheat: thin golden boxes (quads shade to black edge-on),
 	# three tints for variation.
 	var tints := [Color(0.78, 0.62, 0.30), Color(0.72, 0.56, 0.26), Color(0.82, 0.67, 0.34)]
-	var count := 2500
-	var per := count / 3
+	# 2500 does not divide by three, and the loop below indexes
+	# instance i/3 in bucket i%3 — so the last stalk asked bucket 0 for
+	# slot 833 when it only holds 833, and every frame logged an
+	# out-of-bounds. Round the count down to a multiple of three instead.
+	var per := 2500 / 3
+	var count := per * 3
 	var mmis: Array = []
 	for ti in range(3):
 		var mm := MultiMesh.new()

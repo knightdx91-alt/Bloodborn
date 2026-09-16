@@ -73,64 +73,88 @@ static func open_market_ui(state: TownWorldState) -> void:
 static func _open_list_ui(header: String, rows: Array, _state: TownWorldState,
 		kind_key: String, title_key: String, detail_key: String, pay_key: String) -> void:
 	_close_ui()
-	var ui := CanvasLayer.new()
-	var root := Engine.get_main_loop()
-	if root is SceneTree:
-		(root as SceneTree).root.add_child(ui)
-	else:
+	var tree := Engine.get_main_loop()
+	if not (tree is SceneTree):
 		return
+	# Built from board_panel.gd rather than a bare CanvasLayer: the script
+	# has to be on the node BEFORE it enters the tree, or Godot never
+	# turns its _unhandled_input callback on and B does nothing.
+	var ui: CanvasLayer = load("res://town_systems/board_panel.gd").new()
+	(tree as SceneTree).root.add_child(ui)
 	_open_ui = ui
-	var panel := PanelContainer.new()
-	panel.set_anchors_preset(Control.PRESET_CENTER)
-	panel.position = Vector2(-280, -220)
-	panel.custom_minimum_size = Vector2(560, 440)
-	ui.add_child(panel)
+
+	var scale := UI.scale_for(ui)
+	var vp: Vector2 = (tree as SceneTree).root.get_visible_rect().size
+	var width: float = minf(600.0 * scale, vp.x * 0.92)
+	var height: float = minf(520.0 * scale, vp.y * 0.86)
+
+	var centre := CenterContainer.new()
+	centre.set_anchors_preset(Control.PRESET_FULL_RECT)
+	ui.add_child(centre)
+
+	var panel := UI.panel()
+	panel.custom_minimum_size = Vector2(width, height)
+	centre.add_child(panel)
+
 	var vb := VBoxContainer.new()
-	vb.add_theme_constant_override("separation", 6)
+	vb.add_theme_constant_override("separation", int(8.0 * scale))
 	panel.add_child(vb)
-	var h := Label.new()
-	h.text = header
-	vb.add_child(h)
+	vb.add_child(UI.heading(header, scale))
+
 	var scroll := ScrollContainer.new()
-	scroll.custom_minimum_size = Vector2(540, 330)
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.follow_focus = true
+	ui.set("scroll", scroll)
+	scroll.custom_minimum_size = Vector2(width - 60.0 * scale, height - 130.0 * scale)
 	vb.add_child(scroll)
+
 	var list := VBoxContainer.new()
-	list.add_theme_constant_override("separation", 8)
+	list.add_theme_constant_override("separation", int(10.0 * scale))
 	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.add_child(list)
+
 	if rows.is_empty():
-		var e := Label.new()
-		e.text = "Nothing pinned today. The town's quiet — suspiciously quiet."
-		e.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		list.add_child(e)
+		# content.md §3: the board never lies. An empty board means the
+		# town genuinely has no work, which is worth saying out loud
+		# rather than leaving a blank rectangle.
+		list.add_child(UI.body(
+			"Nothing pinned today. The town's quiet — suspiciously quiet.",
+			scale, width - 90.0 * scale))
+
 	for r in rows:
-		var box := VBoxContainer.new()
-		box.add_theme_constant_override("separation", 2)
-		list.add_child(box)
-		var t := Label.new()
+		var row := VBoxContainer.new()
+		row.add_theme_constant_override("separation", int(2.0 * scale))
+		list.add_child(row)
+
 		var line := String(r[title_key])
 		if r.has("taken") and bool(r["taken"]):
-			line += "  [taken]"
-		elif r.has(pay_key) and pay_key != "":
-			line += "  — %d pennies" % int(r[pay_key])
-		elif pay_key != "":
-			line += "  — %d pennies the %s" % [int(r[pay_key]), String(r.get("unit", ""))]
-		t.text = line
-		box.add_child(t)
+			line += "   — taken"
+		elif pay_key != "" and r.has(pay_key):
+			line += "   — %d pennies" % int(r[pay_key])
+			if r.has("unit"):
+				line += " the %s" % String(r["unit"])
+		var t := UI.body(line, scale, width - 90.0 * scale)
+		t.add_theme_font_size_override("font_size", int(20.0 * scale))
+		row.add_child(t)
+
 		if detail_key != "" and String(r.get(detail_key, "")) != "":
-			var d := Label.new()
-			d.text = String(r[detail_key])
-			d.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-			d.custom_minimum_size = Vector2(520, 0)
-			box.add_child(d)
-		if r.has("kind"):
-			var k := Label.new()
-			k.text = "  [%s]" % String(r[kind_key])
-			box.add_child(k)
-	var close_b := Button.new()
-	close_b.text = "Step back"
+			var d := UI.body(String(r[detail_key]), scale, width - 90.0 * scale)
+			d.add_theme_color_override("font_color", UI.DIM)
+			d.add_theme_font_size_override("font_size", int(16.0 * scale))
+			row.add_child(d)
+
+	var close_b := UI.choice("Step back", scale, width - 60.0 * scale)
+	close_b.alignment = HORIZONTAL_ALIGNMENT_CENTER
 	close_b.pressed.connect(_close_ui)
 	vb.add_child(close_b)
+
+	# Registered BEFORE anything here takes focus. push_modal remembers
+	# where the highlight was on the panel underneath so it can put it
+	# back; grabbing focus first meant it remembered "nowhere", and
+	# closing the board left the conversation behind it with nothing
+	# selected — which on a pad is indistinguishable from a hung menu.
+	UI.push_modal(ui)
+
 	# The board is read-only, so the only thing to press is the way out —
 	# and a pad needs it focused to press it at all.
 	close_b.grab_focus()
@@ -138,5 +162,6 @@ static func _open_list_ui(header: String, rows: Array, _state: TownWorldState,
 
 static func _close_ui() -> void:
 	if _open_ui != null:
+		UI.pop_modal(_open_ui)
 		_open_ui.queue_free()
 		_open_ui = null

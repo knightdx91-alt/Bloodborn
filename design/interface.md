@@ -170,6 +170,54 @@ for the fight you are in.
 
 ---
 
+## 8. The few menus that do exist **[L90]**
+
+§1 keeps the world in front and allows an interface only where nothing
+else will do. That still leaves a short list — a conversation, the
+contract and market boards, the pack, character creation — and refusing
+to design them does not make them go away; it makes them bad. So these
+rules bind every one of them, and there is one implementation of them
+(`prototype/ui.gd`) rather than one per screen.
+
+**Nothing is sized in fixed pixels.** Every measurement is a multiple of
+one scale taken from the viewport, and taken from *both* axes. The
+launcher shipped a menu tuned to a developer's window that clipped its
+second button off a short one; the conversation panel was a hardcoded
+520×300 that would have done the same on a phone. A scale from height
+alone is the same bug wearing a hat — it blew a title out to 858px
+inside a 720px-wide screen.
+
+**Everything focusable is visibly focused, and something always is.**
+L15 ships to three consoles, and a pad cannot press what it cannot
+select. Godot's default focus ring is a thin dark outline that vanishes
+against dark timber on a phone at arm's length, so a focused choice here
+is *filled and edged*, not outlined. A menu that opens with nothing
+focused reads as a broken controller, which is exactly how the first
+pass was reported.
+
+**A, B, and nothing else required.** A presses; B backs out one layer at
+a time — out of the confirm gate, then out of the conversation, or out
+of the board and back to the conversation that opened it. Neither is a
+Godot default: `ui_accept` ships with no pad button at all.
+
+**A menu owns the sticks while it is up.** The world stops reading them:
+no walking out of a conversation you are holding, no swinging the camera
+round behind a dialogue box. One press does one thing.
+
+**A panel underneath stops taking focus.** Without this the d-pad walks
+the highlight out of the front panel into buttons hidden behind it, and
+A then presses something the player cannot see — which for the L49
+confirm gate means signing a contract by accident. A gate you can step
+around is not a gate.
+
+**The gate opens on the refusal.** Anything binding focuses "Think it
+over", never "Do it". A stray press must cost nothing.
+
+**Touch is not an afterthought.** Every choice is at least 48px tall in
+real screen pixels, whatever the scale works out to.
+
+---
+
 ## Open questions
 
 - [ ] Where does the appraisal skill's descriptive vocabulary come
@@ -182,5 +230,12 @@ for the fight you are in.
       something physical? The one place a real UI has to exist.
 - [ ] Does the stamina bar's fade timing need to differ between combat
       and travel, or does one rule cover both?
-- [ ] Controller-first navigation for the few menus that do exist
+- [x] Controller-first navigation for the few menus that do exist
       (L15) — the pack, the market board, character creation.
+      **Settled as §8 (L90)**, and implemented for the conversation and
+      the boards. The pack and character creation do not exist yet; when
+      they do, they are built on the same kit and held to the same
+      rules.
+- [ ] Does the pack need a second navigation axis (left/right between
+      tabs as well as up/down within one), and if so what presses it —
+      the shoulder buttons, or the d-pad?
