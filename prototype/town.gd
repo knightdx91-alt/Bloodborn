@@ -21,6 +21,18 @@ const NATURE := "res://assets/town/nature/"
 const PROPS := "res://assets/town/props/"
 
 const RING_R := 55.0  # hedge-ring radius; town is ~110 m across
+## Where the wood sits, relative to the market square.
+##
+## North of the burnt mill, which stands at z -135: at -150 the wood's
+## hedge enclosed the mill, so a charred windmill and its dead trees were
+## standing inside the boar field. The frame showed it; no check would
+## have. Out here it is a landmark on the road instead, which is what a
+## ruin on the way out of town should be.
+##
+## About 190 m from the square — a walk of some forty seconds, or less at
+## a sprint. That is a feel number and the first thing to change if the
+## journey drags.
+const HEDGES_AT := Vector3(0.0, 0.0, -190.0)
 
 var _cache: Dictionary = {}
 var _mats: Dictionary = {}
@@ -80,6 +92,29 @@ func _ready() -> void:
 	if reaping != null:
 		reaping.systems = systems
 		reaping.watch(walker)
+
+	# One combat, for the whole world.
+	#
+	# Blows used to be resolved inside world.gd against that scene's own
+	# `player` and `enemy`, which is why the town could swing at nothing:
+	# the code that notices a live blade only knew how to look at one
+	# scene's fields. Skirmish holds a LIST, so any region can put its
+	# own into it.
+	var field := Skirmish.new()
+	field.name = "Skirmish"
+	field.feel = walker.feel
+	field.watching = walker
+	add_child(field)
+	field.enlist(walker)
+
+	# The Hedges, west of Thornfield and IN it — not a scene behind a
+	# menu. You walk out of the north gate, down the road, and the wood
+	# is there.
+	var wood := HedgeWood.new()
+	wood.name = "HedgeWood"
+	wood.position = HEDGES_AT
+	add_child(wood)
+	wood.hunted_by(walker, field)
 
 
 # ---------------------------------------------------------------- assets ---
@@ -315,7 +350,12 @@ func _roads() -> void:
 	# nowhere outside the ring to go: the Hedges was a launcher button
 	# rather than a place. The north end now runs on to the waypost, so
 	# the road out of Thornfield leads somewhere on foot.
-	_quad(Vector3(0, 0.04, -9), Vector2(5, 130), dirt)
+	# Long enough to reach the wood. HEDGES_AT is 150m north of the
+	# square, so the road runs from the south gate all the way out to it
+	# — a road that stops short of where it is going is a prop.
+	var north_end: float = HEDGES_AT.z + HedgeWood.FIELD
+	var run: float = 56.0 - north_end
+	_quad(Vector3(0, 0.04, (56.0 + north_end) * 0.5), Vector2(5, run), dirt)
 	# East-west lane.
 	_quad(Vector3(0, 0.04, 18), Vector2(102, 4), dirt)
 	# Market square paving.
@@ -491,9 +531,11 @@ func _gate(pos: Vector3) -> void:
 func _waypost() -> void:
 	var post := Waypost.new()
 	post.name = "HedgesRoad"
-	post.destination = "res://hedges.tscn"
-	post.label = "Take the west road"
-	post.reads = "The Hedges"
+	# No destination: the wood is down this road, in this world. A sign
+	# that loads a scene is a door with a picture of a road on it.
+	post.destination = ""
+	post.label = ""
+	post.reads = "The Hedges\n   1/4 mile"
 	# Just inside the gate, so coming back puts you on the road home
 	# rather than in the middle of the square.
 	post.returns_to = Vector3(0.0, 1.0, -RING_R + 5.0)
@@ -934,7 +976,7 @@ func _scatter() -> void:
 		var z := sin(a) * r
 		if _blocked(x, z, 0.5):
 			continue
-		if abs(x) < 3.5 and abs(z) < 74.0:  # main road, incl. the way out
+		if abs(x) < 3.5 and abs(z) < 200.0:  # main road, incl. the way out
 			continue
 		if abs(z - 18.0) < 3.0 and abs(x) < 52.0:  # lane
 			continue

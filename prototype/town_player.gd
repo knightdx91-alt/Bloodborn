@@ -77,6 +77,11 @@ var _look_drag := Vector2.ZERO
 var systems: Dictionary = {}
 
 var _cam: Camera3D
+## Hit-stop, kick and shake. The town had none: it was world.gd's, along
+## with the combat that caused it. A blow that does not move the view is
+## a number changing somewhere, which is exactly what interface.md §2
+## says the player should never be reading.
+var feel: Feel = Feel.new()
 var _stick_id := -1
 var _stick_origin := Vector2.ZERO
 var _stick_vec := Vector2.ZERO
@@ -128,7 +133,7 @@ func _build_camera() -> void:
 		host = get_parent()
 	host.add_child(_cam)
 	_cam_pitch = atan2(CAM_HEIGHT, CAM_DISTANCE)
-	_cam.global_position = _camera_seat()
+	_cam.global_position = _camera_seat() + feel.offset()
 	_cam.look_at(_focus(), Vector3.UP)
 
 
@@ -472,6 +477,10 @@ func _physics_process(delta: float) -> void:
 	# The combat clocks run here too now: windups, recoveries, i-frames
 	# and stamina all tick whether or not there is anything to fight.
 	tick(delta)
+	feel.tick(delta)
+	# art-audio.md §2: an exhausted character's camera behaves
+	# differently, which says what a stamina bar would have to.
+	feel.breathe(clamp(1.0 - stamina.fraction() * 2.2, 0.0, 1.0))
 
 	var dir := _input_dir()
 	var heading := Vector3.ZERO
@@ -526,7 +535,11 @@ func _process(_delta: float) -> void:
 		# should still be talkable, and a post does not mind waiting.
 		if _near == null:
 			for n in get_parent().get_children():
-				if n is Waypost and (n as Waypost).in_reach(self):
+				# Only a road that actually GOES somewhere is an offer.
+				# The Hedges sign is a sign now — the wood is down that
+				# road in this same world, so there is nothing to press.
+				if n is Waypost and (n as Waypost).destination != "" \
+						and (n as Waypost).in_reach(self):
 					_road = n as Waypost
 					break
 

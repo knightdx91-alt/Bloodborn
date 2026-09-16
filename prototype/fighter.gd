@@ -103,6 +103,14 @@ const TURN := 10.0
 var stamina: Stamina
 var health: Health
 var harness: ArmourSet
+## What this fighter's weapon does before the arc's multiplier.
+##
+## Held here rather than passed in at every swing, because it is a fact
+## about the fighter and the thing they are carrying. It used to be two
+## constants in world.gd handed to a resolve function per call, which
+## worked exactly as long as combat happened in one scene with one
+## player and one enemy.
+var weapon_damage := 28.0
 var dodge: Dodge
 var attack: Attack
 var parry: Parry

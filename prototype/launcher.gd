@@ -65,7 +65,12 @@ func _ready() -> void:
 	_buttons.append(_big_button("Thornfield", "res://town.tscn"))
 	# The west Hedges. Reachable from the menu for now; the honest way in
 	# is walking out of Thornfield's west gate, which is the next piece.
-	_buttons.append(_big_button("The Hedges", "res://hedges.tscn"))
+	# The Hedges is not a menu entry any more. It stands west of
+	# Thornfield in the same world, and you walk there — so offering it
+	# here would be a door to a SECOND copy of the wood, with its own
+	# boar and its own clock, which is the thing this was built to stop.
+	# hedges.tscn survives as the drill yard's sibling for the harnesses
+	# until the arena moves into the world too.
 	for b in _buttons:
 		_vb.add_child(b)
 

@@ -230,6 +230,7 @@ func _ready() -> void:
 	player.setup(PLAYER_HEALTH, Color.WHITE, true, Fighter.CHARACTER,
 		Look.IRON, Look.LEATHER, "mail")
 	player.show_iframes = SHOW_DEBUG
+	player.weapon_damage = SWORD_DAMAGE
 
 	enemy = Fighter.new()
 	enemy.position = ENEMY_HOME
@@ -240,6 +241,7 @@ func _ready() -> void:
 		# placeholder it replaces lasted exactly as long as it took for
 		# a real boar to arrive.
 		enemy.setup_beast(ENEMY_HEALTH, "boar")
+		enemy.weapon_damage = ENEMY_DAMAGE
 		beast = BeastTactics.new(20260916)
 		feel = Feel.new()
 		cam = Camera3D.new()
@@ -254,6 +256,7 @@ func _ready() -> void:
 	# the silhouette and the value.
 	enemy.setup(ENEMY_HEALTH, Color(0.40, 0.62, 0.62), true, Fighter.ENEMY_CHARACTER,
 		Color(0.26, 0.27, 0.30), Color(0.16, 0.13, 0.10), "light")
+	enemy.weapon_damage = ENEMY_DAMAGE
 	tactics = EnemyTactics.new(20260914)
 	feel = Feel.new()
 

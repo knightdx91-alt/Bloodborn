@@ -672,6 +672,66 @@ about the harness, not the game. It now lives in its own file with one
 fresh town — because a check that lies is worse than no check, and this
 project has paid for that lesson more than once.
 
+## Done 2026-09-16 — one world, and the first region moved into it
+
+**Reported from play:** *"i want the whole thing to just be a big world,
+where you can go to the arena, and where ever else from the main town."*
+And, on the signpost added an hour earlier: *"not using another menu."*
+
+Fair. A sign that changes scenes is better than a launcher button and is
+still a door. **The Hedges now stands in the same scene as Thornfield**,
+190 m north up the road. You walk out of the gate, past the burnt mill,
+and the wood is there. Nothing loads. The town is still behind you the
+whole way — checked, not assumed.
+
+### What had to move for that to be possible
+
+**`Skirmish`** — combat resolution, lifted out of `world.gd`. It was
+`_resolve_swing`, `_land` and `_impact` reaching straight for that
+scene's `player`, `enemy` and `dummy` fields. That is the real reason
+the town had no enemies: combat WORKED there the moment `TownWalker`
+became a `Fighter`, but nothing existed to notice a live blade passing
+through anybody, and nothing could — the code that notices only knew how
+to look at one scene's three names. It holds a **list** now, and any
+region enlists its own.
+
+**`Fighter.weapon_damage`** — was two constants in `world.gd` handed to
+a resolve function per call, which works exactly as long as there is one
+player and one enemy.
+
+**`HedgeWood`** — the wood as a *region*: the hedge on three sides, the
+scrub, the boar and its tactics. It no longer builds its own ground, sky
+or clock, because those belong to the world. A region that brought its
+own clock would be a second answer to a question L89 settled with one.
+
+**`Feel` in the town.** Hit-stop, kick and shake were `world.gd`'s, so a
+blow in Thornfield moved nothing. A hit that does not move the view is a
+number changing somewhere, which is what `interface.md` §2 exists to
+prevent.
+
+The boar **minds its own wood**: walk out and it does not follow you
+home. That is what makes the wood a place rather than a room you are
+locked in.
+
+`worldcheck.gd` is 12 checks on the thing itself — one scene, one combat
+field, the town still standing while you are in the wood, and a swing
+out there that hurts the boar (110 → 61). `roadcheck` now walks the
+whole road at 20 m intervals and asserts the body is on its feet at
+every one.
+
+### And the frame again
+
+At 150 m the wood's hedge **enclosed the burnt mill** — a charred
+windmill and its dead trees standing inside the boar field. Every check
+passed. Moving the wood north of it makes the ruin a landmark on the way
+out instead, which is what it should have been.
+
+**Still to do:** the drill yard is still a scene. When it moves in the
+same way, `world.gd`'s hedges mode and `hedges.tscn` become a second
+copy of the wood and must be deleted — `hedgecheck` and `boarcheck` move
+to the region. The launcher's Hedges entry is already gone, so no player
+can reach the duplicate; only the harnesses still use it.
+
 ## Device check
 
 `CLAUDE.md` instructs the assistant to ask which device you are on at

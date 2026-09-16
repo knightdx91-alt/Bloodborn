@@ -2,17 +2,17 @@ class_name Waypost
 extends Node3D
 ## A signpost on the road out, and the road actually going somewhere.
 ##
-## The Hedges was reachable only from the launcher — a scene menu. That
-## is what made it read as a level rather than a place: you could not
-## walk there, and the town it belonged to had no road to it. Reported
-## from play, in those words: *"the hedges is a whole different place, it
-## should be a place you can travel to from the main town."*
+## The Hedges was reachable only from the launcher — a scene menu. The
+## first answer to that was a signpost that CHANGED SCENES: better, but
+## still a door. Then: *"i want the whole thing to just be a big world."*
 ##
-## So the way out is a post beside the north road, and the verb is the
-## one already learned. Standing near it turns the Talk chip into "Take
-## the road", and A on the pad does here what it does in front of a
-## person: the thing in front of you. No new button, no map screen, and
-## nothing over anybody's head — `interface.md` §2.
+## So the wood stands in the same scene as the town now, and this is
+## what it always should have been — **a sign**. It tells you what is
+## down the road and points at it. There is nothing to press, because
+## there is nothing to load: you walk.
+##
+## It keeps a `destination` for roads that do still lead somewhere else,
+## and leaves it empty when the place is simply over there.
 
 ## How close you have to be for the road to be an option.
 const REACH := 4.0
