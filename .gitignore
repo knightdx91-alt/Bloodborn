@@ -3,6 +3,16 @@
 # .import files beside each asset, which ARE source and are committed.
 prototype/.godot/
 prototype/android/build/
+
+# ...with one exception. assets/kaykit/ is 911 models that this game
+# cannot use (chibi -- see assets/SPEC-asset-packs-v1.md and the renders
+# in assets/evidence/). The pack is kept for reference, but importing it
+# generates 1366 .import files and extracted textures, and committing
+# those for something that will never ship is noise in every diff.
+# Delete assets/kaykit/ and this stanza together if the pack goes.
+prototype/assets/kaykit/**/*.import
+prototype/assets/kaykit/**/*_texture.png
+
 prototype/.mono/
 prototype/mono_crash.*
 

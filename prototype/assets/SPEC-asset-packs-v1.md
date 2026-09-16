@@ -50,21 +50,59 @@ A couple of the least cartoonish (`Big/Orc_Skull`, `Big/Demon`) could
 serve as scaled placeholders if something is needed in the Hedges before
 better art exists. Nothing else in the pack should go near the game.
 
-### Better fit: KayKit (Kay Lousberg), all CC0
+### ⚠️ KayKit arrived, and I was wrong about it — 2026-09-16
 
-Grounded stylised medieval rather than cartoon — knights, barbarians,
-rogues, skeleton warriors. Verified live and CC0, 2026-09-16.
+**In the repo at `assets/kaykit/` (911 models, 74 MB, CC0). Do not ship
+any of it.** The evidence is committed beside this file:
 
-- **KayKit Adventurers** — https://kaylousberg.itch.io/kaykit-adventurers
-- **KayKit Skeletons** — https://kaylousberg.itch.io/kaykit-skeletons
-- **KayKit Character Animations** — https://kaylousberg.itch.io/kaykit-character-animations
-- Everything, bundled — https://kaylousberg.itch.io/kaykit-complete
+- `evidence/kaykit-characters-vs-paladin.png`
+- `evidence/kaykit-props-vs-paladin.png`
 
-The characters and the animation pack are from the same author and built
-for each other, which is the rig-and-clips rule below satisfied by
-construction.
+**The characters are chibi.** Three heads tall, enormous round heads,
+cute faces. Beside the paladin they read as a different game — the same
+failure as Ultimate Monsters, in the same week. They are also oversized:
+**2.17–2.44 m against the paladin's 1.73 m**, measured from visible
+geometry.
 
-### 2. Enemies
+**And it is not only the characters.** The props are authored to match
+them, so the whole set carries the same cartoon language: a dungeon
+barrel is **2.00 m — taller than the player**, `sword_A` is **1.77 m**,
+the masonry is rounded pillows and the forest trees are lollipops.
+There is no subset of this that sits next to a grim realistic knight.
+
+Technically it is a good delivery, which is exactly what made it easy to
+recommend blind:
+
+- Nine rigged characters on **one 41-bone rig**, identical rest poses,
+  **76–95 clips each**, feet on the origin, no unit problem.
+- The `Rig_Medium` library's 23 bones are an **exact subset** of those
+  41 (the rest are IK controls), so its ~139 clips retarget by
+  construction.
+- `handslot.l` / `handslot.r` are dedicated weapon-attachment bones.
+- Every equipment variant ships **visible in the same file** — the
+  Knight renders holding three swords and four shields until you hide
+  them. Worth knowing for anyone who uses this pack for something else.
+
+**The miss is mine, and it is the second one.** I put KayKit in this
+document as *"grounded stylised medieval rather than cartoon"*, written
+off the itch.io page — in the same edit where I apologised for
+recommending Ultimate Monsters off its description. Muse then spent
+real effort fetching 74 MB on that sentence.
+
+### Rule, from paying for this twice
+
+**Nothing goes in this document as a recommendation until it has been
+rendered next to `paladin.fbx` and the frame has been looked at.**
+Storefront copy describes *genre*, not *proportion*, and proportion is
+what decides whether an asset can share a screen with the player. A pack
+that is CC0, cleanly rigged, correctly scaled and well animated can
+still be unusable, and none of the checks in this document catch it —
+only the frame does.
+
+Where a pack has not been rendered yet, it is listed below as a
+**candidate**, never as a recommendation.
+
+### 2. Enemies — candidates, none rendered yet
 
 `brute.fbx` and `raider.fbx` work but are procedural placeholders.
 
@@ -73,7 +111,7 @@ construction.
 - **Knight Character** — one knight, many animations, swords and helmets.
   https://quaternius.com/packs/knightcharacter.html
 
-### 3. Animals
+### 3. Animals — candidates, none rendered yet
 
 The boar is in use and fine. A pack would give a wolf that matches it,
 and more animals for later.
@@ -82,7 +120,7 @@ and more animals for later.
   (attack, death, gallop, walk, jump).
   https://quaternius.com/packs/ultimateanimatedanimals.html
 
-### 4. Animation library, if a shared clip set is wanted
+### 4. Animation library, if a shared clip set is wanted — candidate
 
 - **Universal Animation Library** — 120+ humanoid animations.
   https://quaternius.itch.io/universal-animation-library

@@ -275,6 +275,43 @@ physics frame, resetting the stride accumulator. That one reported
 "3.4 m covered in silence" for a walk that was working — the test was
 walking against the game instead of through it.
 
+## ⚠️ KayKit arrived and cannot be used — 2026-09-16
+
+**911 CC0 models, 74 MB, in `assets/kaykit/`. None of it should ship,
+and the reason it was fetched at all is my mistake.**
+
+I listed KayKit in `assets/SPEC-asset-packs-v1.md` as *"grounded
+stylised medieval rather than cartoon"*, written off the itch.io page.
+Rendered next to the paladin, it is **chibi** — three heads tall, huge
+round heads, cute faces — and oversized with it, 2.17–2.44 m against the
+player's 1.73 m. Evidence committed at
+`assets/evidence/kaykit-characters-vs-paladin.png`.
+
+The props match the characters, so the whole set goes the same way: a
+dungeon barrel is **2.00 m, taller than the player**, `sword_A` is
+1.77 m, the masonry is rounded pillows, the trees are lollipops. There
+is no subset that shares a screen with a grim realistic knight.
+
+It is a *good delivery* technically — nine characters on one 41-bone
+rig, 76–95 clips each, feet on the origin, no unit problem, a shared
+clip library whose 23 bones are an exact subset of the character rig,
+and dedicated `handslot` weapon bones. That is what made it easy to
+recommend blind.
+
+**This is the second time in one week.** Ultimate Monsters was the
+first, and I wrote the KayKit recommendation in the same edit as that
+apology. So the spec now carries a rule rather than another apology:
+**nothing is listed as a recommendation until it has been rendered next
+to `paladin.fbx` and the frame looked at.** Everything not yet rendered
+is demoted to *candidate*. Storefront copy describes genre; it does not
+describe proportion, and proportion is what decides whether an asset can
+stand next to the player. None of the other checks in that document
+catch it — only the frame does.
+
+The files are left in place rather than deleted: they are already in
+git history, so removing them reclaims nothing, and the spec now marks
+them clearly. Say the word if you would rather they go.
+
 ## Device check
 
 `CLAUDE.md` instructs the assistant to ask which device you are on at
