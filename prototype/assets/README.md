@@ -32,6 +32,24 @@ headless) and validated through FBX re-import (`tools/validate.py`).
 - `weapon_spear.fbx` — committed/thrust silhouette.
 - `dummy.fbx` — training dummy.
 - `arena.fbx` — 24 m test room.
+- `brute.fbx` — **built 2026-09-16** by `tools/build_enemies.py`
+  (Blender 4.5.1, headless). Bulky hunched humanoid enemy, ~1.77 m,
+  dark palette, glowing eyes. Its skeleton is the exact 65-bone Mixamo
+  rig taken straight from `animations/anim_Walking.fbx` — the armature
+  is never re-posed or transform-baked, so all seven clips below play
+  with no retargeting. Verified 2026-09-16: every clip drives the model
+  identically to its native armature (0.00000 m error, all frames).
+- `raider.fbx` — **built 2026-09-16** by `tools/build_enemies.py`. Lean
+  fast humanoid enemy, ~2.00 m, red/hooded palette. Same 65-bone rig
+  and same verification as `brute.fbx`.
+- `wolf.fbx` — **built 2026-09-16** by `tools/build_quadrupeds.py`.
+  Dire wolf on a custom 20-bone quadruped rig (Root/Spine/Chest,
+  Neck/Head/Jaw, 2-segment tail, 4 × Upper/Lower/Paw leg chains).
+  ~1.47 m long, ~0.95 m at the shoulder. Armature + mesh, no animation.
+- `boar.fbx` — **built 2026-09-16** by `tools/build_quadrupeds.py`.
+  Stocky boar (barrel body, shoulder hump, snout disc, tusks, bristle
+  ridge) on the same 20-bone rig layout with stockier proportions.
+  Armature + mesh, no animation.
 
 `preview.png` is a Blender render of the set.
 
@@ -85,6 +103,28 @@ something swings back.
 **Wanted next:** `SPEC-dodge-clips.md` — four directional dodges, so
 that dodging sideways stops meaning "turn, then roll forward".
 
+### Quadruped clips (procedural, 2026-09-16)
+
+Built by `tools/build_quadrupeds.py` alongside the models above —
+sampled procedural animation (diagonal-gait walk, breathing idle,
+lunge-bite / charge-tusk attacks), baked to one action per file.
+Rotations are keyed as quaternions; see the builder's header for why.
+
+| File | Clip | Frames | Notes |
+|---|---|---|---|
+| `wolf_Idle.fbx` | Idle | 61 | breathing, head sway, tail wag; loops |
+| `wolf_Walk.fbx` | Walk | 31 | diagonal gait; loops |
+| `wolf_Run.fbx` | Run | 21 | diagonal gait, extended; loops |
+| `wolf_Attack.fbx` | Attack | 24 | crouch, lunge, bite |
+| `boar_Idle.fbx` | Idle | 61 | breathing, sniffing dips, tail flicks; loops |
+| `boar_Walk.fbx` | Walk | 31 | diagonal gait; loops |
+| `boar_Run.fbx` | Run | 21 | diagonal gait, extended; loops |
+| `boar_Attack.fbx` | Attack | 28 | paw, charge, tusk swipe left/right |
+
+Verified 2026-09-16: each clip re-imports to exactly one action that
+animates its model (Blender), and all twelve files import cleanly into
+Godot 4.3 (Skeleton3D + bound Skin + AnimationPlayer).
+
 ## Regenerating
 
 **The character and the clips are downloads and must stay downloads.**
@@ -102,6 +142,22 @@ blender -b -P tools/validate.py
 Requires Blender 4.x on PATH. `tools/build_humanoid_v2.py` remains
 only as a record of the superseded approach; running it will reproduce
 the bug.
+
+The enemies and animals are generated too:
+
+```
+blender -b -P tools/build_enemies.py     # brute.fbx, raider.fbx
+blender -b -P tools/build_quadrupeds.py  # wolf.fbx, boar.fbx + 8 clips
+```
+
+`build_enemies.py` takes the skeleton from
+`../animations/anim_Walking.fbx` and must keep that armature's object
+transform exactly as imported — baking it (`transform_apply`) changes
+the animation coordinate space and makes the Mixamo location curves
+explode. `build_quadrupeds.py` authors its own 20-bone rig and clips;
+its header documents three Blender 4.5 FBX-exporter pitfalls it works
+around (all actions exported as takes, euler rotations not baked on
+slotted actions, euler component assignment in quaternion mode).
 
 ## A note on the props
 
