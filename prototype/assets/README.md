@@ -32,7 +32,16 @@ headless) and validated through FBX re-import (`tools/validate.py`).
 - `weapon_spear.fbx` — committed/thrust silhouette.
 - `dummy.fbx` — training dummy.
 - `arena.fbx` — 24 m test room.
-> ### ⚠️ `brute.fbx` and `raider.fbx` DO NOT WORK YET — 2026-09-16
+> ### ⚠️ `brute.fbx` and `raider.fbx` are in CENTIMETRES — 2026-09-16
+>
+> **They work now** — `Fighter._match_units()` converts the clip on the
+> way in, and `rigcheck.gd` renders all four humanoids walking. **The
+> files are still wrong at source**, and the fix still belongs in
+> `tools/build_enemies.py`: export the armature in metres. When that
+> happens the conversion becomes a no-op on its own (the ratio goes to
+> 1), so it does not have to be found and removed.
+>
+> The original diagnosis follows.
 >
 > **Their armatures are authored in centimetres.** The pelvis rests at
 > **104.27** with the parent node scaled to **0.01** to compensate, which

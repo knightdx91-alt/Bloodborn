@@ -68,11 +68,48 @@ func _ready() -> void:
 		# collapses the moment a metre-authored clip touches it.
 		var ratio: float = rest_hips / maxf(clip_hips, 0.0001)
 		var agrees: bool = ratio > 0.5 and ratio < 2.0
-		_ok("%s speaks the clip's units" % name, agrees,
-			"pelvis rests at %.2f but the clip says %.2f — %.0fx out"
-				% [rest_hips, clip_hips, ratio])
-		print("      %s: hips rest %.3f, ratio %.2f%s"
-			% [name, rest_hips, ratio, "  (known good)" if known_good else ""])
+		if agrees:
+			print("  ok    %s speaks the clip's units (ratio %.2f)%s"
+				% [name, ratio, "  (known good)" if known_good else ""])
+		else:
+			# NOT a failure: the file is wrong at source and the engine
+			# converts it on the way in (Fighter._match_units), which the
+			# second half of this check proves. Reported every run so the
+			# defect stays visible until someone with Blender exports the
+			# armature in metres — at which point the ratio goes to 1 and
+			# the conversion becomes a no-op on its own.
+			print("  warn  %s is authored in centimetres: pelvis rests at %.2f, clip says %.2f (%.0fx). Compensated in engine; fix belongs in tools/build_enemies.py"
+				% [name, rest_hips, clip_hips, ratio])
+			if known_good:
+				_fails.append("%s units" % name)
+				print("  FAIL  ...and %s is a known-good file, so this is a real regression" % name)
+
+	print("--- and through Fighter.setup(), which is what the game does ---")
+	# The ratio check above says the units disagree. This says the game
+	# no longer cares, because Fighter._match_units() converts the clip
+	# on the way in. Measured off the pelvis: mid-walk it has to sit
+	# about a metre above the feet, whatever units the file was in.
+	for name in ["paladin", "skeleton_zombie", "brute", "raider"]:
+		var f := Fighter.new()
+		f.position = Vector3(0, 1.0, 0)
+		add_child(f)
+		f.setup(100.0, Color.WHITE, false, "res://assets/models/%s.fbx" % name)
+		if f.anim == null:
+			_ok("%s animates at all" % name, false, "no AnimationPlayer")
+			continue
+		f.anim.play("walk")
+		f.anim.seek(0.4, true)
+		await get_tree().process_frame
+		await get_tree().process_frame
+		var skel := _find(f, "Skeleton3D") as Skeleton3D
+		var hips := skel.find_bone("mixamorig_Hips")
+		# Into world space, so the file's own units cancel out.
+		var world: Vector3 = (skel.get_parent() as Node3D).global_transform 			* (skel.transform * skel.get_bone_global_pose(hips).origin)
+		var above: float = world.y - (f.global_position.y - 1.0)
+		_ok("%s stands up under a Mixamo walk" % name, above > 0.6 and above < 1.5,
+			"pelvis is %.2fm above the feet — a collapsed rig sits near 0" % above)
+		print("      %s: pelvis %.2fm above the feet" % [name, above])
+		f.queue_free()
 
 	print("")
 	print("rigs: all clear" if _fails.is_empty() else "FAILED: %s" % ", ".join(_fails))

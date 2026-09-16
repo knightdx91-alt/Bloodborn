@@ -190,6 +190,7 @@ func setup(max_health: float, tint: Color, carries_sword: bool = true,
 		var src := (load(LOCOMOTION[key]) as PackedScene).instantiate()
 		var src_anim := _find(src, "AnimationPlayer") as AnimationPlayer
 		var clip: Animation = src_anim.get_animation(src_anim.get_animation_list()[0])
+		clip = _match_units(clip, skel)
 		if key in ONE_SHOT:
 			clip.loop_mode = Animation.LOOP_NONE
 			_flatten_root_motion(clip)
@@ -594,6 +595,54 @@ func _animate(ground_speed: float) -> void:
 	# Kept near 1.0 on purpose: a clip pushed past about 1.35x reads as
 	# comical long before it stops skating.
 	anim.speed_scale = clamp(rate, 0.7, 1.35)
+
+## Put a clip into the same units as the skeleton it will drive.
+##
+## Mixamo clips are authored in metres: the walk puts the pelvis at
+## 1.016. A character exported from Blender in CENTIMETRES has bone rests
+## a hundred times larger (pelvis 104.27) with a 0.01 scale on the
+## armature node to compensate — which looks perfectly right standing
+## still, and folds the body up the instant a metre-authored position
+## track drives the pelvis to a hundredth of its height. `brute.fbx` and
+## `raider.fbx` are both like this; rendered, they collapse into heaps
+## while the paladin walks past them.
+##
+## **This is not the retargeting SPEC-character-v3 forbids.** That mapped
+## bone to bone and corrected rest orientations, and the right fix was to
+## delete it. This reads one number off each side and scales one kind of
+## track — which is what an importer does. The rest pose is already
+## correct on these files (1.10° from the Mixamo reference, better than
+## the working player model's 16°), so there is nothing else to fix.
+##
+## The proper fix is still at source: export the armature in metres. When
+## that happens this becomes a no-op on its own, because the ratio goes
+## to 1 — it does not have to be found and removed.
+static func _match_units(clip: Animation, skel: Skeleton3D) -> Animation:
+	var hips := skel.find_bone("mixamorig_Hips")
+	if hips == -1:
+		return clip
+	var rest: float = skel.get_bone_rest(hips).origin.length()
+	var authored := 0.0
+	for t in clip.get_track_count():
+		if clip.track_get_type(t) == Animation.TYPE_POSITION_3D \
+				and str(clip.track_get_path(t)).findn("Hips") != -1:
+			authored = (clip.track_get_key_value(t, 0) as Vector3).length()
+	if authored <= 0.0001 or rest <= 0.0001:
+		return clip
+	var ratio: float = rest / authored
+	# Everything sane sits near 1 — the two shipped Mixamo downloads
+	# measure 0.94 and 1.15, and must not be touched.
+	if ratio > 0.5 and ratio < 2.0:
+		return clip
+	var fixed := clip.duplicate() as Animation
+	for t in fixed.get_track_count():
+		if fixed.track_get_type(t) != Animation.TYPE_POSITION_3D:
+			continue
+		for k in fixed.track_get_key_count(t):
+			fixed.track_set_key_value(t, k,
+				(fixed.track_get_key_value(t, k) as Vector3) * ratio)
+	return fixed
+
 
 ## Give this fighter its own copy of every material on its body, tinted.
 ##
