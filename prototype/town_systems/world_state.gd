@@ -58,6 +58,11 @@ var rumors := [
 
 var contracts_taken: Array = []
 
+## Work done toward each taken contract, by contract id. Separate from
+## contracts_taken because taking work and doing it are different facts,
+## and only the second one can be lost.
+var contract_progress: Dictionary = {}
+
 ## Prototype stand-in for the player's purse.
 var coin: int = 12
 

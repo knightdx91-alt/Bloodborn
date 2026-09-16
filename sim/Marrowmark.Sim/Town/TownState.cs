@@ -60,6 +60,13 @@ namespace Marrowmark.Sim.Town
         public float Distortion;
     }
 
+    /// <summary>Work done toward one taken contract.</summary>
+    public sealed class ContractProgress
+    {
+        public string ContractId = "";
+        public int Done;
+    }
+
     /// <summary>
     /// Everything a town's boards, shrine, rumours and apprenticeship
     /// read. Seeded by whoever is building the town — this type owns the
@@ -87,6 +94,11 @@ namespace Marrowmark.Sim.Town
         public int HarvestDemand;
 
         public List<string> ContractsTaken = new List<string>();
+
+        /// <summary>How far along each taken contract is. Separate from
+        /// ContractsTaken because taking work and doing it are different
+        /// facts, and only the second one can be lost.</summary>
+        public List<ContractProgress> ContractProgress = new List<ContractProgress>();
 
         /// <summary>Copper pennies.</summary>
         public int Coin;

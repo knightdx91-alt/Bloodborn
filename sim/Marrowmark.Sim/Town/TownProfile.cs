@@ -26,6 +26,20 @@ namespace Marrowmark.Sim.Town
 
         public int HarvestPay;
 
+        /// <summary>Boars to kill per point of pressure before a cull can
+        /// be handed in. The contract IS the problem, so the work scales
+        /// with the problem exactly as the pay does.</summary>
+        public int CullKillsPerPressure;
+
+        /// <summary>How far one completed cull drops the region's
+        /// pressure. ONE, deliberately: content.md §2 calls a cull real
+        /// maintenance, not extermination. A pressure-3 wood takes three
+        /// contracts to quiet, each paying less than the last as the
+        /// problem shrinks — and the board regenerates from the pressure
+        /// every time, so the work thinning is visible without anybody
+        /// being told.</summary>
+        public int CullPressureRelief;
+
         /// <summary>What Mara charges for the ale that buys you the talk.
         /// content.md §3 makes the drink the search interface, so this is
         /// the price of a query and wants to stay small.</summary>
@@ -62,6 +76,8 @@ namespace Marrowmark.Sim.Town
             EscortBasePay = 10,
             EscortPayPerGuard = 4,
             HarvestPay = 5,
+            CullKillsPerPressure = 1,
+            CullPressureRelief = 1,
             DrinkPrice = 2,
             ShrineToll = 4,
             DistortionPerHour = 0.002f,

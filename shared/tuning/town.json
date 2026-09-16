@@ -4,7 +4,9 @@
     "cullPayPerPressure": 3,
     "escortBasePay": 10,
     "escortPayPerGuard": 4,
-    "harvestPay": 5
+    "harvestPay": 5,
+    "cullKillsPerPressure": 1,
+    "cullPressureRelief": 1
   },
   "rumour": {
     "drinkPrice": 2,

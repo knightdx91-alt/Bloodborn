@@ -469,6 +469,41 @@ went — that carrying work does *not* withhold an apprenticeship or a
 second job, and that the board still offers other work while marking
 only the job already taken.
 
+## The work loop, part two — doing the work, 2026-09-16
+
+`ContractWork` (C#, 12 tests) and its mirror `rules/contract_work.gd`
+(12 matching checks) are the half of the board that did not exist.
+
+**Finishing a cull changes the world, and the world is what the board is
+generated from.** That is the whole design, and it is what makes
+`content.md` §3's "the board never lies" do real work instead of being a
+slogan:
+
+- Thin the boars and the region's pressure drops by one. A cull is
+  maintenance, not extermination.
+- The next posting for that wood is **smaller and pays less**, because
+  pay scales with pressure and pressure is now lower.
+- Cull a wood quiet and its contract is **not posted at all** — not
+  hidden, not greyed: `generate()` never makes it, because there is no
+  problem to make it from.
+- Let the boars come back and the contract comes back with them, fresh.
+
+Nothing announces any of this. The board says something different
+because something different is true.
+
+Other decisions worth keeping:
+
+- **Progress is keyed on the REGION, not a contract id.** What the world
+  can report is that something died in a place; the town works out
+  whether that was work. Kill boars nobody paid you for and it is not
+  progress — allowed, just unpaid.
+- **Progress is capped** at what was asked for, so a long hunt cannot
+  bank credit against the next contract for the same wood.
+- **Escort, harvest and smithing refuse honestly** (`NOT_YET_POSSIBLE`).
+  There is nowhere to walk a wagon to and no forge to stand at, so they
+  pay nothing rather than paying for nothing. An honest gap beats a
+  contract that lies.
+
 ## Still open
 
 - **The world state is seeded once and never persists.** Nothing
@@ -477,7 +512,9 @@ only the job already taken.
   ale is tagged a contract offer. Gated correctly; the taxonomy wants
   separating before a model generates the first one.
 - **NPC bodies** are still the blocky placeholder.
-- **No contract completion.** Taken work can never be finished, handed
-  in, or abandoned — `contracts_taken` only grows. Not the wall it
-  briefly was (you can still take other jobs), but the loop is open at
-  one end and closing it is the town's most valuable next piece.
+- **Only culls can be finished.** Escort, harvest and smithing refuse
+  honestly because there is nowhere to do them. Each needs a place
+  before it needs rules.
+- **Nothing kills boars yet.** `ContractWork.record_cull()` is waiting
+  on somewhere to fight them — the Hedges.
+- **No abandoning.** Work can be finished but not given back.
