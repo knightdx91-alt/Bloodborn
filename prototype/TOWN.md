@@ -394,6 +394,50 @@ back made it report all 34 townsfolk at exactly `1.00m under`, by name.
 A check that has never failed is not evidence — three times in this
 session a harness was measuring itself rather than the game.
 
+## The town pays attention — 2026-09-16
+
+Two more from play.
+
+**"Carter does still offer the job — it should recognize that I've
+accepted it and I'm basically reporting for duty."** Topics were static:
+whatever the roster card said, the NPC said, regardless of what had
+happened in the world. So a contract taken off the board was still
+offered by the man who posted it, with the paper already in your hand.
+
+This is now a standing rule — **L92**, `brainstorm.md` §9.2b — over
+every NPC and everything they offer, not a patch for contracts.
+
+Topics resolve against `TownWorldState` when the list is built, through
+a table in `conversation.gd` that **every effect must appear in**. A
+`take_contract` topic whose contract is already taken becomes "— taken"
+and speaks `Boards.duty_line()` — where to be, when, what to expect.
+A `hire` topic does the same through `Apprenticeship.duty_line()`,
+distinguishing your own master ("You're mine already") from somebody
+else's ("You're Odo's already. I'll not poach"). A `buy_drink` topic
+with an empty purse becomes "— no coin", because completion is not the
+only way the world contradicts an offer.
+
+`ConversationUI.uncovered_effects()` walks every topic on every NPC and
+the harness fails on any effect with no resolver. That is what keeps
+L92 a rule: L49's whitelist was re-implemented verbatim from a paragraph
+that did not say it had been amended, and prose alone does not hold.
+
+The list also rebuilds while the conversation is still open, because the
+case that matters is opening the board *from* the conversation, taking a
+job there, and stepping back — the man you are still talking to has to
+have noticed.
+
+**"The screen that pops up overlays the other one, so you can't read the
+one below it."** The confirm gate was drawn over the dialogue box that
+held the actual offer — it asked "Go through with it?" while covering
+the only text that said what "it" was.
+
+The gate now **hides the panel it belongs to** and **carries the terms
+itself**. Both halves are needed: hiding alone would lose the terms
+rather than covering them. It is centred by a `CenterContainer` rather
+than by a fixed offset, so a long set of terms grows the panel instead
+of walking it off the top of the screen.
+
 ## Still open
 
 - **The world state is seeded once and never persists.** Nothing

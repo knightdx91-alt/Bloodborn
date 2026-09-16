@@ -350,6 +350,151 @@ func _ready() -> void:
 	Boards._close_ui()
 	await _settle()
 
+	print("--- the gate does not cover what it is asking about ---")
+	# Reported from play: "there is another small screen that pops up, so
+	# you can't read the other one below it."
+	var gstate := TownWorldState.new()
+	ConversationUI.open(binder, {"state": gstate})
+	await _settle()
+	var gui: ConversationUI = ConversationUI.current
+	var goffer: Button = null
+	for bb in _buttons(gui):
+		for tp in binder.topics:
+			if String(tp.get("intent", "")) == "offer_contract" \
+					and (bb as Button).text == String(tp.get("topic", "")):
+				goffer = bb as Button
+	if goffer != null:
+		var offer_text := goffer.text
+		goffer.pressed.emit()
+		await _settle()
+		var gate: Control = gui.get_meta("ui_confirm", null) as Control
+		_ok("the gate is up", gate != null and UI.confirm_is_open(gui), "no gate")
+		if gate != null:
+			# Nothing from the conversation may still be drawn behind it.
+			var behind: Array[String] = []
+			for c in gui.get_children():
+				if c is CanvasItem and c != gate and (c as CanvasItem).visible:
+					behind.append(c.name)
+			_ok("nothing is left drawn behind it", behind.is_empty(),
+				"still visible: %s" % ", ".join(behind))
+			# And it has to say what it is asking about, or hiding the
+			# panel behind it just loses the terms instead of covering
+			# them.
+			var said := ""
+			for l in gate.find_children("*", "Label", true, false):
+				said += (l as Label).text
+			_ok("and states the terms itself", said.length() > 40,
+				"the gate reads '%s'" % said)
+			var vp2: Vector2 = get_viewport().get_visible_rect().size
+			for bb in _buttons(gate):
+				var gb := bb as Button
+				var gr := gb.get_global_rect()
+				_ok("'%s' is on screen" % gb.text,
+					gr.end.y <= vp2.y + 1 and gr.position.y >= -1
+						and gr.end.x <= vp2.x + 1 and gr.position.x >= -1,
+					"at %s in %s" % [str(gr), str(vp2)])
+		UI.confirm_decline(gui)
+		await _settle()
+		_ok("declining brings the conversation back",
+			gui.get_node_or_null(".") != null and _buttons(gui).size() > 0,
+			"the conversation did not come back")
+		var back_visible := false
+		for c in gui.get_children():
+			if c is CanvasItem and (c as CanvasItem).visible:
+				back_visible = true
+		_ok("and it is visible again", back_visible, "still hidden after declining")
+		_ok("and the offer is still on the list",
+			offer_text != "", "lost track of the offer")
+	if ConversationUI.current != null:
+		ConversationUI.current.close()
+		await _settle()
+
+	print("--- L92: every topic answers to the world ---")
+	# The rule is only a rule if a new effect cannot be added without
+	# deciding what the world says about it. This is what stops L92
+	# decaying into a habit, the way L49's whitelist did.
+	var uncovered := ConversationUI.uncovered_effects()
+	_ok("every effect in the roster has a resolver", uncovered.is_empty(),
+		"no world-check for: %s" % ", ".join(uncovered))
+
+	# And a case that is neither a contract nor a hire, to show the
+	# mechanism is general rather than two special cases wearing a table.
+	var broke := TownWorldState.new()
+	broke.coin = 0
+	var drinker: TownNPC = null
+	var drink_topic := ""
+	for n in pop.get_children():
+		if not (n is TownNPC):
+			continue
+		for tp in (n as TownNPC).topics:
+			if String(tp.get("effect", "")) == "buy_drink" and drinker == null:
+				drinker = n as TownNPC
+				drink_topic = String(tp.get("topic", ""))
+	_ok("somebody sells a drink", drinker != null, "nobody does")
+	if drinker != null:
+		ConversationUI.open(drinker, {"state": broke})
+		await _settle()
+		var offered_free := false
+		var says_broke := false
+		for bb in _buttons(ConversationUI.current):
+			var bt := (bb as Button).text
+			if bt == drink_topic:
+				offered_free = true
+			elif bt.begins_with(drink_topic) and bt.ends_with("no coin"):
+				says_broke = true
+		_ok("an empty purse is the world contradicting an offer too",
+			not offered_free, "'%s' offered with no coin" % drink_topic)
+		_ok("and the topic says so", says_broke, "no '— no coin' topic appeared")
+		ConversationUI.current.close()
+		await _settle()
+
+	print("--- the town knows what you have already taken ---")
+	# Reported from play: Carter Pell went on offering a job that had
+	# already been taken off the board.
+	var pstate := TownWorldState.new()
+	var giver: TownNPC = null
+	var job_id := ""
+	var job_topic := ""
+	for n in pop.get_children():
+		if not (n is TownNPC):
+			continue
+		for tp in (n as TownNPC).topics:
+			if String(tp.get("effect", "")) == "take_contract" and giver == null:
+				giver = n as TownNPC
+				job_id = String(tp.get("effect_arg", ""))
+				job_topic = String(tp.get("topic", ""))
+	_ok("somebody offers a contract by name", giver != null, "nobody does")
+	if giver != null:
+		ConversationUI.open(giver, {"state": pstate})
+		await _settle()
+		var offers_it := false
+		for bb in _buttons(ConversationUI.current):
+			if (bb as Button).text == job_topic:
+				offers_it = true
+		_ok("and offers it while it is free", offers_it,
+			"'%s' was not on the list to begin with" % job_topic)
+		ConversationUI.current.close()
+		await _settle()
+
+		# Take it elsewhere — off the board — then come back.
+		Boards.take(pstate, job_id)
+		ConversationUI.open(giver, {"state": pstate})
+		await _settle()
+		var still_offered := false
+		var reports := false
+		for bb in _buttons(ConversationUI.current):
+			var bt := (bb as Button).text
+			if bt == job_topic:
+				still_offered = true
+			elif bt.begins_with(job_topic) and bt.ends_with("taken"):
+				reports = true
+		_ok("then stops offering it once it is taken", not still_offered,
+			"'%s' is still offered as though it were free" % job_topic)
+		_ok("and offers to report for duty instead", reports,
+			"no '— taken' topic appeared")
+		ConversationUI.current.close()
+		await _settle()
+
 	print("")
 	print("npc UI: all clear" if _fails.is_empty() else "FAILED: %s" % ", ".join(_fails))
 	get_tree().quit()

@@ -316,22 +316,36 @@ static func confirm(layer: CanvasLayer, question: String, yes_text: String,
 			ctl.focus_mode = Control.FOCUS_NONE
 			frozen.append(ctl)
 
+	# And the screen it belongs to goes away while it is up. A gate laid
+	# over a dialogue box covers the very terms it is asking about —
+	# reported as "another small screen pops up, so you can't read the
+	# one below it" — so the gate has to carry the terms itself and be
+	# the only thing on screen. Both halves, or neither works.
+	var hidden: Array[CanvasItem] = []
+	for c in layer.get_children():
+		if c is CanvasItem and (c as CanvasItem).visible:
+			hidden.append(c as CanvasItem)
+			(c as CanvasItem).visible = false
+	layer.set_meta("ui_gate_hid", hidden)
+
+	# Centred by a container rather than by an offset, so a long set of
+	# terms grows the panel without walking it off the top of the screen.
+	var centre := CenterContainer.new()
+	centre.set_anchors_preset(Control.PRESET_FULL_RECT)
+	layer.add_child(centre)
+	layer.set_meta("ui_confirm", centre)
+
 	var panel := UI.panel()
-	panel.set_anchors_preset(Control.PRESET_CENTER)
-	var width: float = minf(380.0 * scale, vp.x * 0.86)
+	var width: float = minf(420.0 * scale, vp.x * 0.88)
 	panel.custom_minimum_size = Vector2(width, 0)
-	panel.position = Vector2(-width * 0.5, -80.0 * scale)
-	layer.add_child(panel)
-	layer.set_meta("ui_confirm", panel)
+	centre.add_child(panel)
 
 	var vb := VBoxContainer.new()
 	vb.add_theme_constant_override("separation", int(10.0 * scale))
 	panel.add_child(vb)
 
-	var q := heading(question, scale)
+	var q := body(question, scale, width - 60.0 * scale)
 	q.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	q.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	q.custom_minimum_size = Vector2(width - 60.0 * scale, 0)
 	vb.add_child(q)
 
 	var yes := choice(yes_text, scale, width - 60.0 * scale)
@@ -378,6 +392,11 @@ static func _close_confirm(layer: CanvasLayer, frozen: Array[Control]) -> void:
 		if is_instance_valid(p):
 			p.queue_free()
 		layer.remove_meta("ui_confirm")
+	if layer.has_meta("ui_gate_hid"):
+		for c in layer.get_meta("ui_gate_hid"):
+			if is_instance_valid(c):
+				(c as CanvasItem).visible = true
+		layer.remove_meta("ui_gate_hid")
 	for c in frozen:
 		if is_instance_valid(c):
 			c.focus_mode = Control.FOCUS_ALL

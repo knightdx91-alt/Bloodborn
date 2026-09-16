@@ -26,6 +26,10 @@ var _systems: Dictionary
 var _dialog: RichTextLabel
 var _topic_box: VBoxContainer
 var _pending: Dictionary = {}
+var _topic_width := 0.0
+var _topic_scale := 1.0
+## What the world looked like when the topic list was last built.
+var _stamp := ""
 
 
 static func open(npc: TownNPC, systems: Dictionary) -> void:
@@ -95,10 +99,9 @@ func _build() -> void:
 	_topic_box = VBoxContainer.new()
 	_topic_box.add_theme_constant_override("separation", int(5.0 * scale))
 	vb.add_child(_topic_box)
-	for t in _npc.topics:
-		var b := UI.choice(String(t.get("topic", "...")), scale, width - 60.0 * scale)
-		b.pressed.connect(_on_topic.bind(t))
-		_topic_box.add_child(b)
+	_topic_width = width - 60.0 * scale
+	_topic_scale = scale
+	_fill_topics()
 
 	var leave := UI.choice("Leave", scale, width - 60.0 * scale)
 	leave.pressed.connect(close)
@@ -126,6 +129,158 @@ func _unhandled_input(event: InputEvent) -> void:
 		UI.confirm_decline(self)
 	else:
 		close()
+
+
+## Build the topic buttons from what the world currently looks like.
+func _fill_topics() -> void:
+	for c in _topic_box.get_children():
+		c.queue_free()
+	for t in _npc.topics:
+		var shown := _resolve(t)
+		var b := UI.choice(String(shown.get("topic", "...")), _topic_scale, _topic_width)
+		b.pressed.connect(_on_topic.bind(shown))
+		_topic_box.add_child(b)
+	_stamp = _world_stamp()
+
+
+# --- Topics answer to the world (L92) ----------------------------------
+#
+# A topic is a CANDIDATE, not a script. Every one is resolved against
+# world state at the moment the list is built, and a topic the world
+# contradicts is never offered as though nothing had happened.
+#
+# Reported from play: a contract taken off the board was still offered by
+# the man who posted it, with the paper already in the player's hand.
+# That is the same failure as a quest-giver repeating a finished quest,
+# and it makes the town look like it is not listening.
+#
+# EVERY effect an NPC can offer must appear in this table. That is the
+# whole point of the table: a new effect added without an entry fails the
+# harness instead of quietly shipping as a static line. L49's whitelist
+# was re-implemented verbatim from a paragraph that did not say it had
+# been amended — a rule that lives only in prose gets un-followed by the
+# next person to read the prose.
+#
+# Prefer CHANGING a topic to removing one. "Escort the Vellmark wagon?"
+# becoming "— taken", with somewhere to be and a time to be there, is a
+# town that noticed. A line that silently disappears is just a shorter
+# menu.
+const RESOLVERS := {
+	"": "_topic_as_authored",
+	"ask_rumor": "_topic_as_authored",
+	"open_contracts": "_topic_as_authored",
+	"open_market": "_topic_as_authored",
+	"hire": "_topic_if_unhired",
+	"take_contract": "_topic_if_untaken",
+	"buy_drink": "_topic_if_affordable",
+}
+
+
+## Effects used anywhere in the roster that no resolver covers. The
+## harness fails on a non-empty answer, which is what makes L92 a rule
+## rather than a habit.
+static func uncovered_effects() -> Array:
+	var missing: Array = []
+	for data in Roster.all():
+		for t in data.get("topics", []):
+			var e := String((t as Dictionary).get("effect", ""))
+			if not RESOLVERS.has(e) and not missing.has(e):
+				missing.append(e)
+	return missing
+
+
+func _resolve(t: Dictionary) -> Dictionary:
+	var state: TownWorldState = _systems.get("state", null)
+	if state == null:
+		return t
+	var effect := String(t.get("effect", ""))
+	if not RESOLVERS.has(effect):
+		# Unknown effect: say so in the list rather than offering it. An
+		# offer the game cannot honour is worse than a visible gap.
+		var broken := t.duplicate()
+		broken["topic"] = "%s   — unavailable" % String(t.get("topic", ""))
+		broken["intent"] = "none"
+		broken["effect"] = ""
+		broken["line"] = "They start to answer, then think better of it."
+		return broken
+	return call(String(RESOLVERS[effect]), t, state)
+
+
+## Nothing in the world can contradict this one.
+func _topic_as_authored(t: Dictionary, _state: TownWorldState) -> Dictionary:
+	return t
+
+
+func _topic_if_untaken(t: Dictionary, state: TownWorldState) -> Dictionary:
+	var arg := _arg(t)
+	if arg == "" or not state.contracts_taken.has(arg):
+		return t
+	var done := t.duplicate()
+	done["topic"] = "%s   — taken" % String(t.get("topic", ""))
+	done["intent"] = "none"
+	done["effect"] = ""
+	done["line"] = Boards.duty_line(state, arg)
+	return done
+
+
+func _topic_if_unhired(t: Dictionary, state: TownWorldState) -> Dictionary:
+	var arg := _arg(t)
+	if arg == "" or not state.hired:
+		return t
+	var spoken := t.duplicate()
+	var mine: bool = state.apprentice_master == arg
+	spoken["topic"] = "%s   — %s" % [String(t.get("topic", "")),
+		"done" if mine else "spoken for"]
+	spoken["intent"] = "none"
+	spoken["effect"] = ""
+	spoken["line"] = Apprenticeship.duty_line(state, arg)
+	return spoken
+
+
+## An empty purse is the world contradicting an offer just as much as a
+## contract already signed is.
+func _topic_if_affordable(t: Dictionary, state: TownWorldState) -> Dictionary:
+	if state.coin >= RumourMill.drink_price():
+		return t
+	var broke := t.duplicate()
+	broke["topic"] = "%s   — no coin" % String(t.get("topic", ""))
+	broke["intent"] = "none"
+	broke["effect"] = ""
+	broke["line"] = "Mara eyes your purse. \"Coin first, thirsty.\""
+	return broke
+
+
+func _arg(t: Dictionary) -> String:
+	var raw: Variant = t.get("effect_arg", null)
+	return String(raw) if raw is String else ""
+
+
+## Cheap description of the parts of the world the topics depend on.
+func _world_stamp() -> String:
+	var state: TownWorldState = _systems.get("state", null)
+	if state == null:
+		return ""
+	return "%d|%s|%s" % [state.contracts_taken.size(), str(state.hired),
+		state.apprentice_master]
+
+
+## The list is rebuilt when that world changes underneath it — including
+## while this conversation is still open, which is what happens when the
+## contract board is opened from it and a job taken there.
+func _process(_delta: float) -> void:
+	if _topic_box == null or UI.confirm_is_open(self):
+		return
+	if _world_stamp() == _stamp:
+		return
+	var had := -1
+	for i in _topic_box.get_child_count():
+		if (_topic_box.get_child(i) as Button).has_focus():
+			had = i
+	_fill_topics()
+	if had >= 0:
+		await get_tree().process_frame
+		if had < _topic_box.get_child_count():
+			(_topic_box.get_child(had) as Button).grab_focus()
 
 
 func _on_topic(t: Dictionary) -> void:
@@ -167,8 +322,12 @@ func _apply_disposition(arg: Variant) -> void:
 ## the same rules, whether the job came from a person or off the board.
 func _show_confirm(line: String) -> void:
 	_say(line + "\n\n[This binds you, or costs you coin.]")
-	UI.confirm(self, "Go through with it?", "Do it", "Think it over",
-		_on_sign, _on_decline)
+	# The terms go INSIDE the gate. It used to ask "Go through with it?"
+	# over the top of the dialogue box that held the actual offer, so the
+	# one thing you needed to read was the one thing it covered.
+	UI.confirm(self,
+		"%s\n\nThis binds you, or costs you coin. Go through with it?" % line,
+		"Do it", "Think it over", _on_sign, _on_decline)
 
 
 func _on_sign() -> void:

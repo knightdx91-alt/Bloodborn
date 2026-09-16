@@ -53,6 +53,37 @@ static func market_goods(state: TownWorldState) -> Array:
 	return ContractBoardRules.market(state)
 
 
+## What a job-giver says about work you have ALREADY taken.
+##
+## The board and the people have to agree about what you have accepted.
+## Reported from play: a contract taken off the board was still offered
+## in conversation as though it were free, which makes the town look like
+## it is not paying attention — you have the paper in your hand.
+##
+## Prose lives here for the same reason the postings do: the rule (who
+## has taken what) is in rules/contract_board.gd, and a second town
+## phrases the same duty differently.
+static func duty_line(state: TownWorldState, contract_id: String) -> String:
+	for r in contracts(state):
+		if String(r.get("id", "")) != contract_id:
+			continue
+		match String(r.get("kind", "")):
+			"cull":
+				return ("\"That one's yours already — I've got the paper here with your "
+					+ "mark on it. Go when it's light, and come back able to count.\"")
+			"escort":
+				return ("\"You're on that one. The wagon musters at first light by the "
+					+ "carter's yard — be there before the lead pair are harnessed, and "
+					+ "walk on the side the road's worst on.\"")
+			"harvest":
+				return ("\"Vance is expecting you. Up the north road, past the burnt "
+					+ "mill. There's beer at the end of it if the weather holds.\"")
+			_:
+				return ("\"Odo's got that work waiting, west of the square. He "
+					+ "corrects; you learn. Don't keep him.\"")
+	return "\"That's yours already. See it done.\""
+
+
 ## Take a contract: binding, so the conversation layer confirms first.
 static func take(state: TownWorldState, contract_id: String) -> bool:
 	return ContractBoardRules.take(state, contract_id)
@@ -203,7 +234,9 @@ static func _on_pick(state: TownWorldState, contract_id: String, title: String,
 		pick: Button, status: Label) -> void:
 	if _open_ui == null:
 		return
-	UI.confirm(_open_ui, "Take it?\n\n%s" % title, "Take it", "Leave it",
+	UI.confirm(_open_ui,
+		"%s\n\nSigned for, and the terms are the terms. Take it?" % title,
+		"Take it", "Leave it",
 		func() -> void:
 			var ok: bool = take(state, contract_id)
 			if ok:

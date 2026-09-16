@@ -34,5 +34,21 @@ static func hire(state: TownWorldState, master: String) -> String:
 	return "The handshake's done. Work starts at first light."
 
 
+## What a master says to somebody who is already spoken for — his own
+## apprentice, or somebody else's. Offering to take you on again when
+## you are already hired makes the town look like it is not paying
+## attention.
+static func duty_line(state: TownWorldState, master: String) -> String:
+	if state.apprentice_master != master:
+		return ("They shake their head. \"You're %s's already. I'll not poach, and "
+			+ "you'll not thank me for trying.\"") % state.apprentice_master
+	match master:
+		"odo":
+			return "\"You're mine already. Bellows, then the shoes. Go on.\""
+		"pell":
+			return "\"Already signed you, didn't I. The harness won't oil itself.\""
+	return "\"You're taken on already. Work starts where you left it.\""
+
+
 static func is_hired(state: TownWorldState) -> bool:
 	return state.hired

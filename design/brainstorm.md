@@ -485,6 +485,49 @@ one. Every binding intent stops at explicit confirmation, so the worst
 a misheard sentence achieves is an unwanted panel the player dismisses.
 Speech is free, proposal is free, execution is always clicked.
 
+### 9.2b Topics answer to the world **[L92 — standing rule]**
+
+§9.2 governs what an NPC may *do*. This governs what they may *say is
+available*, and it is the same size of rule.
+
+**Every line an NPC offers is resolved against world state at the moment
+it is shown. A dialogue card is a candidate, not a script.** This holds
+for every NPC and everything they offer — it is not a special case for
+contracts, and nothing is exempt because it looks like flavour.
+
+Reported from the first Thornfield play session: a contract taken off
+the board was still offered, by the man who posted it, with the paper
+already in the player's hand. That is the same failure as a quest-giver
+repeating a finished quest, and it does more damage than a missing line
+— it tells the player the town is not listening, which is precisely the
+thing §9.3 is trying to buy.
+
+**Completion is not the only contradiction.** An empty purse contradicts
+the offer of a drink. An apprenticeship already sworn contradicts "take
+me on" — from your own master *and* from a rival, who should decline to
+poach rather than pretend to be free. A caravan already departed
+contradicts escorting it. The question is never "has this been done" but
+"does the world still support this being said".
+
+**Prefer changing a topic to removing one.** "Escort the Vellmark
+wagon?" becoming "— taken", with somewhere to be and a time to be there,
+is a town that noticed. A line that silently disappears is just a
+shorter menu, and reporting for duty is what the player wants at that
+moment anyway.
+
+**This is enforced, not merely written here.** Every effect an NPC can
+offer declares its availability rule in one table, and a test walks
+every topic on every NPC and fails on any effect with no entry. That
+machinery exists because of what happened to §9.2 above: its superseded
+whitelist was re-implemented verbatim by someone reading the paragraph
+without the amendment. A rule that lives only in prose gets un-followed
+by the next person to read the prose.
+
+**When a model is behind these NPCs, the same resolution runs on what it
+proposes.** Speech stays free (§9.2); the gate on execution stays where
+it is; and on top of both, the game never presents an offer the world
+has already answered.
+
 ### 9.3 What actually makes them feel alive
 
 Not fluency — fluency is table stakes, and every LLM NPC in the

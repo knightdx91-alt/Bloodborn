@@ -9,7 +9,7 @@ of each working session.
 
 ## The one-line version
 
-Design is **91 locked decisions** and **complete** — every structural
+Design is **92 locked decisions** and **complete** — every structural
 question locked, every missing document written. Every system a player
 touches in their first hundred hours is specified, and most of it is
 **written, tested and running** as engine-free C# — 335 tests.
@@ -169,6 +169,27 @@ trusted: `qacheck.gd` transforms each NPC's mesh corners into world
 space and compares the lowest against the node's ground position. The
 check was proved to fail first — with the bug restored it names all 34
 townsfolk at `1.00m under`. A rendered frame confirms it by eye.
+
+## Done 2026-09-16 — the town pays attention
+
+Two more from play:
+
+- **Carter kept offering a job already taken off the board.** Topics
+  were static cards. Now a **standing rule — L92**, `brainstorm.md`
+  §9.2b: every line an NPC offers is resolved against world state at the
+  moment it is shown, for every NPC and everything they offer. A taken
+  contract becomes "— taken" and the job-giver tells you where to be; an
+  apprenticeship already sworn says so, from your master and from a
+  rival who declines to poach; a drink with no coin says "— no coin",
+  because completion is not the only contradiction. Every effect must
+  declare its availability rule in one table, and the harness fails on
+  any effect that does not — prose alone did not hold L49's whitelist
+  and will not hold this. The list rebuilds live, so taking a job on the
+  board opened *from* a conversation updates the man you are still
+  talking to.
+- **The confirm gate covered the offer it was asking about.** It now
+  hides the panel it belongs to AND states the terms itself — either
+  alone is useless, since hiding without restating just loses them.
 
 ## Device check
 

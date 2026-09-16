@@ -38,9 +38,14 @@ static func search(state: TownWorldState) -> Dictionary:
 
 ## Spends coin, so it is binding and the conversation layer confirms
 ## first (L49).
+## What a drink costs. Exposed because L92 makes the conversation ask
+## before it offers, rather than offering and then refusing.
+static func drink_price() -> int:
+	return int(_p().get("drinkPrice", 2))
+
+
 static func buy_drink(state: TownWorldState) -> Dictionary:
-	var p := _p()
-	var price := int(p.get("drinkPrice", 2))
+	var price := drink_price()
 	if state.coin < price:
 		return {"found": false, "rumour": null, "hedged": false, "paid": false}
 	state.coin -= price
