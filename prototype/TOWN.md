@@ -504,6 +504,46 @@ Other decisions worth keeping:
   pay nothing rather than paying for nothing. An honest gap beats a
   contract that lies.
 
+## The work loop, part three — the Hedges, 2026-09-16
+
+Somewhere to do the work. `hedges.tscn` runs `world.gd` with
+`place = "hedges"`, which is a **mode on the drill yard rather than a
+second combat scene**: the feel took days to tune and a fork of it would
+have drifted inside a week. What changes is the dressing, the enemy, and
+where the exit goes.
+
+- **Field, not yard.** Green ground, a hedgerow on three sides, the
+  fourth left open toward the town — the way you came in is the way you
+  leave. No walls: the yard is walled because it is a place for
+  practice, and this is where the practice gets spent.
+- **The boar.** `Fighter.setup_beast()` builds a blocky quadruped from
+  primitives — barrel body, low head, tusks, four legs. Separate from
+  `setup()` rather than a flag in it, because `setup()`'s no-skeleton
+  path returns EARLY and never reaches the lines that make stamina,
+  health and the rest; a beast down that path would have a body and no
+  combat state. **The tuned humanoid path is untouched.**
+- **It had to not be a man.** There is no boar in the asset set and
+  every model is humanoid, so a blood-warped boar wearing a Mixamo rig
+  was the tempting shortcut and would have been a lie in the wrong
+  direction — the whole fiction of a cull contract rests on what you are
+  killing. The harness checks the rendered bounds: longer than it is
+  tall, and under 1.4m at the shoulder.
+- **A kill is reported as a FACT ABOUT A PLACE**, not as contract
+  progress. `_report_kill()` calls
+  `ContractWorkRules.record_cull(state, region, 1)` and the rules decide
+  whether that was work. This scene does not know what a contract is.
+  Kill boars nobody paid you for and it counts for nothing.
+- **Leaving goes back to Thornfield**, not to the launcher.
+
+Two bugs the rendered frame and the harness caught between them:
+
+- The field had a mesh and **no collision shape** — `ground.add_child(gcol)`
+  was missing, so everything in the Hedges fell quietly out of the world.
+  The boar was 81m down when the check found it.
+- `Fighter` calls `anim.play` from the dodge, the swing, the guard and
+  the hit reaction with no null check. A beast has no rig, so all four
+  threw. Guarded now, and the humanoid path is unchanged.
+
 ## Still open
 
 - **The world state is seeded once and never persists.** Nothing
@@ -515,6 +555,12 @@ Other decisions worth keeping:
 - **Only culls can be finished.** Escort, harvest and smithing refuse
   honestly because there is nowhere to do them. Each needs a place
   before it needs rules.
-- **Nothing kills boars yet.** `ContractWork.record_cull()` is waiting
-  on somewhere to fight them — the Hedges.
+- **No hand-in yet.** You can take a cull, walk to the Hedges, kill the
+  boars and walk back — and there is still nobody to give the paper to.
+  That is the last piece of the loop.
+- **The Hedges is reached from the launcher**, not by walking out of
+  Thornfield's west gate. L28 says distance is real; a menu entry is a
+  prototype affordance, not the answer.
+- **The boar is a box.** Placeholder until there is a real one, and the
+  debug overlay still mentions the drill yard's dummy.
 - **No abandoning.** Work can be finished but not given back.

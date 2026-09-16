@@ -181,6 +181,92 @@ func setup(max_health: float, tint: Color, carries_sword: bool = true,
 	attack = Attack.new()
 	parry = Parry.new()
 
+## A four-legged thing, built from boxes, with no rig and no sword.
+##
+## Separate from setup() rather than a flag inside it, because setup()'s
+## no-skeleton path returns EARLY and never reaches the lines that make
+## stamina, health and the rest — a beast going down that path would have
+## a body and no combat state at all. The tuned humanoid path is not
+## touched by this.
+##
+## Everything below the neck is placeholder: art-audio.md §5 puts the
+## look in the treatment rather than in bought assets, and there is no
+## boar in the asset set. What matters for the slice is that it reads as
+## AN ANIMAL AND NOT A MAN at a glance — four legs, low to the ground,
+## tusks — because a blood-warped boar wearing a humanoid rig would be a
+## lie in the wrong direction, and the fiction of the cull contract rests
+## on it.
+func setup_beast(max_health: float, hide: Color) -> void:
+	var body := Node3D.new()
+	add_child(body)
+
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = hide
+	mat.roughness = 0.95
+
+	# Barrel body, low and long.
+	var trunk := MeshInstance3D.new()
+	var trunk_mesh := BoxMesh.new()
+	trunk_mesh.size = Vector3(0.78, 0.72, 1.45)
+	trunk.mesh = trunk_mesh
+	trunk.material_override = mat
+	trunk.position = Vector3(0, 0.62, 0)
+	body.add_child(trunk)
+
+	# Head, forward and down — the line a charge is read off.
+	var head := MeshInstance3D.new()
+	var head_mesh := BoxMesh.new()
+	head_mesh.size = Vector3(0.52, 0.48, 0.62)
+	head.mesh = head_mesh
+	head.material_override = mat
+	head.position = Vector3(0, 0.50, -0.92)
+	body.add_child(head)
+
+	var snout := MeshInstance3D.new()
+	var snout_mesh := BoxMesh.new()
+	snout_mesh.size = Vector3(0.30, 0.26, 0.34)
+	snout.mesh = snout_mesh
+	snout.material_override = mat
+	snout.position = Vector3(0, 0.40, -1.30)
+	body.add_child(snout)
+
+	var tusk_mat := StandardMaterial3D.new()
+	tusk_mat.albedo_color = Color(0.80, 0.76, 0.62)
+	for side in [-1.0, 1.0]:
+		var tusk := MeshInstance3D.new()
+		var tusk_mesh := BoxMesh.new()
+		tusk_mesh.size = Vector3(0.07, 0.24, 0.07)
+		tusk.mesh = tusk_mesh
+		tusk.material_override = tusk_mat
+		tusk.position = Vector3(0.13 * side, 0.46, -1.44)
+		tusk.rotation_degrees = Vector3(-28, 0, 12 * side)
+		body.add_child(tusk)
+
+	for side in [-1.0, 1.0]:
+		for z in [-0.52, 0.52]:
+			var leg := MeshInstance3D.new()
+			var leg_mesh := BoxMesh.new()
+			leg_mesh.size = Vector3(0.18, 0.52, 0.18)
+			leg.mesh = leg_mesh
+			leg.material_override = mat
+			leg.position = Vector3(0.28 * side, 0.26, z)
+			body.add_child(leg)
+
+	var shape := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = Vector3(0.9, 1.0, 1.9)
+	shape.shape = box
+	shape.position = Vector3(0, 0.5, 0)
+	add_child(shape)
+
+	stamina = Stamina.new()
+	health = Health.new(max_health)
+	harness = ArmourSet.new("none")
+	dodge = Dodge.new()
+	attack = Attack.new()
+	parry = Parry.new()
+
+
 ## True while a roll, a swing, a guard or a hit reaction owns the body.
 func is_busy() -> bool:
 	return not dodge.can_act() or not attack.can_act() or not parry.can_act() \
@@ -279,6 +365,8 @@ func try_dodge(direction: Vector3) -> bool:
 	# rolling sideways. assets/SPEC-dodge-clips.md asks for the four
 	# directional clips that fix this.
 	rotation.y = atan2(-_dodge_dir.x, -_dodge_dir.z)
+	if anim == null:
+		return true
 	anim.play("roll", 0.06)
 	anim.seek(ROLL_START, true)
 	anim.speed_scale = (ROLL_END - ROLL_START) / max(dodge.total_seconds(), 0.01)
@@ -315,6 +403,8 @@ func try_attack(section: String = "attack") -> bool:
 	var rate: float = (clip["peak"] - clip["from"]) / windup
 	_swing_strain = maxf(1.0, rate / SWING_RATE_MAX)
 
+	if anim == null:
+		return true
 	anim.play(key, 0.10)
 	anim.seek(clip["from"], true)
 	anim.speed_scale = clampf(rate, SWING_RATE_MIN, SWING_RATE_MAX)
@@ -337,6 +427,8 @@ func _tick_swing() -> void:
 		return
 	var clip: Dictionary = SWINGS[_swing_clip]
 	var rest: float = maxf(attack.total_seconds() - attack.windup_seconds(), 0.01)
+	if anim == null:
+		return
 	anim.speed_scale = clampf((clip["to"] - clip["peak"]) / rest,
 			SWING_RATE_MIN, SWING_RATE_MAX)
 
@@ -361,6 +453,8 @@ func try_parry() -> bool:
 	# still asks for the real pose, which is the most load-bearing single
 	# clip in the design.
 	_swing_clip = ""
+	if anim == null:
+		return true
 	anim.play("swing_heavy", 0.12)
 	anim.seek(GUARD_POSE_AT, true)
 	anim.speed_scale = 0.0
@@ -387,6 +481,8 @@ func meet(incoming: Attack, damage: float = 0.0) -> int:
 func stagger(seconds: float) -> void:
 	attack.reset()
 	_stagger_for = seconds
+	if anim == null:
+		return
 	anim.play("hurt", 0.05)
 	anim.seek(HURT_START, true)
 	anim.speed_scale = (HURT_END - HURT_START) / max(seconds, 0.01)

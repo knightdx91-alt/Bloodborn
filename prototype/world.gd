@@ -52,6 +52,22 @@ var _dummy_rock := 0.0
 var _dummy_down := 0.0
 
 var _enemy_down := 0.0
+
+## Which place this is. "yard" is the drill yard — the tuning ground,
+## unchanged. "hedges" is the west Hedges, where a cull contract is
+## actually worked: the same combat, a boar instead of a sparring
+## partner, and a kill that counts toward the paper in your pack.
+##
+## A mode rather than a second scene's worth of code, because the combat
+## feel here took days to tune and a fork of it would drift within a
+## week. Everything below reads this; nothing else changes.
+@export var place: String = "yard"
+
+## The region a kill here is reported against. Must match a key in
+## TownWorldState.boar_pressure, or the cull counts for nothing.
+@export var region: String = "the Hedges west"
+
+var _culled := 0
 var _player_down := 0.0
 
 # Touch input: drag anywhere to steer, like a floating thumbstick.
@@ -190,7 +206,7 @@ func _ready() -> void:
 	# against is handled precisely instead, in _unhandled_input: an
 	# emulated click carries device == InputEvent.DEVICE_ID_EMULATION.
 
-	_build_yard()
+	_build_hedges() if place == "hedges" else _build_yard()
 
 	player = Fighter.new()
 	player.position = PLAYER_HOME
@@ -205,6 +221,17 @@ func _ready() -> void:
 	enemy = Fighter.new()
 	enemy.position = ENEMY_HOME
 	add_child(enemy)
+	if place == "hedges":
+		# A blood-warped boar: four legs, low, tusks. No rig and no
+		# sword, so setup_beast rather than setup.
+		enemy.setup_beast(ENEMY_HEALTH, Color(0.30, 0.20, 0.20))
+		tactics = EnemyTactics.new(20260916)
+		feel = Feel.new()
+		cam = Camera3D.new()
+		add_child(cam)
+		_place_camera()
+		_build_interface()
+		return
 	# Darker and colder, so the two are told apart by value rather than by
 	# a marker over anyone's head (interface.md §2).
 	# Darker kit as well as a darker body. interface.md §2 gives an
@@ -219,6 +246,92 @@ func _ready() -> void:
 	add_child(cam)
 	_place_camera()
 	_build_interface()
+
+## The west Hedges: open ground, a hedgerow, scrub, and boars in it.
+##
+## Deliberately NOT the drill yard with different props. The yard is
+## walled, flat and swept because it is a place for practice; the Hedges
+## is where the practice is spent, and it should not feel like a lesson.
+func _build_hedges() -> void:
+	Look.build(self)
+	clock = WorldClock.new(DAY_STARTS_AT)
+	Look.set_time(self, clock)
+
+	const FIELD := 34.0
+	const SEEN := 420.0
+	var ground := StaticBody3D.new()
+	var gm := MeshInstance3D.new()
+	var plane := PlaneMesh.new()
+	plane.size = Vector2(SEEN, SEEN)
+	gm.mesh = plane
+	# Greener than the yard's packed earth: this is field, not a place
+	# that has been walked flat.
+	gm.material_override = Look.ground_material(Color(0.24, 0.30, 0.15), SEEN / 5.45)
+	ground.add_child(gm)
+	var gcol := CollisionShape3D.new()
+	var gbox := BoxShape3D.new()
+	gbox.size = Vector3(FIELD * 2.0, 0.2, FIELD * 2.0)
+	gcol.shape = gbox
+	gcol.position = Vector3(0, -0.1, 0)
+	# The collision shape has to go on the BODY. Without this line the
+	# field had a mesh and nothing to stand on, and everything in it fell
+	# quietly out of the world.
+	ground.add_child(gcol)
+	add_child(ground)
+
+	# The hedge itself, on three sides, with the fourth left open toward
+	# the town — the way you came in is the way you can leave.
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 20260916
+	for side in 3:
+		var along := FIELD * 2.0
+		var n := 26
+		for i in n:
+			var t := (float(i) / float(n - 1) - 0.5) * along
+			var bush := MeshInstance3D.new()
+			var bm := BoxMesh.new()
+			var w: float = rng.randf_range(1.9, 2.6)
+			var h: float = rng.randf_range(1.6, 2.3)
+			bm.size = Vector3(w, h, 1.4)
+			bush.mesh = bm
+			var mat := StandardMaterial3D.new()
+			mat.albedo_color = Color(0.13, 0.21, 0.10).lerp(
+				Color(0.18, 0.27, 0.12), rng.randf())
+			mat.roughness = 1.0
+			bush.material_override = mat
+			var body := StaticBody3D.new()
+			var col := CollisionShape3D.new()
+			var cb := BoxShape3D.new()
+			cb.size = bm.size
+			col.shape = cb
+			body.add_child(col)
+			body.add_child(bush)
+			match side:
+				0: body.position = Vector3(t, h * 0.5, -FIELD)
+				1: body.position = Vector3(-FIELD, h * 0.5, t)
+				_: body.position = Vector3(FIELD, h * 0.5, t)
+			if side > 0:
+				body.rotation.y = PI / 2.0
+			add_child(body)
+
+	# Scrub, for something to break sight-lines on. Nothing to collide
+	# with — a field you keep snagging on is a worse field.
+	for i in 40:
+		var tuft := MeshInstance3D.new()
+		var tm := BoxMesh.new()
+		var th: float = rng.randf_range(0.5, 1.2)
+		tm.size = Vector3(rng.randf_range(0.5, 1.1), th, rng.randf_range(0.5, 1.1))
+		tuft.mesh = tm
+		var tmat := StandardMaterial3D.new()
+		tmat.albedo_color = Color(0.20, 0.25, 0.12).lerp(
+			Color(0.32, 0.29, 0.16), rng.randf())
+		tmat.roughness = 1.0
+		tuft.material_override = tmat
+		tuft.position = Vector3(rng.randf_range(-FIELD + 4.0, FIELD - 4.0), th * 0.5,
+			rng.randf_range(-FIELD + 4.0, FIELD - 4.0))
+		tuft.rotation.y = rng.randf_range(0.0, PI)
+		add_child(tuft)
+
 
 func _build_yard() -> void:
 	# Light, sky, haze and grade all live in look.gd — art-audio.md §5
@@ -485,7 +598,28 @@ func _unhandled_input(event: InputEvent) -> void:
 			_touch_vec = _touch_vec.normalized()
 
 ## Back to the launcher.
+## Tell the town something died here.
+##
+## The rule is keyed on the REGION, not on a contract — this scene does
+## not know what a contract is and does not need to. It reports a fact
+## about a place; ContractWorkRules works out whether that was work, and
+## says nothing if you were not paid to do it.
+func _report_kill() -> void:
+	if place != "hedges":
+		return
+	_culled += 1
+	var state: TownWorldState = TownState.current()
+	ContractWorkRules.record_cull(state, region, 1)
+	TownState.save()
+
+
 func _leave() -> void:
+	# Out of the Hedges is back to Thornfield, not back to a menu. You
+	# walked here from the town and the town is where the paper gets
+	# handed in.
+	if place == "hedges":
+		get_tree().change_scene_to_file("res://town.tscn")
+		return
 	get_tree().change_scene_to_file("res://launcher.tscn")
 
 
@@ -800,6 +934,7 @@ func _land(attacker: Fighter, victim: Fighter, damage: float, by: String,
 func _tick_bodies(delta: float) -> void:
 	if enemy.health.is_dead() and _enemy_down <= 0.0:
 		_enemy_down = ENEMY_RESPAWN_SECONDS
+		_report_kill()
 	if player.health.is_dead() and _player_down <= 0.0:
 		_player_down = PLAYER_RESPAWN_SECONDS
 

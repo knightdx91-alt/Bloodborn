@@ -63,6 +63,9 @@ func _ready() -> void:
 
 	_buttons.append(_big_button("Drill Yard", "res://main.tscn"))
 	_buttons.append(_big_button("Thornfield", "res://town.tscn"))
+	# The west Hedges. Reachable from the menu for now; the honest way in
+	# is walking out of Thornfield's west gate, which is the next piece.
+	_buttons.append(_big_button("The Hedges", "res://hedges.tscn"))
 	for b in _buttons:
 		_vb.add_child(b)
 
