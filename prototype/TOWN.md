@@ -605,6 +605,39 @@ rather than one body inside another.
 Measured at dusk: **two at the inn at noon, six at dusk**, nobody
 overlapping.
 
+## Real people — 2026-09-16
+
+The 34 townsfolk were `humanoid.fbx`, a blocky grey stand-in, and they
+were the ugliest thing in the game by a distance.
+
+They are Quaternius Ultimate Modular Characters now (CC0): **62–63
+bones, 24 baked clips each, ~1.87 m tall with their feet on the
+origin** — correct scale, no unit problem, nothing to fix. The delivery
+that needed no work is the one where the characters and their animations
+came from the same place, which is `SPEC-asset-packs-v1.md`'s whole
+argument.
+
+**Their rig is not Mixamo's**, so none of the game's clips retarget onto
+them. That is fine and expected: they bring their own Idle, Walk, Run,
+Wave and Interact, and `_play()` asks for them by the pack's names. It
+is why a pack that ships characters *and* animations was preferred.
+
+Only the medieval half of the pack is used. It also contains a
+spacesuit, a SWAT officer and a beach outfit, which are excellent and
+not for Thornfield. Named people get a chosen body; the crowd draws from
+a per-role list by a stable hash, so the same drover is the same man
+every time. Each gets a 22% wash of their tunic colour, so six farmers
+are not six identical men — multiplied into the texture rather than
+replacing it, which would flatten them to silhouettes.
+
+**The walk clip plays while they walk to their posts.** The hours work
+and the bodies landed together and needed each other: a static model
+sliding across the square would have been worse than the placeholder
+standing still.
+
+The blocky placeholder path is kept as a fallback, so the town still
+loads if the pack is ever missing.
+
 ## Still open
 
 - **The world state is seeded once and never persists.** Nothing
@@ -612,7 +645,10 @@ overlapping.
 - **`offer_contract` is doing double duty as "binding"**, so a two-penny
   ale is tagged a contract offer. Gated correctly; the taxonomy wants
   separating before a model generates the first one.
-- **NPC bodies** are still the blocky placeholder.
+- **RPG Characters and the Knight are oversized** — 3.4 m, 3.8 m and
+  5.6 m against a 1.87 m townsperson. They need scaling before use, and
+  their rigs are a third family again (36–42 bones, neither Mixamo's 65
+  nor the townsfolk's 62).
 - **Only culls can be finished.** Escort, harvest and smithing refuse
   honestly because there is nowhere to do them. Each needs a place
   before it needs rules.

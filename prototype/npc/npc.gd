@@ -8,6 +8,44 @@ extends Node3D
 
 const BODY := "res://assets/models/humanoid.fbx"
 const IDLE := "res://assets/animations/anim_Idle.fbx"
+
+## Real townsfolk (Quaternius Ultimate Modular Characters, CC0).
+##
+## 62–63 bones with **24 baked clips each**, at correct human scale
+## (~1.87 m, feet on the origin). Their rig is NOT the 65-bone Mixamo
+## family, so none of the game's Mixamo clips retarget onto them — which
+## is fine, because they bring their own Idle, Walk, Run and Wave, and
+## that is the whole reason to prefer a pack that ships characters AND
+## animations (`SPEC-asset-packs-v1.md`).
+##
+## Only the medieval-plausible half of the pack is listed. It also ships
+## a spacesuit, a SWAT officer and a hoodie, which are excellent and not
+## for Thornfield.
+const FOLK := "res://assets/townsfolk/modular-characters/%s.glb"
+const BODIES := {
+	"mara": "Female_Medieval",
+	"odo": "Male_Worker",
+	"pell": "Male_Farmer",
+	"sarella": "Female_Witch",
+	"fenwick": "Male_Suit",
+	"vance": "Male_Farmer",
+	"tammas": "Male_Worker",
+	"mira": "Female_Adventurer",
+	"lamp": "Male_Adventurer",
+	"vigil-rider": "Male_Adventurer",
+}
+## For the crowd, by the role their barks come from.
+const CROWD := {
+	"market": ["Female_Medieval", "Male_Farmer", "Female_Worker"],
+	"farmer": ["Male_Farmer", "Female_Worker"],
+	"child": ["Female_Adventurer", "Male_Adventurer"],
+	"warden": ["Male_Worker", "Male_Adventurer"],
+	"drover": ["Male_Farmer", "Male_Worker"],
+	"granary": ["Male_Worker", "Female_Worker"],
+	"brewery": ["Male_Worker", "Female_Medieval"],
+	"chapel": ["Female_Medieval", "Female_Witch"],
+	"apprentice": ["Male_Adventurer", "Male_Worker"],
+}
 const TALK_RANGE := 3.0
 ## Metres per second on the way to a posting.
 const WALK_SPEED := 1.35
@@ -45,6 +83,7 @@ var leave_target := Vector3.ZERO
 
 var _label: Label3D
 var _prompt: Label3D
+var _anim: AnimationPlayer = null
 var _bark_in: float = 0.0
 var _bark_for: float = 0.0
 var _leave_in: float = 0.0
@@ -78,26 +117,74 @@ func setup(data: Dictionary) -> void:
 	_bark_in = _rng.randf_range(2.0, 9.0)
 
 
+## Which model this person wears. Falls back to the old blocky
+## placeholder if the pack is ever missing, so the town still loads.
+func _model_path() -> String:
+	if BODIES.has(npc_id):
+		return FOLK % String(BODIES[npc_id])
+	if CROWD.has(bark_role):
+		var options: Array = CROWD[bark_role]
+		return FOLK % String(options[abs(int(hash(npc_id))) % options.size()])
+	return ""
+
+
 func _build_body(tunic: Color) -> void:
-	var body := (load(BODY) as PackedScene).instantiate() as Node3D
-	# ON the ground, not a metre into it.
-	#
-	# Fighter drops its model to Vector3(0, -1.0, 0) and is right to: a
-	# CharacterBody3D's capsule is CENTRED on the origin, so the origin
-	# sits at hip height and the model has to hang a metre below it to
-	# stand on its feet.
-	#
-	# A TownNPC is a plain Node3D placed at ground level (roster poses are
-	# all y = 0), its collision capsule runs from 0 to 1.8 and its name
-	# labels sit at 1.95 and 2.15 — every one of those measured from the
-	# FEET. So the offset that is correct in the drill yard buries a
-	# townsman to the waist here, which is exactly how it was reported.
-	# The same line, copied with its comment, did the same thing to the
-	# player's spawn earlier.
+	var path := _model_path()
+	if path != "" and ResourceLoader.exists(path):
+		_build_person(path, tunic)
+	else:
+		_build_placeholder(tunic)
+
+	# Walkable collision, same convention as the town's code-placed boxes.
+	var sb := StaticBody3D.new()
+	var cs := CollisionShape3D.new()
+	var cap := CapsuleShape3D.new()
+	cap.height = 1.8
+	cap.radius = 0.35
+	cs.shape = cap
+	cs.position = Vector3(0, 0.9, 0)
+	sb.add_child(cs)
+	add_child(sb)
+
+
+## A real person, with their own clips.
+func _build_person(path: String, tunic: Color) -> void:
+	var body := (load(path) as PackedScene).instantiate() as Node3D
+	# Their origin is already at the feet — no metre to drop them by. The
+	# -1.0 that is right for a centred capsule has buried three bodies in
+	# this project; it does not get a fourth.
 	body.position = Vector3.ZERO
 	body.rotation_degrees = Vector3(0, 180, 0)
 	add_child(body)
-	# Tint every surface toward the tunic color: crowd variety.
+
+	# A wash of the tunic colour, so a crowd of six Male_Farmers is not
+	# six identical men. Multiplied into the texture rather than
+	# replacing it, which would flatten them to silhouettes.
+	for mi in _all(body, "MeshInstance3D"):
+		var m := mi as MeshInstance3D
+		if m.mesh == null:
+			continue
+		for i in range(m.mesh.get_surface_count()):
+			var base := m.get_active_material(i)
+			var mat := (base.duplicate() as StandardMaterial3D) \
+				if base is StandardMaterial3D else StandardMaterial3D.new()
+			mat.albedo_color = mat.albedo_color.lerp(tunic, 0.22)
+			m.set_surface_override_material(i, mat)
+
+	_anim = _find(body, "AnimationPlayer") as AnimationPlayer
+	if _anim != null and _anim.has_animation("Idle"):
+		_anim.get_animation("Idle").loop_mode = Animation.LOOP_LINEAR
+		if _anim.has_animation("Walk"):
+			_anim.get_animation("Walk").loop_mode = Animation.LOOP_LINEAR
+		_anim.play("Idle")
+
+
+## The blocky stand-in the town used before real people arrived.
+func _build_placeholder(tunic: Color) -> void:
+	var body := (load(BODY) as PackedScene).instantiate() as Node3D
+	body.position = Vector3.ZERO
+	body.rotation_degrees = Vector3(0, 180, 0)
+	add_child(body)
 	for mi in _all(body, "MeshInstance3D"):
 		var m := mi as MeshInstance3D
 		if m.mesh == null:
@@ -108,7 +195,6 @@ func _build_body(tunic: Color) -> void:
 				if base is StandardMaterial3D else StandardMaterial3D.new()
 			mat.albedo_color = mat.albedo_color.lerp(tunic, 0.75)
 			m.set_surface_override_material(s, mat)
-	# Idle clip on the Mixamo skeleton, same pattern as the fighters.
 	var src := (load(IDLE) as PackedScene).instantiate()
 	var src_anim := _find(src, "AnimationPlayer") as AnimationPlayer
 	if src_anim != null:
@@ -124,16 +210,6 @@ func _build_body(tunic: Color) -> void:
 			anim.add_animation_library("", lib)
 			anim.play("idle")
 	src.queue_free()
-	# Walkable collision, same convention as the town's code-placed boxes.
-	var sb := StaticBody3D.new()
-	var cs := CollisionShape3D.new()
-	var cap := CapsuleShape3D.new()
-	cap.height = 1.8
-	cap.radius = 0.35
-	cs.shape = cap
-	cs.position = Vector3(0, 0.9, 0)
-	sb.add_child(cs)
-	add_child(sb)
 
 
 func _build_labels() -> void:
@@ -207,7 +283,9 @@ func _keep_hours(delta: float) -> void:
 	var gap: Vector3 = target - position
 	gap.y = 0.0
 	if gap.length() < 0.35:
+		_play("Idle")
 		return
+	_play("Walk")
 
 	# Ambling pace. They are going to work, not to a fire.
 	var step: Vector3 = gap.normalized() * WALK_SPEED * delta
@@ -215,6 +293,15 @@ func _keep_hours(delta: float) -> void:
 		step = gap
 	global_position += step
 	rotation.y = lerp_angle(rotation.y, atan2(gap.x, gap.z), 4.0 * delta)
+
+
+## Their own clips, by name. The pack's rig is not Mixamo's, so these are
+## the pack's names rather than the game's.
+func _play(clip: String) -> void:
+	if _anim == null or not _anim.has_animation(clip):
+		return
+	if _anim.current_animation != clip:
+		_anim.play(clip, 0.2)
 
 
 func _say_bark() -> void:
