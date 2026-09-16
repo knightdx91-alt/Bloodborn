@@ -9,7 +9,7 @@ of each working session.
 
 ## The one-line version
 
-Design is **92 locked decisions** and **complete** — every structural
+Design is **93 locked decisions** and **complete** — every structural
 question locked, every missing document written. Every system a player
 touches in their first hundred hours is specified, and most of it is
 **written, tested and running** as engine-free C# — 335 tests.

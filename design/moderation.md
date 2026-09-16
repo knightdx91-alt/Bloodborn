@@ -35,6 +35,11 @@ game faster than any griefer.
 - Wars declared on people who did not want one
 - Circles funding both sides of a conflict (L25)
 - Lying. NPCs lie, rumours are wrong (L48), and players may too
+- **Pickpocketing, of NPCs and of players (L93).** The same rule as
+  robbery, and named separately because theft *without* combat is the
+  case that draws the loudest complaints. One purse is play. Following
+  the same player to take it night after night is not, and the
+  distinction is the person, not the purse — see `economy.md` §6a
 
 **None of that is a moderation matter.** A player who robs your caravan,
 breaks their word, or bankrupts your shop has played the game

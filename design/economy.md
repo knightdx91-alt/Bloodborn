@@ -97,6 +97,57 @@ would *be* item mail, so it doesn't exist. The rules:
   (war objective potential).
 
 ## 6. The shadow economy
+
+### 6a. Pickpocketing **[L93]**
+
+**Players can steal from the person — from NPCs and from other
+players.** Recorded now, built when the game is an MMORPG; it is listed
+here because it is an economy feature before it is a combat one.
+
+It fits what is already locked rather than arriving from outside:
+
+- `moderation.md` §2 already says a player who robs your caravan **has
+  played the game correctly**. Pickpocketing is that rule's smaller
+  sibling — theft without combat, which is the case people complain
+  loudest about and the one the existing stance already covers.
+- **L73** made knowledge property, so there is something to steal that
+  is not an object.
+- §5 above is what makes it survivable: wealth in things sits somewhere
+  guardable, with no remote access to stored goods. **What is on your
+  person is what is at risk.** A lifted purse is a bad afternoon, never
+  a deleted character — and that bound was locked long before this
+  feature was asked for.
+- **L18** is classless skill-by-use, so there is no thief *class*, only
+  hands that have practised. Practice needs victims, which is what the
+  NPC case is for.
+
+**Two things this must not become**, both of which have killed the
+feature in games that shipped it without teeth:
+
+1. **Free money at scale.** Being caught has to cost more than the purse
+   is worth. Detection is the whole design; the lift is trivial.
+2. **A way to follow one person around.** `moderation.md`'s line is harm
+   to a *person*, not harm to a character — and robbing the same player
+   nightly across sessions is stalking wearing a game mechanic. The line
+   between "you were robbed" and "you are being hunted" needs drawing
+   before launch, not after the first report.
+
+**Open — flagged rather than assumed:**
+
+- [ ] What is liftable from a player: coin only, one carried item,
+      anything not stowed, knowledge (L73)?
+- [ ] Does the victim know, and when — at once, on next inspecting their
+      purse, or never?
+- [ ] What does being caught cost: a bounty, the town's law, the
+      victim's right of reply, a Circle's protection withdrawn?
+- [ ] Do law-having settlements differ from the Interior? (L28's real
+      distance says they should.)
+- [ ] Can an idle or offline player be a target at all?
+- [ ] How does an attempt read on screen with no HUD (L80)? The victim's
+      side especially — being robbed with no interface is either
+      wonderful or invisible, and those are very different games.
+
+### 6b. Smuggling and the rest
 Circles (L24) get the black layer: smuggling past toll rights,
 fencing war loot, unlicensed betting books, covert war finance
 (L25-addendum), and — in Myth/Whispers epochs — the quiet trade in
