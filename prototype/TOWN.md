@@ -591,6 +591,10 @@ true, which nobody announces at all.
 - **The Hedges is reached from the launcher**, not by walking out of
   Thornfield's west gate. L28 says distance is real; a menu entry is a
   prototype affordance, not the answer.
-- **The boar is a box.** Placeholder until there is a real one, and the
-  debug overlay still mentions the drill yard's dummy.
+- **The boar fights like a man.** It has its own model and clips now,
+  but `EnemyTactics` is the sparring partner's, so it circles and swings
+  rather than charging. A boar that charges is its own piece of work,
+  and it is the biggest thing left in how the Hedges FEELS.
+- The debug overlay still mentions the drill yard's dummy in the Hedges.
+- A scrub tuft renders very dark from some angles — cosmetic, unchased.
 - **No abandoning.** Work can be finished but not given back.

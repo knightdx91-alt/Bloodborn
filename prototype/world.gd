@@ -222,9 +222,11 @@ func _ready() -> void:
 	enemy.position = ENEMY_HOME
 	add_child(enemy)
 	if place == "hedges":
-		# A blood-warped boar: four legs, low, tusks. No rig and no
-		# sword, so setup_beast rather than setup.
-		enemy.setup_beast(ENEMY_HEALTH, Color(0.30, 0.20, 0.20))
+		# A blood-warped boar: its own 20-bone rig and its own four
+		# clips, so setup_beast rather than setup. The blocky
+		# placeholder it replaces lasted exactly as long as it took for
+		# a real boar to arrive.
+		enemy.setup_beast(ENEMY_HEALTH, "boar")
 		tactics = EnemyTactics.new(20260916)
 		feel = Feel.new()
 		cam = Camera3D.new()

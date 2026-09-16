@@ -31,8 +31,22 @@ func _ready() -> void:
 
 	_ok("the boar has combat state", boar.health != null and boar.stamina != null
 		and boar.attack != null, "setup_beast left it inert")
-	_ok("and no humanoid rig", boar.anim == null,
-		"the boar has an AnimationPlayer, so it is wearing a man")
+	# The real question is whose SKELETON it is wearing, not whether it
+	# is animated. "No AnimationPlayer" was a fair proxy while the boar
+	# was six boxes; the moment a real one arrived with its own 20-bone
+	# rig and four clips, that proxy inverted and failed the thing it was
+	# meant to protect.
+	var bones := -1
+	for n in boar.find_children("*", "Skeleton3D", true, false):
+		bones = (n as Skeleton3D).get_bone_count()
+	_ok("the boar wears its own rig, not a man's", bones > 0 and bones != 65,
+		"skeleton has %d bones; 65 is the Mixamo humanoid" % bones)
+	_ok("and it is animated", boar.anim != null
+		and boar.anim.has_animation("idle") and boar.anim.has_animation("beast_attack"),
+		"missing idle or attack")
+	_ok("and has no clips it cannot use",
+		boar.anim != null and not boar.anim.has_animation("roll"),
+		"a boar should not have a human roll")
 	_ok("and stands on the ground", boar.global_position.y > -0.5,
 		"boar at y=%.2f" % boar.global_position.y)
 

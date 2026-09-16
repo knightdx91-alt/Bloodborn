@@ -44,6 +44,34 @@ const ROLL_END := 1.30
 const SWINGS := {
 	"swing_heavy": {"from": 0.42, "peak": 0.90, "to": 1.80},
 	"swing_quick": {"from": 0.02, "peak": 0.82, "to": 1.53},
+	# The boar, measured the same way off its own rig: the Head bone's
+	# speed over the 1.125s clip, sampled frame by frame. Guessing these
+	# would desynchronise the telegraph from the rules, which is the
+	# whole thing the two-stage swing exists to prevent.
+	"beast_attack": {"from": 0.281, "peak": 0.362, "to": 0.824},
+}
+
+## A four-legged thing's model and its clips. Its own 20-bone rig, so
+## none of the Mixamo locomotion above applies to it.
+const BEAST := {
+	"boar": {
+		"model": "res://assets/models/boar.fbx",
+		"clips": {
+			"idle": "res://assets/animations/boar_Idle.fbx",
+			"walk": "res://assets/animations/boar_Walk.fbx",
+			"run": "res://assets/animations/boar_Run.fbx",
+			"beast_attack": "res://assets/animations/boar_Attack.fbx",
+		},
+	},
+	"wolf": {
+		"model": "res://assets/models/wolf.fbx",
+		"clips": {
+			"idle": "res://assets/animations/wolf_Idle.fbx",
+			"walk": "res://assets/animations/wolf_Walk.fbx",
+			"run": "res://assets/animations/wolf_Run.fbx",
+			"beast_attack": "res://assets/animations/wolf_Attack.fbx",
+		},
+	},
 }
 
 ## A clip pushed much past this reads as comical long before it stops
@@ -108,6 +136,8 @@ var _guard_held := false
 ## Which clip the current swing is playing, and whether its rate has
 ## already been handed over from the wind-up to the strike.
 var _swing_clip := ""
+## Four-legged, on its own rig: no roll clip, no guard pose, one attack.
+var is_beast := false
 var _swing_struck := false
 ## How much faster than SWING_RATE_MAX the tuning asked the clip to run.
 ## 1.0 means the animation kept up; above that, the swing is being shown
@@ -196,65 +226,23 @@ func setup(max_health: float, tint: Color, carries_sword: bool = true,
 ## tusks — because a blood-warped boar wearing a humanoid rig would be a
 ## lie in the wrong direction, and the fiction of the cull contract rests
 ## on it.
-func setup_beast(max_health: float, hide: Color) -> void:
-	var body := Node3D.new()
+func setup_beast(max_health: float, kind: String = "boar") -> void:
+	is_beast = true
+	var spec: Dictionary = BEAST.get(kind, BEAST["boar"])
+
+	var body := (load(String(spec["model"])) as PackedScene).instantiate() as Node3D
+	# Unlike the Mixamo characters, this rig's origin is already at the
+	# feet, so there is no metre to drop it by. The same -1.0 offset that
+	# is correct for a CharacterBody3D's centred capsule would bury it —
+	# it has buried three bodies in this project already.
+	body.position = Vector3.ZERO
+	# Faces +Z like everything else here; travel is toward -Z.
+	body.rotation_degrees = Vector3(0, 180, 0)
 	add_child(body)
-
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = hide
-	mat.roughness = 0.95
-
-	# Barrel body, low and long.
-	var trunk := MeshInstance3D.new()
-	var trunk_mesh := BoxMesh.new()
-	trunk_mesh.size = Vector3(0.78, 0.72, 1.45)
-	trunk.mesh = trunk_mesh
-	trunk.material_override = mat
-	trunk.position = Vector3(0, 0.62, 0)
-	body.add_child(trunk)
-
-	# Head, forward and down — the line a charge is read off.
-	var head := MeshInstance3D.new()
-	var head_mesh := BoxMesh.new()
-	head_mesh.size = Vector3(0.52, 0.48, 0.62)
-	head.mesh = head_mesh
-	head.material_override = mat
-	head.position = Vector3(0, 0.50, -0.92)
-	body.add_child(head)
-
-	var snout := MeshInstance3D.new()
-	var snout_mesh := BoxMesh.new()
-	snout_mesh.size = Vector3(0.30, 0.26, 0.34)
-	snout.mesh = snout_mesh
-	snout.material_override = mat
-	snout.position = Vector3(0, 0.40, -1.30)
-	body.add_child(snout)
-
-	var tusk_mat := StandardMaterial3D.new()
-	tusk_mat.albedo_color = Color(0.80, 0.76, 0.62)
-	for side in [-1.0, 1.0]:
-		var tusk := MeshInstance3D.new()
-		var tusk_mesh := BoxMesh.new()
-		tusk_mesh.size = Vector3(0.07, 0.24, 0.07)
-		tusk.mesh = tusk_mesh
-		tusk.material_override = tusk_mat
-		tusk.position = Vector3(0.13 * side, 0.46, -1.44)
-		tusk.rotation_degrees = Vector3(-28, 0, 12 * side)
-		body.add_child(tusk)
-
-	for side in [-1.0, 1.0]:
-		for z in [-0.52, 0.52]:
-			var leg := MeshInstance3D.new()
-			var leg_mesh := BoxMesh.new()
-			leg_mesh.size = Vector3(0.18, 0.52, 0.18)
-			leg.mesh = leg_mesh
-			leg.material_override = mat
-			leg.position = Vector3(0.28 * side, 0.26, z)
-			body.add_child(leg)
 
 	var shape := CollisionShape3D.new()
 	var box := BoxShape3D.new()
-	box.size = Vector3(0.9, 1.0, 1.9)
+	box.size = Vector3(0.9, 1.0, 1.7)
 	shape.shape = box
 	shape.position = Vector3(0, 0.5, 0)
 	add_child(shape)
@@ -265,6 +253,31 @@ func setup_beast(max_health: float, hide: Color) -> void:
 	dodge = Dodge.new()
 	attack = Attack.new()
 	parry = Parry.new()
+
+	var skel := _find(body, "Skeleton3D") as Skeleton3D
+	if skel == null:
+		push_warning("beast '%s' has no Skeleton3D; it will be mute" % kind)
+		return
+
+	var lib := AnimationLibrary.new()
+	for key in spec["clips"]:
+		var src := (load(String(spec["clips"][key])) as PackedScene).instantiate()
+		var src_anim := _find(src, "AnimationPlayer") as AnimationPlayer
+		if src_anim != null and src_anim.get_animation_list().size() > 0:
+			# The exporter names each take after its armature and action;
+			# the game asks for "walk", so the name is dropped here rather
+			# than being spread through the caller.
+			var made: Animation = src_anim.get_animation(src_anim.get_animation_list()[0])
+			made.loop_mode = Animation.LOOP_NONE if key == "beast_attack" \
+				else Animation.LOOP_LINEAR
+			lib.add_animation(key, made)
+		src.queue_free()
+
+	anim = AnimationPlayer.new()
+	skel.get_parent().add_child(anim)
+	anim.root_node = anim.get_path_to(skel.get_parent())
+	anim.add_animation_library("", lib)
+	anim.play("idle")
 
 
 ## True while a roll, a swing, a guard or a hit reaction owns the body.
@@ -365,7 +378,11 @@ func try_dodge(direction: Vector3) -> bool:
 	# rolling sideways. assets/SPEC-dodge-clips.md asks for the four
 	# directional clips that fix this.
 	rotation.y = atan2(-_dodge_dir.x, -_dodge_dir.z)
-	if anim == null:
+	# A beast has its own rig and its own short clip list. Asking whether
+	# the clip exists rather than whether there is a player at all is
+	# what lets one body type be missing a roll without every caller
+	# having to know which body it is holding.
+	if anim == null or not anim.has_animation("roll"):
 		return true
 	anim.play("roll", 0.06)
 	anim.seek(ROLL_START, true)
@@ -383,8 +400,11 @@ func try_attack(section: String = "attack") -> bool:
 		return false
 	attack = swing
 
-	var key: String = "swing_quick" if swing.shape() == Attack.Shape.QUICK \
-		else "swing_heavy"
+	# A beast has one attack, on its own rig. The shape the rules chose
+	# still decides the timing; there is simply not a second clip to
+	# choose between.
+	var key := "beast_attack" if is_beast \
+		else ("swing_quick" if swing.shape() == Attack.Shape.QUICK else "swing_heavy")
 	var clip: Dictionary = SWINGS[key]
 	var windup: float = maxf(swing.windup_seconds(), 0.01)
 
@@ -403,7 +423,7 @@ func try_attack(section: String = "attack") -> bool:
 	var rate: float = (clip["peak"] - clip["from"]) / windup
 	_swing_strain = maxf(1.0, rate / SWING_RATE_MAX)
 
-	if anim == null:
+	if anim == null or not anim.has_animation(key):
 		return true
 	anim.play(key, 0.10)
 	anim.seek(clip["from"], true)
@@ -427,7 +447,7 @@ func _tick_swing() -> void:
 		return
 	var clip: Dictionary = SWINGS[_swing_clip]
 	var rest: float = maxf(attack.total_seconds() - attack.windup_seconds(), 0.01)
-	if anim == null:
+	if anim == null or not anim.has_animation(_swing_clip):
 		return
 	anim.speed_scale = clampf((clip["to"] - clip["peak"]) / rest,
 			SWING_RATE_MIN, SWING_RATE_MAX)
@@ -453,7 +473,7 @@ func try_parry() -> bool:
 	# still asks for the real pose, which is the most load-bearing single
 	# clip in the design.
 	_swing_clip = ""
-	if anim == null:
+	if anim == null or not anim.has_animation("swing_heavy"):
 		return true
 	anim.play("swing_heavy", 0.12)
 	anim.seek(GUARD_POSE_AT, true)
@@ -481,7 +501,7 @@ func meet(incoming: Attack, damage: float = 0.0) -> int:
 func stagger(seconds: float) -> void:
 	attack.reset()
 	_stagger_for = seconds
-	if anim == null:
+	if anim == null or not anim.has_animation("hurt"):
 		return
 	anim.play("hurt", 0.05)
 	anim.seek(HURT_START, true)
