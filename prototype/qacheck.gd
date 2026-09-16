@@ -123,6 +123,42 @@ func _ready() -> void:
 
 	var state := TownWorldState.new()
 
+	print("--- everybody is standing on the ground ---")
+	# Measured off the rendered mesh, not off the numbers that produced
+	# it. This exact fault has now hit three bodies — the player's spawn,
+	# the townsfolk — because Fighter's model offset of -1.0 is correct
+	# for a capsule CENTRED on the origin and catastrophic for a node
+	# whose origin is at the feet, and the line gets copied with its
+	# reassuring comment attached.
+	var sunk: Array[String] = []
+	var floating: Array[String] = []
+	var measured := 0
+	for n in pop.get_children():
+		if not (n is TownNPC):
+			continue
+		var who := n as TownNPC
+		var low := INF
+		for m in who.find_children("*", "MeshInstance3D", true, false):
+			var mi := m as MeshInstance3D
+			if mi.mesh == null:
+				continue
+			var box := mi.get_aabb()
+			# Every corner, because the mesh may be rotated.
+			for i in 8:
+				var corner: Vector3 = mi.global_transform * box.get_endpoint(i)
+				low = minf(low, corner.y)
+		if low == INF:
+			continue
+		measured += 1
+		var ground: float = who.global_position.y
+		if low < ground - 0.25:
+			sunk.append("%s %.2fm under" % [who.display_name, ground - low])
+		elif low > ground + 0.35:
+			floating.append("%s %.2fm above" % [who.display_name, low - ground])
+	_ok("every NPC's body was measurable", measured > 0, "no meshes found to measure")
+	_ok("nobody is buried", sunk.is_empty(), ", ".join(sunk))
+	_ok("and nobody is hovering", floating.is_empty(), ", ".join(floating))
+
 	print("--- the conversation, at three shapes ---")
 	for size in [Vector2i(900, 600), Vector2i(1080, 2400), Vector2i(640, 360)]:
 		get_window().size = size

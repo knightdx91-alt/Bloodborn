@@ -155,6 +155,21 @@ to accept it."** Both true.
 the board. Two copies of L49 that behaved differently depending on where
 you found the job would not be a gate.
 
+## ⚠️ Reported from play, 2026-09-16 — waist-deep townsfolk
+
+The `-1.0` model offset again, copied from `fighter.gd` into `npc.gd`
+with its comment. Correct for a `CharacterBody3D` (capsule centred on
+the origin, so the model hangs a metre below to stand on its feet),
+wrong for a `TownNPC` (plain `Node3D` at ground level, capsule 0 → 1.8,
+labels at 1.95 — all measured from the feet). Exactly one metre down on
+a 1.8m figure is the waist.
+
+**Third body that line has sunk**, so it is measured now rather than
+trusted: `qacheck.gd` transforms each NPC's mesh corners into world
+space and compares the lowest against the node's ground position. The
+check was proved to fail first — with the bug restored it names all 34
+townsfolk at `1.00m under`. A rendered frame confirms it by eye.
+
 ## Device check
 
 `CLAUDE.md` instructs the assistant to ask which device you are on at

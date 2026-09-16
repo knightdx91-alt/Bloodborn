@@ -61,8 +61,21 @@ func setup(data: Dictionary) -> void:
 
 func _build_body(tunic: Color) -> void:
 	var body := (load(BODY) as PackedScene).instantiate() as Node3D
-	# Mixamo capsule hangs a metre below the origin; characters face +Z.
-	body.position = Vector3(0, -1.0, 0)
+	# ON the ground, not a metre into it.
+	#
+	# Fighter drops its model to Vector3(0, -1.0, 0) and is right to: a
+	# CharacterBody3D's capsule is CENTRED on the origin, so the origin
+	# sits at hip height and the model has to hang a metre below it to
+	# stand on its feet.
+	#
+	# A TownNPC is a plain Node3D placed at ground level (roster poses are
+	# all y = 0), its collision capsule runs from 0 to 1.8 and its name
+	# labels sit at 1.95 and 2.15 — every one of those measured from the
+	# FEET. So the offset that is correct in the drill yard buries a
+	# townsman to the waist here, which is exactly how it was reported.
+	# The same line, copied with its comment, did the same thing to the
+	# player's spawn earlier.
+	body.position = Vector3.ZERO
 	body.rotation_degrees = Vector3(0, 180, 0)
 	add_child(body)
 	# Tint every surface toward the tunic color: crowd variety.

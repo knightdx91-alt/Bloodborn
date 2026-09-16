@@ -367,6 +367,33 @@ was on screen, which is wrong for a row inside a `ScrollContainer` —
 being below the fold is what scrolling is. It checks the horizontal fit
 and the scroller's own bounds now.
 
+## ⚠️ Waist-deep townsfolk — 2026-09-16, the same line a third time
+
+Reported from play: "the npcs are like in the ground up to their waist."
+
+`npc.gd` carried `body.position = Vector3(0, -1.0, 0)`, copied from
+`fighter.gd` along with its reassuring comment. It is correct there and
+wrong here, for a reason worth writing down:
+
+- A **`CharacterBody3D`**'s capsule is **centred on the origin**, so the
+  origin sits at hip height and the model has to hang a metre below it
+  to stand on its feet. That is `Fighter`.
+- A **`TownNPC`** is a plain `Node3D` placed at ground level. Its
+  collision capsule runs 0 → 1.8, and its name labels sit at 1.95 and
+  2.15 — every measurement taken from the **feet**. So the same offset
+  buries it by exactly one metre, which on a 1.8m figure is the waist.
+
+This is the **third** body that line has sunk (the player's spawn was
+the second). So `qacheck.gd` now measures it geometrically rather than
+trusting the constant: every NPC's rendered mesh corners are transformed
+into world space and the lowest is compared against the node's ground
+position, with a 0.25m tolerance below and 0.35m above.
+
+**The check was proved to fail before it was trusted.** Putting the bug
+back made it report all 34 townsfolk at exactly `1.00m under`, by name.
+A check that has never failed is not evidence — three times in this
+session a harness was measuring itself rather than the game.
+
 ## Still open
 
 - **The world state is seeded once and never persists.** Nothing
