@@ -138,3 +138,21 @@ FBX or glTF. Godot 4.3 imports both. glTF is generally less trouble.
 pelvis in world space. A collapsed rig sits near zero; a correct one is
 about a metre above the feet. It runs the two known-good Mixamo
 downloads as controls so it cannot pass vacuously.
+
+### ⚠️ RPG Characters committed — rig note for integration, 2026-09-16
+
+The pack is in the repo at `prototype/assets/rpg-characters/` (6 class
+glTFs + 6 weapon FBXs, commit `702cb0f`, CC0). They look right for the
+game, but one integration constraint matters:
+
+**They use Quaternius's simple ~33–39-bone rig, NOT the 65-bone
+Mixamo/humanoid rig.** Mixamo clips and the Universal Animation Library
+clips will not retarget onto them — different bone counts, different
+hierarchy. Use each class's baked clips (11–15 per character: attacks,
+spell casts, bow draw/shoot, dagger combos, roll — full lists in
+`prototype/assets/README.md`).
+
+The pack also ships separate "Humanoid Rig Versions" FBXs built for the
+65-bone family — kept in the workspace asset library, not committed, in
+case a future pass wants to swap skeletons. The committed glTFs were
+judged more immediately useful as-is.
