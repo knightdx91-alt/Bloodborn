@@ -143,6 +143,13 @@ var _swing_struck := false
 ## 1.0 means the animation kept up; above that, the swing is being shown
 ## slower than it actually resolves, and the tuning is the thing to fix.
 var _swing_strain := 1.0
+
+## Distance walked since the last footstep. Placeholder gait: the step
+## clips are not cut to the walk cycle, so there is no keyframe to hang
+## them off. Metres travelled is the honest stand-in — it speeds up when
+## you run and stops dead when you do, which is what the ear is checking.
+var _stride := 0.0
+const STRIDE := 1.55
 ## Hitstop. Presentation only — see feel.gd for why the rules must not
 ## be frozen with it.
 var _frozen_for := 0.0
@@ -361,11 +368,31 @@ func move(desired: Vector3, speed: float, delta: float) -> void:
 		velocity.y = -0.1
 
 	move_and_slide()
+	_tick_steps(delta)
 
 	if desired.length() > 0.01 and not is_busy():
 		rotation.y = lerp_angle(rotation.y, atan2(-desired.x, -desired.z), TURN * delta)
 
 	_animate(Vector2(velocity.x, velocity.z).length())
+
+## A footstep every STRIDE metres of ground actually covered.
+##
+## Off the floor there is nothing to step on, and a dodge is a push
+## rather than a gait, so neither counts.
+func _tick_steps(delta: float) -> void:
+	if not is_on_floor() or not dodge.can_act():
+		return
+	var moved: float = Vector2(velocity.x, velocity.z).length() * delta
+	if moved < 0.001:
+		# Standing still resets, so the first step after a stop lands on
+		# the footfall rather than half a stride into it.
+		_stride = 0.0
+		return
+	_stride += moved
+	if _stride < STRIDE:
+		return
+	_stride -= STRIDE
+	Sound.step(self, global_position)
 
 func try_dodge(direction: Vector3) -> bool:
 	if is_busy():
@@ -444,6 +471,7 @@ func _tick_swing() -> void:
 	if _swing_struck or attack.phase() == Attack.Phase.WINDUP:
 		return
 	_swing_struck = true
+	Sound.swing(self, global_position + Vector3(0, 1.25, 0))
 	if is_frozen():
 		return
 	var clip: Dictionary = SWINGS[_swing_clip]
@@ -508,27 +536,35 @@ func stagger(seconds: float) -> void:
 	anim.seek(HURT_START, true)
 	anim.speed_scale = (HURT_END - HURT_START) / max(seconds, 0.01)
 
-## Take a blow along an arc. Returns { taken, slot, broke, bare }.
+## Take a blow along an arc. Returns { taken, slot, broke, bare, class }.
 ##
 ## The arc decides which piece of the harness meets it (L64), the damage
 ## triangle decides what that piece is worth against this kind of blow
 ## (§4), and a piece worn to nothing comes off then and there (L63).
 ## Zero damage if the dodge's invulnerable window ate it, which is the
 ## whole point of the dodge.
+##
+## `class` is what the blow MET — read before the harness is worn down,
+## because resolve() can break the piece as it computes. Asked afterwards
+## a blow that broke the last of the mail reads as "none", and audio.md
+## §4 (L87) hangs the player's only reading of the damage triangle off
+## exactly that answer.
 func hurt(amount: float, arc: int = Attack.Arc.UPPER_RIGHT,
 		damage_type: String = "cut") -> Dictionary:
-	var miss := {"taken": 0.0, "slot": -1, "broke": false, "bare": false}
+	var miss := {"taken": 0.0, "slot": -1, "broke": false, "bare": false,
+		"class": "none"}
 	if dodge.is_invulnerable() or health.is_dead():
 		return miss
 
 	var slot := ArmourSet.slot_for(arc)
+	var met := harness.protection_at(slot)
 	var blow := harness.resolve(slot, amount, damage_type)
 	if blow["broke"]:
 		# L63: it does not merely stop protecting. It comes off.
 		shed(slot)
 
 	var taken := health.take(blow["damage"])
-	var out := {"taken": taken, "slot": slot,
+	var out := {"taken": taken, "slot": slot, "class": met,
 		"broke": blow["broke"], "bare": blow["bare"]}
 	if health.is_dead():
 		died.emit()

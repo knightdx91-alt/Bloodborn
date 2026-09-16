@@ -222,6 +222,59 @@ pieces, each with its own checks:
 
 19 end-to-end checks, plus 363 C# tests.
 
+## Done 2026-09-16 — the first sound
+
+**L87 says a cut biting flesh, a cut skipping off plate and a mace
+finding mail are different sounds, and that is how the damage triangle
+reaches a player who is never shown a number.** That is a testable
+claim. It is now tested, with placeholders rather than waited on.
+
+There are no audio assets and no budget for any, so
+`assets/tools/build_audio.py` synthesises nine WAVs from pure stdlib
+Python — no numpy, no samples, no dependencies. They are ugly and they
+are meant to be replaced. What they are for is proving the channel
+carries the information:
+
+| | flesh | mail | plate |
+|---|---|---|---|
+| rings for | 196 ms | 346 ms | **950 ms** |
+| brightness | 0.125 | **1.283** | 0.339 |
+
+Meat is dull and over with. Mail is small links moving against each
+other. Plate rings on for nearly a second. Those are told apart by ear
+with no numbers anywhere, which is the whole of L87.
+
+Wired into the game: room tone that crossfades day to night on the
+shared clock, an impact on every landed blow, a whoosh when the blade
+goes live, and a footstep every 1.55 m walked. `soundcheck.gd` is 25
+checks and measures the files themselves, in ratios rather than
+absolute numbers, so replacing the placeholders with real recordings
+still passes and a swap that makes two of them interchangeable still
+fails.
+
+**Two real bugs came out of wiring it, both of the kind that stay
+invisible:**
+
+- `Sound._one_shot` positioned players in **parent-local** space.
+  Harmless only for as long as every impact hung off `World`, which
+  sits at the origin — the first fighter to play its own swing put it
+  32 m away.
+- **`ArmourSet.resolve()` wears the piece down as it computes.** Ask a
+  slot what it is wearing *after* the blow and a hit that broke the
+  last of the mail reads back as `none`: the single loudest tell in the
+  fight would have played as a hit on bare meat. `Fighter.hurt()` now
+  reports `class` itself, read before the wear lands, so no caller has
+  to know the ordering. Both faults were restored on purpose and the
+  checks watched to fail on them before either was trusted.
+
+And two harness bugs of my own, which is the recurring theme of this
+project: I counted footstep players as *children*, but a 100 ms clip
+frees itself long before the count; and I drove the fighter with
+`move()` by hand while `world.gd` was also calling `move(ZERO)` every
+physics frame, resetting the stride accumulator. That one reported
+"3.4 m covered in silence" for a walk that was working — the test was
+walking against the game instead of through it.
+
 ## Device check
 
 `CLAUDE.md` instructs the assistant to ask which device you are on at

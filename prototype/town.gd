@@ -201,6 +201,7 @@ var _smokes: Array = []
 var _forge: OmniLight3D = null
 var _birds: Node3D = null
 var _flown := 0.0
+var _room: Dictionary = {}
 
 
 func _house(pos: Vector3, yaw: float, wm: int, dm: int, opts: Dictionary = {}) -> Node3D:
@@ -915,6 +916,9 @@ func _atmosphere() -> void:
 	for at in _chimneys:
 		_smokes.append(Atmosphere.chimney(self, at))
 	_forge = Atmosphere.forge(self, Places.ANCHORS["forge"])
+	# The first sound in this project. Quiet on purpose — it is the floor
+	# the town sits on, not a track.
+	_room = Sound.ambience(self)
 	_birds = Atmosphere.birds(self, Vector3(0, 0, 0))
 	Atmosphere.set_time(_smokes, _forge, _birds, clock)
 
@@ -924,5 +928,6 @@ func _process(delta: float) -> void:
 		clock.tick(delta)
 		Look.set_time(self, clock)
 		Atmosphere.set_time(_smokes, _forge, _birds, clock)
+		Sound.set_time(_room, clock.daylight())
 	_flown += delta
 	Atmosphere.fly(_birds, _flown)

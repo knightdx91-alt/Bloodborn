@@ -921,6 +921,18 @@ func _land(attacker: Fighter, victim: Fighter, damage: float, by: String,
 	# deliberately not wired up here. It resolves a blow against armour
 	# class and hit location, and nobody in this yard is wearing anything.
 	var landed := victim.hurt(damage, attacker.attack.arc)
+
+	# L87's load-bearing claim, made audible: what the blow hit is told by
+	# how it SOUNDS, not by a number. The damage triangle itself is still
+	# resolved in sim/ and still not wired up here — this is the tell, not
+	# the rule.
+	#
+	# `class` comes out of hurt() rather than being asked of the harness
+	# afterwards: by then a piece that broke on this blow reads "none".
+	if landed["taken"] > 0.0:
+		Sound.impact(self, victim.global_position + Vector3(0, 1.1, 0),
+			String(landed["class"]))
+
 	if not SHOW_DEBUG:
 		return
 	if landed["taken"] <= 0.0:
