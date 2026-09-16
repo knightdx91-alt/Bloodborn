@@ -223,3 +223,52 @@ static func _set_branch_focusable(layer: CanvasLayer, on: bool) -> void:
 			layer.set_meta("ui_focus_was", ctl)
 		ctl.set_meta("ui_focus_mode", int(ctl.focus_mode))
 		ctl.focus_mode = Control.FOCUS_NONE
+
+
+# --- Touch ------------------------------------------------------------
+#
+# Touch is not a shipping platform (L15 is PC and three consoles), but it
+# is the only way to play this on the machine that is to hand, and a
+# thumb control that is half a thumb wide is not a control. These are
+# sized from the viewport like everything else here, and inset out of
+# the notch.
+
+
+## Usable screen inset in VIEWPORT pixels: left, top, right, bottom.
+##
+## DisplayServer reports the safe area in screen pixels, which on a phone
+## is not the same number — the old code multiplied a screen height by
+## 0.02 and called it a margin, which is a coincidence rather than an
+## inset. Mapped properly here, and zero everywhere without a cutout.
+static func safe_inset(node: Node) -> Vector4:
+	var view: Viewport = node.get_viewport()
+	if view == null:
+		return Vector4.ZERO
+	var vp: Vector2 = view.get_visible_rect().size
+	var screen := Vector2(DisplayServer.screen_get_size())
+	var safe := DisplayServer.get_display_safe_area()
+	if screen.x <= 0.0 or screen.y <= 0.0 or safe.size.x <= 0 or safe.size.y <= 0:
+		return Vector4.ZERO
+	var sx: float = vp.x / screen.x
+	var sy: float = vp.y / screen.y
+	return Vector4(
+		maxf(0.0, float(safe.position.x) * sx),
+		maxf(0.0, float(safe.position.y) * sy),
+		maxf(0.0, float(screen.x - safe.end.x) * sx),
+		maxf(0.0, float(screen.y - safe.end.y) * sy))
+
+
+## A thumb target: short label, dark timber, big enough to hit blind.
+static func chip(text: String, scale: float) -> Button:
+	var b := Button.new()
+	b.text = text
+	b.focus_mode = Control.FOCUS_NONE
+	b.add_theme_font_size_override("font_size", int(20.0 * scale))
+	b.add_theme_color_override("font_color", PARCHMENT)
+	b.add_theme_color_override("font_pressed_color", Color.WHITE)
+	b.add_theme_stylebox_override("normal", _box(PANEL_DARK, PANEL_EDGE, 2, 4))
+	b.add_theme_stylebox_override("hover", _box(PANEL_DARK, PANEL_EDGE, 2, 4))
+	b.add_theme_stylebox_override("pressed", _box(CHOICE_HOVER, FOCUS_EDGE, 2, 4))
+	b.custom_minimum_size = Vector2(maxf(120.0 * scale, 96.0),
+		maxf(64.0 * scale, MIN_TAP + 8.0))
+	return b

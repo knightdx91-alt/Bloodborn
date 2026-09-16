@@ -218,6 +218,62 @@ real screen pixels, whatever the scale works out to.
 
 ---
 
+## 9. The game follows the hands, not the machine **[L91]**
+
+L15 ships to PC and three consoles, which is already two input schemes
+in the same build, and the prototype is played on a phone with a
+controller plugged into it — a third combination that belongs to neither
+platform. So "what is this running on" is the wrong question. The right
+one is **what is the player holding right now**, and the answer can
+change in the middle of a session without warning.
+
+**The scheme follows the last input actually used.** Platform chooses
+only the opening guess: a pad if one is connected, otherwise touch if
+the screen is one, otherwise keyboard and mouse. After that, every event
+is evidence. Press a key and the prompts are keys. Pick the controller
+up and they are buttons. Put it down and touch the screen and the thumb
+controls come back.
+
+**Unplugging is a first-class case, not an error.** A controller coming
+out of the socket mid-session hands control back to whatever the machine
+still has — thumb controls on a phone, keyboard on a desktop — with no
+menu, no restart and no dialogue asking what happened. The player has
+already told the game what they are doing by doing it.
+
+**The player is never asked to declare their hardware.** A settings
+screen listing input devices is precisely the interface §1 exists to
+refuse. The one place the scheme is ever named is the launcher, where it
+is stated rather than chosen, so that "why did the on-screen stick go
+away" has a visible answer.
+
+**On-screen controls are drawn only for the scheme using them.** A pad
+or a keyboard leaves the screen entirely to the world. A thumbstick
+painted over a controller game is the persistent HUD §1 forbids, wearing
+a different hat.
+
+**Evidence has a threshold, because a resting controller is not an
+input.** A stick drifting off centre on a worn pad must not flip the
+interface back and forth while somebody is typing, so waking the pad
+needs a real push — a much larger dead zone than the one gameplay uses.
+The same care applies to synthetic mouse events, which browsers and
+engines generate from touches: a mouse event arriving just after a touch
+is that echo, not a hand on a mouse.
+
+**Every scheme must be able to reach every part of the game.** This is
+the rule that catches the real bugs. The prototype bound "leave this
+place" to Escape and to Start, and a phone without a controller has
+neither — so a touch player could walk into town and never walk out.
+Whatever a scheme cannot do with a button it needs on screen, and that
+check is per scheme, not per screen.
+
+**Accessibility is unaffected by any of this.** §7 already refuses to
+trade remapping away for minimalism, and automatic detection is not a
+substitute for it: detection decides what is *shown*, remapping decides
+what things *do*, and a player who wants to pin one scheme rather than
+let it follow their hands must be able to.
+
+---
+
 ## Open questions
 
 - [ ] Where does the appraisal skill's descriptive vocabulary come
@@ -236,6 +292,10 @@ real screen pixels, whatever the scale works out to.
       the boards. The pack and character creation do not exist yet; when
       they do, they are built on the same kit and held to the same
       rules.
+- [ ] Can the auto-detected scheme be pinned, for a player who keeps a
+      controller plugged in but plays with a keyboard (L91's
+      accessibility note)? Where does that live, given §1 refuses a
+      settings screen about hardware?
 - [ ] Does the pack need a second navigation axis (left/right between
       tabs as well as up/down within one), and if so what presses it —
       the shoulder buttons, or the d-pad?

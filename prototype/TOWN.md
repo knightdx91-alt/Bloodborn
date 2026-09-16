@@ -280,6 +280,38 @@ reached the fifth contract and stopped. Up and down now scroll it.
 focus trap, and B backing out one layer at a time with the board opened
 on top of a conversation.
 
+## Input detection, 2026-09-16 — L91
+
+Thornfield drew a thumbstick whether or not a controller was plugged in,
+and bound its only exit to Escape and to Start. A phone without a
+controller has neither, so **you could walk into town and never walk
+out** — the launcher was unreachable short of killing the app.
+
+`input_mode.gd` is an autoload, `InputMode`. It watches every event and
+reports *pad*, *touch* or *keyboard*, following the last input actually
+used rather than the platform; the platform only picks the opening
+guess. Pick up a controller and the thumb controls leave; put it down
+and touch the screen and they return. `interface.md` §9 (**L91**) is the
+specification.
+
+What changed here:
+
+- The stick and the Talk button were fixed pixels (60px radius, a
+  190x100 button at an absolute offset). Both scale to the viewport now
+  and inset out of the notch — mapped from the display safe area through
+  the screen-to-viewport ratio, rather than the old percentage of a
+  screen height that happened to look about right.
+- A **Back** chip on touch, in both the town and the drill yard.
+- Touch is ignored while a menu is up (L90 says a menu owns the screen),
+  and a touch landing on a chip no longer also starts a camera drag —
+  `_input` runs before the GUI sees the event, so the chips have to be
+  asked about by hand.
+
+`inputcheck.gd` checks it: each scheme being detected from a real event,
+a resting stick NOT counting as a pad, a browser's synthetic
+mouse-after-touch being ignored, and the thumb controls leaving and
+returning as a pad comes and goes.
+
 ## Still open
 
 - **The world state is seeded once and never persists.** Nothing

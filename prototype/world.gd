@@ -1050,6 +1050,8 @@ var _bar_root: Control
 var _bar_fill: ColorRect
 var _bar_alpha := 0.0
 var _last_stamina := 0.0
+var _touch_layer: CanvasLayer
+var _back_btn: Button
 
 const BAR_FADE_IN := 12.0
 const BAR_FADE_OUT := 2.2
@@ -1081,6 +1083,36 @@ func _build_interface() -> void:
 		_phase_label.position = Vector2(12, 10)
 		_phase_label.add_theme_color_override("font_color", Color(0.75, 0.75, 0.78))
 		layer.add_child(_phase_label)
+
+	# The yard was a one-way door on a touch device for the same reason
+	# the town was: leaving is Escape and Start, and a phone without a pad
+	# has neither. Only on screen while a thumb is the thing in use.
+	_touch_layer = CanvasLayer.new()
+	add_child(_touch_layer)
+	_layout_touch_ui()
+	get_viewport().size_changed.connect(_layout_touch_ui)
+	InputMode.scheme_changed.connect(func(_s: int) -> void: _apply_scheme())
+
+
+func _layout_touch_ui() -> void:
+	if _back_btn != null:
+		_back_btn.queue_free()
+	var scale := UI.scale_for(self)
+	var inset := UI.safe_inset(self)
+	var vp: Vector2 = get_viewport().get_visible_rect().size
+	var gutter: float = maxf(16.0, vp.x * 0.025)
+	_back_btn = UI.chip("Back", scale)
+	_back_btn.size = _back_btn.custom_minimum_size
+	_back_btn.position = Vector2(
+		vp.x - inset.z - gutter - _back_btn.size.x, inset.y + gutter)
+	_back_btn.pressed.connect(_leave)
+	_touch_layer.add_child(_back_btn)
+	_apply_scheme()
+
+
+func _apply_scheme() -> void:
+	if _back_btn != null:
+		_back_btn.visible = InputMode.is_touch()
 
 func _update_interface(delta: float) -> void:
 	if _bar_root == null:

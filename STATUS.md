@@ -9,7 +9,7 @@ of each working session.
 
 ## The one-line version
 
-Design is **90 locked decisions** and **complete** — every structural
+Design is **91 locked decisions** and **complete** — every structural
 question locked, every missing document written. Every system a player
 touches in their first hundred hours is specified, and most of it is
 **written, tested and running** as engine-free C# — 335 tests.
@@ -69,6 +69,37 @@ isn't visibly focused, every choice at least 48px tall.
 at rendered frames at 900×600, 1080×2400 and 640×360 — which is exactly
 the kind of verification that has been wrong before. Next APK is the
 test.
+
+## Done 2026-09-16 — the game notices what you are holding (L91)
+
+The prototype had no idea what it was being played with. The town drew a
+thumbstick whether or not a controller was plugged in; the launcher
+reported a pad but nothing else changed; and both scenes bound "leave
+this place" to Escape and to Start, which a phone without a controller
+does not have — **so a touch player could walk into Thornfield and never
+walk out.**
+
+`InputMode` (an autoload) now watches every event and reports *pad*,
+*touch* or *keyboard*. **It follows the last input you actually used**,
+not the platform: platform only picks the opening guess. Plug the pad in
+and the thumb controls leave the screen; unplug it and they come back.
+No menu, no restart, nothing to declare — `interface.md` §9 / **L91**
+says why that matters.
+
+The touch controls themselves were the fixed-pixel fault again: a 60px
+stick and a 190x100 button positioned in absolute pixels. Both now scale
+to the viewport, inset out of the notch (properly mapped from the screen
+safe area rather than a percentage that happened to look right), and
+both scenes have a Back chip on touch.
+
+Checked by `inputcheck.gd`: 13 checks covering each scheme being
+detected, a resting stick NOT counting as a pad, a browser's synthetic
+mouse-after-touch being ignored, and the thumb controls actually leaving
+and returning as a pad comes and goes.
+
+**Still unseen on real hardware.** The detection logic is verified by
+feeding it synthetic events, which is not the same as a GameSir-T7 over
+OTG.
 
 ## Device check
 

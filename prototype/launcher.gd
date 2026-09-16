@@ -197,16 +197,22 @@ func _process(_delta: float) -> void:
 	_refresh_pad()
 
 
+## Reports the scheme in use, not just whether a socket is occupied.
+## InputMode follows the last input the player actually used, so this
+## line is also the honest answer to "why are the thumb controls gone" —
+## and it changes under your hand the moment you pick something else up.
 func _refresh_pad() -> void:
 	if _pad == null:
 		return
-	var pads := Input.get_connected_joypads()
-	if pads.is_empty():
-		_pad.text = "No controller. If one is plugged in, press a button on it."
-		_pad.modulate = Color(0.85, 0.65, 0.45)
-	else:
-		_pad.text = "Controller: %s" % Input.get_joy_name(pads[0])
+	if InputMode.is_pad():
+		_pad.text = "Controller: %s" % InputMode.pad_name()
 		_pad.modulate = Color(0.55, 0.78, 0.55)
+	elif InputMode.is_touch():
+		_pad.text = "Touch controls. Plug a controller in and press a button on it."
+		_pad.modulate = Color(0.72, 0.72, 0.62)
+	else:
+		_pad.text = "Keyboard and mouse. A controller takes over as soon as you use one."
+		_pad.modulate = Color(0.72, 0.72, 0.62)
 
 
 func _go(scene: String) -> void:

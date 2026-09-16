@@ -11,7 +11,10 @@ const IDLE_CLIP := "res://assets/animations/anim_Idle.fbx"
 const WALK_CLIP := "res://assets/animations/anim_Walking.fbx"
 const SPEED := 4.5
 const TALK_RANGE := 3.0
-const STICK_RADIUS := 60.0
+## Base thumbstick radius, scaled to the viewport at build time — the
+## old fixed 60px was a comfortable thumb on the developer's window and
+## a fingernail on a tall phone.
+const STICK_BASE := 62.0
 
 ## Pad. Matches world.gd so the two scenes do not want different hands:
 ## left stick walks, A talks, Start goes back to the launcher.
@@ -61,6 +64,9 @@ var _stick_vec := Vector2.ZERO
 var _stick_base: Panel
 var _stick_knob: Panel
 var _talk_btn: Button
+var _back_btn: Button
+var _touch_layer: CanvasLayer
+var _stick_radius := STICK_BASE
 var _near: TownNPC = null
 
 
@@ -212,27 +218,94 @@ func _circle_panel(d: float, color: Color) -> Panel:
 
 
 func _build_touch_ui() -> void:
-	var layer := CanvasLayer.new()
-	add_child(layer)
-	_stick_base = _circle_panel(STICK_RADIUS * 2.0, Color(1, 1, 1, 0.18))
-	layer.add_child(_stick_base)
-	_stick_knob = _circle_panel(STICK_RADIUS, Color(1, 1, 1, 0.35))
-	layer.add_child(_stick_knob)
-	_talk_btn = Button.new()
-	_talk_btn.text = "Talk"
-	_talk_btn.add_theme_font_size_override("font_size", 40)
-	_talk_btn.custom_minimum_size = Vector2(190, 100)
-	_talk_btn.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
-	_talk_btn.position = Vector2(-210, -190)
+	_touch_layer = CanvasLayer.new()
+	add_child(_touch_layer)
+	_layout_touch_ui()
+	# Rebuilt on resize because every number in it is a fraction of the
+	# viewport, and a phone changes viewport when it rotates.
+	get_viewport().size_changed.connect(_layout_touch_ui)
+	# And hidden the moment a pad is picked up. InputMode follows the last
+	# input the player actually used, so plugging a controller in takes
+	# the thumb controls off the screen without asking, and unplugging it
+	# puts them back.
+	InputMode.scheme_changed.connect(_on_scheme_changed)
+
+
+func _layout_touch_ui() -> void:
+	for c in _touch_layer.get_children():
+		c.queue_free()
+
+	var scale := UI.scale_for(self)
+	var inset := UI.safe_inset(self)
+	var vp: Vector2 = get_viewport().get_visible_rect().size
+	_stick_radius = maxf(STICK_BASE * scale, 54.0)
+
+	_stick_base = _circle_panel(_stick_radius * 2.0, Color(1, 1, 1, 0.16))
+	_touch_layer.add_child(_stick_base)
+	_stick_knob = _circle_panel(_stick_radius, Color(1, 1, 1, 0.34))
+	_touch_layer.add_child(_stick_knob)
+
+	var gutter: float = maxf(16.0, vp.x * 0.025)
+
+	# Talk sits under the right thumb, clear of the bottom edge and of
+	# any gesture bar.
+	_talk_btn = UI.chip("Talk", scale)
+	_talk_btn.size = _talk_btn.custom_minimum_size
+	_talk_btn.position = Vector2(
+		vp.x - inset.z - gutter - _talk_btn.size.x,
+		vp.y - inset.w - maxf(gutter, vp.y * 0.10) - _talk_btn.size.y)
 	_talk_btn.visible = false
 	_talk_btn.pressed.connect(_on_talk_pressed)
-	layer.add_child(_talk_btn)
+	_touch_layer.add_child(_talk_btn)
+
+	# And a way out. Thornfield was a one-way door on a touch device:
+	# leaving was bound to Escape and to Start, and a phone without a pad
+	# has neither, so the only exit was the task switcher. Top right,
+	# away from where a look-drag starts.
+	_back_btn = UI.chip("Back", scale)
+	_back_btn.size = _back_btn.custom_minimum_size
+	_back_btn.position = Vector2(
+		vp.x - inset.z - gutter - _back_btn.size.x,
+		inset.y + gutter)
+	_back_btn.pressed.connect(_leave)
+	_touch_layer.add_child(_back_btn)
+
+	_apply_scheme()
+
+
+func _on_scheme_changed(_scheme: int) -> void:
+	_apply_scheme()
+
+
+## On-screen controls exist only while the player is actually using a
+## thumb. A pad or a keyboard leaves the screen to the world, which is
+## interface.md §1's whole point.
+func _apply_scheme() -> void:
+	if _back_btn == null:
+		return
+	var touching: bool = InputMode.is_touch()
+	_back_btn.visible = touching
+	if not touching:
+		_talk_btn.visible = false
+		_stick_id = -1
+		_stick_vec = Vector2.ZERO
+		_hide_stick()
+
+
+## Is this touch landing on a chip rather than on the world? Without the
+## question, tapping Talk also starts a camera drag, because _input runs
+## before the GUI gets a look at the event.
+func _over_chip(at: Vector2) -> bool:
+	for b in [_talk_btn, _back_btn]:
+		if b != null and b.visible and b.get_global_rect().has_point(at):
+			return true
+	return false
 
 
 func _show_stick(at: Vector2) -> void:
-	_stick_base.position = at - Vector2(STICK_RADIUS, STICK_RADIUS)
+	_stick_base.position = at - Vector2(_stick_radius, _stick_radius)
 	_stick_base.visible = true
-	_stick_knob.position = at - Vector2(STICK_RADIUS / 2.0, STICK_RADIUS / 2.0)
+	_stick_knob.position = at - Vector2(_stick_radius / 2.0, _stick_radius / 2.0)
 	_stick_knob.visible = true
 
 
@@ -242,10 +315,16 @@ func _hide_stick() -> void:
 
 
 func _input(event: InputEvent) -> void:
+	# A menu owns the screen while it is up — L90. Without this the world
+	# keeps taking drags behind the dialogue box.
+	if UI.modal_open():
+		return
 	if event is InputEventScreenTouch:
 		var t := event as InputEventScreenTouch
 		var vw := get_viewport().get_visible_rect().size.x
 		if t.pressed:
+			if _over_chip(t.position):
+				return
 			if _stick_id == -1 and t.position.x < vw * 0.5:
 				_stick_id = t.index
 				_stick_origin = t.position
@@ -268,10 +347,11 @@ func _input(event: InputEvent) -> void:
 			return
 		if dr.index == _stick_id:
 			var off := dr.position - _stick_origin
-			if off.length() > STICK_RADIUS:
-				off = off.normalized() * STICK_RADIUS
-			_stick_vec = off / STICK_RADIUS
-			_stick_knob.position = _stick_origin + off - Vector2(STICK_RADIUS / 2.0, STICK_RADIUS / 2.0)
+			if off.length() > _stick_radius:
+				off = off.normalized() * _stick_radius
+			_stick_vec = off / _stick_radius
+			_stick_knob.position = _stick_origin + off \
+				- Vector2(_stick_radius / 2.0, _stick_radius / 2.0)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -379,7 +459,7 @@ func _process(_delta: float) -> void:
 					if d < best:
 						best = d
 						_near = n
-	_talk_btn.visible = _near != null
+	_talk_btn.visible = _near != null and InputMode.is_touch()
 
 
 func _on_talk_pressed() -> void:

@@ -14,6 +14,13 @@ config/name="Marrowmark — Stage 1"
 run/main_scene="res://launcher.tscn"
 config/features=PackedStringArray("4.3", "GL Compatibility")
 
+[autoload]
+
+; InputMode watches every event and reports whether the player is on a
+; pad, a thumb or a keyboard. An autoload because it has to survive
+; scene changes and see events before any scene consumes one.
+InputMode="*res://input_mode.gd"
+
 [display]
 
 window/size/viewport_width=960
