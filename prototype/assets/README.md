@@ -142,6 +142,75 @@ var player := monster.find_child("*", "AnimationPlayer", true, false)
 player.play("Idle")
 ```
 
+## Townsfolk (`townsfolk/`)
+
+**Downloads, not generated** — two Quaternius packs, committed 2026-09-16,
+both **CC0 1.0**. Meant to dress Thornfield: background NPCs, quest
+givers, merchants.
+
+### Modular characters (`townsfolk/modular-characters/`)
+
+The Quaternius **Ultimate Modular Characters** pack — 21 assembled
+characters: 11 male (Adventurer, Beach, Casual_2, Casual_Hoodie, Farmer,
+King, Punk, Spacesuit, Suit, Swat, Worker) and 10 female (Adventurer,
+Casual, Formal, Medieval, Punk, SciFi, Soldier, Suit, Witch, Worker).
+GLB flavor, 62-bone rig, **24 animation clips each** — Idle variants,
+Walk, Run (+ strafe/back), Roll, Sword_Slash, Punch_Left/Right,
+Kick_Left/Right, Death, HitRecieve, Interact, Wave, plus gun poses
+(Idle_Gun, Gun_Shoot) that this game will ignore. Names are per-file;
+list them with `AnimationPlayer.get_animation_list()`.
+
+**Caveat: assembled, not modular.** The source pack ships each
+character as 4 swappable parts (head/body/arms/legs); this copy came
+via the `LuanDucate/Ducz.CharacterCreator` GitHub mirror as assembled
+GLBs — same meshes, same rig, same clips, but the part-swap structure
+is lost. What you get is 21 ready-to-instance townsfolk, not a
+character creator. One accessory (the Adventurer's sword) is a rigid
+unskinned mesh; it follows its parent bone and renders fine.
+
+Pulled from the mirror because quaternius.com's Drive folder was
+quota-blocked; CC0 1.0 confirmed in the mirror's license file (copied
+here as `modular-characters/LICENSE.txt`).
+
+### Fantasy outfits (`townsfolk/fantasy-outfits/`)
+
+The Quaternius **Modular Character Outfits: Fantasy [Standard]** pack —
+4 assembled outfits (Male/Female x Peasant/Ranger) in `Outfits/`, plus
+20 individual modular parts in `Modular Parts/` (arms, body, feet,
+legs, hoods, pauldrons per outfit). glTF (Godot-Unreal) flavor,
+65-bone rig — the same rig family as the Universal Base Characters, so
+base-character clips drive these meshes.
+
+**Textures are downscaled in this repo copy.** The pack ships 4096x4096
+PBR PNGs (~146 MB, duplicated across the two folders); here they are
+resized to 1024px max on the longest edge, bringing the outfits folder
+to ~30 MB. The full-resolution originals stay in the workspace library
+(`game-assets/packs/quaternius-modular-outfits-fantasy/`). If a hero
+shot ever needs the 4K textures, re-copy from there — the filenames
+and glTF `uri` references are unchanged.
+
+No baked animation clips on the outfits — they take clips from the
+base-character / animation-library sets.
+
+## Knight (`knight/`)
+
+**Download, not generated** — the Quaternius **Knight Character** pack,
+committed 2026-09-16, **CC0 1.0** (per the itch.io page; the pack's zip
+ships no license file). FBX flavor; the OBJ/Blend duplicates from the
+pack were dropped — same meshes.
+
+- `KnightCharacter.fbx` — armored knight on a 42-bone `HumanArmature`
+  rig with **12 clips**: `Idle`, `Idle_swordLeft`, `Idle_swordRight`,
+  `Walking`, `Run`, `Run_swordRight`, `Run_swordAttack`,
+  `swordAttackJump`, `Roll`, `Roll_sword`, `Jump`, `Death`. The
+  sword-attack clips are the point of this file.
+- Accessories, static meshes, no clips: `Sword.fbx`, `ShortSword.fbx`,
+  `Katana.fbx`, `Club.fbx`, `Helmet1.fbx`, `Helmet2.fbx`,
+  `Helmet3.fbx`, `ShoulderPads.fbx`.
+
+Pulled from itch.io's free tier ($0); the pack's own zip is kept in
+the workspace library (`game-assets/packs/quaternius-knight/`).
+
 ## Animations (`animations/`)
 
 **Re-downloaded 2026-09-13** from Mixamo with the X Bot character
