@@ -505,11 +505,33 @@ with a model, a camera and a Talk chip — no `Fighter`, no sword, no
 attack or dodge for **any** input scheme, pad included. So this was
 never a touch problem there; combat simply does not exist in the town.
 
-**Decided from play: no place is excluded.** The town gets combat. The
-route that does not duplicate the rules is to make `TownWalker` extend
-`Fighter` — which already has attack, dodge, parry, stamina, health,
-the harness and the sound — keeping its camera, steering and talk. That
-is the next piece of work, not this commit.
+**Decided from play: no place is excluded — and done.** `TownWalker`
+now extends `Fighter` rather than `CharacterBody3D`, so the town gets
+attack, dodge, parry, stamina, health, the harness and the sound from
+the one implementation that already had them. `combat.md` §8 promises
+ONE ruleset rather than two, and a second implementation in the town
+would have been a second ruleset the day after it was written.
+
+Deleted rather than kept: the walker's own body build, its own model
+load and its own idle/walk clips — all of which `Fighter` already does,
+including the model offset this file once copied wrongly and buried the
+walker to the waist. One answer instead of two.
+
+**A is shared on the pad**: it talks when there is somebody to talk to
+and dodges when there is not, because A is the dodge in the yard and a
+player should not have to remember which building they are standing in.
+The chips sit in the same corner as the yard's, above Talk.
+
+Both wrappers refuse while a menu is open. A conversation is not a
+fight, and a sword coming out behind a panel would be the town
+answering an input meant for the menu.
+
+8 more checks, run against the real town scene.
+
+**Nothing to fight there yet.** Combat exists in Thornfield; enemies do
+not. Whether anything hostile comes into the town, and what happens if
+you swing at a townsperson, is a content and design question rather
+than a mechanical one, and is not answered here.
 
 ## Device check
 

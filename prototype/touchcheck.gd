@@ -103,6 +103,57 @@ func _ready() -> void:
 			back = b as Button
 	_ok("the Back chip is there on touch", back != null and back.visible,
 		"no visible Back chip")
+
+	# --- and the town, which had no combat at all -------------------------
+	#
+	# town_player.gd said in its own header "never touches combat", and it
+	# meant it: TownWalker was a bare CharacterBody3D with a model and a
+	# Talk chip, so the town had no attack, no dodge and no guard for ANY
+	# input scheme — a pad could not fight here either. Decided from play:
+	# no place is excluded.
+	_ok("the town's player is a fighter, not a stroller", walker is Fighter,
+		"the town would need its own combat, and combat.md §8 promises "
+		+ "one ruleset rather than two")
+	_ok("and carries the same kit as anywhere else",
+		walker.stamina != null and walker.health != null
+			and walker.attack != null and walker.harness != null,
+		"missing a combat component")
+	_ok("and still stands on the ground",
+		absf(walker.global_position.y) < 2.0,
+		"y=%.2f — inheriting Fighter's capsule moved the body"
+			% walker.global_position.y)
+
+	var tw_atk: Button = walker.get("_attack_btn")
+	var tw_dge: Button = walker.get("_dodge_btn")
+	var tw_grd: Button = walker.get("_guard_btn")
+	_ok("the town has attack, dodge and guard on screen",
+		tw_atk != null and tw_dge != null and tw_grd != null,
+		"attack=%s dodge=%s guard=%s" % [str(tw_atk != null),
+			str(tw_dge != null), str(tw_grd != null)])
+
+	if tw_atk != null:
+		tw_atk.pressed.emit()
+		await get_tree().process_frame
+		_ok("the attack button swings in the town", not walker.attack.can_act(),
+			"pressing Attack in Thornfield did nothing")
+
+		for f in 120:
+			await get_tree().physics_frame
+		tw_dge.pressed.emit()
+		await get_tree().process_frame
+		_ok("the dodge button dodges in the town", not walker.dodge.can_act(),
+			"pressing Dodge did nothing")
+
+		for f in 120:
+			await get_tree().physics_frame
+		tw_grd.button_down.emit()
+		await get_tree().process_frame
+		var tw_braced: bool = not walker.parry.can_act()
+		tw_grd.button_up.emit()
+		await get_tree().process_frame
+		_ok("the guard button raises the guard in the town", tw_braced,
+			"holding Guard did not brace")
+
 	t.queue_free()
 	await _settle()
 

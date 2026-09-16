@@ -1,15 +1,29 @@
 class_name TownWalker
-extends CharacterBody3D
-## Thornfield town walker: third-person stroller for the town scene.
-## WASD/arrows + left-half touch stick. Fixed follow camera.
-## Registers itself as TownNPC.player so talk prompts appear, and shows
-## a Talk button near NPCs that opens their conversation.
-## New files only: never touches combat (world.gd / main.tscn).
+extends Fighter
+## Thornfield's player: a third-person stroller who can also fight.
+## WASD/arrows + left-half touch stick, orbiting follow camera, a Talk
+## chip near NPCs, and the same combat as anywhere else.
+##
+## It used to say here, in its own header, "never touches combat". That
+## was true and it was the bug: `TownWalker` was a bare
+## `CharacterBody3D` with a model and a Talk button, so the town had no
+## attack, no dodge and no guard for ANY input scheme — pad included.
+## Reported from play, and the answer decided there: **no place is
+## excluded**.
+##
+## So it extends `Fighter` rather than growing its own combat.
+## `Fighter` already owns the body, the rig, the clips, the attack, the
+## dodge, the parry, stamina, health, the harness and the sound, and
+## combat.md §8 promises ONE ruleset rather than two. A second
+## implementation in the town would have been a second ruleset the day
+## after it was written.
 
 const MODEL := "res://assets/models/paladin.fbx"
 const IDLE_CLIP := "res://assets/animations/anim_Idle.fbx"
 const WALK_CLIP := "res://assets/animations/anim_Walking.fbx"
 const SPEED := 4.5
+## Matches world.gd's player so the town is not a different character.
+const PLAYER_HEALTH := 100.0
 const TALK_RANGE := 3.0
 ## Base thumbstick radius, scaled to the viewport at build time — the
 ## old fixed 60px was a comfortable thumb on the developer's window and
@@ -22,6 +36,12 @@ const PAD := 0
 const PAD_DEADZONE := 0.15
 const PAD_TALK := JOY_BUTTON_A
 const PAD_LEAVE := JOY_BUTTON_START
+## The same hands as world.gd, so the town is not a different game.
+## A is shared: it talks when there is somebody to talk to and dodges
+## when there is not, because in the yard A is the dodge and a player
+## should not have to remember which building they are standing in.
+const PAD_ATTACK := JOY_BUTTON_RIGHT_SHOULDER
+const PAD_GUARD := JOY_BUTTON_LEFT_SHOULDER
 
 ## Camera orbit, matching world.gd's so the two scenes do not want
 ## different hands.
@@ -56,7 +76,6 @@ var _look_drag := Vector2.ZERO
 
 var systems: Dictionary = {}
 
-var _anim: AnimationPlayer
 var _cam: Camera3D
 var _stick_id := -1
 var _stick_origin := Vector2.ZERO
@@ -65,61 +84,27 @@ var _stick_base: Panel
 var _stick_knob: Panel
 var _talk_btn: Button
 var _back_btn: Button
+## Combat on a thumb — see _layout_touch_ui.
+var _attack_btn: Button
+var _dodge_btn: Button
+var _guard_btn: Button
 var _touch_layer: CanvasLayer
 var _stick_radius := STICK_BASE
 var _near: TownNPC = null
 
 
 func _ready() -> void:
-	_build_body()
+	# Fighter builds the body, the rig and every clip — including the
+	# ones this file used to load by hand. Its capsule is 2m CENTRED on
+	# the origin and its model hangs a metre below to stand on its feet,
+	# which is the offset this file once copied wrongly and buried the
+	# walker to the waist. Inheriting it means there is now one answer
+	# instead of two.
+	setup(PLAYER_HEALTH, Color.WHITE, true, Fighter.CHARACTER,
+		Look.IRON, Look.LEATHER, "mail")
 	_build_camera()
 	_build_touch_ui()
 	TownNPC.player = self
-
-
-func _build_body() -> void:
-	var col := CollisionShape3D.new()
-	var cap := CapsuleShape3D.new()
-	cap.height = 1.8
-	cap.radius = 0.35
-	col.shape = cap
-	col.position = Vector3(0, 0.9, 0)
-	add_child(col)
-	var mdl := (load(MODEL) as PackedScene).instantiate() as Node3D
-	# The model's feet sit on ITS OWN origin — measured, not assumed: the
-	# paladin mesh spans y 0.000 to 1.725. The capsule above is 1.8 tall
-	# and offset up by half of that, so its bottom is on the node origin
-	# too, and the two line up with no offset at all.
-	#
-	# This carried a -1.0 here, copied from world.gd where the capsule is
-	# 2m CENTRED on the origin and the model genuinely does have to hang
-	# a metre below it. With this capsule that sank the visible body one
-	# metre into the floor — waist deep, reported from play. It went
-	# unnoticed because the town had no floor to stand on until today,
-	# so the walker fell past the problem.
-	mdl.position = Vector3.ZERO
-	add_child(mdl)
-	var skel := _find(mdl, "Skeleton3D")
-	_anim = AnimationPlayer.new()
-	skel.get_parent().add_child(_anim)
-	_anim.root_node = _anim.get_path_to(skel.get_parent())
-	var lib := AnimationLibrary.new()
-	var idle := _clip(IDLE_CLIP)
-	idle.loop_mode = Animation.LOOP_LINEAR
-	var walk := _clip(WALK_CLIP)
-	walk.loop_mode = Animation.LOOP_LINEAR
-	lib.add_animation("idle", idle)
-	lib.add_animation("walk", walk)
-	_anim.add_animation_library("", lib)
-	_anim.play("idle")
-
-
-func _clip(path: String) -> Animation:
-	var src := (load(path) as PackedScene).instantiate()
-	var src_anim := _find(src, "AnimationPlayer") as AnimationPlayer
-	var clip: Animation = src_anim.get_animation(src_anim.get_animation_list()[0])
-	src.queue_free()
-	return clip
 
 
 func _build_camera() -> void:
@@ -270,6 +255,28 @@ func _layout_touch_ui() -> void:
 	_back_btn.pressed.connect(_leave)
 	_touch_layer.add_child(_back_btn)
 
+	# The same combat chips as the yard and the Hedges, in the same
+	# corner. Reported from play: "there isn't a way to do combat without
+	# a controller." In the town that was not a missing gesture — there
+	# was no combat here at all — but the fix has to arrive looking
+	# identical, or the town is still a different game to a thumb.
+	_attack_btn = UI.chip("Attack", scale)
+	_dodge_btn = UI.chip("Dodge", scale)
+	_guard_btn = UI.chip("Guard", scale)
+	# Stacked ABOVE Talk, which already sits under the right thumb.
+	var y: float = _talk_btn.position.y - 10.0 * scale
+	for b in [_attack_btn, _dodge_btn, _guard_btn]:
+		b.size = b.custom_minimum_size
+		y -= b.size.y
+		b.position = Vector2(vp.x - inset.z - gutter - b.size.x, y)
+		y -= 10.0 * scale
+		_touch_layer.add_child(b)
+
+	_attack_btn.pressed.connect(_town_attack)
+	_dodge_btn.pressed.connect(_town_dodge)
+	_guard_btn.button_down.connect(try_parry)
+	_guard_btn.button_up.connect(lower_guard)
+
 	_apply_scheme()
 
 
@@ -285,6 +292,9 @@ func _apply_scheme() -> void:
 		return
 	var touching: bool = InputMode.is_touch()
 	_back_btn.visible = touching
+	for b in [_attack_btn, _dodge_btn, _guard_btn]:
+		if b != null:
+			b.visible = touching
 	if not touching:
 		_talk_btn.visible = false
 		_stick_id = -1
@@ -296,7 +306,7 @@ func _apply_scheme() -> void:
 ## question, tapping Talk also starts a camera drag, because _input runs
 ## before the GUI gets a look at the event.
 func _over_chip(at: Vector2) -> bool:
-	for b in [_talk_btn, _back_btn]:
+	for b in [_talk_btn, _back_btn, _attack_btn, _dodge_btn, _guard_btn]:
 		if b != null and b.visible and b.get_global_rect().has_point(at):
 			return true
 	return false
@@ -362,10 +372,56 @@ func _unhandled_input(event: InputEvent) -> void:
 				_try_talk()
 			elif k.keycode == KEY_ESCAPE:
 				_leave()
+			elif k.keycode == KEY_J or k.keycode == KEY_ENTER:
+				_town_attack()
+			elif k.keycode == KEY_SPACE:
+				_town_dodge()
+			elif k.keycode == KEY_K:
+				try_parry()
+		elif not k.pressed and k.keycode == KEY_K:
+			lower_guard()
 	elif event is InputEventJoypadButton and event.pressed:
 		match event.button_index:
-			PAD_TALK: _try_talk()
+			PAD_TALK:
+				# Talk if there is anyone to talk to; otherwise this is
+				# the dodge, which is what A does everywhere else.
+				if _near != null:
+					_try_talk()
+				else:
+					_town_dodge()
 			PAD_LEAVE: _leave()
+			PAD_ATTACK: _town_attack()
+			PAD_GUARD: try_parry()
+	elif event is InputEventJoypadButton and not event.pressed \
+			and event.button_index == PAD_GUARD:
+		lower_guard()
+
+
+## Swing, in town.
+##
+## Thin wrappers rather than calls straight into Fighter, because a
+## conversation is not a fight: with a panel open the same button is
+## moving a highlight, and a sword coming out behind it would be the
+## town answering an input meant for the menu.
+func _town_attack() -> void:
+	if UI.modal_open():
+		return
+	if try_attack():
+		attack.arc = Attack.Arc.UPPER_RIGHT
+
+
+func _town_dodge() -> void:
+	if UI.modal_open():
+		return
+	# Aimed where you are steering, exactly as in the yard — a dodge
+	# repositions (L56), so standing still is the only time it is purely
+	# defensive.
+	var dir := _input_dir()
+	var away := -global_transform.basis.z
+	if dir.length() > 0.15:
+		var d2: Vector2 = dir.normalized().rotated(-_cam_yaw)
+		away = Vector3(-d2.x, 0.0, -d2.y)
+	try_dodge(away)
 
 
 ## Back to the launcher. Without this, picking Thornfield was a one-way
@@ -408,26 +464,27 @@ func _input_dir() -> Vector2:
 
 
 func _physics_process(delta: float) -> void:
+	# The combat clocks run here too now: windups, recoveries, i-frames
+	# and stamina all tick whether or not there is anything to fight.
+	tick(delta)
+
 	var dir := _input_dir()
+	var heading := Vector3.ZERO
 	if dir.length() > 0.15:
 		# Rotated into camera space. Without this, turning the camera
 		# leaves "forward" pointing somewhere that is not forward on
 		# screen, and the town becomes unwalkable the first time you
 		# orbit behind yourself.
 		var d2: Vector2 = dir.normalized().rotated(-_cam_yaw)
-		var d := Vector3(d2.x, 0.0, d2.y)
-		velocity.x = d.x * SPEED
-		velocity.z = d.z * SPEED
-		rotation.y = lerp_angle(rotation.y, atan2(d.x, d.z), 12.0 * delta)
-		if _anim.current_animation != "walk":
-			_anim.play("walk")
-	else:
-		velocity.x = move_toward(velocity.x, 0.0, SPEED * 8.0 * delta)
-		velocity.z = move_toward(velocity.z, 0.0, SPEED * 8.0 * delta)
-		if _anim.current_animation != "idle":
-			_anim.play("idle")
-	velocity.y -= 22.0 * delta
-	move_and_slide()
+		# Fighter faces -Z, so the sign here is its convention, not this
+		# file's preference.
+		heading = Vector3(-d2.x, 0.0, -d2.y)
+
+	# Fighter.move does the steering, the gravity, the animation and the
+	# footsteps, and refuses to move a body that is mid-swing — which is
+	# combat.md §6's telegraph, and has to hold in the town as much as
+	# anywhere else.
+	move(heading, SPEED, delta)
 
 	# The camera is placed HERE, in the physics step, immediately after
 	# the body has moved — and set outright rather than lerped toward.
