@@ -469,6 +469,48 @@ have been a silent dead button in any system without that table.
 — there is nowhere to walk a wagon to and no forge to stand at — so the
 board is period-correct but one-note. That is the next thing.
 
+## ⚠️ Reported from play, 2026-09-16 — "there isn't a way to do combat without a controller"
+
+**In the Hedges and in the town. Both true, for different reasons.**
+
+**The Hedges.** The touch scheme was a tap to swing, a second finger to
+dodge and a hold to guard, and **L81 kept all three off the screen**.
+Nothing was broken in the fight — the machinery works, and the new
+checks prove it — but nothing on a phone SAYS those gestures exist, so
+a thumb has no way to find them. An input you cannot discover is not an
+input.
+
+`Attack`, `Dodge` and `Guard` are now chips in the yard and the Hedges,
+touch only, **alongside** the gestures rather than replacing them. L81
+is revised to exempt combat controls, at the user's call, with the
+buttons explicitly there to make the scheme testable.
+
+They are also the first combat input **a harness can drive**. A
+synthetic tap has never produced a swing in this project, in any build
+— which is why the tap path is still unverified and why a check that
+only ever looked at the yard could not have caught this. 10 new checks,
+run in both scenes, attack/dodge/guard each proved to fire.
+
+**Still unexplained:** play reports that tapping DOES swing in the yard
+and does not in the Hedges. Both scenes run `world.gd` through the same
+`_unhandled_input`, and neither builds any Control that could eat a
+touch — `_bar_root` is `MOUSE_FILTER_IGNORE` and the only other node on
+the touch layer is the Back chip. The buttons make it testable rather
+than solving it, and it stays open, written down, rather than being
+quietly assumed fixed.
+
+**The town is a different fault.** `town_player.gd` says in its own
+header: *"never touches combat"*. `TownWalker` is a `CharacterBody3D`
+with a model, a camera and a Talk chip — no `Fighter`, no sword, no
+attack or dodge for **any** input scheme, pad included. So this was
+never a touch problem there; combat simply does not exist in the town.
+
+**Decided from play: no place is excluded.** The town gets combat. The
+route that does not duplicate the rules is to make `TownWalker` extend
+`Fighter` — which already has attack, dodge, parry, stamina, health,
+the harness and the sound — keeping its camera, steering and talk. That
+is the next piece of work, not this commit.
+
 ## Device check
 
 `CLAUDE.md` instructs the assistant to ask which device you are on at

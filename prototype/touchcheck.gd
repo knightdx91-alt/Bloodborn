@@ -172,6 +172,74 @@ func _ready() -> void:
 		int(y.get("_swing_count")) > base2,
 		"mouse attack is broken: swings stayed at %d" % base2)
 
+	# --- Combat you can reach with a thumb --------------------------------
+	#
+	# Reported from play: "there isn't a way to do combat without a
+	# controller when I'm in the hedges or the town." The gestures were
+	# never the whole problem — nothing on screen said they existed, and
+	# an input you cannot discover is not an input.
+	#
+	# Checked in BOTH scenes on purpose. They run the same script, so
+	# there should be no difference; play says there is one, and a check
+	# that only ever looked at the yard is how that difference stayed
+	# invisible.
+	for scene in ["res://main.tscn", "res://hedges.tscn"]:
+		var w: Node3D = load(scene).instantiate() as Node3D
+		add_child(w)
+		await get_tree().create_timer(1.2).timeout
+		var where := "the yard" if scene.ends_with("main.tscn") else "the Hedges"
+
+		var atk: Button = w.get("_attack_btn")
+		var dge: Button = w.get("_dodge_btn")
+		var grd: Button = w.get("_guard_btn")
+		_ok("%s has an attack, a dodge and a guard on screen" % where,
+			atk != null and dge != null and grd != null,
+			"attack=%s dodge=%s guard=%s" % [str(atk != null),
+				str(dge != null), str(grd != null)])
+
+		if atk == null:
+			w.queue_free()
+			await get_tree().process_frame
+			continue
+
+		_ok("and in %s they are only there for a thumb" % where,
+			atk.visible == InputMode.is_touch(),
+			"visible=%s while is_touch=%s"
+				% [str(atk.visible), str(InputMode.is_touch())])
+
+		var fighter: Fighter = w.get("player")
+		var hits_before: int = int(w.get("_swing_count"))
+		atk.pressed.emit()
+		await get_tree().process_frame
+		_ok("the attack button swings in %s" % where,
+			int(w.get("_swing_count")) > hits_before,
+			"swings %d -> %d — the button is decoration"
+				% [hits_before, int(w.get("_swing_count"))])
+
+		# Let the swing finish before asking for anything else: a fighter
+		# is committed to its own attack, so a dodge during one is
+		# correctly refused and would measure the wrong thing.
+		for f in 120:
+			await get_tree().physics_frame
+		dge.pressed.emit()
+		await get_tree().process_frame
+		_ok("the dodge button dodges in %s" % where,
+			not fighter.dodge.can_act(), "pressing Dodge did nothing")
+
+		for f in 120:
+			await get_tree().physics_frame
+		grd.button_down.emit()
+		await get_tree().process_frame
+		var braced: bool = not fighter.parry.can_act()
+		grd.button_up.emit()
+		await get_tree().process_frame
+		_ok("the guard button raises the guard in %s" % where, braced,
+			"holding Guard did not brace")
+
+		w.queue_free()
+		await get_tree().process_frame
+
 	print("")
 	print("touch: all clear" if _fails.is_empty() else "FAILED: %s" % ", ".join(_fails))
 	get_tree().quit()
+

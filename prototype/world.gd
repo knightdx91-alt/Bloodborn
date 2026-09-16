@@ -1287,6 +1287,10 @@ var _bar_fill: ColorRect
 var _bar_alpha := 0.0
 var _last_stamina := 0.0
 var _touch_layer: CanvasLayer
+## Combat on a thumb. See _layout_touch_ui for why these exist.
+var _attack_btn: Button
+var _dodge_btn: Button
+var _guard_btn: Button
 var _back_btn: Button
 
 const BAR_FADE_IN := 12.0
@@ -1331,8 +1335,13 @@ func _build_interface() -> void:
 
 
 func _layout_touch_ui() -> void:
-	if _back_btn != null:
-		_back_btn.queue_free()
+	for b in [_back_btn, _attack_btn, _dodge_btn, _guard_btn]:
+		if b != null:
+			b.queue_free()
+	_attack_btn = null
+	_dodge_btn = null
+	_guard_btn = null
+
 	var scale := UI.scale_for(self)
 	var inset := UI.safe_inset(self)
 	var vp: Vector2 = get_viewport().get_visible_rect().size
@@ -1343,12 +1352,51 @@ func _layout_touch_ui() -> void:
 		vp.x - inset.z - gutter - _back_btn.size.x, inset.y + gutter)
 	_back_btn.pressed.connect(_leave)
 	_touch_layer.add_child(_back_btn)
+
+	# Combat, with buttons.
+	#
+	# The scheme was a tap to swing, a second finger to dodge and a hold
+	# to guard, and L81 kept all three off the screen. Reported from
+	# play: "there isn't a way to do combat without a controller." Not
+	# that the gestures misfire — that nothing on a phone SAYS they
+	# exist, so a thumb has no way to find them. An input you cannot
+	# discover is not an input.
+	#
+	# So these sit alongside the gestures rather than replacing them.
+	# They are also the first combat input a harness can actually drive:
+	# a synthetic tap has never produced a swing in this project, in any
+	# build, which is why the tap path is still unverified — a button
+	# press is not ambiguous.
+	_attack_btn = UI.chip("Attack", scale)
+	_dodge_btn = UI.chip("Dodge", scale)
+	_guard_btn = UI.chip("Guard", scale)
+	var stack: Array[Button] = [_attack_btn, _dodge_btn, _guard_btn]
+	var gap: float = 10.0 * scale
+	var y: float = vp.y - inset.w - gutter
+	for b in stack:
+		b.size = b.custom_minimum_size
+		y -= b.size.y
+		b.position = Vector2(vp.x - inset.z - gutter - b.size.x, y)
+		y -= gap
+		_touch_layer.add_child(b)
+
+	_attack_btn.pressed.connect(func() -> void: _try_attack(Attack.Arc.UPPER_RIGHT))
+	_dodge_btn.pressed.connect(_try_dodge)
+	# Held, like the pad's guard: you hold it when you mean it. A guard
+	# that ended on release of a TAP would be no guard at all.
+	_guard_btn.button_down.connect(_try_parry)
+	_guard_btn.button_up.connect(func() -> void:
+		if player != null:
+			player.lower_guard())
+
 	_apply_scheme()
 
 
 func _apply_scheme() -> void:
-	if _back_btn != null:
-		_back_btn.visible = InputMode.is_touch()
+	var touching := InputMode.is_touch()
+	for b in [_back_btn, _attack_btn, _dodge_btn, _guard_btn]:
+		if b != null:
+			b.visible = touching
 
 func _update_interface(delta: float) -> void:
 	if _bar_root == null:
