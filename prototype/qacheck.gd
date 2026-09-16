@@ -92,6 +92,10 @@ func _fit_check(root: Node, vp: Vector2, label: String) -> void:
 
 
 func _ready() -> void:
+	# Start from a clean town. TownState persists now, and a harness that
+	# inherits whatever the last play session left behind is a harness
+	# that passes or fails for reasons nobody can see.
+	TownState.reset()
 	var t: Node3D = load("res://town.tscn").instantiate() as Node3D
 	add_child(t)
 	await get_tree().create_timer(2.5).timeout

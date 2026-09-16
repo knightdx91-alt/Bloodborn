@@ -86,7 +86,20 @@ static func duty_line(state: TownWorldState, contract_id: String) -> String:
 
 ## Take a contract: binding, so the conversation layer confirms first.
 static func take(state: TownWorldState, contract_id: String) -> bool:
-	return ContractBoardRules.take(state, contract_id)
+	var ok := ContractBoardRules.take(state, contract_id)
+	if ok:
+		_persist()
+	return ok
+
+
+## Write the town down after anything that changes it. Taking a contract
+## and then walking to the drill yard must not lose the contract.
+static func _persist() -> void:
+	var tree := Engine.get_main_loop()
+	if tree is SceneTree:
+		var t: Node = (tree as SceneTree).root.get_node_or_null("TownState")
+		if t != null:
+			t.call("save")
 
 
 ## The contract board hands out work, so its rows are things you take.

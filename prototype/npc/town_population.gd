@@ -12,7 +12,9 @@ extends RefCounted
 
 
 static func populate(town_root: Node3D) -> Dictionary:
-	var state := TownWorldState.new()
+	# The LIVE town, not a fresh one. Built new here, every visit wiped
+	# the contract you took on the last one.
+	var state: TownWorldState = TownState.current()
 	var systems := {"state": state}
 	var pop := Node3D.new()
 	pop.name = "Population"

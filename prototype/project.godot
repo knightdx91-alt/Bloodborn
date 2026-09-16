@@ -21,6 +21,10 @@ config/features=PackedStringArray("4.3", "GL Compatibility")
 ; scene changes and see events before any scene consumes one.
 InputMode="*res://input_mode.gd"
 
+; TownState owns the one live TownWorldState and its trips to disk, so
+; Thornfield remembers what you did there after a walk to the drill yard.
+TownState="*res://town_state.gd"
+
 [display]
 
 window/size/viewport_width=960

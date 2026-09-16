@@ -17,6 +17,14 @@ const MASTERS := ["odo", "pell"]
 
 ## Hire via dialogue. Returns the master's first errand line.
 static func hire(state: TownWorldState, master: String) -> String:
+	var before := state.hired
+	var line := _hire(state, master)
+	if state.hired != before:
+		Boards._persist()
+	return line
+
+
+static func _hire(state: TownWorldState, master: String) -> String:
 	match TownRules.hire(state, master, MASTERS):
 		TownRules.Hire.ALREADY_HIRED:
 			return "You're already hired, and %s has a long memory for second masters." % state.apprentice_master

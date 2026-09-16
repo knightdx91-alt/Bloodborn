@@ -28,6 +28,8 @@ static func buy_drink(state: TownWorldState) -> Dictionary:
 	var r := RumourMill.buy_drink(state)
 	if not bool(r["paid"]):
 		return {"ok": false}
+	# Coin left the purse, so the purse has to be written down.
+	Boards._persist()
 	var said := _dress(r)
 	return {"ok": true, "text": said["text"], "source": said["source"]}
 
