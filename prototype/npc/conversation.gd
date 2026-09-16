@@ -137,6 +137,10 @@ func _fill_topics() -> void:
 		c.queue_free()
 	for t in _npc.topics:
 		var shown := _resolve(t)
+		# An empty answer means the world does not support saying this at
+		# all, and the topic is simply absent. See WITHHOLD below.
+		if shown.is_empty():
+			continue
 		var b := UI.choice(String(shown.get("topic", "...")), _topic_scale, _topic_width)
 		b.pressed.connect(_on_topic.bind(shown))
 		_topic_box.add_child(b)
@@ -161,10 +165,18 @@ func _fill_topics() -> void:
 # been amended — a rule that lives only in prose gets un-followed by the
 # next person to read the prose.
 #
-# Prefer CHANGING a topic to removing one. "Escort the Vellmark wagon?"
-# becoming "— taken", with somewhere to be and a time to be there, is a
-# town that noticed. A line that silently disappears is just a shorter
-# menu.
+# Prefer CHANGING a topic to removing one — for the thing the player
+# actually did. "Escort the Vellmark wagon?" becoming "— taken", with
+# somewhere to be and a time to be there, is a town that noticed.
+#
+# WITHHOLD (return {}) is for the opposite case: an offer that was never
+# theirs to take right now. Reported from play — "those options probably
+# shouldn't appear at all if you've already accepted a job, why would
+# it?" — and that is exactly right. Dressing up an offer nobody would
+# make is worse than not making it: a greyed "— unavailable" row is the
+# game admitting it wrote a line it cannot honour. A man with sense does
+# not offer work to somebody already spoken for; he says nothing about
+# it and talks about the road instead.
 const RESOLVERS := {
 	"": "_topic_as_authored",
 	"ask_rumor": "_topic_as_authored",
@@ -214,6 +226,10 @@ func _topic_as_authored(t: Dictionary, _state: TownWorldState) -> Dictionary:
 func _topic_if_untaken(t: Dictionary, state: TownWorldState) -> Dictionary:
 	var arg := _arg(t)
 	if arg == "" or not state.contracts_taken.has(arg):
+		# Carrying somebody else's work already: this is not an offer
+		# anyone would make, so it is not made.
+		if _committed(state):
+			return {}
 		return t
 	var done := t.duplicate()
 	done["topic"] = "%s   — taken" % String(t.get("topic", ""))
@@ -226,6 +242,10 @@ func _topic_if_untaken(t: Dictionary, state: TownWorldState) -> Dictionary:
 func _topic_if_unhired(t: Dictionary, state: TownWorldState) -> Dictionary:
 	var arg := _arg(t)
 	if arg == "" or not state.hired:
+		# Taking somebody on is a bigger commitment than a contract, and
+		# no master offers it to somebody already carrying work.
+		if _committed(state):
+			return {}
 		return t
 	var spoken := t.duplicate()
 	var mine: bool = state.apprentice_master == arg
@@ -248,6 +268,15 @@ func _topic_if_affordable(t: Dictionary, state: TownWorldState) -> Dictionary:
 	broke["effect"] = ""
 	broke["line"] = "Mara eyes your purse. \"Coin first, thirsty.\""
 	return broke
+
+
+## Is the player already carrying accepted work?
+##
+## One piece at a time. Reported from play, and it is the honest reading
+## of the fiction: you have the paper in your hand, and the next person
+## you speak to can see that.
+func _committed(state: TownWorldState) -> bool:
+	return not state.contracts_taken.is_empty()
 
 
 func _arg(t: Dictionary) -> String:

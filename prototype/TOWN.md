@@ -438,6 +438,36 @@ rather than covering them. It is centred by a `CenterContainer` rather
 than by a fixed offset, so a long set of terms grows the panel instead
 of walking it off the top of the screen.
 
+## One piece of work at a time — 2026-09-16
+
+From play: *"once you accept the job from Mara, it shouldn't let you
+choose the option for take me on — those options probably shouldn't
+appear at all if you've already accepted a job, why would it?"*
+
+Right on both counts, and it sharpened **L92**. The rule had one half:
+change a topic the world has answered. It now has two.
+
+- **Change** the thing the player actually did — "— taken", and where to
+  report.
+- **Withhold** an offer that was never theirs to take. While carrying
+  accepted work, no contract and no apprenticeship is offered, and the
+  topic is *absent* rather than greyed. A dressed-up "— unavailable" row
+  is the game admitting it wrote a line it cannot honour.
+
+The board obeys the same rule — its rows stop being pressable and the
+status line says "You're carrying work already. Finish it before you
+take more." A rule that holds in conversation and not on the board is
+not a rule; the board would just be the loophole.
+
+Conversations do not go empty: Odo keeps "Teach me the drill yard",
+Pell keeps "Road news?".
+
+> ⚠️ **Nothing finishes yet.** `contracts_taken` only grows — no
+> completion, no hand-in, no abandoning. So taking one contract now
+> closes the work economy for the rest of the session. That is this rule
+> working as specified and a dead end in practice. **Contract completion
+> is the next thing the town needs.**
+
 ## Still open
 
 - **The world state is seeded once and never persists.** Nothing
@@ -446,3 +476,7 @@ of walking it off the top of the screen.
   ale is tagged a contract offer. Gated correctly; the taxonomy wants
   separating before a model generates the first one.
 - **NPC bodies** are still the blocky placeholder.
+- **No contract completion.** Taken work can never be finished, handed
+  in, or abandoned, which under L92's one-job-at-a-time reading closes
+  the work economy after a single contract. The most valuable next
+  piece of town work.

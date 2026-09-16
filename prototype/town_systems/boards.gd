@@ -140,9 +140,16 @@ static func _open_list_ui(header: String, rows: Array, _state: TownWorldState,
 	vb.add_theme_constant_override("separation", int(8.0 * scale))
 	panel.add_child(vb)
 	vb.add_child(UI.heading(header, scale))
-	var status := UI.subheading(
-		"Pick a job to take it." if takeable else "Prices only. Nothing here is an offer.",
-		scale)
+	# One piece of work at a time. If the people will not offer a second
+	# job, the board cannot be the loophole that hands one out — a rule
+	# that holds in conversation and not on the board is not a rule.
+	var carrying: bool = takeable and _state != null \
+		and not _state.contracts_taken.is_empty()
+	var note := "Prices only. Nothing here is an offer."
+	if takeable:
+		note = "You're carrying work already. Finish it before you take more." \
+			if carrying else "Pick a job to take it."
+	var status := UI.subheading(note, scale)
 	vb.add_child(status)
 
 	var scroll := ScrollContainer.new()
@@ -179,7 +186,7 @@ static func _open_list_ui(header: String, rows: Array, _state: TownWorldState,
 			if r.has("unit"):
 				line += " the %s" % String(r["unit"])
 
-		if takeable and not taken and r.has("id"):
+		if takeable and not taken and not carrying and r.has("id"):
 			# A row you can actually take. Same choice widget as every
 			# other list in the game, so a pad walks it and a thumb hits
 			# it, and taking one goes through L49's gate like any other

@@ -509,11 +509,29 @@ poach rather than pretend to be free. A caravan already departed
 contradicts escorting it. The question is never "has this been done" but
 "does the world still support this being said".
 
-**Prefer changing a topic to removing one.** "Escort the Vellmark
-wagon?" becoming "— taken", with somewhere to be and a time to be there,
-is a town that noticed. A line that silently disappears is just a
-shorter menu, and reporting for duty is what the player wants at that
-moment anyway.
+**Prefer changing a topic to removing one — for the thing the player
+actually did.** "Escort the Vellmark wagon?" becoming "— taken", with
+somewhere to be and a time to be there, is a town that noticed, and
+reporting for duty is what the player wants at that moment anyway.
+
+**Withhold an offer that was never theirs to take.** While you are
+carrying accepted work, nobody offers you more of it — not another
+contract, not an apprenticeship — and the offer is *absent*, not greyed
+out. From play: *"those options probably shouldn't appear at all if
+you've already accepted a job, why would it?"* Exactly. A dressed-up
+"— unavailable" row is the game admitting it wrote a line it cannot
+honour; a man with sense simply does not make the offer, and talks about
+the road instead. **The board obeys the same rule as the people**, or it
+becomes the loophole that hands out what conversation refuses.
+
+> ⚠️ **One piece of work at a time is a real constraint, and nothing
+> finishes yet.** `contracts_taken` only ever grows in the prototype —
+> there is no completion, no hand-in, no abandoning. So taking a single
+> contract currently closes the whole work economy for the rest of the
+> session. That is the correct behaviour under this rule and a dead end
+> in practice; completion is the next thing the town needs, and until it
+> exists this rule should be read as "the offers are right" rather than
+> "the loop is finished".
 
 **This is enforced, not merely written here.** Every effect an NPC can
 offer declares its availability rule in one table, and a test walks

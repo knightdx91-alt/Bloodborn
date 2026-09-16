@@ -448,6 +448,80 @@ func _ready() -> void:
 		ConversationUI.current.close()
 		await _settle()
 
+	print("--- one piece of work at a time ---")
+	# Reported from play: "once you accept the job from mara, it
+	# shouldn't let you choose the option for take me on — those options
+	# probably shouldn't appear at all if you've already accepted a job,
+	# why would it?"
+	var busy := TownWorldState.new()
+	var master: TownNPC = null
+	var hire_topic := ""
+	var other_job := ""
+	for n in pop.get_children():
+		if not (n is TownNPC):
+			continue
+		for tp in (n as TownNPC).topics:
+			if String(tp.get("effect", "")) == "hire" and master == null:
+				master = n as TownNPC
+				hire_topic = String(tp.get("topic", ""))
+	_ok("somebody offers an apprenticeship", master != null, "nobody does")
+	if master != null:
+		for tp in master.topics:
+			if String(tp.get("effect", "")) == "take_contract":
+				other_job = String(tp.get("topic", ""))
+		ConversationUI.open(master, {"state": busy})
+		await _settle()
+		var offers_hire := false
+		for bb in _buttons(ConversationUI.current):
+			if (bb as Button).text == hire_topic:
+				offers_hire = true
+		_ok("and offers it while you are free", offers_hire,
+			"'%s' was not offered even with no work in hand" % hire_topic)
+		ConversationUI.current.close()
+		await _settle()
+
+		# Now take a job somewhere else entirely.
+		Boards.take(busy, String(Boards.contracts(busy)[0]["id"]))
+		ConversationUI.open(master, {"state": busy})
+		await _settle()
+		var still_hire := false
+		var still_other := false
+		var left := 0
+		for bb in _buttons(ConversationUI.current):
+			var bt := (bb as Button).text
+			left += 1
+			if bt.begins_with(hire_topic):
+				still_hire = true
+			if other_job != "" and bt.begins_with(other_job):
+				still_other = true
+		_ok("then stops offering to take you on", not still_hire,
+			"'%s' still offered while carrying work" % hire_topic)
+		if other_job != "":
+			_ok("and stops offering other jobs too", not still_other,
+				"'%s' still offered while carrying work" % other_job)
+		_ok("but still has something to say", left > 0,
+			"the conversation went completely empty")
+		ConversationUI.current.close()
+		await _settle()
+
+		# And the board must not be the loophole.
+		Boards.open_contracts_ui(busy)
+		await _settle()
+		var board2 := UI.top_modal()
+		var takeable := 0
+		for bb in _buttons(board2):
+			if (bb as Button).text != "Step back":
+				takeable += 1
+		_ok("the board hands out nothing either", takeable == 0,
+			"%d job(s) still pressable while carrying work" % takeable)
+		var said_why := false
+		for l in board2.find_children("*", "Label", true, false):
+			if (l as Label).text.findn("carrying work") != -1:
+				said_why = true
+		_ok("and says why", said_why, "the board gave no reason")
+		Boards._close_ui()
+		await _settle()
+
 	print("--- the town knows what you have already taken ---")
 	# Reported from play: Carter Pell went on offering a job that had
 	# already been taken off the board.
