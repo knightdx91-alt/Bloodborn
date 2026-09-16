@@ -431,6 +431,44 @@ produced nonsense in both directions, because a binary pack is full of
 fragments that look like paths. Parsing the real file table was the
 difference between a check and a guess.)
 
+## Done 2026-09-16 — the work loop opens both ways
+
+**Taking a contract was a one-way door.** A cull taken by mistake, or one
+whose wood turned out to be further than it looked, stayed on your name
+for good. That is not difficulty, it is a dead end.
+
+You can now give the paper back — and the design is that it is
+**possible and remembered**, not that it is free:
+
+- **The progress goes with it.** Whatever you killed toward that contract
+  is not banked for a later attempt. Retaking it starts again, which is
+  what stops abandoning being a way to pause a job you are losing.
+- **No coin changes hands.** There is no fee and no reputation number.
+- **The town counts it.** `contracts_abandoned`, and a new bark condition
+  `you_gave_work_back` — so the market, the farmers and the wardens each
+  have something they only say once you have done it. That is where this
+  world keeps its opinions.
+- **It meets the same L49 gate as signing**, because it is exactly as
+  irreversible in the other direction, and the gate names the price:
+  *"the 3 you have already done goes with it"*.
+- **A withdrawn posting can still be dropped.** Refusing to let go of
+  work nobody is offering would be the same dead end in a smaller room.
+
+8 xUnit tests, 9 matching GDScript checks, and 6 more in `qacheck` that
+drive the actual player path — the topic appearing, the gate opening on
+the refusal, nothing happening until you confirm.
+
+**L92 caught my own mistake on the way.** The new `give_back` effect was
+not in `RESOLVERS`, so the topic rendered as *"— give it back —
+unavailable"* and did nothing when pressed. That is the rule working:
+an effect the game cannot honour is shown as a visible gap rather than
+offered. It cost one probe to find and one line to fix, and it would
+have been a silent dead button in any system without that table.
+
+**Still only culls close the loop.** Escort and smithing refuse honestly
+— there is nowhere to walk a wagon to and no forge to stand at — so the
+board is period-correct but one-note. That is the next thing.
+
 ## Device check
 
 `CLAUDE.md` instructs the assistant to ask which device you are on at

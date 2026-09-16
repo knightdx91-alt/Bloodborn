@@ -207,5 +207,117 @@ namespace Marrowmark.Sim.Tests.Town
             Assert.Equal(0, ContractWork.Done(s, WestCull));
             Assert.Equal(1, ContractWork.Done(s, "cull-the-north-road"));
         }
+
+        // --- Giving the paper back -----------------------------------
+        //
+        // Taking work used to be a one-way door: a contract taken by
+        // mistake stayed on your name for good. These are about the door
+        // opening both ways WITHOUT abandoning becoming free.
+
+        [Fact]
+        public void A_taken_contract_can_be_given_back()
+        {
+            var s = Thornfield();
+            var c = ContractBoard.Generate(s).First(x => x.Id == WestCull);
+            s.ContractsTaken.Add(c.Id);
+
+            var a = ContractWork.Abandon(s, c.Id);
+
+            Assert.Equal(AbandonResult.Released, a.Result);
+            Assert.DoesNotContain(c.Id, s.ContractsTaken);
+        }
+
+        [Fact]
+        public void One_you_never_took_cannot_be_given_back()
+        {
+            var s = Thornfield();
+            var a = ContractWork.Abandon(s, WestCull);
+            Assert.Equal(AbandonResult.NotTaken, a.Result);
+            Assert.Equal(0, s.ContractsAbandoned);
+        }
+
+        /// <summary>
+        /// The point of the whole design. If progress survived, abandoning
+        /// would be a free pause on a job you were losing — take it back
+        /// later with the hard part already done.
+        /// </summary>
+        [Fact]
+        public void The_work_goes_back_with_the_paper()
+        {
+            var s = Thornfield();
+            var c = ContractBoard.Generate(s).First(x => x.Id == WestCull);
+            s.ContractsTaken.Add(c.Id);
+            ContractWork.RecordCull(s, c.Subject, 3);
+            Assert.Equal(3, ContractWork.Done(s, c.Id));
+
+            var a = ContractWork.Abandon(s, c.Id);
+            Assert.Equal(3, a.Forfeited);
+
+            // Take it again: it starts from nothing.
+            s.ContractsTaken.Add(c.Id);
+            Assert.Equal(0, ContractWork.Done(s, c.Id));
+        }
+
+        [Fact]
+        public void Abandoning_costs_no_coin()
+        {
+            var s = Thornfield();
+            var c = ContractBoard.Generate(s).First(x => x.Id == WestCull);
+            s.ContractsTaken.Add(c.Id);
+            var before = s.Coin;
+            ContractWork.Abandon(s, c.Id);
+            Assert.Equal(before, s.Coin);
+        }
+
+        /// <summary>The cost is that the town watched.</summary>
+        [Fact]
+        public void But_the_town_counts_it()
+        {
+            var s = Thornfield();
+            var c = ContractBoard.Generate(s).First(x => x.Id == WestCull);
+            s.ContractsTaken.Add(c.Id);
+            ContractWork.Abandon(s, c.Id);
+            Assert.Equal(1, s.ContractsAbandoned);
+        }
+
+        /// <summary>
+        /// A posting withdrawn while you held it must still be droppable.
+        /// Refusing to let go of work nobody is offering is the same dead
+        /// end in a smaller room.
+        /// </summary>
+        [Fact]
+        public void A_paper_for_a_withdrawn_posting_can_still_be_dropped()
+        {
+            var s = Thornfield();
+            s.ContractsTaken.Add("cull-nowhere-at-all");
+            var a = ContractWork.Abandon(s, "cull-nowhere-at-all");
+            Assert.Equal(AbandonResult.Released, a.Result);
+        }
+
+        [Fact]
+        public void Abandoning_does_not_thin_the_boars()
+        {
+            var s = Thornfield();
+            var c = ContractBoard.Generate(s).First(x => x.Id == WestCull);
+            s.ContractsTaken.Add(c.Id);
+            var before = s.BoarPressure.First(b => b.Region == c.Subject).Pressure;
+            ContractWork.Abandon(s, c.Id);
+            Assert.Equal(before,
+                s.BoarPressure.First(b => b.Region == c.Subject).Pressure);
+            Assert.Equal(0, s.CullsCompleted);
+        }
+
+        /// <summary>And it is a paper, not a pause: handing in afterwards fails.</summary>
+        [Fact]
+        public void You_cannot_hand_in_what_you_gave_back()
+        {
+            var s = Thornfield();
+            var c = ContractBoard.Generate(s).First(x => x.Id == WestCull);
+            s.ContractsTaken.Add(c.Id);
+            ContractWork.RecordCull(s, c.Subject, 99);
+            ContractWork.Abandon(s, c.Id);
+
+            Assert.Equal(HandInResult.NotTaken, ContractWork.Hand(s, c.Id).Result);
+        }
     }
 }

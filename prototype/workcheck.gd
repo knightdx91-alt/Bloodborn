@@ -145,6 +145,72 @@ func _ready() -> void:
 		"west %d road %d" % [ContractWorkRules.done(s, WEST),
 			ContractWorkRules.done(s, ROAD)])
 
+	# --- Giving the paper back -------------------------------------------
+	#
+	# Taking work used to be a one-way door: a contract taken by mistake
+	# stayed on your name for good. These are about the door opening both
+	# ways WITHOUT abandoning becoming a free pause on a job you are
+	# losing.
+	s = _town()
+	s.contracts_taken.append(WEST)
+	ContractWorkRules.record_cull(s, "the Hedges west", 3)
+	var before_coin: int = s.coin
+	var before_pressure: int = int(s.boar_pressure["the Hedges west"])
+	var give: Dictionary = ContractWorkRules.abandon(s, WEST)
+
+	_ok("a taken contract can be given back",
+		int(give["result"]) == ContractWorkRules.AbandonResult.RELEASED
+			and not s.contracts_taken.has(WEST),
+		"result %d, still taken: %s"
+			% [int(give["result"]), str(s.contracts_taken.has(WEST))])
+	_ok("and it says what the work cost", int(give["forfeited"]) == 3,
+		"reported %d forfeited, 3 were done" % int(give["forfeited"]))
+	_ok("the work goes back with the paper",
+		ContractWorkRules.done(s, WEST) == 0,
+		"%d still banked — abandoning would be a free pause"
+			% ContractWorkRules.done(s, WEST))
+	_ok("no coin changes hands", s.coin == before_coin,
+		"%d -> %d" % [before_coin, s.coin])
+	_ok("and the boars are not thinned by giving up",
+		int(s.boar_pressure["the Hedges west"]) == before_pressure
+			and s.culls_completed == 0,
+		"pressure %d -> %d, culls %d" % [before_pressure,
+			int(s.boar_pressure["the Hedges west"]), s.culls_completed])
+	_ok("but the town counts it", s.contracts_abandoned == 1,
+		"counted %d" % s.contracts_abandoned)
+
+	# Retaking starts from nothing.
+	s.contracts_taken.append(WEST)
+	_ok("retaking it starts again", ContractWorkRules.done(s, WEST) == 0,
+		"%d carried over" % ContractWorkRules.done(s, WEST))
+
+	# One you never took.
+	s = _town()
+	_ok("one you never took cannot be given back",
+		int(ContractWorkRules.abandon(s, WEST)["result"])
+			== ContractWorkRules.AbandonResult.NOT_TAKEN
+			and s.contracts_abandoned == 0,
+		"it let go of a paper it never held")
+
+	# A withdrawn posting you still hold.
+	s = _town()
+	s.contracts_taken.append("cull-nowhere-at-all")
+	_ok("a paper for a withdrawn posting can still be dropped",
+		int(ContractWorkRules.abandon(s, "cull-nowhere-at-all")["result"])
+			== ContractWorkRules.AbandonResult.RELEASED,
+		"refusing to let go of work nobody is offering is the same dead "
+		+ "end in a smaller room")
+
+	# And the town has something to say about it.
+	s = _town()
+	var said_before := BarkBank.lines("farmer", 0, s, 12.0)
+	s.contracts_abandoned = 1
+	var said_after := BarkBank.lines("farmer", 0, s, 12.0)
+	_ok("and the town has something new to say once you have",
+		said_after.size() > said_before.size(),
+		"%d lines before, %d after — nothing in the town noticed"
+			% [said_before.size(), said_after.size()])
+
 	print("")
 	print("contract work: all clear" if _fails.is_empty()
 		else "FAILED: %s" % ", ".join(_fails))

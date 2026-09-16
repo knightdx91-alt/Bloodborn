@@ -63,6 +63,15 @@ var contracts_taken: Array = []
 ## and only the second one can be lost.
 var contract_progress: Dictionary = {}
 
+## Papers given back unfinished.
+##
+## Counted rather than punished. content.md §3's board never lies, and a
+## town that has watched you take three jobs and return three of them
+## knows something about you that no reputation number needs to express
+## — it comes out in what people say, which is where the world already
+## keeps its opinions.
+var contracts_abandoned: int = 0
+
 ## Prototype stand-in for the player's purse.
 var coin: int = 12
 

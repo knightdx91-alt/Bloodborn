@@ -23,6 +23,8 @@ enum HandInResult {
 	NOT_YET_POSSIBLE,
 }
 
+enum AbandonResult { RELEASED, NOT_TAKEN }
+
 
 static func _p() -> Dictionary:
 	return TownTuning.load_section("board")
@@ -116,3 +118,33 @@ static func hand_in(state: TownWorldState, contract_id: String) -> Dictionary:
 			after = int(state.boar_pressure[region])
 
 	return {"result": HandInResult.PAID, "paid": pay, "pressure_after": after}
+
+
+## Give the paper back, unfinished. Returns { result, forfeited }.
+##
+## Taking work was a one-way door: a contract taken by mistake — or one
+## whose wood turned out to be further than it looked — stayed on your
+## name for good. That is not difficulty, it is a dead end, and the fix
+## is not to make abandoning free but to make it POSSIBLE and REMEMBERED.
+##
+## The progress goes with it. Whatever was killed toward this contract is
+## not banked for a later attempt, because the paper you hand back is the
+## paper the work was done against. Retaking it starts again, which is
+## what stops abandoning being a way to pause a job you are losing.
+##
+## No coin changes hands. The cost is that the town watched, and
+## `contracts_abandoned` is what it remembers by.
+##
+## Deliberately does NOT check the posting still exists: if the board
+## withdrew it while you held it, you can still stop holding it. Refusing
+## to let go of work nobody is offering is the same dead end in a smaller
+## room.
+static func abandon(state: TownWorldState, contract_id: String) -> Dictionary:
+	if state == null or not state.contracts_taken.has(contract_id):
+		return {"result": AbandonResult.NOT_TAKEN, "forfeited": 0}
+
+	var forfeited := done(state, contract_id)
+	state.contracts_taken.erase(contract_id)
+	state.contract_progress.erase(contract_id)
+	state.contracts_abandoned += 1
+	return {"result": AbandonResult.RELEASED, "forfeited": forfeited}

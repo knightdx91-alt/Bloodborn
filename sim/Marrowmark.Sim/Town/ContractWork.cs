@@ -18,6 +18,23 @@ namespace Marrowmark.Sim.Town
         NotYetPossible,
     }
 
+    public enum AbandonResult
+    {
+        /// <summary>The paper is back on the board.</summary>
+        Released,
+
+        /// <summary>You never took this one.</summary>
+        NotTaken,
+    }
+
+    public sealed class Abandonment
+    {
+        public AbandonResult Result;
+
+        /// <summary>How much finished work was thrown away with it.</summary>
+        public int Forfeited;
+    }
+
     public sealed class HandIn
     {
         public HandInResult Result;
@@ -160,6 +177,48 @@ namespace Marrowmark.Sim.Town
                 Result = HandInResult.Paid,
                 Paid = contract.Pay,
                 PressureAfter = after,
+            };
+        }
+
+        /// <summary>
+        /// Give the paper back, unfinished.
+        ///
+        /// Taking work was a one-way door: a contract taken by mistake —
+        /// or one whose wood turned out to be further than it looked —
+        /// stayed on your name for good. That is not a difficulty, it is
+        /// a dead end, and the fix is not to make abandoning free but to
+        /// make it POSSIBLE and REMEMBERED.
+        ///
+        /// So: the progress goes with it. Whatever was killed toward this
+        /// contract is not banked for a later attempt, because the paper
+        /// you hand back is the paper the work was done against. Retaking
+        /// it starts again. That is what stops abandoning being a way to
+        /// pause a job you are losing.
+        ///
+        /// No coin changes hands. The cost is that the town watched, and
+        /// <see cref="TownState.ContractsAbandoned"/> is what it
+        /// remembers by.
+        ///
+        /// Deliberately does NOT check the posting still exists. If the
+        /// board withdrew it while you held it, you can still stop
+        /// holding it — refusing to let go of work nobody is offering
+        /// would be the same dead end in a smaller room.
+        /// </summary>
+        public static Abandonment Abandon(TownState state, string contractId)
+        {
+            if (state == null || !state.ContractsTaken.Contains(contractId))
+                return new Abandonment { Result = AbandonResult.NotTaken };
+
+            var forfeited = Done(state, contractId);
+
+            state.ContractsTaken.Remove(contractId);
+            state.ContractProgress.RemoveAll(r => r.ContractId == contractId);
+            state.ContractsAbandoned++;
+
+            return new Abandonment
+            {
+                Result = AbandonResult.Released,
+                Forfeited = forfeited,
             };
         }
     }

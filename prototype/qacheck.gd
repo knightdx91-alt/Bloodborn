@@ -109,12 +109,15 @@ func _ready() -> void:
 
 	var npc: TownNPC = null
 	var binder: TownNPC = null
+	var clerk: TownNPC = null
 	for n in pop.get_children():
 		if not (n is TownNPC):
 			continue
 		var c := n as TownNPC
 		if npc == null and c.topics.size() > 0:
 			npc = c
+		if c.pays_contracts:
+			clerk = c
 		for tp in c.topics:
 			if String(tp.get("intent", "")) == "offer_contract":
 				binder = c
@@ -605,6 +608,66 @@ func _ready() -> void:
 		TownNPC.HEADS.size() * TownNPC.OUTFITS.size() >= 30,
 		"%d heads x %d outfits is not 34 distinguishable people"
 			% [TownNPC.HEADS.size(), TownNPC.OUTFITS.size()])
+
+	# --- Giving a contract back, through the actual player path ----------
+	#
+	# The rule is covered by workcheck. This is the half that a player
+	# touches: a topic that exists only because you are holding unfinished
+	# work, behind the same L49 gate as signing — because it is just as
+	# irreversible, in the other direction.
+	print("--- giving the paper back ---")
+	_ok("the clerk of the boards is in town", clerk != null,
+		"nobody declares pays_contracts")
+	if clerk != null:
+		var held := TownWorldState.new()
+		var cull_id := ""
+		for c in ContractBoardRules.generate(held):
+			if int(c["kind"]) == ContractBoardRules.Kind.CULL:
+				cull_id = String(c["id"])
+				break
+		held.contracts_taken.append(cull_id)
+		ContractWorkRules.record_cull(held, held.boar_pressure.keys()[0], 1)
+
+		ConversationUI.open(clerk, {"state": held})
+		await _settle()
+		var cui: ConversationUI = ConversationUI.current
+		var give: Button = null
+		for bb in _buttons(cui):
+			if (bb as Button).text.findn("give it back") != -1:
+				give = bb as Button
+		_ok("holding unfinished work puts 'give it back' on the list",
+			give != null, "no way to return a paper you cannot finish")
+
+		if give != null:
+			give.pressed.emit()
+			await _settle()
+			# It must NOT have happened yet.
+			_ok("and it does not happen until you confirm",
+				held.contracts_taken.has(cull_id),
+				"the paper went back the moment the topic was pressed")
+			var refuse_focused := ""
+			for bb in _buttons(cui):
+				if (bb as Button).has_focus():
+					refuse_focused = (bb as Button).text
+			_ok("the gate opens on the refusal, as it does for signing",
+				refuse_focused == "Think it over",
+				"focus was on '%s'" % refuse_focused)
+
+			var doit: Button = null
+			for bb in _buttons(cui):
+				if (bb as Button).text == "Do it":
+					doit = bb as Button
+			if doit != null:
+				doit.pressed.emit()
+				await _settle()
+				_ok("confirming gives the paper back",
+					not held.contracts_taken.has(cull_id),
+					"still holding it after confirming")
+				_ok("and the town counts it", held.contracts_abandoned == 1,
+					"counted %d" % held.contracts_abandoned)
+		if ConversationUI.current != null:
+			ConversationUI.current.close()
+			await _settle()
 
 	print("")
 	print("npc UI: all clear" if _fails.is_empty() else "FAILED: %s" % ", ".join(_fails))

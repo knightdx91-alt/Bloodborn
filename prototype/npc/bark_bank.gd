@@ -19,12 +19,14 @@ extends RefCounted
 ## expressions. Content should be able to reach for "night" without
 ## being able to reach for anything at all.
 const CONDITIONS := ["day", "night", "boars_pressing", "boars_quiet",
-	"work_done", "you_took_work", "you_are_hired"]
+	"work_done", "you_took_work", "you_are_hired", "you_gave_work_back"]
 
 
 ## role -> Array of {text, e0, e1, when}
 const LINES := {
 	"market": [
+		{"text": "Heard you put a paper back. No shame in it — knowing what you can't carry is worth learning early.",
+			"e0": 0, "e1": 99, "when": ["you_gave_work_back"]},
 		{"text": "Stalls are down. Come back when it's light and I'll not overcharge you. Much.",
 			"e0": 0, "e1": 99, "when": ["night"]},
 		{"text": "Road's safer than it was. That's worth something to a man with a cart.",
@@ -36,6 +38,8 @@ const LINES := {
 		{"text": "Rain before noon and the road to Greywater turns to soup. Buy your grain today.", "e0": 0, "e1": 99},
 	],
 	"farmer": [
+		{"text": "Somebody took the west paper and brought it back. Hedge doesn't care who tries, only who finishes.",
+			"e0": 0, "e1": 99, "when": ["you_gave_work_back"]},
 		{"text": "Somebody's been thinning the west Hedges. First quiet week we've had.",
 			"e0": 0, "e1": 99, "when": ["work_done"]},
 		{"text": "Whoever took that cull paper earned it. The far field's still standing.",
@@ -55,6 +59,8 @@ const LINES := {
 		{"text": "When I'm grown I'm driving a wagon to Vellmark. Horses and everything.", "e0": 0, "e1": 99},
 	],
 	"warden": [
+		{"text": "You gave one back. Better that than us finding you in the wood a week later.",
+			"e0": 0, "e1": 99, "when": ["you_gave_work_back"]},
 		{"text": "Hedge holds. Walk it twice a day and it keeps holding.", "e0": 0, "e1": 99},
 		{"text": "North road's clear to the mill. Past that, keep your eyes up.", "e0": 0, "e1": 99},
 		{"text": "The Hollow Sow broke these hedges once. We remember so it doesn't happen twice.", "e0": 0, "e1": 99},
@@ -149,4 +155,10 @@ static func _one(condition: String, state: TownWorldState, hour: float) -> bool:
 			return state != null and not state.contracts_taken.is_empty()
 		"you_are_hired":
 			return state != null and bool(state.hired)
+		"you_gave_work_back":
+			# The only cost of abandoning a contract. There is no
+			# reputation number and no penalty at the board — the town
+			# simply has something else to say to you, which is where
+			# this world keeps its opinions.
+			return state != null and int(state.contracts_abandoned) > 0
 	return false

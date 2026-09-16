@@ -124,5 +124,16 @@ namespace Marrowmark.Sim.Town
         /// needs to know somebody has been thinning the boars in order to
         /// say so.</summary>
         public int CullsCompleted;
+
+        /// <summary>
+        /// Papers given back unfinished.
+        ///
+        /// Counted rather than punished. content.md §3's board never lies,
+        /// and a town that has watched you take three jobs and return
+        /// three of them knows something about you that no reputation
+        /// number needs to express — it comes out in what people say,
+        /// which is where the world already keeps its opinions.
+        /// </summary>
+        public int ContractsAbandoned;
     }
 }
