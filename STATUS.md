@@ -401,6 +401,36 @@ swordsman's brain, the same check reports 2.4 m/s — a walk — and fails.
 
 387 C# tests, ten Godot harnesses.
 
+## Fixed 2026-09-16 — the APK had 60 MB of things the game never loads
+
+The playtest APK went from **106 MB to 199 MB** the moment the KayKit
+packs landed. Godot exports everything under the project folder unless
+told otherwise, so 74 MB of models established the same day as unusable
+were being downloaded onto a phone.
+
+Both export presets now carry an exclude filter. Six directories, every
+one of them with **zero references** from any `.gd`, `.tscn` or
+`.godot` — checked rather than assumed:
+
+    assets/kaykit/        the chibi packs
+    assets/monsters/      Ultimate Monsters, tonally wrong
+    assets/rpg-characters/  usable but not used yet
+    assets/knight/        the 5.6m untextured base body
+    assets/evidence/      render evidence — documentation, not content
+    assets/tools/         build_audio.py
+
+Verified by exporting a pack before and after and **parsing the .pck
+file tables**, rather than by trusting the filter: 3258 files and
+149.9 MB before, 670 files and 89.9 MB after. Every directory the game
+actually loads is unchanged — townsfolk 21/21, audio 9/9, animations
+15/15, models 25/25, town kit 139/139 — and nothing outside the six was
+removed.
+
+(The first attempt at that verification ran `strings` over the packs and
+produced nonsense in both directions, because a binary pack is full of
+fragments that look like paths. Parsing the real file table was the
+difference between a check and a guess.)
+
 ## Device check
 
 `CLAUDE.md` instructs the assistant to ask which device you are on at
