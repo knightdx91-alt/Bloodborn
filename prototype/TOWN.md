@@ -332,6 +332,41 @@ The general lesson is in `interface.md` §9: a scheme that cannot press
 anything is not a supported scheme, and nobody will notice on your
 behalf — the pad did all the pressing here for months.
 
+## ⚠️ Reported from play, 2026-09-16 — the board was scenery
+
+Two faults, from the first session where the menus could actually be
+touched:
+
+**"The other menu doesn't close."** Opening the contract board from a
+conversation left the dialogue panel drawn underneath it — two panels on
+screen, only one of which did anything when pressed. The modal stack
+disabled focus on the panel below but never hid it. It hides now, and
+comes back when the board closes, so B still returns you to the person
+who sent you there.
+
+**"I can't click on any job to accept it."** The board was read-only.
+Every row was a `Label`. The only way to accept a job was to ask the
+right NPC about it in conversation — which the board gives no hint of,
+and which is backwards: the board is where work is pinned.
+
+Contract rows are `UI.choice` buttons now, so a pad walks them and a
+thumb hits them, and the board opens with the first job selected rather
+than with the exit selected. Taking one is binding, so it goes through
+L49's gate; the row then reads "— taken" and stops being selectable, and
+a status line under the header says so. The market board stays
+unpressable and now says why ("Prices only. Nothing here is an offer.")
+rather than presenting rows that look pressable and are not.
+
+**There is now ONE gate** (`UI.confirm`), used by both the conversation
+and the board. Two implementations of L49 that behaved differently
+depending on where you found the job would not be a gate, it would be
+two — and the second one was about to be written.
+
+A harness bug this exposed: `_fit_check` asserted every visible button
+was on screen, which is wrong for a row inside a `ScrollContainer` —
+being below the fold is what scrolling is. It checks the horizontal fit
+and the scroller's own bounds now.
+
 ## Still open
 
 - **The world state is seeded once and never persists.** Nothing

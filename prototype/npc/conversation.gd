@@ -25,7 +25,6 @@ var _npc: TownNPC
 var _systems: Dictionary
 var _dialog: RichTextLabel
 var _topic_box: VBoxContainer
-var _confirm: PanelContainer
 var _pending: Dictionary = {}
 
 
@@ -123,8 +122,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	if UI.top_modal() != self:
 		return
 	get_viewport().set_input_as_handled()
-	if _confirm != null:
-		_on_decline()
+	if UI.confirm_is_open(self):
+		UI.confirm_decline(self)
 	else:
 		close()
 
@@ -164,79 +163,22 @@ func _apply_disposition(arg: Variant) -> void:
 			close()
 
 
+## Anything binding goes through the one gate in ui.gd — the same panel,
+## the same rules, whether the job came from a person or off the board.
 func _show_confirm(line: String) -> void:
 	_say(line + "\n\n[This binds you, or costs you coin.]")
-	var scale := UI.scale_for(self)
-	var vp: Vector2 = get_viewport().get_visible_rect().size
-
-	# Nothing behind the gate may take focus while it is up. Otherwise
-	# the d-pad walks the highlight down out of "Think it over" and into
-	# the topic list behind it, and A then presses a button the player
-	# cannot see. L49 makes this panel the gate; a gate you can step
-	# around is not one.
-	_freeze_base(true)
-
-	_confirm = UI.panel()
-	_confirm.set_anchors_preset(Control.PRESET_CENTER)
-	var width: float = minf(360.0 * scale, vp.x * 0.86)
-	_confirm.custom_minimum_size = Vector2(width, 0)
-	_confirm.position = Vector2(-width * 0.5, -70.0 * scale)
-	add_child(_confirm)
-
-	var vb := VBoxContainer.new()
-	vb.add_theme_constant_override("separation", int(10.0 * scale))
-	_confirm.add_child(vb)
-
-	var q := UI.heading("Go through with it?", scale)
-	q.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	vb.add_child(q)
-
-	var sign := UI.choice("Do it", scale, width - 60.0 * scale)
-	sign.alignment = HORIZONTAL_ALIGNMENT_CENTER
-	sign.pressed.connect(_on_sign)
-	vb.add_child(sign)
-
-	var no := UI.choice("Think it over", scale, width - 60.0 * scale)
-	no.alignment = HORIZONTAL_ALIGNMENT_CENTER
-	no.pressed.connect(_on_decline)
-	vb.add_child(no)
-
-	# Focus the REFUSAL, not the commitment. L49 makes this panel the
-	# gate on anything binding, and a gate whose default answer is "yes"
-	# is not a gate — a stray A press must not sign anything.
-	no.grab_focus()
-
-
-## Focus off (and back on) for everything that is not the confirm panel.
-func _freeze_base(frozen: bool) -> void:
-	for c in find_children("*", "Button", true, false):
-		var b := c as Button
-		if _confirm != null and _confirm.is_ancestor_of(b):
-			continue
-		b.focus_mode = Control.FOCUS_NONE if frozen else Control.FOCUS_ALL
-
-
-func _dismiss_confirm() -> void:
-	if _confirm != null:
-		_confirm.queue_free()
-		_confirm = null
-	_freeze_base(false)
-	# Put the highlight back on the conversation, or a pad is left with
-	# nothing selected and the menu reads as dead.
-	if _topic_box != null and _topic_box.get_child_count() > 0:
-		(_topic_box.get_child(0) as Button).grab_focus()
+	UI.confirm(self, "Go through with it?", "Do it", "Think it over",
+		_on_sign, _on_decline)
 
 
 func _on_sign() -> void:
 	var t := _pending
 	_pending = {}
-	_dismiss_confirm()
 	_apply_effect(t)
 
 
 func _on_decline() -> void:
 	_pending = {}
-	_dismiss_confirm()
 	_say("They nod, and the paper goes back in the drawer.")
 
 

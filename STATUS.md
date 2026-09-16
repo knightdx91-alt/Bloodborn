@@ -136,6 +136,25 @@ produces no swing on this build *or on the one before the change*, so
 the harness cannot drive it, and asserting on it would only be measuring
 the harness. That one is checked on a phone.
 
+## Done 2026-09-16 — the contract board became usable
+
+From the first session where touch actually worked: **"when I click 'any
+work going', the other menu doesn't close, and I can't click on any job
+to accept it."** Both true.
+
+- The conversation panel stayed drawn behind the board — the modal stack
+  took its focus away but never hid it. It hides now and returns when
+  the board closes, so B still takes you back to the person.
+- The board was read-only. Every row was a label, and the only way to
+  accept a job was to ask the right NPC about it — backwards, since the
+  board is where the work is pinned. Rows are choices now: a pad walks
+  them, a thumb hits them, the first job is selected on open, and taking
+  one goes through L49's gate before anything is signed.
+
+**There is one gate now** (`UI.confirm`), shared by the conversation and
+the board. Two copies of L49 that behaved differently depending on where
+you found the job would not be a gate.
+
 ## Device check
 
 `CLAUDE.md` instructs the assistant to ask which device you are on at

@@ -46,7 +46,24 @@ func _buttons(root: Node) -> Array:
 	return out
 
 
+## The ScrollContainer a control lives in, if any.
+func _scroller(node: Node) -> ScrollContainer:
+	var n: Node = node.get_parent()
+	while n != null:
+		if n is ScrollContainer:
+			return n as ScrollContainer
+		n = n.get_parent()
+	return null
+
+
 ## On screen, thumb-sized, and something holding the highlight.
+##
+## A row inside a scrolling list is allowed to be below the fold — that
+## is what scrolling is. It still has to fit HORIZONTALLY and still has
+## to be thumb-sized; only the vertical bound is the scroller's problem,
+## and the scroller itself is checked instead. Without the distinction
+## this fails the moment a list is longer than its panel, which is most
+## of the time.
 func _fit_check(root: Node, vp: Vector2, label: String) -> void:
 	var bad := ""
 	var focused := false
@@ -55,8 +72,16 @@ func _fit_check(root: Node, vp: Vector2, label: String) -> void:
 		if not b.is_visible_in_tree():
 			continue
 		var r := b.get_global_rect()
-		if r.end.y > vp.y + 1 or r.position.y < -1 or r.end.x > vp.x + 1 or r.position.x < -1:
-			bad = "'%s' off screen %s in %s" % [b.text, str(r), str(vp)]
+		var sc := _scroller(b)
+		if r.end.x > vp.x + 1 or r.position.x < -1:
+			bad = "'%s' off the side %s in %s" % [b.text, str(r), str(vp)]
+		if sc == null:
+			if r.end.y > vp.y + 1 or r.position.y < -1:
+				bad = "'%s' off screen %s in %s" % [b.text, str(r), str(vp)]
+		else:
+			var sr := sc.get_global_rect()
+			if sr.end.y > vp.y + 1 or sr.position.y < -1:
+				bad = "the list itself is off screen %s in %s" % [str(sr), str(vp)]
 		if r.size.y < 44.0:
 			bad = "'%s' only %dpx tall" % [b.text, int(r.size.y)]
 		if b.has_focus():
@@ -214,10 +239,19 @@ func _ready() -> void:
 			still_reachable.append((bb as Button).text)
 	_ok("the conversation underneath stops taking focus", still_reachable.is_empty(),
 		"still focusable: %s" % ", ".join(still_reachable))
+	# Reported from play: "the other menu doesn't close". It was still
+	# drawn behind the board, so two panels were on screen and only one
+	# of them did anything.
+	_ok("and is out of sight while the board is up",
+		not ConversationUI.current.visible,
+		"the dialogue panel is still drawn behind the board")
 	await _press_cancel()
 	_ok("B closes the board, not the conversation",
 		ConversationUI.current != null and UI.modal_open(),
 		"cancel took out the conversation too")
+	_ok("and the conversation is visible again",
+		ConversationUI.current != null and ConversationUI.current.visible,
+		"the dialogue panel stayed hidden after the board closed")
 	if ConversationUI.current != null:
 		var regained := false
 		for bb in _buttons(ConversationUI.current):
@@ -226,6 +260,59 @@ func _ready() -> void:
 		_ok("and the conversation gets the highlight back", regained, "nothing focused")
 		await _press_cancel()
 	_ok("B again leaves the conversation", not UI.modal_open(), "something still open")
+
+	print("--- taking a job off the board ---")
+	# Reported from play: "I can't click on any job to accept it." The
+	# rows were labels.
+	var fresh := TownWorldState.new()
+	Boards.open_contracts_ui(fresh)
+	await _settle()
+	var board := UI.top_modal()
+	var job: Button = null
+	for bb in _buttons(board):
+		var b := bb as Button
+		if b.text != "Step back":
+			job = b
+			break
+	_ok("a job on the board is pressable", job != null,
+		"every row is a label — nothing to accept")
+	if job != null:
+		_ok("and the board opens with a job selected, not the exit",
+			job.has_focus(), "focus was elsewhere")
+		var before := fresh.contracts_taken.size()
+		job.pressed.emit()
+		await _settle()
+		_ok("taking one puts the gate up first", UI.confirm_is_open(board),
+			"it took the job with no confirm — L49")
+		_ok("and nothing is taken yet", fresh.contracts_taken.size() == before,
+			"the contract was taken before the gate was answered")
+
+		var take_btn: Button = null
+		var leave_btn: Button = null
+		for bb in _buttons(board):
+			var b := bb as Button
+			if b.text == "Take it":
+				take_btn = b
+			elif b.text == "Leave it":
+				leave_btn = b
+		_ok("the gate offers both answers", take_btn != null and leave_btn != null,
+			"missing a button")
+		if leave_btn != null:
+			_ok("and opens on the refusal", leave_btn.has_focus(),
+				"focus was not on 'Leave it'")
+		if take_btn != null:
+			take_btn.pressed.emit()
+			await _settle()
+			_ok("saying yes takes the job",
+				fresh.contracts_taken.size() == before + 1,
+				"contracts taken went %d -> %d"
+					% [before, fresh.contracts_taken.size()])
+			_ok("and the row says so", job.text.ends_with("taken"),
+				"the row still reads '%s'" % job.text)
+			_ok("and cannot be taken twice", job.focus_mode == Control.FOCUS_NONE,
+				"the taken row is still selectable")
+	Boards._close_ui()
+	await _settle()
 
 	print("")
 	print("npc UI: all clear" if _fails.is_empty() else "FAILED: %s" % ", ".join(_fails))

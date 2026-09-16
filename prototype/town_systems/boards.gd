@@ -58,20 +58,29 @@ static func take(state: TownWorldState, contract_id: String) -> bool:
 	return ContractBoardRules.take(state, contract_id)
 
 
+## The contract board hands out work, so its rows are things you take.
+## It was read-only until a player tried to take one off it and found
+## there was nothing to press — the only way to accept a job was to ask
+## the right person about it in conversation, which the board itself
+## gives no hint of.
 static func open_contracts_ui(state: TownWorldState) -> void:
 	_open_list_ui("— CONTRACT BOARD —",
 		contracts(state), state,
-		"kind", "title", "detail", "pay")
+		"kind", "title", "detail", "pay", true)
 
 
+## The market board is a price list. Nothing on it is an offer, so
+## nothing on it is pressable — and it says so rather than presenting
+## rows that look pressable and are not.
 static func open_market_ui(state: TownWorldState) -> void:
 	_open_list_ui("— MARKET BOARD — Thornfield warehoused goods —",
 		market_goods(state), state,
-		"good", "good", "", "price")
+		"good", "good", "", "price", false)
 
 
 static func _open_list_ui(header: String, rows: Array, _state: TownWorldState,
-		kind_key: String, title_key: String, detail_key: String, pay_key: String) -> void:
+		kind_key: String, title_key: String, detail_key: String, pay_key: String,
+		takeable: bool = false) -> void:
 	_close_ui()
 	var tree := Engine.get_main_loop()
 	if not (tree is SceneTree):
@@ -100,6 +109,10 @@ static func _open_list_ui(header: String, rows: Array, _state: TownWorldState,
 	vb.add_theme_constant_override("separation", int(8.0 * scale))
 	panel.add_child(vb)
 	vb.add_child(UI.heading(header, scale))
+	var status := UI.subheading(
+		"Pick a job to take it." if takeable else "Prices only. Nothing here is an offer.",
+		scale)
+	vb.add_child(status)
 
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -127,15 +140,30 @@ static func _open_list_ui(header: String, rows: Array, _state: TownWorldState,
 		list.add_child(row)
 
 		var line := String(r[title_key])
-		if r.has("taken") and bool(r["taken"]):
+		var taken: bool = r.has("taken") and bool(r["taken"])
+		if taken:
 			line += "   — taken"
 		elif pay_key != "" and r.has(pay_key):
 			line += "   — %d pennies" % int(r[pay_key])
 			if r.has("unit"):
 				line += " the %s" % String(r["unit"])
-		var t := UI.body(line, scale, width - 90.0 * scale)
-		t.add_theme_font_size_override("font_size", int(20.0 * scale))
-		row.add_child(t)
+
+		if takeable and not taken and r.has("id"):
+			# A row you can actually take. Same choice widget as every
+			# other list in the game, so a pad walks it and a thumb hits
+			# it, and taking one goes through L49's gate like any other
+			# binding thing.
+			var pick := UI.choice(line, scale, width - 90.0 * scale)
+			var cid := String(r["id"])
+			var title := String(r[title_key])
+			pick.pressed.connect(_on_pick.bind(_state, cid, title, pick, status))
+			row.add_child(pick)
+		else:
+			var t := UI.body(line, scale, width - 90.0 * scale)
+			t.add_theme_font_size_override("font_size", int(20.0 * scale))
+			if taken:
+				t.add_theme_color_override("font_color", UI.DIM)
+			row.add_child(t)
 
 		if detail_key != "" and String(r.get(detail_key, "")) != "":
 			var d := UI.body(String(r[detail_key]), scale, width - 90.0 * scale)
@@ -148,6 +176,14 @@ static func _open_list_ui(header: String, rows: Array, _state: TownWorldState,
 	close_b.pressed.connect(_close_ui)
 	vb.add_child(close_b)
 
+	# The first job if there is one, so a pad lands on the work rather
+	# than on the way out. Falls through to "Step back" on an empty or
+	# read-only board.
+	var first: Button = null
+	for b in list.find_children("*", "Button", true, false):
+		first = b as Button
+		break
+
 	# Registered BEFORE anything here takes focus. push_modal remembers
 	# where the highlight was on the panel underneath so it can put it
 	# back; grabbing focus first meant it remembered "nowhere", and
@@ -155,9 +191,28 @@ static func _open_list_ui(header: String, rows: Array, _state: TownWorldState,
 	# selected — which on a pad is indistinguishable from a hung menu.
 	UI.push_modal(ui)
 
-	# The board is read-only, so the only thing to press is the way out —
-	# and a pad needs it focused to press it at all.
-	close_b.grab_focus()
+	if first != null:
+		first.grab_focus()
+	else:
+		close_b.grab_focus()
+
+
+## Taking a job is binding — L49 — so it goes through the one gate in
+## ui.gd rather than happening on the press.
+static func _on_pick(state: TownWorldState, contract_id: String, title: String,
+		pick: Button, status: Label) -> void:
+	if _open_ui == null:
+		return
+	UI.confirm(_open_ui, "Take it?\n\n%s" % title, "Take it", "Leave it",
+		func() -> void:
+			var ok: bool = take(state, contract_id)
+			if ok:
+				pick.text = "%s   — taken" % title
+				pick.focus_mode = Control.FOCUS_NONE
+				pick.disabled = true
+				status.text = "Taken, and witnessed. The terms are the terms."
+			else:
+				status.text = "That paper's already spoken for.")
 
 
 static func _close_ui() -> void:

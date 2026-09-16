@@ -172,6 +172,11 @@ static func push_modal(layer: CanvasLayer) -> void:
 	var below := top_modal()
 	if below != null:
 		_set_branch_focusable(below, false)
+		# And out of sight. Leaving it drawn put the contract board on top
+		# of the conversation that opened it, with the dialogue panel
+		# still poking out underneath — two panels, one of which does
+		# nothing when pressed. It comes back when the board closes.
+		below.visible = false
 	_modals.append(layer)
 
 
@@ -180,6 +185,7 @@ static func pop_modal(layer: CanvasLayer) -> void:
 	_prune()
 	var below := top_modal()
 	if below != null:
+		below.visible = true
 		_set_branch_focusable(below, true)
 
 
@@ -272,3 +278,116 @@ static func chip(text: String, scale: float) -> Button:
 	b.custom_minimum_size = Vector2(maxf(120.0 * scale, 96.0),
 		maxf(64.0 * scale, MIN_TAP + 8.0))
 	return b
+
+
+
+# --- The gate ---------------------------------------------------------
+#
+# L49 puts a hard confirm in front of anything binding, and there is one
+# of these rather than one per screen — a conversation and the contract
+# board both hand out work, and a gate that behaves differently
+# depending on where you found the job is not a gate, it is two.
+#
+# The rules it enforces, all of them learnt the hard way:
+#
+#  * It opens on the REFUSAL. A stray press must cost nothing.
+#  * Nothing behind it can take focus, or the d-pad walks the highlight
+#    off the gate and A presses a button hidden underneath — which here
+#    means signing by accident.
+#  * B declines it rather than closing the screen behind it.
+
+
+## Put a gate up on `layer`. `on_yes` runs only if the player says yes.
+static func confirm(layer: CanvasLayer, question: String, yes_text: String,
+		no_text: String, on_yes: Callable, on_no: Callable = Callable()) -> void:
+	if confirm_is_open(layer):
+		return
+	var scale := scale_for(layer)
+	var view: Viewport = layer.get_viewport()
+	var vp: Vector2 = view.get_visible_rect().size if view != null \
+		else Vector2(DESIGN_WIDTH, DESIGN_HEIGHT)
+
+	var frozen: Array[Control] = []
+	for c in layer.find_children("*", "Control", true, false):
+		var ctl := c as Control
+		if ctl.focus_mode != Control.FOCUS_NONE:
+			if ctl.has_focus():
+				layer.set_meta("ui_gate_focus_was", ctl)
+			ctl.focus_mode = Control.FOCUS_NONE
+			frozen.append(ctl)
+
+	var panel := UI.panel()
+	panel.set_anchors_preset(Control.PRESET_CENTER)
+	var width: float = minf(380.0 * scale, vp.x * 0.86)
+	panel.custom_minimum_size = Vector2(width, 0)
+	panel.position = Vector2(-width * 0.5, -80.0 * scale)
+	layer.add_child(panel)
+	layer.set_meta("ui_confirm", panel)
+
+	var vb := VBoxContainer.new()
+	vb.add_theme_constant_override("separation", int(10.0 * scale))
+	panel.add_child(vb)
+
+	var q := heading(question, scale)
+	q.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	q.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	q.custom_minimum_size = Vector2(width - 60.0 * scale, 0)
+	vb.add_child(q)
+
+	var yes := choice(yes_text, scale, width - 60.0 * scale)
+	yes.alignment = HORIZONTAL_ALIGNMENT_CENTER
+	yes.pressed.connect(func() -> void:
+		_close_confirm(layer, frozen)
+		if on_yes.is_valid():
+			on_yes.call())
+	vb.add_child(yes)
+
+	var no := choice(no_text, scale, width - 60.0 * scale)
+	no.alignment = HORIZONTAL_ALIGNMENT_CENTER
+	no.pressed.connect(func() -> void:
+		_close_confirm(layer, frozen)
+		if on_no.is_valid():
+			on_no.call())
+	vb.add_child(no)
+
+	no.grab_focus()
+
+
+static func confirm_is_open(layer: CanvasLayer) -> bool:
+	if layer == null or not layer.has_meta("ui_confirm"):
+		return false
+	var p: Node = layer.get_meta("ui_confirm") as Node
+	return is_instance_valid(p) and not p.is_queued_for_deletion()
+
+
+## What B does while a gate is up.
+static func confirm_decline(layer: CanvasLayer) -> void:
+	if not confirm_is_open(layer):
+		return
+	var p := layer.get_meta("ui_confirm") as Node
+	for b in p.find_children("*", "Button", true, false):
+		var btn := b as Button
+		if btn.has_focus() or btn.get_index() == 1:
+			btn.pressed.emit()
+			return
+
+
+static func _close_confirm(layer: CanvasLayer, frozen: Array[Control]) -> void:
+	if layer.has_meta("ui_confirm"):
+		var p := layer.get_meta("ui_confirm") as Node
+		if is_instance_valid(p):
+			p.queue_free()
+		layer.remove_meta("ui_confirm")
+	for c in frozen:
+		if is_instance_valid(c):
+			c.focus_mode = Control.FOCUS_ALL
+	# Hand the highlight back, or a pad is left with nothing selected and
+	# the screen reads as hung.
+	var was: Control = layer.get_meta("ui_gate_focus_was", null) as Control
+	if is_instance_valid(was) and was.focus_mode != Control.FOCUS_NONE:
+		was.grab_focus()
+		return
+	for c in frozen:
+		if is_instance_valid(c) and c.is_visible_in_tree():
+			c.grab_focus()
+			return

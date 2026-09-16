@@ -19,6 +19,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	if UI.top_modal() != self:
 		return
 	get_viewport().set_input_as_handled()
+	# One layer at a time: out of the gate first, if one is up.
+	if UI.confirm_is_open(self):
+		UI.confirm_decline(self)
+		return
 	Boards._close_ui()
 
 
@@ -35,6 +39,10 @@ func _process(delta: float) -> void:
 	if scroll == null or not is_instance_valid(scroll):
 		return
 	if UI.top_modal() != self:
+		return
+	# The gate owns up and down while it is up, for choosing between
+	# "Take it" and "Leave it".
+	if UI.confirm_is_open(self):
 		return
 	var v := Input.get_axis("ui_up", "ui_down")
 	if absf(v) < 0.01:
