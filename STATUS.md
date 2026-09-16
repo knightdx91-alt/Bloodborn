@@ -491,8 +491,28 @@ synthetic tap has never produced a swing in this project, in any build
 only ever looked at the yard could not have caught this. 10 new checks,
 run in both scenes, attack/dodge/guard each proved to fire.
 
-**Still unexplained:** play reports that tapping DOES swing in the yard
-and does not in the Hedges. Both scenes run `world.gd` through the same
+### A measurement that may explain the Hedges, 2026-09-16
+
+Standing in the Hedges for 30 seconds and trying to swing once a second,
+against the charging boar:
+
+- the player is **unable to act 62% of the time**
+- **9 of 30 swing attempts are refused** outright
+- health falls **120 → 65** without moving
+
+`try_attack` refuses while a fighter is hurt or staggered, so a boar
+that keeps you in that state makes every tap look ignored *while the
+input is arriving perfectly*. From the outside that is
+indistinguishable from a dead button — and it happens in the Hedges and
+not in the yard, where the sparring partner is far gentler.
+
+That is not proof, and it is not a bug in the controls. It is a
+candidate explanation for the report, and it is the aggression half of
+the step 4 tuning question — which needs a controller and a person, not
+another harness.
+
+**Still unexplained on its own terms:** play reports that tapping DOES
+swing in the yard and does not in the Hedges. Both scenes run `world.gd` through the same
 `_unhandled_input`, and neither builds any Control that could eat a
 touch — `_bar_root` is `MOUSE_FILTER_IGNORE` and the only other node on
 the touch layer is the Back chip. The buttons make it testable rather
