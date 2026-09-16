@@ -257,6 +257,7 @@ func _ready() -> void:
 func _build_hedges() -> void:
 	Look.build(self)
 	clock = WorldClock.new(DAY_STARTS_AT)
+	TownState.set_clock(clock)
 	Look.set_time(self, clock)
 
 	const FIELD := 34.0
@@ -343,6 +344,7 @@ func _build_yard() -> void:
 	# L89: the day runs on a clock, and the clock is a rule (L88) rather
 	# than something the renderer keeps for itself.
 	clock = WorldClock.new(DAY_STARTS_AT)
+	TownState.set_clock(clock)
 	Look.set_time(self, clock)
 
 	const YARD := 30.0  # half-extent of the drill yard

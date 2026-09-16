@@ -572,6 +572,39 @@ L29's refusal of markers doing the same job from the other side. The
 board then says something different because something different is
 true, which nobody announces at all.
 
+## The town keeps hours — 2026-09-16
+
+Thornfield had a sun crossing the sky and **thirty-four people standing
+in exactly the same spots at three in the morning as at noon**. That
+reads as a diorama however good the light is, and L89's clock was doing
+nothing but colour.
+
+`TownRoutine` (C#, 10 tests) and `rules/routine.gd` answer one question:
+where should this person be at this hour. A posting is a place name and
+an arc of the dial, **and it wraps past midnight**, which is the case
+every innkeeper needs and the one that breaks a naive `from <= h < to`.
+An hour past the end of the dial wraps too — a clock handing over 24.5
+instead of 0.5 must not quietly send the whole town home.
+
+**It is a rule, not a scene behaviour**, for the same reason the clock
+is: the server decides where people are. Two players walking into the
+Sheaf at dusk have to find the same innkeeper there.
+
+**Place names, not coordinates.** The rules deal in "forge", "inn",
+"board" and have no idea where any of them are. `npc/places.gd` is the
+other half and is content — a second town has its forge somewhere else
+and reuses every line of the rule.
+
+**They walk.** A town where people appear in new places whenever you
+look away is not more alive than a town of statues, it is a stranger
+one. Seeing the smith cross the square at dusk is the whole point and it
+costs a lerp. They fan out around an anchor by a stable index, so the
+same person takes the same seat every evening and a full inn is a crowd
+rather than one body inside another.
+
+Measured at dusk: **two at the inn at noon, six at dusk**, nobody
+overlapping.
+
 ## Still open
 
 - **The world state is seeded once and never persists.** Nothing

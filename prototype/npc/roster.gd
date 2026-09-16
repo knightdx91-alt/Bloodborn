@@ -15,6 +15,7 @@ static func named() -> Array:
 			"voice": "Warm, fast, remembers everyone's drink; Thornfield burr.",
 			"pos": Vector3(-14.5, 0, 2), "yaw": -PI / 2,
 			"tunic": Color(0.55, 0.30, 0.22), "warm": true, "uses_name": false,
+			"routine": {"postings": [{"place": "inn", "from": 10.0, "to": 2.0}], "fallback": "inn"},
 			"topics": [
 				{"topic": "What's the talk?", "intent": "share_rumor", "effect": "ask_rumor",
 					"line": "Talk? Oh, love, there's always talk. Here's the freshest of it — cost you nothing, this once."},
@@ -31,6 +32,7 @@ static func named() -> Array:
 			"voice": "Slow, correcting, compliments work not people.",
 			"pos": Vector3(-5.5, 0, -27.5), "yaw": -PI / 2,
 			"tunic": Color(0.30, 0.28, 0.26), "warm": false, "uses_name": false,
+			"routine": {"postings": [{"place": "forge", "from": 6.0, "to": 19.0}, {"place": "inn", "from": 19.0, "to": 22.0}], "fallback": "home"},
 			"topics": [
 				{"topic": "Take me on.", "intent": "offer_contract", "effect": "hire", "effect_arg": "odo",
 					"line": "Hands. Show me your hands. ... Soft. We'll fix that. I hire you, I teach you, I correct you — that's the whole of it."},
@@ -47,6 +49,7 @@ static func named() -> Array:
 			"voice": "Tired, funny, talks to horses mid-sentence.",
 			"pos": Vector3(-22, 0, 31.5), "yaw": -PI / 2,
 			"tunic": Color(0.35, 0.42, 0.30), "warm": true, "uses_name": false,
+			"routine": {"postings": [{"place": "yard", "from": 5.0, "to": 18.0}, {"place": "inn", "from": 18.0, "to": 23.0}], "fallback": "home"},
 			"topics": [
 				{"topic": "Take me on.", "intent": "offer_contract", "effect": "hire", "effect_arg": "pell",
 					"line": "Ha! Another pair of hands — easy, girl, he means well — the Vellmark wagon musters at first light. You'll walk beside it and learn the harness."},
@@ -63,6 +66,7 @@ static func named() -> Array:
 			"voice": "Soft, omen-minded, speaks in seasons.",
 			"pos": Vector3(12.5, 0, -30), "yaw": -PI / 2,
 			"tunic": Color(0.35, 0.45, 0.30), "warm": true, "uses_name": false,
+			"routine": {"postings": [{"place": "chapel", "from": 5.0, "to": 20.0}], "fallback": "home"},
 			"topics": [
 				{"topic": "What is the shrine?", "intent": "none", "effect": "",
 					"line": "The stone beside the chapel. When the worst happens out in the Hedges, the dying are knitted back there — never whole, and never free. The shrine keeps what it's owed. Come back poorer, come back wiser. That's the bottom rung of the ladder, and everyone climbs it."},
@@ -82,6 +86,7 @@ static func named() -> Array:
 			# hardcoded in the conversation layer — a second town has its
 			# own clerk and should not have to be called Fenwick.
 			"pays_contracts": true,
+			"routine": {"postings": [{"place": "board", "from": 7.0, "to": 18.0}], "fallback": "home"},
 			"topics": [
 				{"topic": "Show me the contracts.", "intent": "none", "effect": "open_contracts",
 					"line": "The contract board. Cull, escort, harvest, smithing — all from the world as it is. Read it yourself; I don't repeat myself."},
@@ -96,6 +101,7 @@ static func named() -> Array:
 			"voice": "Blunt, proud, counts everything.",
 			"pos": Vector3(18, 0, 76), "yaw": 2.7,
 			"tunic": Color(0.45, 0.38, 0.25), "warm": false, "uses_name": false,
+			"routine": {"postings": [{"place": "farm", "from": 5.0, "to": 17.0}, {"place": "inn", "from": 17.0, "to": 21.0}], "fallback": "home"},
 			"topics": [
 				{"topic": "A delivery, from Odo.", "intent": "none", "effect": "",
 					"line": "Horseshoes? Let me count — twelve, fourteen... sixteen. Sixteen. Odo's shorted me twice before; he won't a third time. Tell him Vance counted."},
@@ -110,6 +116,7 @@ static func named() -> Array:
 			"voice": "Booming laugh, nose for gossip.",
 			"pos": Vector3(17.5, 0, 29), "yaw": PI / 2,
 			"tunic": Color(0.50, 0.32, 0.18), "warm": true, "uses_name": false,
+			"routine": {"postings": [{"place": "square", "from": 8.0, "to": 18.0}, {"place": "inn", "from": 18.0, "to": 23.0}], "fallback": "home"},
 			"topics": [
 				{"topic": "Buying grain?", "intent": "none", "effect": "",
 					"line": "Always buying! Good barley makes good ale makes good cheer — HA! Fenwick's board has the price. I just drink the profits."},
@@ -124,6 +131,7 @@ static func named() -> Array:
 			"voice": "Says little. The Open Vein's eyes in Thornfield — never stated.",
 			"pos": Vector3(-15.5, 0, 6.5), "yaw": -PI / 2,
 			"tunic": Color(0.30, 0.30, 0.34), "warm": false, "uses_name": false,
+			"routine": {"postings": [{"place": "inn", "from": 17.0, "to": 3.0}], "fallback": "home"},
 			"topics": [
 				{"topic": "You watching me?", "intent": "set_disposition", "effect": "", "effect_arg": {"warm": false},
 					"line": "Watching the door. Doors are interesting. People come through them changed, sometimes. ... Forget I said that."},
@@ -136,6 +144,7 @@ static func named() -> Array:
 			"voice": "Dull on purpose. The Office of the Lamp notices; says nothing.",
 			"pos": Vector3(5, 0, 4), "yaw": 2.5,
 			"tunic": Color(0.38, 0.38, 0.38), "warm": false, "uses_name": false,
+			"routine": {"postings": [{"place": "inn", "from": 12.0, "to": 1.0}], "fallback": "home"},
 			"topics": [
 				{"topic": "Passing through?", "intent": "none", "effect": "",
 					"line": "Mm. Market day. Bought nails. Leaving tomorrow. Weather's been... weather."},

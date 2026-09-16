@@ -33,6 +33,23 @@ func reset() -> void:
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(PATH))
 
 
+## The town's clock, so anything that needs the hour asks one place.
+##
+## Held here rather than on the town scene because the Hedges has a clock
+## too and they must not drift apart: L89 is one clock shared by
+## everybody, and two scenes each keeping their own is exactly the thing
+## it rules out.
+var _clock: WorldClock = null
+
+
+func clock() -> WorldClock:
+	return _clock
+
+
+func set_clock(c: WorldClock) -> void:
+	_clock = c
+
+
 func save() -> void:
 	if _state == null:
 		return

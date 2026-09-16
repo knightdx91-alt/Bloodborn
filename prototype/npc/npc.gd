@@ -9,6 +9,8 @@ extends Node3D
 const BODY := "res://assets/models/humanoid.fbx"
 const IDLE := "res://assets/animations/anim_Idle.fbx"
 const TALK_RANGE := 3.0
+## Metres per second on the way to a posting.
+const WALK_SPEED := 1.35
 
 ## The player (or mock player) the prompt measures distance to.
 static var player: Node3D = null
@@ -28,6 +30,15 @@ var pays_contracts := false
 ## Crowd barks: role key into BarkBank, "" for silent named NPCs.
 var bark_role: String = ""
 var epoch: int = 0
+## What this person does with their day — postings by hour. Empty means
+## they stand where they were placed, which is what everyone did before
+## the town kept hours.
+var routine: Dictionary = {}
+## Which named place they are currently walking to, "" when settled.
+var _bound_for := ""
+var _spread := 0
+## Where they were put at load: their home, for want of a better one.
+var _home := Vector3.ZERO
 ## Seconds until this NPC leaves (Red Vigil rider); 0 = stays.
 var departs_after: float = 0.0
 var leave_target := Vector3.ZERO
@@ -54,6 +65,11 @@ func setup(data: Dictionary) -> void:
 	greeting_warm = bool(data.get("warm", true))
 	uses_name = bool(data.get("uses_name", false))
 	position = data.get("pos", Vector3.ZERO)
+	_home = position
+	routine = data.get("routine", {})
+	# A stable fan-out index, so the same person takes the same seat in
+	# the inn every evening instead of shuffling on every load.
+	_spread = abs(int(hash(npc_id))) % 12
 	rotation.y = float(data.get("yaw", 0.0))
 	_rng.seed = hash(npc_id)
 	_build_body(Color(data.get("tunic", Color(0.5, 0.42, 0.3))))
@@ -152,6 +168,10 @@ func _process(delta: float) -> void:
 		_bark_for -= delta
 		if _bark_for <= 0.0:
 			_label.visible = false
+	# Keeping hours. The clock is L89's, shared and server-authoritative,
+	# and where somebody should be at a given hour is a RULE
+	# (rules/routine.gd) rather than anything this scene decides.
+	_keep_hours(delta)
 	# The Vigil rider waters his horse and leaves.
 	if _leave_in > 0.0:
 		_leave_in -= delta
@@ -163,6 +183,38 @@ func _process(delta: float) -> void:
 		_prompt.visible = d <= TALK_RANGE
 	else:
 		_prompt.visible = false
+
+
+## Walk to wherever the hour says this person should be.
+##
+## Walked rather than teleported, on purpose: a town where people appear
+## in new places whenever you look away is not more alive than a town of
+## statues, it is just a stranger one. Seeing the smith cross the square
+## at dusk is the whole point, and it costs nothing but a lerp.
+func _keep_hours(delta: float) -> void:
+	if routine.is_empty() or not stays:
+		return
+	var clock: WorldClock = TownState.clock()
+	if clock == null:
+		return
+
+	var want := RoutineRules.place_for(routine, clock.hour())
+	if want != _bound_for:
+		_bound_for = want
+
+	var target: Vector3 = _home if want == "home" else Places.spot(want, _spread)
+	target.y = position.y
+	var gap: Vector3 = target - position
+	gap.y = 0.0
+	if gap.length() < 0.35:
+		return
+
+	# Ambling pace. They are going to work, not to a fire.
+	var step: Vector3 = gap.normalized() * WALK_SPEED * delta
+	if step.length() > gap.length():
+		step = gap
+	global_position += step
+	rotation.y = lerp_angle(rotation.y, atan2(gap.x, gap.z), 4.0 * delta)
 
 
 func _say_bark() -> void:

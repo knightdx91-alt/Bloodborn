@@ -33,6 +33,9 @@ func _ready() -> void:
 	Look.build(self)
 	# L89: one clock, and the town runs on the same one the yard does.
 	clock = WorldClock.new(DAY_STARTS_AT)
+	# One clock, shared (L89). The people ask TownState for the hour, so
+	# the town and the Hedges cannot drift apart into two afternoons.
+	TownState.set_clock(clock)
 	Look.set_time(self, clock)
 	# The yard's 60 m shadow range would clip the town's far side.
 	for c in get_children():

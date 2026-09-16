@@ -38,6 +38,13 @@ func fraction() -> float:
 	return _seconds / _day_seconds()
 
 
+## The hour on a 24-hour dial, for anything that has to reason about
+## time of day. Nothing in the world DISPLAYS one (L80) — this is for
+## routines and rules, not for a clock in the corner of the screen.
+func hour() -> float:
+	return fraction() * 24.0
+
+
 func set_fraction(f: float) -> void:
 	_seconds = fposmod(f, 1.0) * _day_seconds()
 
