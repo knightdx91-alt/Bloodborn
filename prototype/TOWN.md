@@ -674,6 +674,37 @@ that knows whether you have ever done anything for this town:
 Deliberately **not a reputation number**: L47 refuses a disposition
 score, and this reads through behaviour exactly as that lock asks.
 
+## Smoke, a forge and birds — 2026-09-16
+
+Thornfield was a good-looking diorama: solid buildings, real people, and
+a completely still frame between one bark and the next. Smoke off a roof
+does more for "somebody lives here" than another prop does.
+
+`atmosphere.gd`: smoke on every chimney, a fire in the forge, three
+birds on a circuit at dawn and dusk. All of it answers to the same clock
+everything else reads.
+
+- **`CPUParticles3D`, deliberately.** The project is `gl_compatibility`
+  on every platform including the web build and the APK, and GPU
+  particles are the riskier bet there.
+- **Opacity, not particle count.** `amount_ratio` is a GPU-particles
+  property that does not exist on the CPU system, and changing `amount`
+  *restarts* it — which would pop every chimney in town each time the
+  hour moved.
+- **A generated radial falloff.** Without it a billboarded quad is a
+  hard-edged white square hanging over the roof, which is exactly what
+  the first version looked like from across the square. Built at runtime,
+  so there is no texture to ship.
+- **The forge is never off.** A banked forge still glows overnight, and
+  L20 wants a source for every light.
+- Measured across the day: smoke 0.077 → 0.220, forge 0.45 → 1.60.
+
+**The birds were invisible at every hour** in the first version. They
+keyed off `daylight()`, which saturates, so "halfway between dark and
+light" was a band so narrow the flock never appeared at all. They key
+off the hour now — 05:00–08:30 and 16:30–20:00 — which is legible and
+testable.
+
 ## Still open
 
 - **The world state is seeded once and never persists.** Nothing

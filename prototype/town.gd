@@ -54,6 +54,7 @@ func _ready() -> void:
 	_delve_mouth()
 	_orchard()
 	_scatter()
+	_atmosphere()
 	# Thornfield's people and systems (T4/T5): NPCs, boards, shrine, rumors.
 	var systems: Dictionary = TownPopulation.populate(self)
 	# Playable walker: third-person stroller + talk button (town_player.gd).
@@ -194,6 +195,14 @@ func _set_inst(mmi: MultiMeshInstance3D, i: int, pos: Vector3, yaw: float,
 
 ## Modular cottage/inn/smithy assembler. wm x dm wall modules (2 m each).
 ## Front (+z local) gets door + windows; brick swaps the plaster set.
+## Where every chimney ended up, in town space.
+var _chimneys: Array[Vector3] = []
+var _smokes: Array = []
+var _forge: OmniLight3D = null
+var _birds: Node3D = null
+var _flown := 0.0
+
+
 func _house(pos: Vector3, yaw: float, wm: int, dm: int, opts: Dictionary = {}) -> Node3D:
 	var brick: bool = opts.get("brick", false)
 	var h := Node3D.new()
@@ -230,6 +239,9 @@ func _house(pos: Vector3, yaw: float, wm: int, dm: int, opts: Dictionary = {}) -
 	if opts.get("chimney", true):
 		var cy := 3.12 + (roof_h - 0.78) * 0.45
 		_put(_kit("Prop_Chimney"), Vector3(hw * 0.35, cy, -hd * 0.35), 0.0, h)
+		# Remembered so smoke can be put on it once the house is placed
+		# and rotated — the local offset above is not where it ends up.
+		_chimneys.append(h.transform * Vector3(hw * 0.35, cy + 1.3, -hd * 0.35))
 	if opts.get("stoop", false):
 		_put(_kit("Stairs_Exterior_Straight"),
 			Vector3(-hw + 1.0 + 2.0 * door_i, 0, hd + 1.4), 0.0, h)
@@ -895,7 +907,22 @@ func _scatter() -> void:
 				_rng.randf_range(0, TAU))
 
 
+## Smoke on the chimneys, a fire in the forge, birds at dusk.
+##
+## Thornfield was a good-looking diorama: solid buildings, real people,
+## and a completely still frame between one bark and the next.
+func _atmosphere() -> void:
+	for at in _chimneys:
+		_smokes.append(Atmosphere.chimney(self, at))
+	_forge = Atmosphere.forge(self, Places.ANCHORS["forge"])
+	_birds = Atmosphere.birds(self, Vector3(0, 0, 0))
+	Atmosphere.set_time(_smokes, _forge, _birds, clock)
+
+
 func _process(delta: float) -> void:
 	if clock != null:
 		clock.tick(delta)
 		Look.set_time(self, clock)
+		Atmosphere.set_time(_smokes, _forge, _birds, clock)
+	_flown += delta
+	Atmosphere.fly(_birds, _flown)
