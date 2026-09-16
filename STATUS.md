@@ -356,6 +356,15 @@ And `qacheck.gd` now asserts every outfit and head is on the vetted list,
 so the next person to add an NPC cannot reintroduce this by picking a
 promising filename.
 
+The heads are **cut once and shared**. A donor is a whole character —
+every mesh, every clip — and the swap only wants one mesh off it, so
+building one per townsperson meant 34 full character scenes instantiated
+and thrown away to keep 34 heads, when there are only eleven distinct
+heads to keep. Measured rather than guessed: building Thornfield's 34
+people goes from **3214 ms to 2522 ms**, about 20%. (The first draft of
+that comment claimed it saved "about eight minutes", which I had not
+measured and which was wrong by two orders of magnitude.)
+
 **Still open:** three outfits is thin, and the crowd reads uniform even
 with the colour wash. The real answer is a townsfolk pack that is
 actually medieval; this makes the town period-correct, not varied.

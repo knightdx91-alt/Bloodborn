@@ -249,18 +249,66 @@ func _swap_head(body: Node3D, head_model: String) -> void:
 	var path: String = FOLK % head_model
 	if not ResourceLoader.exists(path):
 		return
-	var donor := (load(path) as PackedScene).instantiate() as Node3D
-	var theirs := _head_of(donor)
-	if theirs == null:
-		donor.free()
+	var cut: Dictionary = _cut_head(head_model, path)
+	if cut.is_empty():
 		return
 
 	mine.visible = false
-	theirs.get_parent().remove_child(theirs)
-	skel.add_child(theirs)
-	theirs.owner = null
-	theirs.skeleton = theirs.get_path_to(skel)
+	var worn := MeshInstance3D.new()
+	worn.mesh = cut["mesh"]
+	worn.skin = cut["skin"]
+	worn.transform = cut["transform"]
+	skel.add_child(worn)
+	worn.skeleton = worn.get_path_to(skel)
+
+
+## Heads, cut once and shared.
+##
+## A donor is a whole character — every mesh and every clip — and this
+## only ever wants one mesh off it. Building one per townsperson meant 34
+## full character scenes instantiated and thrown away to keep 34 heads,
+## when there are only eleven distinct heads to keep.
+##
+## Static, because the saving is across NPCs rather than within one. The
+## mesh and skin are shared resources and the wearer only ever reads
+## them, so sharing is safe; each NPC still gets its own MeshInstance3D,
+## which is what carries the skeleton path and the colour wash.
+static var _heads: Dictionary = {}
+
+static func _cut_head(head_model: String, path: String) -> Dictionary:
+	if _heads.has(head_model):
+		return _heads[head_model]
+
+	var donor := (load(path) as PackedScene).instantiate() as Node3D
+	var best: MeshInstance3D = null
+	var best_top := -1e9
+	for node in _every(donor, "MeshInstance3D"):
+		var mi := node as MeshInstance3D
+		if mi.mesh == null:
+			continue
+		var box: AABB = mi.mesh.get_aabb()
+		var top: float = box.position.y + box.size.y
+		if top > best_top:
+			best_top = top
+			best = mi
+
+	var cut := {}
+	if best != null:
+		cut = {"mesh": best.mesh, "skin": best.skin,
+			"transform": best.transform}
 	donor.free()
+	_heads[head_model] = cut
+	return cut
+
+
+## The same walk as `_all`, as a static so `_cut_head` can use it.
+static func _every(node: Node, cls: String) -> Array:
+	var out := []
+	if node.get_class() == cls:
+		out.append(node)
+	for c in node.get_children():
+		out.append_array(_every(c, cls))
+	return out
 
 
 ## The blocky stand-in the town used before real people arrived.
