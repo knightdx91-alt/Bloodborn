@@ -32,6 +32,33 @@ headless) and validated through FBX re-import (`tools/validate.py`).
 - `weapon_spear.fbx` — committed/thrust silhouette.
 - `dummy.fbx` — training dummy.
 - `arena.fbx` — 24 m test room.
+> ### ⚠️ `brute.fbx` and `raider.fbx` DO NOT WORK YET — 2026-09-16
+>
+> **Their armatures are authored in centimetres.** The pelvis rests at
+> **104.27** with the parent node scaled to **0.01** to compensate, which
+> looks correct standing still — and collapses the moment a Mixamo clip
+> touches it, because the clips' position tracks are in **metres** (the
+> walk puts the hips at **1.016**). The clip drives the pelvis to a
+> hundredth of its height and the body folds up around it. Rendered and
+> confirmed: the paladin walks, these two crumple into heaps.
+>
+> **The rest pose is fine** — 1.10° worst difference from the Mixamo
+> reference, better than the working player model's 16°. So this is NOT
+> the v2 Z-up bake; the builder avoided that exactly as it claims. It is
+> a unit mismatch, and the README's "0.00000 m error, all frames" was
+> verified in Blender against the model's own armature, which cannot see
+> it.
+>
+> **The fix belongs at source**, per `SPEC-character-v3.md`: export the
+> armature in metres so its rest matches the clips. `tools/build_enemies.py`
+> is in this folder. Scaling the clips' position tracks by 100 at load
+> time was tested and works — all three then walk — but that is
+> compensating in the engine for an asset defect, which is the habit v3
+> exists to break.
+>
+> `prototype/rigcheck.gd` is the check, and it runs the two shipped
+> Mixamo downloads as controls so it cannot pass vacuously.
+
 - `brute.fbx` — **built 2026-09-16** by `tools/build_enemies.py`
   (Blender 4.5.1, headless). Bulky hunched humanoid enemy, ~1.77 m,
   dark palette, glowing eyes. Its skeleton is the exact 65-bone Mixamo
@@ -46,7 +73,10 @@ headless) and validated through FBX re-import (`tools/validate.py`).
   Dire wolf on a custom 20-bone quadruped rig (Root/Spine/Chest,
   Neck/Head/Jaw, 2-segment tail, 4 × Upper/Lower/Paw leg chains).
   ~1.47 m long, ~0.95 m at the shoulder. Armature + mesh, no animation.
-- `boar.fbx` — **built 2026-09-16** by `tools/build_quadrupeds.py`.
+  Wired in `Fighter.BEAST` and unused — putting a wolf somewhere is a
+  one-line change.
+- `boar.fbx` — **IN USE** as the Hedges enemy since 2026-09-16.
+  **built 2026-09-16** by `tools/build_quadrupeds.py`.
   Stocky boar (barrel body, shoulder hump, snout disc, tusks, bristle
   ridge) on the same 20-bone rig layout with stockier proportions.
   Armature + mesh, no animation.
@@ -102,6 +132,15 @@ something swings back.
 
 **Wanted next:** `SPEC-dodge-clips.md` — four directional dodges, so
 that dodging sideways stops meaning "turn, then roll forward".
+
+> **The quadrupeds are unaffected by the centimetre problem above.**
+> Their rig and their clips were authored together by the same script in
+> the same units, which is the principle `SPEC-character-v3.md` is
+> actually protecting — "the only reliable way to guarantee that is for
+> the character and the clips to come out of the same place." The rule
+> says *don't put a Mixamo character through Blender*; a Blender animal
+> with Blender clips never touches that. Verified in Godot: the boar
+> loads, animates, stands on the ground and fights.
 
 ### Quadruped clips (procedural, 2026-09-16)
 
