@@ -61,7 +61,20 @@ ui_cancel={
 
 [input_devices]
 
-pointing/emulate_mouse_from_touch=false
+; ON, and it has to be. Godot presses a Button from MOUSE events; a raw
+; InputEventScreenTouch does not activate a Control at all. With this
+; off, NOTHING in the game could be pressed with a finger — not the
+; launcher, not a conversation, not the contract board — which is
+; precisely how it was reported: "I'm touching it but it's not
+; registering any touches."
+;
+; It was turned off for a real reason: the emulated click arrives BEFORE
+; the touch that caused it, which fired a swing on press in the drill
+; yard and blocked the second-finger dodge. That is a drill-yard problem
+; and is solved there, by ignoring mouse events whose device is
+; InputEvent.DEVICE_ID_EMULATION (-1). Turning the whole mechanism off
+; to fix one scene took every menu in the game down with it.
+pointing/emulate_mouse_from_touch=true
 
 [rendering]
 

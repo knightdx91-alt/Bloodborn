@@ -266,6 +266,22 @@ neither — so a touch player could walk into town and never walk out.
 Whatever a scheme cannot do with a button it needs on screen, and that
 check is per scheme, not per screen.
 
+**A scheme that cannot press anything is not a supported scheme, and
+nobody will notice on your behalf.** Touch-to-mouse emulation had been
+switched off project-wide since the drill yard's third commit, to stop
+an emulated click firing a swing before the finger lifted. Godot
+activates a Button from *mouse* events — a raw touch does not press a
+Control at all — so that one line meant **no button anywhere in the game
+could be pressed with a finger**: not the launcher, not a conversation,
+not the contract board. It survived months of play because the
+controller did all the pressing and the desktop build used a mouse, and
+it only surfaced when a player put the controller down. Two rules follow.
+A fix for one scene is never applied to the whole project when the scene
+can carry it (the swing-on-press is now dropped where it happens, by its
+`DEVICE_ID_EMULATION` marker). And every scheme gets exercised on its
+own, deliberately, because "it works" almost always means "it works the
+way I hold it."
+
 **Accessibility is unaffected by any of this.** §7 already refuses to
 trade remapping away for minimalism, and automatic detection is not a
 substitute for it: detection decides what is *shown*, remapping decides

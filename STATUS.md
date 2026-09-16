@@ -101,6 +101,41 @@ and returning as a pad comes and goes.
 feeding it synthetic events, which is not the same as a GameSir-T7 over
 OTG.
 
+## ⚠️ Reported from play, 2026-09-16 — "I'm touching it but it's not registering any touches"
+
+**True, and it had been true since the drill yard's third commit.**
+
+`project.godot` carried `pointing/emulate_mouse_from_touch=false`. Godot
+activates a `Button` from **mouse** events; a raw `InputEventScreenTouch`
+does not press a Control at all. So that one line meant **no button
+anywhere in the game could be pressed with a finger** — not the
+launcher, not a conversation, not the contract board, not the Back chip
+added the same day.
+
+It was switched off for a real reason: the emulated click arrives
+*before* the touch that caused it, which fired a swing on press in the
+drill yard and blocked the second-finger dodge. The mistake was the
+scope. A fix for one scene was applied to the whole project, and took
+every menu in the game with it.
+
+It survived months of play because **the pad did all the pressing** and
+the desktop build used a mouse. It surfaced the moment a controller was
+put down.
+
+Fixed by turning emulation back on and dropping the emulated click where
+it actually causes harm: an emulated event carries
+`device == InputEvent.DEVICE_ID_EMULATION` (-1), so `world.gd` ignores
+exactly those and nothing else.
+
+**What the harness could and could not settle.** It confirms emulation
+is on, that a finger presses the launcher, a conversation's Leave and
+the board's Step back, that a press alone does not swing, that a click
+marked emulated is dropped, and that a real mouse click still swings. It
+does **not** confirm the touch tap→swing path: a synthetic two-frame tap
+produces no swing on this build *or on the one before the change*, so
+the harness cannot drive it, and asserting on it would only be measuring
+the harness. That one is checked on a phone.
+
 ## Device check
 
 `CLAUDE.md` instructs the assistant to ask which device you are on at

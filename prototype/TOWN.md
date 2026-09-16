@@ -312,6 +312,26 @@ a resting stick NOT counting as a pad, a browser's synthetic
 mouse-after-touch being ignored, and the thumb controls leaving and
 returning as a pad comes and goes.
 
+## ⚠️ Touch could never press anything — 2026-09-16
+
+`pointing/emulate_mouse_from_touch=false` had been in `project.godot`
+since the drill yard's third commit. Godot presses a `Button` from mouse
+events; a raw touch does not activate a Control. So **every button in
+the game was untappable on a phone** — the launcher, the conversation,
+the contract board, and the Back chip added hours earlier.
+
+The setting existed to stop an emulated click (which arrives *before*
+its touch) firing a swing on press in the yard. Right problem, wrong
+scope: a one-scene fix applied project-wide.
+
+Emulation is on now, and `world.gd` drops mouse events whose
+`device == InputEvent.DEVICE_ID_EMULATION` instead. `touchcheck.gd`
+covers it.
+
+The general lesson is in `interface.md` §9: a scheme that cannot press
+anything is not a supported scheme, and nobody will notice on your
+behalf — the pad did all the pressing here for months.
+
 ## Still open
 
 - **The world state is seeded once and never persists.** Nothing

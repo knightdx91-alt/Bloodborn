@@ -183,10 +183,12 @@ var _parry_attempts := 0
 var _last_release := "-"
 
 func _ready() -> void:
-	# Belt and braces with the project setting: an emulated click arrives
-	# BEFORE the touch that caused it, so leaving this on fires a swing on
-	# press and then blocks the second-finger dodge.
-	Input.set_emulate_mouse_from_touch(false)
+	# Mouse emulation from touch stays ON — see project.godot. Godot
+	# presses a Button from mouse events only, so switching it off here
+	# used to take every menu in the game down with it, in every scene,
+	# for the rest of the run. The swing-on-press this was guarding
+	# against is handled precisely instead, in _unhandled_input: an
+	# emulated click carries device == InputEvent.DEVICE_ID_EMULATION.
 
 	_build_yard()
 
@@ -454,6 +456,13 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event is InputEventKey and not event.pressed and event.keycode == KEY_K:
 		player.lower_guard()
 	elif event is InputEventMouseButton and event.pressed:
+		# A click synthesised from a touch is not a click. It arrives
+		# BEFORE the touch that caused it, so acting on it fires a swing
+		# on press and then blocks the second-finger dodge — which is why
+		# emulation was switched off globally and every menu went with
+		# it. Dropped here instead, where the problem actually is.
+		if event.device == InputEvent.DEVICE_ID_EMULATION:
+			return
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			_try_attack()
 		elif event.button_index == MOUSE_BUTTON_RIGHT:

@@ -137,7 +137,15 @@ func _input(event: InputEvent) -> void:
 			_set_scheme(KEYBOARD)
 		return
 
-	# Mouse last, and only once a recent touch cannot explain it.
+	# Mouse last, and only once nothing else explains it. Godot's own
+	# touch-to-mouse emulation labels its events, and it fires them
+	# BEFORE the touch, so the time window below cannot catch them —
+	# the device id is the only thing that can.
+	if event is InputEventMouse \
+			and (event as InputEventMouse).device == InputEvent.DEVICE_ID_EMULATION:
+		return
+	# A browser synthesising its own mouse events from touches does not
+	# label them; those arrive after, so the window does catch them.
 	if Time.get_ticks_msec() - _last_touch_msec < TOUCH_ECHO_MSEC:
 		return
 	if event is InputEventMouseButton:
