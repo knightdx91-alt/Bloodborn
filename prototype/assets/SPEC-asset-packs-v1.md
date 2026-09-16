@@ -24,6 +24,46 @@ this list.
   built for retargeting. (itch only, no direct link on the site.)
   https://quaternius.itch.io/universal-base-characters
 
+### ⚠️ Ultimate Monsters arrived, and it is the wrong pack — 2026-09-16
+
+**In the repo at `assets/monsters/` (50 glTF, 31 MB, CC0) and I would
+not ship it.** Rendered beside the paladin, the verdict is quick:
+
+- **Technically excellent.** 43-bone rigs, **14 animations each** —
+  Idle, Walk, Run, Punch, HitReact, Death, Jump — imported clean into
+  Godot 4.3 with no unit problem and their feet on the origin. This is
+  what an asset delivery should look like.
+- **Tonally wrong for this game.** They are bright cartoon platformer
+  monsters: a grinning green goblin in a bowler hat, a red pantomime
+  devil, a googly-eyed blue yeti, a pink-mohawk skeleton. The licence
+  file says it plainly — "Ultimate Platformer Pack". Marrowmark is
+  M-rated grounded dark fantasy (`art-audio.md`), and these would read
+  as a different game.
+- **About 3x too big.** ~3.2 m tall against the player's ~1.8 m. Any
+  use needs ~0.55x scaling.
+
+**That miss is mine.** I recommended the pack off its description — "50
+fully animated monsters, CC0" — without looking at it. The lesson is the
+same one this project keeps relearning: *look at the frame.*
+
+A couple of the least cartoonish (`Big/Orc_Skull`, `Big/Demon`) could
+serve as scaled placeholders if something is needed in the Hedges before
+better art exists. Nothing else in the pack should go near the game.
+
+### Better fit: KayKit (Kay Lousberg), all CC0
+
+Grounded stylised medieval rather than cartoon — knights, barbarians,
+rogues, skeleton warriors. Verified live and CC0, 2026-09-16.
+
+- **KayKit Adventurers** — https://kaylousberg.itch.io/kaykit-adventurers
+- **KayKit Skeletons** — https://kaylousberg.itch.io/kaykit-skeletons
+- **KayKit Character Animations** — https://kaylousberg.itch.io/kaykit-character-animations
+- Everything, bundled — https://kaylousberg.itch.io/kaykit-complete
+
+The characters and the animation pack are from the same author and built
+for each other, which is the rig-and-clips rule below satisfied by
+construction.
+
 ### 2. Enemies
 
 `brute.fbx` and `raider.fbx` work but are procedural placeholders.
