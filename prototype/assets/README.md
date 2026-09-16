@@ -377,3 +377,68 @@ fight happens from.
 
 **To revert**, set `compress/mode=0` in the twelve
 `assets/models/*_N.png.import` files and re-import.
+
+## RPG Characters (`rpg-characters/`)
+
+**Downloads, not generated** — the Quaternius **RPG Characters** pack
+(Nov 2020), committed 2026-09-16, **CC0 1.0** (copied here as
+`rpg-characters/LICENSE.txt`). Six fantasy classes: **Cleric, Monk,
+Ranger, Rogue, Warrior, Wizard**. Meant for class-flavored NPCs,
+enemies, and player-class prototypes — the most combat-useful
+humanoid set in the repo for baked attack clips.
+
+**Format choice: glTF for the characters, FBX for the weapons.**
+The pack ships each class in FBX + OBJ + glTF + Blend plus a separate
+"Humanoid Rig Versions" folder (FBX + Blend only). The committed glTF
+versions are self-contained — mesh, skin, and textures embedded, with
+11–15 baked class-specific clips each (see below). OBJ/Blend
+duplicates dropped. The Humanoid Rig FBX versions stay in the
+workspace library (`game-assets/packs/quaternius-rpg-characters/`)
+for anyone who wants to drive these meshes with the Universal
+Animation Library clips instead; the baked class clips (bow
+draw/shoot, dagger combos, staff attacks) were judged more immediately
+useful than clip-library compatibility.
+
+Textures needed no downscaling — the pack's PNGs are 1024px (character)
+and 512px (weapon), all embedded in the glTFs.
+
+Clip lists (per-file names vary; enumerate with
+`AnimationPlayer.get_animation_list()`):
+
+- `Cleric.gltf` — 11 clips: Death, Idle, Idle_Weapon, PickUp, Punch,
+  RecieveHit, RecieveHit_Attacking, Run, Spell1, Staff_Attack, Walk
+- `Monk.gltf` — 11 clips: Attack, Attack2, Death, Idle,
+  Idle_Attacking, PickUp, RecieveHit, RecieveHit_2, Roll, Run, Walk
+- `Ranger.gltf` — 14 clips: Bow_Draw, Bow_Shoot, Death, Idle,
+  Idle_Attacking, Idle_Weapon, PickUp, Punch, RecieveHit,
+  RecieveHit_2, Roll, Run, Run_Holding, Walk
+- `Rogue.gltf` — 12 clips: Attacking_Idle, Dagger_Attack,
+  Dagger_Attack2, Death, Idle, PickUp, Punch, RecieveHit,
+  RecieveHit_2, Roll, Run, Walk
+- `Warrior.gltf` — 13 clips: Death, Idle, Idle_Attacking, Idle_Weapon,
+  PickUp, Punch, RecieveHit, RecieveHit_2, Roll, Run, Run_Weapon,
+  Sword_Attack, Sword_Attack2, Walk
+- `Wizard.gltf` — 15 clips: Death, Idle, Idle_Attacking, Idle_Weapon,
+  PickUp, Punch, RecieveHit, RecieveHit_2, Roll, Run, Run_Weapon,
+  Spell1, Spell2, Staff_Attack, Walk
+
+**Rig notes.** Each character is on Quaternius's simple ~33–39-bone
+rig (not the 65-bone Mixamo/humanoid rigs elsewhere in this folder),
+so Mixamo and animation-library clips will NOT retarget onto these —
+use their baked clips. Verified 2026-09-16 in Godot 4.3 headless: all
+six import with Skeleton3D + bound body Skin + AnimationPlayer, every
+surface materialized. Rigid accessories (staves, shoulder pads,
+cloaks, pouches, faces) are bone-parented but unskinned meshes — they
+follow their bones and render fine (same benign flag as the
+townsfolk Adventurer's sword).
+
+`weapons/` holds the 6 standalone weapon FBXs (Cleric_Staff,
+Ranger_Bow, Ranger_Arrow, Rogue_Dagger, Warrior_Sword, Wizard_Staff),
+all loadable with materials present. Upstream quirk:
+`Ranger_Arrow.fbx` and `Ranger_Bow.fbx` are byte-identical in the pack
+(both contain a bow mesh) — kept as-is.
+
+Pulled from Ray's phone: quaternius.com's Drive folder was
+quota-blocked for automation, so he downloaded the 31 MB zip and
+shared it; the full pack (all formats, Humanoid Rig versions,
+textures) lives in the workspace library.
