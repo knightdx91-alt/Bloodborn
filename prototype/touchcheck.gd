@@ -282,9 +282,20 @@ func _ready() -> void:
 		# is not on screen — so tell the game a thumb is what it has,
 		# honestly, with a touch. In the yard that touch is itself a tap
 		# and a tap is a swing, so let it finish before counting.
+		# Send the opponent away first.
+		#
+		# These three checks are about whether a BUTTON reaches the
+		# fighter. With a boar in the ring they were also about whether
+		# the fight allowed it that instant — a player mid-stagger
+		# correctly refuses a swing — so the block failed at a different
+		# check on each run and looked like flake. It was not flake: it
+		# was the check reading the fight. Waiting for a clear moment was
+		# not enough either, because the boar charges into the gap.
+		var foe: Fighter = w.get("enemy") as Fighter
+		if foe != null:
+			foe.global_position = Vector3(0.0, 0.0, 400.0)
 		await _thumb_mode()
-		for f in 120:
-			await get_tree().physics_frame
+		await _free(fighter)
 		var hits_before: int = int(w.get("_swing_count"))
 		await _tap_watch(atk, 0, func() -> bool: return false)
 		_ok("the attack button swings in %s" % where,
@@ -295,15 +306,19 @@ func _ready() -> void:
 		# Let the swing finish before asking for anything else: a fighter
 		# is committed to its own attack, so a dodge during one is
 		# correctly refused and would measure the wrong thing.
-		for f in 120:
-			await get_tree().physics_frame
+		await _free(fighter)
 		_ok("the dodge button dodges in %s" % where,
 			await _tap_watch(dge, 0, func() -> bool:
 				return not fighter.dodge.can_act()),
 			"pressing Dodge did nothing")
 
-		for f in 120:
-			await get_tree().physics_frame
+		# Wait for a fighter with nothing running. In the Hedges the boar
+		# charges, and a player mid-stagger correctly REFUSES a swing —
+		# so without this the check blames the chip for the fight. It is
+		# the same trap as the guard flash and the swing clip: a reading
+		# taken while something else is in progress measures the
+		# something else.
+		await _free(fighter)
 		_touch(0, dge.get_global_rect().get_center() + Vector2(0.0, 200.0), true)
 		await get_tree().process_frame
 		var braced_two: bool = await _tap_watch(atk, 1, func() -> bool:
@@ -314,8 +329,7 @@ func _ready() -> void:
 		_touch(0, dge.get_global_rect().get_center() + Vector2(0.0, 200.0), false)
 		await get_tree().process_frame
 
-		for f in 120:
-			await get_tree().physics_frame
+		await _free(fighter)
 		_touch(0, grd.get_global_rect().get_center(), true)
 		var braced := false
 		for f in 6:
@@ -344,6 +358,22 @@ func _thumb_mode() -> void:
 	_touch(7, at, false)
 	for f in 3:
 		await get_tree().process_frame
+
+
+## Wait until this fighter can act, so a refused swing is not mistaken
+## for a dead button.
+##
+## The Hedges is a live fight: the boar charges, and a player mid-swing,
+## mid-stagger or mid-roll correctly refuses a new input. A fixed wait of
+## 120 frames was a guess that happened to hold in the yard and did not
+## in the wood, so this block failed at a different check on each run and
+## looked like flake. It was not flake — it was the check reading the
+## fight instead of the button.
+func _free(who: Fighter) -> void:
+	for f in 240:
+		await get_tree().physics_frame
+		if not who.is_busy() and not who.is_staggered():
+			return
 
 
 func _touch(index: int, at: Vector2, down: bool) -> void:
