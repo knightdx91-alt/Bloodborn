@@ -83,6 +83,10 @@ var _cam: Camera3D
 ## says the player should never be reading.
 var feel: Feel = Feel.new()
 var _stick_id := -1
+## Which finger is on which chip. Keyed by touch index, because a chip
+## press has to be matched to its release and a thumb is not always the
+## first finger down.
+var _chip_touch := {}
 var _stick_origin := Vector2.ZERO
 var _stick_vec := Vector2.ZERO
 var _stick_base: Panel
@@ -249,7 +253,6 @@ func _layout_touch_ui() -> void:
 		vp.x - inset.z - gutter - _talk_btn.size.x,
 		vp.y - inset.w - maxf(gutter, vp.y * 0.10) - _talk_btn.size.y)
 	_talk_btn.visible = false
-	_talk_btn.pressed.connect(_on_talk_pressed)
 	_touch_layer.add_child(_talk_btn)
 
 	# And a way out. Thornfield was a one-way door on a touch device:
@@ -261,7 +264,6 @@ func _layout_touch_ui() -> void:
 	_back_btn.position = Vector2(
 		vp.x - inset.z - gutter - _back_btn.size.x,
 		inset.y + gutter)
-	_back_btn.pressed.connect(_leave)
 	_touch_layer.add_child(_back_btn)
 
 	# The same combat chips as the yard and the Hedges, in the same
@@ -281,10 +283,10 @@ func _layout_touch_ui() -> void:
 		y -= 10.0 * scale
 		_touch_layer.add_child(b)
 
-	_attack_btn.pressed.connect(_town_attack)
-	_dodge_btn.pressed.connect(_town_dodge)
-	_guard_btn.button_down.connect(try_parry)
-	_guard_btn.button_up.connect(lower_guard)
+	# No `pressed` connections on any of these. _input dispatches every
+	# chip from the touch event itself; wiring the signal as well would
+	# fire the first finger's press twice, because the emulated mouse
+	# click still arrives after the touch.
 
 	_apply_scheme()
 
@@ -311,14 +313,46 @@ func _apply_scheme() -> void:
 		_hide_stick()
 
 
-## Is this touch landing on a chip rather than on the world? Without the
-## question, tapping Talk also starts a camera drag, because _input runs
-## before the GUI gets a look at the event.
-func _over_chip(at: Vector2) -> bool:
+## Which chip is this touch landing on, if any? Without the question,
+## tapping Talk also starts a camera drag, because _input runs before the
+## GUI gets a look at the event.
+func _chip_at(at: Vector2) -> Button:
 	for b in [_talk_btn, _back_btn, _attack_btn, _dodge_btn, _guard_btn]:
 		if b != null and b.visible and b.get_global_rect().has_point(at):
-			return true
-	return false
+			return b
+	return null
+
+
+## Press a chip, from a raw touch.
+##
+## Reported from play: *"the attack, and dodge buttons dont work while i
+## am moving. and the guard button does nothing at all."* All three were
+## one bug. A `Button` hears a touch only because Godot synthesises a
+## mouse click from it, and it does that for **touch index 0 and no
+## other** — so with the left thumb on the stick, every chip on screen
+## was deaf. Standing still was no better if a thumb was merely resting
+## there.
+##
+## So the chips are dispatched from the touch event itself, at whatever
+## index the finger happens to be, and the Button is left as a rectangle
+## and a look. `UI.chip_held` puts the press back.
+##
+## They fire on touch-DOWN rather than on release, which is what the pad
+## has always done and what a fight wants.
+func _press_chip(b: Button) -> void:
+	UI.chip_held(b, true)
+	if b == _talk_btn: _try_talk()
+	elif b == _back_btn: _leave()
+	elif b == _attack_btn: _town_attack()
+	elif b == _dodge_btn: _town_dodge()
+	elif b == _guard_btn: try_parry()
+
+
+func _release_chip(b: Button) -> void:
+	UI.chip_held(b, false)
+	# Holding it is what makes it a block, so only the guard cares.
+	if b == _guard_btn:
+		lower_guard()
 
 
 func _show_stick(at: Vector2) -> void:
@@ -342,7 +376,11 @@ func _input(event: InputEvent) -> void:
 		var t := event as InputEventScreenTouch
 		var vw := get_viewport().get_visible_rect().size.x
 		if t.pressed:
-			if _over_chip(t.position):
+			var chip := _chip_at(t.position)
+			if chip != null:
+				_chip_touch[t.index] = chip
+				_press_chip(chip)
+				get_viewport().set_input_as_handled()
 				return
 			if _stick_id == -1 and t.position.x < vw * 0.5:
 				_stick_id = t.index
@@ -351,6 +389,10 @@ func _input(event: InputEvent) -> void:
 				_show_stick(t.position)
 			elif _look_id == -1 and t.position.x >= vw * 0.5:
 				_look_id = t.index
+		elif _chip_touch.has(t.index):
+			_release_chip(_chip_touch[t.index])
+			_chip_touch.erase(t.index)
+			get_viewport().set_input_as_handled()
 		elif t.index == _stick_id:
 			_stick_id = -1
 			_stick_vec = Vector2.ZERO
@@ -555,10 +597,6 @@ func _process(_delta: float) -> void:
 		_talk_btn.text = _road.label
 	elif _near != null:
 		_talk_btn.text = "Talk"
-
-
-func _on_talk_pressed() -> void:
-	_try_talk()
 
 
 func _try_talk() -> void:

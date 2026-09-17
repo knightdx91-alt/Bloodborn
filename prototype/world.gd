@@ -503,6 +503,23 @@ func _find(node: Node, cls: String) -> Node:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventScreenTouch:
+		# A chip first, and nothing else. Two separate faults live here:
+		# a Button hears a touch only through Godot's synthesised mouse
+		# click, which exists for touch index 0 alone, so a chip under
+		# the second thumb was deaf — and the gesture layer below treats
+		# ANY second finger as a dodge, so pressing Attack while steering
+		# rolled instead of swinging. Reported from play as "the attack,
+		# and dodge buttons dont work while i am moving."
+		if event.pressed:
+			var chip := _chip_at(event.position)
+			if chip != null:
+				_chip_touch[event.index] = chip
+				_press_chip(chip)
+				return
+		elif _chip_touch.has(event.index):
+			_release_chip(_chip_touch[event.index])
+			_chip_touch.erase(event.index)
+			return
 		if event.pressed and _touch_id == -1:
 			_touch_id = event.index
 			_touch_origin = event.position
@@ -1306,6 +1323,10 @@ var _bar_alpha := 0.0
 var _last_stamina := 0.0
 var _touch_layer: CanvasLayer
 ## Combat on a thumb. See _layout_touch_ui for why these exist.
+## Which finger is on which chip, keyed by touch index — a chip press
+## has to be matched to its release, and a thumb is not always the first
+## finger down.
+var _chip_touch := {}
 var _attack_btn: Button
 var _dodge_btn: Button
 var _guard_btn: Button
@@ -1368,7 +1389,6 @@ func _layout_touch_ui() -> void:
 	_back_btn.size = _back_btn.custom_minimum_size
 	_back_btn.position = Vector2(
 		vp.x - inset.z - gutter - _back_btn.size.x, inset.y + gutter)
-	_back_btn.pressed.connect(_leave)
 	_touch_layer.add_child(_back_btn)
 
 	# Combat, with buttons.
@@ -1398,16 +1418,40 @@ func _layout_touch_ui() -> void:
 		y -= gap
 		_touch_layer.add_child(b)
 
-	_attack_btn.pressed.connect(func() -> void: _try_attack(Attack.Arc.UPPER_RIGHT))
-	_dodge_btn.pressed.connect(_try_dodge)
-	# Held, like the pad's guard: you hold it when you mean it. A guard
-	# that ended on release of a TAP would be no guard at all.
-	_guard_btn.button_down.connect(_try_parry)
-	_guard_btn.button_up.connect(func() -> void:
-		if player != null:
-			player.lower_guard())
+	# No `pressed` connections on any of these, here or on Back.
+	# _unhandled_input dispatches every chip from the touch event itself
+	# — see _press_chip for why a Button cannot be trusted to hear a
+	# thumb — and wiring the signal as well would fire the first finger
+	# twice, because the emulated mouse click still reaches the GUI.
 
 	_apply_scheme()
+
+
+## Which chip is under this touch, if any.
+func _chip_at(at: Vector2) -> Button:
+	for b in [_back_btn, _attack_btn, _dodge_btn, _guard_btn]:
+		if b != null and b.visible and b.get_global_rect().has_point(at):
+			return b
+	return null
+
+
+## Press a chip, from the raw touch, at whatever index the finger has.
+## They fire on touch-DOWN, which is what the pad does and what a fight
+## wants. `UI.chip_held` puts back the press the Button would have drawn.
+func _press_chip(b: Button) -> void:
+	UI.chip_held(b, true)
+	if b == _back_btn: _leave()
+	elif b == _attack_btn: _try_attack(Attack.Arc.UPPER_RIGHT)
+	elif b == _dodge_btn: _try_dodge()
+	elif b == _guard_btn: _try_parry()
+
+
+func _release_chip(b: Button) -> void:
+	UI.chip_held(b, false)
+	# Held, like the pad's guard: you hold it when you mean it. A guard
+	# that ended on release of a TAP would be no guard at all.
+	if b == _guard_btn and player != null:
+		player.lower_guard()
 
 
 func _apply_scheme() -> void:

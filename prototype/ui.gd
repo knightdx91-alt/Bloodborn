@@ -265,9 +265,24 @@ static func safe_inset(node: Node) -> Vector4:
 
 
 ## A thumb target: short label, dark timber, big enough to hit blind.
+## A chip is a rectangle and a look. It does NOT handle its own press.
+##
+## Every scene that puts chips up dispatches them from the raw
+## `InputEventScreenTouch`, and there are two reasons, both found from
+## play. Godot synthesises the mouse click a Button listens for from
+## touch index 0 and no other, so a chip under the second thumb was deaf
+## the whole time the first was on the stick. And a Button that consumes
+## the touch stops it reaching `_unhandled_input`, which is where the
+## drill yard reads its gestures — so the chips would eat the very
+## events the scene needs.
+##
+## `MOUSE_FILTER_IGNORE` settles both: nothing is consumed, nothing is
+## emitted, and the one place that decides what a press means is the
+## scene. `chip_held` draws the press.
 static func chip(text: String, scale: float) -> Button:
 	var b := Button.new()
 	b.text = text
+	b.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	b.focus_mode = Control.FOCUS_NONE
 	b.add_theme_font_size_override("font_size", int(20.0 * scale))
 	b.add_theme_color_override("font_color", PARCHMENT)
@@ -278,6 +293,26 @@ static func chip(text: String, scale: float) -> Button:
 	b.custom_minimum_size = Vector2(maxf(120.0 * scale, 96.0),
 		maxf(64.0 * scale, MIN_TAP + 8.0))
 	return b
+
+
+## Make a chip look held down, or stop.
+##
+## The combat chips are dispatched from raw touch events rather than by
+## the Button's own `pressed` signal — Godot synthesises the mouse click
+## a Button listens for from touch index 0 and no other, so a chip under
+## the second thumb is deaf while the first is on the stick. Dispatching
+## by hand fixes that and loses the press, so the press is put back here,
+## with the very same stylebox the theme already uses for it.
+static func chip_held(b: Button, down: bool) -> void:
+	if b == null:
+		return
+	if down:
+		b.add_theme_stylebox_override("normal",
+			_box(CHOICE_HOVER, FOCUS_EDGE, 2, 4))
+		b.add_theme_color_override("font_color", Color.WHITE)
+	else:
+		b.add_theme_stylebox_override("normal", _box(PANEL_DARK, PANEL_EDGE, 2, 4))
+		b.add_theme_color_override("font_color", PARCHMENT)
 
 
 

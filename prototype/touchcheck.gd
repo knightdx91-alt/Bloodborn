@@ -132,24 +132,33 @@ func _ready() -> void:
 			str(tw_dge != null), str(tw_grd != null)])
 
 	if tw_atk != null:
-		tw_atk.pressed.emit()
-		await get_tree().process_frame
-		_ok("the attack button swings in the town", not walker.attack.can_act(),
+		# Real touches, not `pressed.emit()`. Emitting the signal proves
+		# the signal is connected and nothing else; this block passed
+		# through the entire life of a bug that left every chip deaf
+		# under a second thumb. `thumbcheck.gd` is the thorough version
+		# of this — two fingers, both indices. These are the same three
+		# questions asked here so the town is never the untested one.
+		await _thumb_mode()
+		_ok("the attack button swings in the town",
+			await _tap_watch(tw_atk, 0, func() -> bool:
+				return not walker.attack.can_act()),
 			"pressing Attack in Thornfield did nothing")
 
 		for f in 120:
 			await get_tree().physics_frame
-		tw_dge.pressed.emit()
-		await get_tree().process_frame
-		_ok("the dodge button dodges in the town", not walker.dodge.can_act(),
+		_ok("the dodge button dodges in the town",
+			await _tap_watch(tw_dge, 0, func() -> bool:
+				return not walker.dodge.can_act()),
 			"pressing Dodge did nothing")
 
 		for f in 120:
 			await get_tree().physics_frame
-		tw_grd.button_down.emit()
-		await get_tree().process_frame
-		var tw_braced: bool = not walker.parry.can_act()
-		tw_grd.button_up.emit()
+		_touch(0, tw_grd.get_global_rect().get_center(), true)
+		var tw_braced := false
+		for f in 6:
+			await get_tree().process_frame
+			if not walker.parry.can_act(): tw_braced = true
+		_touch(0, tw_grd.get_global_rect().get_center(), false)
 		await get_tree().process_frame
 		_ok("the guard button raises the guard in the town", tw_braced,
 			"holding Guard did not brace")
@@ -253,15 +262,31 @@ func _ready() -> void:
 			await get_tree().process_frame
 			continue
 
+		await _thumb_mode()
 		_ok("and in %s they are only there for a thumb" % where,
-			atk.visible == InputMode.is_touch(),
+			atk.visible and InputMode.is_touch(),
 			"visible=%s while is_touch=%s"
 				% [str(atk.visible), str(InputMode.is_touch())])
 
+		# Driven with REAL touches, at the indices two thumbs produce.
+		#
+		# This block used to call `atk.pressed.emit()`, which fires the
+		# signal and proves only that the signal is connected. It went on
+		# passing through the whole life of a bug that made every one of
+		# these chips dead under a second thumb, because Godot
+		# synthesises the mouse click a Button listens for from touch
+		# index 0 and no other. A check that reaches past the input layer
+		# cannot see input bugs.
 		var fighter: Fighter = w.get("player")
+		# A chip is only on screen for a thumb, and _chip_at ignores what
+		# is not on screen — so tell the game a thumb is what it has,
+		# honestly, with a touch. In the yard that touch is itself a tap
+		# and a tap is a swing, so let it finish before counting.
+		await _thumb_mode()
+		for f in 120:
+			await get_tree().physics_frame
 		var hits_before: int = int(w.get("_swing_count"))
-		atk.pressed.emit()
-		await get_tree().process_frame
+		await _tap_watch(atk, 0, func() -> bool: return false)
 		_ok("the attack button swings in %s" % where,
 			int(w.get("_swing_count")) > hits_before,
 			"swings %d -> %d — the button is decoration"
@@ -272,17 +297,31 @@ func _ready() -> void:
 		# correctly refused and would measure the wrong thing.
 		for f in 120:
 			await get_tree().physics_frame
-		dge.pressed.emit()
-		await get_tree().process_frame
 		_ok("the dodge button dodges in %s" % where,
-			not fighter.dodge.can_act(), "pressing Dodge did nothing")
+			await _tap_watch(dge, 0, func() -> bool:
+				return not fighter.dodge.can_act()),
+			"pressing Dodge did nothing")
 
 		for f in 120:
 			await get_tree().physics_frame
-		grd.button_down.emit()
+		_touch(0, dge.get_global_rect().get_center() + Vector2(0.0, 200.0), true)
 		await get_tree().process_frame
-		var braced: bool = not fighter.parry.can_act()
-		grd.button_up.emit()
+		var braced_two: bool = await _tap_watch(atk, 1, func() -> bool:
+			return not fighter.attack.can_act())
+		_ok("and both work under a SECOND thumb in %s" % where, braced_two,
+			"a finger already down made the Attack chip deaf — the "
+				+ "reported bug, in the yard as well as the town")
+		_touch(0, dge.get_global_rect().get_center() + Vector2(0.0, 200.0), false)
+		await get_tree().process_frame
+
+		for f in 120:
+			await get_tree().physics_frame
+		_touch(0, grd.get_global_rect().get_center(), true)
+		var braced := false
+		for f in 6:
+			await get_tree().process_frame
+			if not fighter.parry.can_act(): braced = true
+		_touch(0, grd.get_global_rect().get_center(), false)
 		await get_tree().process_frame
 		_ok("the guard button raises the guard in %s" % where, braced,
 			"holding Guard did not brace")
@@ -293,4 +332,42 @@ func _ready() -> void:
 	print("")
 	print("touch: all clear" if _fails.is_empty() else "FAILED: %s" % ", ".join(_fails))
 	get_tree().quit()
+
+
+## Make it a touch game, the way a player does: by touching it. The
+## chips are hidden for any other scheme, and a hidden chip is not under
+## anybody's finger.
+func _thumb_mode() -> void:
+	var at := Vector2(60.0, get_viewport().get_visible_rect().size.y - 60.0)
+	_touch(7, at, true)
+	await get_tree().process_frame
+	_touch(7, at, false)
+	for f in 3:
+		await get_tree().process_frame
+
+
+func _touch(index: int, at: Vector2, down: bool) -> void:
+	var e := InputEventScreenTouch.new()
+	e.index = index
+	e.position = at
+	e.pressed = down
+	Input.parse_input_event(e)
+
+
+## Tap a chip with one finger and watch, frame by frame, for `probe` to
+## come true at any point while it is down or just after. A swing lasts a
+## fraction of a second, so a single reading afterwards catches it only
+## by luck.
+func _tap_watch(b: Button, index: int, probe: Callable) -> bool:
+	var seen := false
+	_touch(index, b.get_global_rect().get_center(), true)
+	if probe.call(): seen = true
+	for f in 10:
+		await get_tree().process_frame
+		if probe.call(): seen = true
+	_touch(index, b.get_global_rect().get_center(), false)
+	for f in 6:
+		await get_tree().process_frame
+		if probe.call(): seen = true
+	return seen
 

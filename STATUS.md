@@ -794,6 +794,72 @@ edge on the horizon, a grey band where the world stops. It is well past
 the wood, so nothing you can walk to, but it will need a skirt or fog
 before anyone else looks at this.
 
+## Fixed 2026-09-17 — the combat chips, and a guard nobody could see
+
+**Reported from play:** *"the attack, and dodge buttons dont work while
+i am moving. and the guard button does nothing at all, and im assuming
+it doesnt work while im moving either, but even standing still the guard
+button doesnt do anything, unless it only works while i am being
+attacked."*
+
+Three symptoms, two bugs, and the guess at the end was very nearly
+right: the guard worked, it just never appeared.
+
+### The second finger was deaf
+
+The chips are `Button`s, and a Button hears a touch only because Godot
+synthesises a mouse click from it — **for touch index 0 and no other**.
+A thumb on the stick owns index 0, so every chip on screen went dead the
+moment you started walking. "Even standing still" fits the same cause: a
+thumb *resting* on the stick still holds index 0.
+
+The yard had a second fault stacked on it. `world.gd` treats any second
+finger, anywhere, as a dodge — so pressing Attack while steering would
+have rolled even if the chip had been reachable. And `world.gd` reads
+touches in `_unhandled_input`, which runs *after* the GUI, so a Button
+that consumed the touch ate the event before the scene saw it.
+
+`UI.chip` now returns a `MOUSE_FILTER_IGNORE` control: a rectangle and a
+look, which consumes nothing and emits nothing. Every scene dispatches
+its own chips from the raw `InputEventScreenTouch`, at whatever index the
+finger has, and `UI.chip_held` draws the press the Button no longer can.
+They fire on touch-**down** rather than release now, which is what the
+pad has always done.
+
+### The guard was invisible
+
+There is still no guard-pose clip, so the brace is the heavy swing's own
+wind-up held at a frozen frame. `try_parry` asked for a 0.12s blend into
+it and froze the clip on the very next line — and **a blend is advanced
+by the same clock `speed_scale` scales**, so the cross-fade stopped at
+nought per cent. The AnimationPlayer reported `swing_heavy` at 0.72
+while the body rendered, pixel for pixel, the idle it was meant to be
+fading out of.
+
+Found by rendering the brace beside the idle and getting two identical
+frames — `assets/evidence/guard-a-at-ease.png` and `guard-b-braced.png`.
+Every check said the guard was up. Every one of them was right.
+
+### The checks that could not have caught any of it
+
+`touchcheck` drove these buttons with `atk.pressed.emit()` — firing the
+signal proves the signal is connected and nothing else. It passed green
+through the entire life of a bug that left every chip dead under a
+second thumb, because it never touched the input layer where the bug
+lived.
+
+It uses real `InputEventScreenTouch` now, and `thumbcheck.gd` is the
+thorough version: both indices, all three chips, in the town. The guard
+check asks the **skeleton** where the sword hand is rather than asking
+the AnimationPlayer what it believes — 0.357m into the brace, and 0.000m
+with the blend put back.
+
+One of my own new checks was fragile in the same family. It read
+`attack.can_act()` once, several frames after the tap; a swing is
+shorter than that, so moving the dispatch from the release to the press
+was enough to make a *working* build look broken. It watches a window
+now.
+
 ## Device check
 
 `CLAUDE.md` instructs the assistant to ask which device you are on at

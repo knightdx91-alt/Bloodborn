@@ -512,7 +512,20 @@ func try_parry() -> bool:
 	_swing_clip = ""
 	if anim == null or not anim.has_animation("swing_heavy"):
 		return true
-	anim.play("swing_heavy", 0.12)
+	# NO blend, and the zero is load-bearing.
+	#
+	# This read `play("swing_heavy", 0.12)`, and a blend is advanced by
+	# the same clock `speed_scale` scales — so freezing the clip on the
+	# next line froze the cross-fade at nought per cent too. The player
+	# reported `swing_heavy` at 0.72 while rendering, pixel for pixel,
+	# the idle pose it was supposedly fading out of. Reported from play
+	# as "the guard button does nothing at all", and it was half of why:
+	# the guard went up and the body never moved.
+	#
+	# Found by rendering the brace beside the idle and seeing two
+	# identical frames. Every check said the guard was up, and every one
+	# of them was right.
+	anim.play("swing_heavy", 0.0)
 	anim.seek(GUARD_POSE_AT, true)
 	anim.speed_scale = 0.0
 	return true
