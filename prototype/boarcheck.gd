@@ -144,6 +144,43 @@ func _ready() -> void:
 			+ "blade passes straight through it")
 		print("      boar %.0f -> %.0f" % [boar_hp, boar.health.current()])
 
+	# --- and you can TELL you hit it --------------------------------------
+	#
+	# Reported from play: *"you can't even tell you're hitting the boar."*
+	# Three things are supposed to say so — the sound (L87), the view
+	# moving (interface.md §2) and the body reacting — and the third did
+	# nothing at all. A boar's clip list is idle, walk and attack, so
+	# `hurt()`'s flinch was skipped for want of a "hurt" animation, and
+	# `setup_beast` never called `_dress`, so the beast had no materials
+	# to change either: there was literally nothing on it that could move.
+	print("--- can you tell you hit it ---")
+	_ok("the boar has skins to react with", boar.skins.size() > 0,
+		"setup_beast left it with no materials, so nothing about it can "
+			+ "change when it is struck")
+	if boar.skins.size() > 0:
+		# Let any flash from the check above finish first. The first
+		# version of this read `before` straight after the swing that
+		# proves a blow lands — so it sampled a boar that was ALREADY
+		# lit, compared it to a boar still lit, found them equal and
+		# called a working flash broken.
+		for f in 40:
+			boar.tick(0.02)
+		var before: Color = boar.skins[0].albedo_color
+		boar.hurt(9.0)
+		boar.tick(0.01)
+		var struck: Color = boar.skins[0].albedo_color
+		print("      albedo %s -> %s" % [str(before), str(struck)])
+		_ok("and it flashes when it is struck", struck != before,
+			"the boar took a blow and looked exactly the same")
+
+		# And it goes back, rather than staying lit.
+		for f in 30:
+			boar.tick(0.02)
+		_ok("and settles again afterwards",
+			boar.skins[0].albedo_color.is_equal_approx(before),
+			"the flash never faded — the boar is stuck at %s"
+				% str(boar.skins[0].albedo_color))
+
 	print("")
 	print("boar: all clear" if _fails.is_empty() else "FAILED: %s" % ", ".join(_fails))
 	get_tree().quit()

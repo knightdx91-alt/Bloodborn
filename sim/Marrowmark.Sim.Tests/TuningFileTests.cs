@@ -114,6 +114,10 @@ namespace Marrowmark.Sim.Tests
             AssertMatches(AttackProfile.Default, "attack");
 
         [Fact]
+        public void The_players_light_attack_matches_the_shared_file() =>
+            AssertMatches(AttackProfile.PlayerLight, "attackLight");
+
+        [Fact]
         public void Every_enemy_attack_shape_matches_the_shared_file()
         {
             // combat.md §6's three shapes. The prototype animates each one
@@ -162,6 +166,7 @@ namespace Marrowmark.Sim.Tests
                 ("stamina", typeof(StaminaProfile)),
                 ("dodge", typeof(DodgeProfile)),
                 ("attack", typeof(AttackProfile)),
+                ("attackLight", typeof(AttackProfile)),
                 ("enemyQuick", typeof(AttackProfile)),
                 ("enemyHeavy", typeof(AttackProfile)),
                 ("enemyCommitted", typeof(AttackProfile)),

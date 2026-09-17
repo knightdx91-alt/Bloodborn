@@ -906,6 +906,106 @@ dodge still turning.
 
 All fifteen harnesses clear.
 
+## Done 2026-09-17 — zoom, the bar, a second swing, and the feet
+
+Five things reported from one play session. Four were bugs; the fifth
+was a design gap with an asset bill behind it.
+
+### The camera zooms
+
+*"The max would be what it currently is set at, with you being able to
+zoom in."* So `ZOOM_MAX` **is** the old fixed orbit distance and there is
+nothing above it — the framing that shipped is the widest the game
+offers. Pinch on a thumb, wheel on a desk.
+
+Godot has no touch pinch event (`InputEventMagnifyGesture` is a trackpad
+thing), so the separation is tracked by hand. A pinch takes both fingers
+off the stick and the look-drag the moment it starts, or zooming would
+also walk you across the square. Measured as the camera's distance from
+the walker rather than as the zoom number, because the number is the
+thing under test: 10.76m → 5.03m on a pinch apart, back to exactly
+10.76m and no further.
+
+### The stamina bar was in the wrong building
+
+*"The stamina bar isn't showing."* It was not. It lived inside
+`world.gd` as the drill yard's private property, and Thornfield never
+had one — so since the Hedges moved into the town's scene, the bar was
+missing from everywhere the game is actually played. Now `StaminaBar`,
+hung by both. The same fault and the same fix as `Skirmish` and `Feel`
+before it: **a thing every region needs cannot live inside one of them.**
+
+### You can tell you are hitting the boar
+
+*"You can't even tell you're hitting the boar."* Three things are meant
+to say so — the sound (L87), the view moving (`interface.md` §2) and the
+body reacting. The third did nothing, for two reasons at once: a boar's
+clip list is idle, walk and attack, so `hurt()`'s flinch was skipped for
+want of a "hurt" animation; and `setup_beast` never called `_dress`, so
+the beast had **no materials at all**. There was literally nothing on it
+that could change.
+
+It is dressed with the identity tint now, which alters nothing about how
+it looks and gives it something to flash with, and a landed blow lights
+whatever took it — for any body, with or without a hurt clip, including
+the blow that kills. Not a number and not a health bar: the thing you
+struck reacting to being struck.
+
+### Two swings instead of one
+
+*"I hate that there is just the one sword swinging animation."* Two
+causes, and only one of them was fixable here.
+
+`_town_attack` hardcoded `Attack.Arc.UPPER_RIGHT` on every swing. The
+yard has had `_arc_from_look` since the arcs landed and `combat.md` §1b
+settled it outright — *"the side now alternates on its own"* — so the
+town was the only place in the game where it did not. The arc also picks
+which piece of the harness meets the blow (L64), so it was costing the
+fight meaning as well as variety.
+
+And the player had **one** of §6's three shapes wired up. There is now a
+real light cut beside the heavy: `AttackProfile.PlayerLight` in `sim/`,
+a guarded `attackLight` section in the tuning file, and the
+`swing_quick` clip the enemy already uses. Tap for light, hold for
+heavy — the guard's own vocabulary, so the thumb learns it once — and
+the heavy fires the instant the threshold passes rather than on release,
+because a heavy is a commitment and should feel like one.
+
+**What was refused:** alternating the two clips purely for looks. §6
+makes the wind-up's weight shift how a player reads how hard a blow is
+coming, and L65 forbids adding a marker to rescue a body that lies. It
+would have looked better and made the combat less readable. The real
+answer is `assets/SPEC-attack-clips.md`'s bill, which `combat.md`
+already records as the project's largest content risk.
+
+### The feet
+
+*"The player character is just a little bit off the ground."* Measured
+off the toe bone: **9.2cm**, with a close render showing daylight under
+the boots and the shadow detached beneath them. The body hangs 7cm
+lower now, chosen by rendering 0, 4, 7 and 10 and looking — at 10 the
+sole starts to sink. The remainder is the boot's own thickness, since a
+toe bone sits inside the sole rather than on it.
+
+**A check said the gap was 0.000m.** It measured the skinned mesh's
+`get_aabb()`, which returns the REST bounds — bounds the skeleton never
+moves. It could not have seen this bug at any size. The skeleton is the
+only instrument that follows a pose, and it is what found the guard
+flash too.
+
+### And one defect the harness turned up on its own
+
+The chips vanish the moment you touch a mouse or a pad — `InputMode`
+follows the last thing you actually used, by design. But a finger
+mid-hold on Attack then never gets its release, so the hold clock kept
+running and would throw a heavy swing seconds later at an input the
+player had already abandoned. `_apply_scheme` clears the gesture now.
+
+Found because a harness used the wheel and then wondered why a tap did
+nothing. Two of this session's checks were wrong in the same family —
+sampling a transient at the wrong moment — and both were caught by
+instrumenting rather than by reasoning about them.
+
 ## Device check
 
 `CLAUDE.md` instructs the assistant to ask which device you are on at

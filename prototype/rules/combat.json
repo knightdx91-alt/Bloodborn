@@ -56,6 +56,18 @@
     "shape": "Heavy",
     "damageMultiplier": 1.0
   },
+  "attackLight": {
+    "windupSeconds": 0.22,
+    "activeSeconds": 0.1,
+    "recoverySeconds": 0.3,
+    "staminaCost": 8.0,
+    "reach": 1.95,
+    "arcDegrees": 95.0,
+    "exhaustedRecoveryMultiplier": 1.5,
+    "exhaustedSwingMultiplier": 1.35,
+    "shape": "Quick",
+    "damageMultiplier": 0.62
+  },
   "dodge": {
     "startupSeconds": 0.05,
     "invulnerableSeconds": 0.3,

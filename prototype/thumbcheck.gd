@@ -253,7 +253,197 @@ func _ready() -> void:
 		"rolled toward +X and ended facing %s, so the one roll clip is "
 			% str(sideways.round()) + "playing sideways")
 
+	# --- and the camera can be pulled in ----------------------------------
+	#
+	# Asked for from play: *"we need an option to be able to zoom in and
+	# out, the max would be what it currently is set at, with you being
+	# able to zoom in. On mobile it will be controlled by the pinch zoom
+	# with two fingers, desktop would be with the mouse wheel."*
+	#
+	# Measured as the distance from the walker to the camera, not as the
+	# zoom number — the number is the thing being tested, so reading it
+	# back would only ask the code to agree with itself.
+	walker.revive()
+	walker.global_position = Vector3(0.0, 1.0, -30.0)
+	walker.velocity = Vector3.ZERO
+	for f in 20:
+		await get_tree().physics_frame
+	var cam: Camera3D = walker.get("_cam")
+	_ok("there is a camera to move", cam != null, "no camera on the walker")
+	if cam != null:
+		var wide: float = cam.global_position.distance_to(walker.global_position)
+
+		# Two fingers, drawn apart: the gesture every map on the device
+		# already uses for "closer".
+		_touch(3, Vector2(300.0, 300.0), true)
+		_touch(4, Vector2(500.0, 300.0), true)
+		await _settle()
+		_drag(3, Vector2(160.0, 300.0))
+		_drag(4, Vector2(640.0, 300.0))
+		for f in 20:
+			await get_tree().physics_frame
+		var close: float = cam.global_position.distance_to(walker.global_position)
+		print("      pinched apart: %.2fm -> %.2fm" % [wide, close])
+		_ok("a pinch pulls the camera in", close < wide - 0.5,
+			"the camera sat at %.2fm and is now %.2fm" % [wide, close])
+
+		# And back out, no further than where it started.
+		_drag(3, Vector2(360.0, 300.0))
+		_drag(4, Vector2(440.0, 300.0))
+		for f in 20:
+			await get_tree().physics_frame
+		var widest_again: float = cam.global_position.distance_to(walker.global_position)
+		print("      pinched together: %.2fm" % widest_again)
+		_ok("and never further out than it began", widest_again <= wide + 0.05,
+			"pinching together pushed the camera to %.2fm, past the %.2fm "
+				% [widest_again, wide] + "the game shipped with — that framing is "
+				+ "the maximum, by request")
+		_touch(3, Vector2(360.0, 300.0), false)
+		_touch(4, Vector2(440.0, 300.0), false)
+		await _settle()
+
+		# The wheel, for a desk.
+		_wheel(MOUSE_BUTTON_WHEEL_UP)
+		_wheel(MOUSE_BUTTON_WHEEL_UP)
+		for f in 20:
+			await get_tree().physics_frame
+		var wheeled: float = cam.global_position.distance_to(walker.global_position)
+		print("      two notches up: %.2fm" % wheeled)
+		_ok("the wheel pulls it in too", wheeled < widest_again - 0.2,
+			"the camera is at %.2fm after two notches, from %.2fm"
+				% [wheeled, widest_again])
+
+		for i in 20:
+			_wheel(MOUSE_BUTTON_WHEEL_DOWN)
+		for f in 20:
+			await get_tree().physics_frame
+		var far: float = cam.global_position.distance_to(walker.global_position)
+		_ok("and the wheel stops at the same maximum", far <= wide + 0.05,
+			"twenty notches out reached %.2fm, past the %.2fm maximum"
+				% [far, wide])
+
+		# A pinch must not also walk you across the square.
+		_ok("a pinch does not start a walk", walker.get("_stick_id") == -1,
+			"the stick took one of the pinch fingers")
+
+	# --- two swings, not one ----------------------------------------------
+	#
+	# Asked for from play: *"I hate that there is just the one sword
+	# swinging animation."* The player had one of combat.md §6's three
+	# shapes wired up, so every cut was a heavy and there was one clip to
+	# show for it. A tap is a light cut now and a hold is the heavy.
+	#
+	# Measured on the CLIP the body plays, because the clip is the thing
+	# that was reported — a check on the tuning numbers would pass with
+	# both swings looking identical.
+	# Wait for a fighter with nothing else on. A swing is refused while
+	# one is busy, and a refused swing looks exactly like a broken
+	# button — the first version of this check did not wait, and blamed
+	# the tap for what the check before it had left running.
+	# Back to being a touch game first. The zoom checks above end on the
+	# WHEEL, and a wheel is a mouse — InputMode follows the last thing
+	# you actually used, so the chips correctly went away and a tap
+	# afterwards landed on nothing. That is the game behaving; it is this
+	# check that has to keep up.
+	await _thumb_mode()
+	walker.revive()
+	await _idle(walker)
+	var ap: AnimationPlayer = walker.anim
+	_ok("the chips are back once a thumb is used again",
+		attack_btn.visible and InputMode.is_touch(),
+		"visible=%s is_touch=%s" % [str(attack_btn.visible),
+			str(InputMode.is_touch())])
+	_ok("there is an animation player to read", ap != null, "no AnimationPlayer")
+	_ok("and the fighter is free to swing", not walker.is_busy(),
+		"something earlier is still running, so any swing would be refused")
+	if ap != null and attack_btn != null:
+		_touch(0, _centre(attack_btn), true)
+		await get_tree().physics_frame
+		_touch(0, _centre(attack_btn), false)
+		var light := ""
+		for f in 8:
+			await get_tree().physics_frame
+			if ap.current_animation.begins_with("swing"):
+				light = ap.current_animation
+		print("      a tap played '%s'" % light)
+		_ok("a tap throws the light cut", light == "swing_quick",
+			"tapping Attack played '%s'" % light)
+
+		walker.revive()
+		await _idle(walker)
+		_touch(0, _centre(attack_btn), true)
+		var heavy := ""
+		for f in 24:
+			await get_tree().physics_frame
+			if ap.current_animation.begins_with("swing"):
+				heavy = ap.current_animation
+		_touch(0, _centre(attack_btn), false)
+		await _settle()
+		print("      a hold played '%s'" % heavy)
+		_ok("and holding throws the heavy", heavy == "swing_heavy",
+			"holding Attack played '%s'" % heavy)
+		_ok("so they are not the same swing", light != heavy and light != "",
+			"both gestures played '%s'" % light)
+
+	# --- the stamina bar exists in the town -------------------------------
+	#
+	# Reported from play: *"the stamina bar isn't showing."* It lived
+	# inside world.gd and Thornfield never had one — and the Hedges
+	# moved into Thornfield's scene, so that was everywhere.
+	var bar: StaminaBar = walker.get("_bar")
+	_ok("Thornfield has a stamina bar", bar != null, "no StaminaBar on the walker")
+	if bar != null:
+		# Longer than LINGER plus the fade, because the bar is SUPPOSED to
+		# hang about for a moment after the number stops moving.
+		walker.revive()
+		for f in 180:
+			await get_tree().physics_frame
+		_ok("and it is out of the way when you are rested",
+			bar.showing() < 0.1,
+			"the bar is at alpha %.2f while full and idle — interface.md "
+				% bar.showing() + "§2 says there is no persistent HUD")
+		walker.stamina.spend(40.0)
+		for f in 12:
+			await get_tree().physics_frame
+		print("      after spending, the bar is at alpha %.2f" % bar.showing())
+		_ok("and appears the moment the bar moves", bar.showing() > 0.5,
+			"stamina was spent and the bar stayed at alpha %.2f"
+				% bar.showing())
+
 	_finish()
+
+
+## Wait until this fighter has nothing running, so a swing will be taken
+## rather than refused.
+## Make it a touch game, the way a player does: by touching it.
+func _thumb_mode() -> void:
+	var at := Vector2(80.0, get_viewport().get_visible_rect().size.y - 80.0)
+	_touch(8, at, true)
+	await get_tree().process_frame
+	_touch(8, at, false)
+	for f in 4:
+		await get_tree().process_frame
+
+
+func _idle(who: Fighter) -> void:
+	for f in 150:
+		await get_tree().physics_frame
+		if not who.is_busy():
+			return
+
+
+func _drag(index: int, to: Vector2) -> void:
+	var e := InputEventScreenDrag.new()
+	e.index = index
+	e.position = to
+	Input.parse_input_event(e)
+
+
+func _wheel(button: MouseButton) -> void:
+	var e := InputEventMouseButton.new()
+	e.button_index = button
+	e.pressed = true
+	Input.parse_input_event(e)
 
 
 func _hold(key: Key, down: bool) -> void:

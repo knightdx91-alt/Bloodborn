@@ -139,6 +139,38 @@ namespace Marrowmark.Sim.Combat
         };
 
         /// <summary>
+        /// The player's LIGHT cut, beside <see cref="Default"/>'s heavy.
+        ///
+        /// Asked for from play — "I hate that there is just the one sword
+        /// swinging animation" — and §6 had always given the player the
+        /// same three shapes it gives an enemy; only one of them was ever
+        /// wired up, so every swing was a heavy and there was one clip to
+        /// show for it.
+        ///
+        /// Priced as §6's grammar requires rather than as a free jab: it
+        /// is faster and cheaper, and it hits for appreciably less, so
+        /// spamming it is a choice with a cost rather than a strictly
+        /// better attack. Deliberately NOT as fast as
+        /// <see cref="Quick"/> — an enemy's quick sits on the latency
+        /// budget in §7 precisely to be hard to read, and the player has
+        /// no reason to be holding a weapon that punishes their own
+        /// reaction time.
+        /// </summary>
+        public static AttackProfile PlayerLight => new AttackProfile
+        {
+            WindupSeconds = 0.22f,
+            ActiveSeconds = 0.10f,
+            RecoverySeconds = 0.30f,
+            StaminaCost = 8f,
+            Reach = 1.95f,
+            ArcDegrees = 95f,
+            ExhaustedRecoveryMultiplier = 1.5f,
+            ExhaustedSwingMultiplier = 1.35f,
+            Shape = AttackShape.Quick,
+            DamageMultiplier = 0.62f,
+        };
+
+        /// <summary>
         /// §6's quick attack. Short windup, low damage, chains — the one
         /// the dodge answers. Its windup is deliberately close to the
         /// latency budget in §7, which is what makes it the hardest of the

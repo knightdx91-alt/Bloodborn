@@ -162,7 +162,22 @@ const STRIDE := 1.55
 ## be frozen with it.
 var _frozen_for := 0.0
 var _speed_before_freeze := 1.0
+## How far the model hangs below the capsule's own bottom, so the soles
+## meet the ground rather than hovering over it. See `setup`.
+const FOOT_DROP := 0.07
 const IFRAME_COLOR := Color(0.45, 0.80, 1.00)
+## A blow landing, made visible on the thing that took it.
+##
+## Reported from play: *"you can't even tell you're hitting the boar."*
+## The blow was already audible (L87) and already moved the view, but
+## the BODY did nothing — a boar's clip list is idle, walk and attack,
+## with no hurt animation, so `hurt()`'s flinch was silently skipped and
+## nothing else took its place. This is not a health bar and not a
+## number: it is the thing you struck reacting to being struck, which is
+## what interface.md §2 asks for in place of either.
+const HIT_FLASH := Color(1.6, 1.15, 1.05)
+const HIT_FLASH_SECONDS := 0.11
+var _flash_for := 0.0
 var _iframes_shown := false
 
 signal died
@@ -178,7 +193,20 @@ func setup(max_health: float, tint: Color, carries_sword: bool = true,
 	# The capsule is two metres tall and centred on the origin, so the
 	# character hangs a metre below it to stand on its feet. Mixamo
 	# characters face +Z; travel here is toward -Z.
-	body.position = Vector3(0, -1.0, 0)
+	#
+	# The extra 7cm is the model, not the capsule. Reported from play —
+	# "the player character is just a little bit off the ground" — and it
+	# was: measured off the toe bone, the feet sat 9.2cm above the soil,
+	# and a close render showed daylight under the boots with the shadow
+	# detached beneath them. The rest goes on the boot's own thickness,
+	# since a toe bone sits inside the sole rather than on it. 7cm was
+	# chosen by rendering 0, 4, 7 and 10 and looking: at 10 the sole
+	# starts to sink.
+	#
+	# A check that measured the skinned mesh's AABB instead said the gap
+	# was 0.000m. `get_aabb()` returns the REST bounds, which the
+	# skeleton never moves, so it could not have seen this at any size.
+	body.position = Vector3(0, -1.0 - FOOT_DROP, 0)
 	body.rotation_degrees = Vector3(0, 180, 0)
 	add_child(body)
 
@@ -270,6 +298,13 @@ func setup_beast(max_health: float, kind: String = "boar") -> void:
 	attack = Attack.new()
 	parry = Parry.new()
 
+	# Dressed with the identity tint, which changes nothing about how it
+	# looks and gives it the material handles a hit flash needs. Without
+	# this a beast has no `skins` at all: reported from play as "you
+	# can't even tell you're hitting the boar", and half the reason was
+	# that there was literally nothing on it to change.
+	_dress(body, Color.WHITE)
+
 	var skel := _find(body, "Skeleton3D") as Skeleton3D
 	if skel == null:
 		push_warning("beast '%s' has no Skeleton3D; it will be mute" % kind)
@@ -317,7 +352,7 @@ func tick(delta: float) -> void:
 		_stagger_for = max(0.0, _stagger_for - delta)
 	_tick_swing()
 	_tick_freeze(delta)
-	_show_iframes()
+	_show_iframes(delta)
 
 ## A few frames of hesitation on a blow. The clocks above have already
 ## ticked: only the animation hesitates, so the parry window is still
@@ -342,7 +377,21 @@ func _tick_freeze(delta: float) -> void:
 func is_frozen() -> bool:
 	return _frozen_for > 0.0
 
-func _show_iframes() -> void:
+func _show_iframes(delta: float) -> void:
+	# The hit flash shares the skins with the i-frame tint, so one
+	# function owns them. Two writers would race and whichever ran last
+	# in a frame would win, which is the sort of bug that only shows up
+	# when you dodge into a blow.
+	if _flash_for > 0.0:
+		_flash_for = maxf(0.0, _flash_for - delta)
+		var lit: bool = _flash_for > 0.0
+		for i in skins.size():
+			skins[i].albedo_color = (skin_base_colors[i] * HIT_FLASH) if lit \
+				else skin_base_colors[i]
+		if lit:
+			_iframes_shown = false
+			return
+
 	if not show_iframes:
 		return
 	var invulnerable := dodge.is_invulnerable()
@@ -606,6 +655,14 @@ func hurt(amount: float, arc: int = Attack.Arc.UPPER_RIGHT,
 	var taken := health.take(blow["damage"])
 	var out := {"taken": taken, "slot": slot, "class": met,
 		"broke": blow["broke"], "bare": blow["bare"]}
+
+	# Flash first, and for ANY body — with or without a hurt clip, alive
+	# or dying. The flinch below needs an animation the boar does not
+	# have, and a death returns before reaching it, so a blow that killed
+	# or a blow on a beast used to land in complete visual silence.
+	if taken > 0.0:
+		_flash_for = HIT_FLASH_SECONDS
+
 	if health.is_dead():
 		died.emit()
 		return out

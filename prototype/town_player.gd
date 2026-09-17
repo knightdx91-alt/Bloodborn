@@ -66,6 +66,19 @@ const GROUND_CLEARANCE := 0.6
 const CAM_KEY_RATE := 1.8
 ## How far a finger on the RIGHT half of the screen swings the camera.
 const CAM_DRAG_RATE := 0.006
+
+## Zoom, as a fraction of the orbit distance the camera has always used.
+##
+## Asked for from play: *"we need an option to be able to zoom in and
+## out, the max would be what it currently is set at, with you being able
+## to zoom in."* So 1.0 IS the old fixed distance and there is nothing
+## above it — the framing that exists is the widest the game offers, and
+## zoom only ever brings you closer.
+const ZOOM_MAX := 1.0
+const ZOOM_MIN := 0.38
+## One wheel notch. Small enough that a flick is a glide rather than a
+## jump between two framings.
+const ZOOM_WHEEL_STEP := 0.06
 var _cam_yaw := 0.0
 var _cam_pitch := 0.0
 var _look_id := -1
@@ -83,10 +96,40 @@ var _cam: Camera3D
 ## says the player should never be reading.
 var feel: Feel = Feel.new()
 var _stick_id := -1
+var _cam_zoom := ZOOM_MAX
+## The two fingers of a pinch, by touch index, and what the gesture
+## started from. A pinch is NOT the stick and NOT a look-drag: the
+## moment a second finger lands away from the chips, both of those let
+## go so the gesture cannot also walk you across the square.
+var _pinch := {}
+var _pinch_from := 0.0
+var _pinch_zoom := ZOOM_MAX
 ## Which finger is on which chip. Keyed by touch index, because a chip
 ## press has to be matched to its release and a thumb is not always the
 ## first finger down.
 var _chip_touch := {}
+var _bar: StaminaBar
+## Which side the next cut comes from. combat.md §1b: the side alternates
+## on its own, because which side a cut came from never changed what it
+## hit — only which animation played.
+var _cut_from_left := false
+## Tap for a light cut, hold for a heavy one.
+##
+## Asked for from play, after "I hate that there is just the one sword
+## swinging animation": the player now has two of §6's three shapes
+## rather than one, so there are two clips to see and two prices to pay.
+## The vocabulary is the guard's — tap means one thing, holding means
+## another — so the thumb learns it once.
+##
+## The heavy fires the INSTANT the threshold passes, rather than on
+## release. A heavy is a commitment (§6) and should feel like one the
+## moment you have committed; waiting for the finger to lift would add
+## latency to the slower attack, which is the wrong one to slow down.
+const HEAVY_HOLD := 0.18
+var _attack_held := -1.0
+var _attack_fired := false
+const LOOK_HIGH := -0.20
+const LOOK_LOW := 0.20
 var _stick_origin := Vector2.ZERO
 var _stick_vec := Vector2.ZERO
 var _stick_base: Panel
@@ -148,7 +191,8 @@ func _focus() -> Vector3:
 ## Where the camera stands: an orbit at constant distance, so the walker
 ## stays the same size in frame at every angle.
 func _camera_seat() -> Vector3:
-	var dist: float = sqrt(CAM_DISTANCE * CAM_DISTANCE + CAM_HEIGHT * CAM_HEIGHT)
+	var dist: float = sqrt(CAM_DISTANCE * CAM_DISTANCE
+		+ CAM_HEIGHT * CAM_HEIGHT) * _cam_zoom
 	var pitch: float = _floored_pitch(dist)
 	var off := Vector3(0.0, sin(pitch), cos(pitch)) * dist
 	return _focus() + off.rotated(Vector3.UP, _cam_yaw)
@@ -288,6 +332,12 @@ func _layout_touch_ui() -> void:
 	# fire the first finger's press twice, because the emulated mouse
 	# click still arrives after the touch.
 
+	# The same stamina bar the yard hangs. Reported from play: "the
+	# stamina bar isn't showing." Thornfield never had one — it lived
+	# inside world.gd — and since the Hedges moved into this scene, this
+	# is everywhere the game is actually played.
+	_bar = StaminaBar.add_to(_touch_layer, self)
+
 	_apply_scheme()
 
 
@@ -311,6 +361,41 @@ func _apply_scheme() -> void:
 		_stick_id = -1
 		_stick_vec = Vector2.ZERO
 		_hide_stick()
+		# And forget any half-finished gesture. The chips vanish the
+		# moment you touch a mouse or a pad, so a finger that was holding
+		# Attack will never get its release — and without this the hold
+		# clock keeps running and throws a heavy at nobody, seconds
+		# later, for an input the player has already abandoned. Found by
+		# a harness that used the wheel and then wondered why a tap did
+		# nothing.
+		_chip_touch.clear()
+		_pinch.clear()
+		_attack_held = -1.0
+		_attack_fired = false
+
+
+## Take the fingers off everything else and start measuring.
+func _begin_pinch() -> void:
+	_stick_id = -1
+	_stick_vec = Vector2.ZERO
+	_hide_stick()
+	_look_id = -1
+	_pinch_from = _pinch_span()
+	_pinch_zoom = _cam_zoom
+
+
+## How far apart the two fingers are, in pixels.
+func _pinch_span() -> float:
+	var at: Array = _pinch.values()
+	if at.size() < 2:
+		return 0.0
+	return (at[0] as Vector2).distance_to(at[1] as Vector2)
+
+
+## Zoom, clamped. ZOOM_MAX is the framing the game shipped with and
+## there is deliberately nothing beyond it.
+func _set_zoom(to: float) -> void:
+	_cam_zoom = clampf(to, ZOOM_MIN, ZOOM_MAX)
 
 
 ## Which chip is this touch landing on, if any? Without the question,
@@ -343,7 +428,7 @@ func _press_chip(b: Button) -> void:
 	UI.chip_held(b, true)
 	if b == _talk_btn: _try_talk()
 	elif b == _back_btn: _leave()
-	elif b == _attack_btn: _town_attack()
+	elif b == _attack_btn: _begin_attack()
 	elif b == _dodge_btn: _town_dodge()
 	elif b == _guard_btn: try_parry()
 
@@ -353,6 +438,8 @@ func _release_chip(b: Button) -> void:
 	# Holding it is what makes it a block, so only the guard cares.
 	if b == _guard_btn:
 		lower_guard()
+	elif b == _attack_btn:
+		_end_attack()
 
 
 func _show_stick(at: Vector2) -> void:
@@ -382,6 +469,13 @@ func _input(event: InputEvent) -> void:
 				_press_chip(chip)
 				get_viewport().set_input_as_handled()
 				return
+			# A second finger anywhere off the chips is a pinch. Godot
+			# has no touch pinch event — InputEventMagnifyGesture is a
+			# trackpad thing — so the separation is tracked by hand.
+			_pinch[t.index] = t.position
+			if _pinch.size() == 2:
+				_begin_pinch()
+				return
 			if _stick_id == -1 and t.position.x < vw * 0.5:
 				_stick_id = t.index
 				_stick_origin = t.position
@@ -393,14 +487,37 @@ func _input(event: InputEvent) -> void:
 			_release_chip(_chip_touch[t.index])
 			_chip_touch.erase(t.index)
 			get_viewport().set_input_as_handled()
+		elif _pinch.has(t.index):
+			# Lifting one finger ends the pinch. The other is NOT
+			# promoted to a stick or a look-drag: it never started one,
+			# and inheriting a walk from the end of a zoom is the kind
+			# of thing that makes a control scheme feel haunted.
+			_pinch.erase(t.index)
 		elif t.index == _stick_id:
 			_stick_id = -1
 			_stick_vec = Vector2.ZERO
 			_hide_stick()
 		elif t.index == _look_id:
 			_look_id = -1
+	elif event is InputEventMouseButton and event.pressed:
+		# The wheel, for a desk. A click synthesised from a touch carries
+		# no wheel, so there is nothing to filter here.
+		var mb := event as InputEventMouseButton
+		if mb.button_index == MOUSE_BUTTON_WHEEL_UP:
+			_set_zoom(_cam_zoom - ZOOM_WHEEL_STEP)
+		elif mb.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			_set_zoom(_cam_zoom + ZOOM_WHEEL_STEP)
 	elif event is InputEventScreenDrag:
 		var dr := event as InputEventScreenDrag
+		if _pinch.has(dr.index):
+			_pinch[dr.index] = dr.position
+			if _pinch.size() == 2:
+				var apart := _pinch_span()
+				if _pinch_from > 1.0:
+					# Fingers apart zooms IN, which is the way every map
+					# and photo on the device already behaves.
+					_set_zoom(_pinch_zoom * (_pinch_from / maxf(apart, 1.0)))
+			return
 		if dr.index == _look_id:
 			_look_drag += Vector2(
 				-dr.relative.x * Settings.yaw_sign(),
@@ -424,13 +541,15 @@ func _unhandled_input(event: InputEvent) -> void:
 			elif k.keycode == KEY_ESCAPE:
 				_leave()
 			elif k.keycode == KEY_J or k.keycode == KEY_ENTER:
-				_town_attack()
+				_begin_attack()
 			elif k.keycode == KEY_SPACE:
 				_town_dodge()
 			elif k.keycode == KEY_K:
 				try_parry()
 		elif not k.pressed and k.keycode == KEY_K:
 			lower_guard()
+		elif not k.pressed and (k.keycode == KEY_J or k.keycode == KEY_ENTER):
+			_end_attack()
 	elif event is InputEventJoypadButton and event.pressed:
 		match event.button_index:
 			PAD_TALK:
@@ -442,11 +561,14 @@ func _unhandled_input(event: InputEvent) -> void:
 				else:
 					_town_dodge()
 			PAD_LEAVE: _leave()
-			PAD_ATTACK: _town_attack()
+			PAD_ATTACK: _begin_attack()
 			PAD_GUARD: try_parry()
 	elif event is InputEventJoypadButton and not event.pressed \
 			and event.button_index == PAD_GUARD:
 		lower_guard()
+	elif event is InputEventJoypadButton and not event.pressed \
+			and event.button_index == PAD_ATTACK:
+		_end_attack()
 
 
 ## Swing, in town.
@@ -455,11 +577,61 @@ func _unhandled_input(event: InputEvent) -> void:
 ## conversation is not a fight: with a panel open the same button is
 ## moving a highlight, and a sword coming out behind it would be the
 ## town answering an input meant for the menu.
-func _town_attack() -> void:
+## The attack button went down. Nothing swings yet: what swings depends
+## on how long it stays down.
+func _begin_attack() -> void:
 	if UI.modal_open():
 		return
-	if try_attack():
-		attack.arc = Attack.Arc.UPPER_RIGHT
+	_attack_held = 0.0
+	_attack_fired = false
+
+
+## And came up. A short press was a tap, and a tap is the light cut.
+func _end_attack() -> void:
+	var was := _attack_held
+	_attack_held = -1.0
+	if _attack_fired or was < 0.0:
+		return
+	_town_attack("attackLight")
+
+
+func _town_attack(section: String = "attack") -> void:
+	if UI.modal_open():
+		return
+	if try_attack(section):
+		attack.arc = _arc_from_look()
+
+
+## Which arc the next cut travels along, read off the camera.
+##
+## Thornfield hardcoded `Attack.Arc.UPPER_RIGHT` on every swing. The yard
+## has had `_arc_from_look` since the arcs landed, and `combat.md` §1b
+## settled the rule outright — *"the side now alternates on its own"* —
+## so the town was the only place in the game where it did not. Reported
+## from play as *"I hate that there is just the one sword swinging
+## animation"*, and this is one of its two causes: every cut came from
+## the same side at the same height, and the arc also decides which piece
+## of the harness meets the blow (L64), so it was costing the fight
+## meaning as well as variety.
+##
+## The other cause is not fixable here. There is one swing clip per
+## SHAPE, and the shape — not the arc — picks it, so alternating sides
+## changes where the blow lands without changing what you see. The clips
+## themselves are `assets/SPEC-attack-clips.md`'s bill, which `combat.md`
+## records as the project's largest content risk. Playing a quick clip
+## for a heavy swing would buy variety by breaking L65's telegraph, and
+## the fight is read off the body.
+##
+## Measured against the RESTING pitch, exactly as the yard does, because
+## a phone in portrait starts out looking down more steeply and "level"
+## has to mean the same thing on both.
+func _arc_from_look() -> int:
+	if _cam_pitch <= LOOK_HIGH:
+		return Attack.Arc.OVERHEAD
+	_cut_from_left = not _cut_from_left
+	if _cam_pitch >= LOOK_LOW:
+		return Attack.Arc.LOWER_LEFT if _cut_from_left else Attack.Arc.LOWER_RIGHT
+	return Attack.Arc.UPPER_LEFT if _cut_from_left else Attack.Arc.UPPER_RIGHT
 
 
 func _town_dodge() -> void:
@@ -529,6 +701,17 @@ func _physics_process(delta: float) -> void:
 	# art-audio.md §2: an exhausted character's camera behaves
 	# differently, which says what a stamina bar would have to.
 	feel.breathe(clamp(1.0 - stamina.fraction() * 2.2, 0.0, 1.0))
+
+	if _bar != null:
+		_bar.tick(delta)
+
+	# A held attack becomes a heavy the moment it has been held long
+	# enough, not when the finger lifts.
+	if _attack_held >= 0.0:
+		_attack_held += delta
+		if not _attack_fired and _attack_held >= HEAVY_HOLD:
+			_attack_fired = true
+			_town_attack("attack")
 
 	var dir := _input_dir()
 	var heading := Vector3.ZERO

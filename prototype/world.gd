@@ -1320,10 +1320,7 @@ func _place_camera() -> void:
 # the moment the bar moves and fades out once you are full and rested. In
 # a fight it is effectively always there; walking down a road it never is.
 
-var _bar_root: Control
-var _bar_fill: ColorRect
-var _bar_alpha := 0.0
-var _last_stamina := 0.0
+var _bar: StaminaBar
 var _touch_layer: CanvasLayer
 ## Combat on a thumb. See _layout_touch_ui for why these exist.
 ## Which finger is on which chip, keyed by touch index — a chip press
@@ -1335,30 +1332,12 @@ var _dodge_btn: Button
 var _guard_btn: Button
 var _back_btn: Button
 
-const BAR_FADE_IN := 12.0
-const BAR_FADE_OUT := 2.2
-const BAR_LINGER := 0.9
-var _bar_linger := 0.0
-
 func _build_interface() -> void:
 	var layer := CanvasLayer.new()
 	add_child(layer)
 
-	_bar_root = Control.new()
-	_bar_root.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_bar_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	layer.add_child(_bar_root)
-
-	var back := ColorRect.new()
-	back.color = Color(0, 0, 0, 0.45)
-	_bar_root.add_child(back)
-
-	_bar_fill = ColorRect.new()
-	_bar_fill.color = Color(0.85, 0.83, 0.72)
-	_bar_root.add_child(_bar_fill)
-
-	_bar_root.modulate.a = 0.0
-	_last_stamina = player.stamina.current()
+	# The bar is StaminaBar's now, and Thornfield hangs the same one.
+	_bar = StaminaBar.add_to(layer, player)
 
 	if SHOW_DEBUG:
 		_phase_label = Label.new()
@@ -1464,40 +1443,9 @@ func _apply_scheme() -> void:
 			b.visible = touching
 
 func _update_interface(delta: float) -> void:
-	if _bar_root == null:
+	if _bar == null:
 		return
-
-	var vp := get_viewport().get_visible_rect().size
-	# Low and centred, under the character rather than pinned to a corner —
-	# the eye is already there and does not have to travel.
-	var width: float = minf(vp.x * 0.46, 320.0)
-	var height := 5.0
-	var left := (vp.x - width) * 0.5
-	var top: float = vp.y - maxf(vp.y * 0.10, 46.0)
-
-	var fraction: float = clamp(player.stamina.fraction(), 0.0, 1.0)
-	(_bar_root.get_child(0) as ColorRect).position = Vector2(left, top)
-	(_bar_root.get_child(0) as ColorRect).size = Vector2(width, height)
-	_bar_fill.position = Vector2(left, top)
-	_bar_fill.size = Vector2(width * fraction, height)
-	_bar_fill.color = Color(0.78, 0.35, 0.28) if player.stamina.is_exhausted() \
-		else Color(0.85, 0.83, 0.72)
-
-	# "It appears while it is moving" — so the trigger is the bar changing,
-	# not being in combat. Nothing here knows what combat is.
-	var moving: bool = absf(player.stamina.current() - _last_stamina) > 0.01
-	_last_stamina = player.stamina.current()
-	var rested: bool = fraction >= 0.999 and not player.stamina.is_exhausted()
-
-	if moving and not rested:
-		_bar_linger = BAR_LINGER
-	else:
-		_bar_linger = max(0.0, _bar_linger - delta)
-
-	var target: float = 1.0 if _bar_linger > 0.0 else 0.0
-	var rate: float = BAR_FADE_IN if target > _bar_alpha else BAR_FADE_OUT
-	_bar_alpha = move_toward(_bar_alpha, target, rate * delta)
-	_bar_root.modulate.a = _bar_alpha
+	_bar.tick(delta)
 
 	if not SHOW_DEBUG:
 		return
@@ -1516,7 +1464,7 @@ func _update_interface(delta: float) -> void:
 		DODGE_NAMES[player.dodge.phase()],
 		SWING_NAMES[player.attack.phase()],
 		GUARD_NAMES[player.parry.phase()],
-		roundi(fraction * 100.0),
+		roundi(player.stamina.fraction() * 100.0),
 		"  EXHAUSTED" if player.stamina.is_exhausted() else "",
 		roundi(player.health.fraction() * 100.0),
 		player.harness.intact_pieces(),
