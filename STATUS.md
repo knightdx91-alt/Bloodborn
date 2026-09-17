@@ -860,6 +860,8 @@ shorter than that, so moving the dispatch from the release to the press
 was enough to make a *working* build look broken. It watches a window
 now.
 
+All fifteen harnesses clear, `thumbcheck` and `inputcheck` included.
+
 ## Device check
 
 `CLAUDE.md` instructs the assistant to ask which device you are on at
