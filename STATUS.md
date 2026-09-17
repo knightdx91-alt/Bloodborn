@@ -1002,9 +1002,26 @@ running and would throw a heavy swing seconds later at an input the
 player had already abandoned. `_apply_scheme` clears the gesture now.
 
 Found because a harness used the wheel and then wondered why a tap did
-nothing. Two of this session's checks were wrong in the same family —
-sampling a transient at the wrong moment — and both were caught by
-instrumenting rather than by reasoning about them.
+nothing. THREE of this session's checks were wrong in the same family —
+sampling a transient at the wrong moment — and all three were caught by
+instrumenting rather than by reasoning about them:
+
+- the guard flash read a boar that was **already lit** by the check
+  before it, compared lit to lit, and called a working flash broken;
+- the swing-clip check read a fighter left **busy** by the check before
+  it, and called a working button dead;
+- `touchcheck`'s Hedges block tapped chips **while a boar was charging**,
+  so it measured whether the fight allowed the swing rather than whether
+  the button reached the fighter. It failed a different check on each
+  run, which reads like flake and was not. The opponent is sent away for
+  those three checks now, and `touchcheck` was run twice in a row to
+  confirm it — one green pass is exactly what it produced before failing
+  again.
+
+**A reading taken while something else is in progress measures the
+something else.** Worth naming, since it has now cost four rounds.
+
+All sixteen harnesses clear, and 406 C# tests.
 
 ## Device check
 
