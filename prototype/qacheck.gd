@@ -684,6 +684,62 @@ func _ready() -> void:
 			ConversationUI.current.close()
 			await _settle()
 
+	# --- Which way is everybody pointing ----------------------------------
+	#
+	# Reported from play: "the npcs are walking backwards." They were.
+	# These bodies face +Z in their own file — the same as Mixamo's,
+	# rendered and looked at rather than assumed — and `_build_person`
+	# turns them 180 so the face points along the node's -Z. Both facing
+	# sums aimed +Z instead, so a townsperson walked to work backwards,
+	# and so did one leaving town.
+	#
+	# Driven through the REAL functions on a REAL townsperson. The first
+	# version of this check set the rotation itself, using the corrected
+	# formula, and then asserted the formula — so putting the bug back
+	# left it passing. A check that restates the fix is not a check, and
+	# this one was caught by restoring the bug and watching it not care.
+	print("--- which way is everybody pointing ---")
+	var folk: TownNPC = null
+	for n in pop.get_children():
+		if n is TownNPC and (n as TownNPC).stays:
+			folk = n as TownNPC
+			break
+	_ok("there is somebody walking about", folk != null, "no TownNPC")
+
+	if folk != null:
+		# Their routine walk. Put them well away from wherever they are
+		# bound and let their own code take a step.
+		var was: Vector3 = folk.global_position
+		folk.call("_keep_hours", 0.2)
+		await get_tree().process_frame
+		var went: Vector3 = folk.global_position - was
+		went.y = 0.0
+		var facing: Vector3 = -folk.global_transform.basis.z
+		if went.length() < 0.01:
+			print("      (already at their posting — nudged to test the walk)")
+			folk.global_position = was + Vector3(14.0, 0.0, 14.0)
+			folk.call("_keep_hours", 0.2)
+			await get_tree().process_frame
+			went = folk.global_position - (was + Vector3(14.0, 0.0, 14.0))
+			went.y = 0.0
+			facing = -folk.global_transform.basis.z
+		print("      walking %s while facing %s"
+			% [str(went.normalized().round()), str(facing.round())])
+		_ok("an NPC faces the way it is walking",
+			went.length() > 0.001 and facing.dot(went.normalized()) > 0.7,
+			"they are travelling %s and looking %s — backwards"
+				% [str(went.normalized()), str(facing)])
+
+		# And the walk out of town, which had the same fault written
+		# separately.
+		folk.leave_target = folk.global_position + Vector3(0.0, 0.0, -30.0)
+		folk.call("_walk_away", 0.2)
+		await get_tree().process_frame
+		facing = -folk.global_transform.basis.z
+		_ok("and so does one walking out of town",
+			facing.dot(Vector3(0, 0, -1)) > 0.7,
+			"leaving toward -Z while facing %s" % str(facing.round()))
+
 	print("")
 	print("npc UI: all clear" if _fails.is_empty() else "FAILED: %s" % ", ".join(_fails))
 	get_tree().quit()

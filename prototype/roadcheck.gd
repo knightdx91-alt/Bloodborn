@@ -81,6 +81,35 @@ func _ready() -> void:
 	_ok("a sign offers nothing to press", walker.get("_road") == null,
 		"the sign hijacks the Talk chip for a road you simply walk down")
 
+	# --- and the controls are not inverted --------------------------------
+	#
+	# Reported from play: "the walking controls are inverted." They were.
+	# Fighter.move takes a WORLD-SPACE heading and multiplies it straight
+	# into velocity, working the facing out for itself; the town negated
+	# both axes on the way in, on the mistaken grounds that it was
+	# matching Fighter's facing convention.
+	#
+	# Driven by holding a key, through _input_dir and the camera rotation,
+	# so this measures the path a thumb actually takes.
+	walker.global_position = Vector3(0.0, 1.0, -70.0)
+	walker.velocity = Vector3.ZERO
+	walker.set("_cam_yaw", 0.0)
+	for f in 8:
+		await get_tree().physics_frame
+	var from: Vector3 = walker.global_position
+
+	_hold(KEY_W, true)
+	for f in 45:
+		await get_tree().physics_frame
+	_hold(KEY_W, false)
+	var went: Vector3 = walker.global_position - from
+	went.y = 0.0
+	print("      holding forward moved %s" % str(went.round()))
+	_ok("holding forward walks forward, not backward",
+		went.length() > 1.0 and went.normalized().dot(Vector3(0, 0, -1)) > 0.8,
+		"pressing forward moved %s — with the camera unturned that should "
+			% str(went.round()) + "be straight up the road, toward -Z")
+
 	# The handoff itself still works, for roads that DO lead elsewhere —
 	# the arena is still a scene.
 	town.queue_free()
@@ -108,3 +137,11 @@ func _finish() -> void:
 	print("")
 	print("road: all clear" if _fails.is_empty() else "FAILED: %s" % ", ".join(_fails))
 	get_tree().quit()
+
+
+func _hold(key: Key, down: bool) -> void:
+	var e := InputEventKey.new()
+	e.keycode = key
+	e.physical_keycode = key
+	e.pressed = down
+	Input.parse_input_event(e)

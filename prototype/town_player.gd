@@ -490,9 +490,16 @@ func _physics_process(delta: float) -> void:
 		# screen, and the town becomes unwalkable the first time you
 		# orbit behind yourself.
 		var d2: Vector2 = dir.normalized().rotated(-_cam_yaw)
-		# Fighter faces -Z, so the sign here is its convention, not this
-		# file's preference.
-		heading = Vector3(-d2.x, 0.0, -d2.y)
+		# The direction to TRAVEL, unnegated.
+		#
+		# This carried a minus on both axes, with a comment claiming it
+		# was Fighter's facing convention. It is not: move() takes a
+		# world-space heading and multiplies it straight into velocity,
+		# and works the facing out for itself with
+		# atan2(-desired.x, -desired.z). Negating on the way in inverted
+		# every direction in Thornfield — reported from play as exactly
+		# that.
+		heading = Vector3(d2.x, 0.0, d2.y)
 
 	# Fighter.move does the steering, the gravity, the animation and the
 	# footsteps, and refuses to move a body that is mid-swing — which is

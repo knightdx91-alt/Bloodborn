@@ -424,7 +424,15 @@ func _keep_hours(delta: float) -> void:
 	if step.length() > gap.length():
 		step = gap
 	global_position += step
-	rotation.y = lerp_angle(rotation.y, atan2(gap.x, gap.z), 4.0 * delta)
+	# Face where you are GOING.
+	#
+	# These bodies face +Z in their own file — measured, not assumed, and
+	# the same as Mixamo's — and `_build_person` turns them 180 so their
+	# face points along this node's -Z. So the target angle has to aim
+	# -Z at the gap, which is atan2(-x, -z). It aimed +Z, and every
+	# townsperson in Thornfield walked to work backwards. Reported from
+	# play in exactly those words.
+	rotation.y = lerp_angle(rotation.y, atan2(-gap.x, -gap.z), 4.0 * delta)
 
 
 ## Their own clips, by name. The pack's rig is not Mixamo's, so these are
@@ -458,7 +466,11 @@ func _walk_away(delta: float) -> void:
 		return
 	var step: Vector3 = to.normalized() * 2.2 * delta
 	global_position += step
-	rotation.y = atan2(-to.x, -to.z) + PI
+	# Face the gate you are leaving by. The `+ PI` here undid the correct
+	# answer, so an NPC walking out of town moonwalked to the gate — the
+	# same fault as the routine walk above, in the second place it was
+	# written. Found while fixing that one, by rendering both.
+	rotation.y = atan2(-to.x, -to.z)
 
 
 ## Say one line above the head (used by systems for confirmations).

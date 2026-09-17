@@ -3,7 +3,7 @@
 Short, current, and written to be read on a phone. Updated at the end
 of each working session.
 
-**Last updated:** 2026-09-16
+**Last updated:** 2026-09-17
 
 ---
 
@@ -731,6 +731,68 @@ same way, `world.gd`'s hedges mode and `hedges.tscn` become a second
 copy of the wood and must be deleted — `hedgecheck` and `boarcheck` move
 to the region. The launcher's Hedges entry is already gone, so no player
 can reach the duplicate; only the harnesses still use it.
+
+## Fixed 2026-09-17 — everyone in Thornfield was walking backwards
+
+**Reported from play:** *"the walking controls are inverted, and the
+npcs are walking backwards."* Both true, both mine, and both the same
+mistake made twice: assuming a facing convention instead of measuring
+one.
+
+### The controls
+
+`Fighter.move()` takes a **world-space heading** and multiplies it
+straight into velocity. It works the facing out for itself, at the far
+end, with `atan2(-desired.x, -desired.z)`. `town_player.gd` negated both
+axes on the way in, under a comment claiming that was "Fighter's facing
+convention" — so every direction in the town came out reversed. In the
+drill yard the same code is not used, which is why this only ever
+appeared once you walked through the gate.
+
+One line. The comment was the actual bug: it described a convention that
+does not exist, convincingly enough that I read past it twice.
+
+### The townsfolk
+
+The bodies in `assets/townsfolk/modular-characters` **face +Z in their
+own files** — rendered, with the paladin as a control, because the last
+time I asserted what an asset looked like without opening it the user
+paid 74 MB for the answer. `_build_person` turns them 180°, so a
+townsperson's face points along its node's **−Z**. Both places that aimed
+one — `_keep_hours` for the walk to work, `_walk_away` for leaving by the
+gate — aimed +Z.
+
+They have walked to work backwards since the day they were given legs.
+
+### The check that could not have caught it
+
+My first attempt at a regression check computed the expected angle with
+the *fixed* formula and compared it to the node. It passed on the broken
+build. A check that restates the answer is not evidence of anything.
+
+Both checks now drive the real `_keep_hours` and `_walk_away` on a real
+`TownNPC`, and the walking one holds `KEY_W` through `_input_dir` and the
+camera rotation — the path a thumb actually takes. With the bugs put
+back: `walking (-1, 0, -1) while facing (1, 0, 1)`, and forward moves
+`(0, 0, 3)` instead of `(0, 0, -3)`. Both FAIL. That is what makes them
+worth keeping.
+
+### And the frame
+
+`facingshot.gd` takes two photographs of the fixed build, because the bug
+was visible and every check passed:
+
+- `assets/evidence/facing-npc-walking.png` — a townsperson in profile,
+  camera square to whichever way `_keep_hours` actually walked them. The
+  face leads the stride.
+- `assets/evidence/facing-player-forward.png` — forward held, camera
+  behind. Their back is to you and they are running up the road toward
+  the Hedges sign.
+
+**Noticed in that second frame and not chased:** the ground has a visible
+edge on the horizon, a grey band where the world stops. It is well past
+the wood, so nothing you can walk to, but it will need a skirt or fog
+before anyone else looks at this.
 
 ## Device check
 
