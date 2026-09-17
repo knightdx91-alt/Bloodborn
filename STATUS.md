@@ -904,6 +904,8 @@ and no other: the roll forward while holding forward, the backstep from
 a standstill, the facing kept through the backstep, and the steered
 dodge still turning.
 
+All fifteen harnesses clear.
+
 ## Device check
 
 `CLAUDE.md` instructs the assistant to ask which device you are on at
