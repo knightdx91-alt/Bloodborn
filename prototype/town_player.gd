@@ -82,6 +82,10 @@ const ZOOM_WHEEL_STEP := 0.06
 var _cam_yaw := 0.0
 var _cam_pitch := 0.0
 var _look_id := -1
+## Where the look finger currently is. Only used to hand its position
+## to the pinch when a second finger lands; the look itself only needs
+## the drag deltas.
+var _look_pos := Vector2.ZERO
 ## Accumulated by a finger on the right half of the screen, spent once
 ## per frame. Touch has no camera otherwise, and a phone without a pad
 ## is the commonest way this is played.
@@ -469,11 +473,23 @@ func _input(event: InputEvent) -> void:
 				_press_chip(chip)
 				get_viewport().set_input_as_handled()
 				return
-			# A second finger anywhere off the chips is a pinch. Godot
-			# has no touch pinch event — InputEventMagnifyGesture is a
-			# trackpad thing — so the separation is tracked by hand.
-			_pinch[t.index] = t.position
-			if _pinch.size() == 2:
+			# A second finger down while the first is steering or
+			# looking starts a pinch. Godot has no touch pinch event
+			# — InputEventMagnifyGesture is a trackpad thing — so the
+			# separation is tracked by hand. The first finger joins
+			# the pinch at its current position, and _begin_pinch()
+			# lets go of the stick and the look-drag so a zoom cannot
+			# also walk you across the square. The first finger alone
+			# is NEVER a pinch: putting it in _pinch here is what used
+			# to eat every stick drag before it reached the stick.
+			if _stick_id != -1 or _look_id != -1:
+				_pinch.clear()
+				if _stick_id != -1:
+					_pinch[_stick_id] = \
+						_stick_origin + _stick_vec * _stick_radius
+				if _look_id != -1:
+					_pinch[_look_id] = _look_pos
+				_pinch[t.index] = t.position
 				_begin_pinch()
 				return
 			if _stick_id == -1 and t.position.x < vw * 0.5:
@@ -483,6 +499,7 @@ func _input(event: InputEvent) -> void:
 				_show_stick(t.position)
 			elif _look_id == -1 and t.position.x >= vw * 0.5:
 				_look_id = t.index
+				_look_pos = t.position
 		elif _chip_touch.has(t.index):
 			_release_chip(_chip_touch[t.index])
 			_chip_touch.erase(t.index)
@@ -519,6 +536,7 @@ func _input(event: InputEvent) -> void:
 					_set_zoom(_pinch_zoom * (_pinch_from / maxf(apart, 1.0)))
 			return
 		if dr.index == _look_id:
+			_look_pos = dr.position
 			_look_drag += Vector2(
 				-dr.relative.x * Settings.yaw_sign(),
 				-dr.relative.y * Settings.pitch_sign()) * CAM_DRAG_RATE
