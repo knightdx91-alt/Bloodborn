@@ -168,7 +168,100 @@ func _ready() -> void:
 					+ "as if nothing happened, which is what L65 forbids")
 			walker.lower_guard()
 
+	# --- and a dodge goes where you are going ------------------------------
+	#
+	# Asked for from play: *"you should dodge in the direction you're
+	# moving, so if I'm moving forward, I roll forward. If you hit it
+	# while standing still, you roll backwards."* Both were wrong: the
+	# town negated the heading exactly as the walk did, so a dodge went
+	# the OPPOSITE way to the stick, and standing still rolled you
+	# forward into whatever you were backing away from.
+	#
+	# Measured by where the body actually ENDS UP, through the real key
+	# and the real chip — not by reading the direction back out of the
+	# fighter, which would only ask the code to repeat itself.
+	walker.revive()
+	walker.global_position = Vector3(0.0, 1.0, -30.0)
+	walker.velocity = Vector3.ZERO
+	walker.rotation = Vector3.ZERO
+	walker.set("_cam_yaw", 0.0)
+	for f in 10:
+		await get_tree().physics_frame
+	var stood: Vector3 = walker.global_position
+
+	# Forward is -Z with the camera unturned, so a forward dodge has to
+	# carry the body further up the road.
+	_hold(KEY_W, true)
+	for f in 12:
+		await get_tree().physics_frame
+	walker.call("_town_dodge")
+	for f in 40:
+		await get_tree().physics_frame
+	_hold(KEY_W, false)
+	var ran: Vector3 = walker.global_position - stood
+	ran.y = 0.0
+	print("      dodging while holding forward went %s" % str(ran.round()))
+	_ok("dodging while moving forward rolls forward",
+		ran.length() > 1.0 and ran.normalized().dot(Vector3(0, 0, -1)) > 0.7,
+		"held forward and the roll carried the body %s, which is not the "
+			% str(ran.round()) + "way the thumb was pointing")
+
+	# And standing still, which is the only case that has to be invented.
+	walker.revive()
+	walker.global_position = Vector3(0.0, 1.0, -30.0)
+	walker.velocity = Vector3.ZERO
+	walker.rotation = Vector3.ZERO
+	for f in 20:
+		await get_tree().physics_frame
+	var still: Vector3 = walker.global_position
+	walker.call("_town_dodge")
+	for f in 40:
+		await get_tree().physics_frame
+	var back: Vector3 = walker.global_position - still
+	back.y = 0.0
+	print("      dodging from a standstill went %s" % str(back.round()))
+	_ok("dodging from a standstill is a backstep",
+		back.length() > 1.0 and back.normalized().dot(Vector3(0, 0, 1)) > 0.7,
+		"standing still and facing -Z, the roll went %s — forward, into "
+			% str(back.round()) + "whatever you were backing away from")
+
+	# And it does not turn round to do it. Decided from play, from the
+	# frames: facing the roll spun the fighter 180 and put its back to
+	# whatever it was retreating from. A steered dodge still turns —
+	# that is what stops it rolling sideways — so this is asked of the
+	# standstill alone.
+	var faced: Vector3 = -walker.global_transform.basis.z
+	print("      after the backstep the body faces %s" % str(faced.round()))
+	_ok("and the backstep keeps you facing the threat",
+		faced.dot(Vector3(0, 0, -1)) > 0.7,
+		"the fighter began facing -Z and ended facing %s — it turned its "
+			% str(faced.round()) + "back on whatever it was backing away from")
+
+	# The steered dodge must still turn, or it rolls sideways.
+	walker.revive()
+	walker.global_position = Vector3(0.0, 1.0, -30.0)
+	walker.velocity = Vector3.ZERO
+	walker.rotation = Vector3.ZERO
+	for f in 10:
+		await get_tree().physics_frame
+	walker.try_dodge(Vector3(1.0, 0.0, 0.0))
+	for f in 30:
+		await get_tree().physics_frame
+	var sideways: Vector3 = -walker.global_transform.basis.z
+	_ok("but a steered dodge still turns to face the roll",
+		sideways.dot(Vector3(1, 0, 0)) > 0.7,
+		"rolled toward +X and ended facing %s, so the one roll clip is "
+			% str(sideways.round()) + "playing sideways")
+
 	_finish()
+
+
+func _hold(key: Key, down: bool) -> void:
+	var e := InputEventKey.new()
+	e.keycode = key
+	e.physical_keycode = key
+	e.pressed = down
+	Input.parse_input_event(e)
 
 
 func _skeleton(n: Node) -> Skeleton3D:

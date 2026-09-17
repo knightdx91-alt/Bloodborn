@@ -405,15 +405,34 @@ func _tick_steps(delta: float) -> void:
 func try_dodge(direction: Vector3) -> bool:
 	if is_busy():
 		return false
+	# Where a dodge goes, in one place, because both regions ask.
+	#
+	# Steering wins: you roll the way you are already travelling, which
+	# is what a player means by "dodge" while running. Standing still is
+	# the only case that has to be invented, and it is a BACKSTEP —
+	# asked for from play in those words, and the reading the yard's own
+	# comment claimed while the code did the opposite and rolled you
+	# forward into whatever you were backing away from.
+	#
+	# The body faces -Z, so +Z is behind it.
 	_dodge_dir = direction.normalized() if direction.length() > 0.01 \
-		else -global_transform.basis.z
+		else global_transform.basis.z
 	if not dodge.try_start(stamina):
 		return false
 	_dodge_travelled = 0.0
-	# One roll clip, so the fighter turns to face the dodge rather than
-	# rolling sideways. assets/SPEC-dodge-clips.md asks for the four
-	# directional clips that fix this.
-	rotation.y = atan2(-_dodge_dir.x, -_dodge_dir.z)
+	# One roll clip, so a STEERED dodge turns the fighter to face where it
+	# is going rather than rolling sideways.
+	#
+	# A backstep does not turn. Decided from play, looking at both: told
+	# to face the roll, the fighter spun 180 and put its back to whatever
+	# it was retreating from — and L65 makes the body the thing a fight
+	# is read off, so a turned back is information handed to the enemy at
+	# the exact moment you meant to be careful. Keeping the facing costs
+	# a forward roll clip driving a backward slide, which is the lesser
+	# lie and the one assets/SPEC-dodge-clips.md already has an answer
+	# for: the four directional clips.
+	if direction.length() > 0.01:
+		rotation.y = atan2(-_dodge_dir.x, -_dodge_dir.z)
 	# A beast has its own rig and its own short clip list. Asking whether
 	# the clip exists rather than whether there is a player at all is
 	# what lets one body type be missing a roll without every caller

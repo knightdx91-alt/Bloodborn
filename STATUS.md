@@ -862,6 +862,48 @@ now.
 
 All fifteen harnesses clear, `thumbcheck` and `inputcheck` included.
 
+## Fixed 2026-09-17 — the dodge goes where you are going
+
+**Asked for from play:** *"you should dodge in the direction you're
+moving, so if I'm moving forward, I roll forward for example. If you hit
+it while standing still, you roll backwards."*
+
+Neither half was true, and the first half was the walking bug again.
+
+**Moving.** `_town_dodge` built its heading with the same negation
+`_physics_process` carried — `Vector3(-d2.x, 0.0, -d2.y)` — so a dodge
+in Thornfield went the **opposite** way to the thumb. The walk was
+reported and fixed this morning; this was the same expression in the
+same file, twelve lines away, and it survived that fix because nothing
+asked it anything.
+
+**Standing still.** Both regions fell back to `-global_transform.basis.z`
+— which is *forward*. The yard's own comment said "backward is the safe
+reading" while the code rolled you into whatever you were backing away
+from. The rule now lives once, in `Fighter.try_dodge`, because both
+regions were asking the same question and answering it separately.
+
+### And the frame changed the answer
+
+There is one roll clip, and `try_dodge` turns the fighter to face the
+roll so it does not roll sideways. Rendered, the standing backstep was
+a **180° spin**: the fighter put its back to the thing it was retreating
+from. Decided from play, looking at both versions: *"you should still be
+facing the way you were, if it's the one where you hit dodge while
+you're standing still."*
+
+So a steered dodge still turns, and a backstep does not. The cost is a
+forward roll clip driving a backward slide, which is the lesser lie —
+and L65 makes the body the thing a fight is read off, so a turned back
+is information handed to the enemy at the exact moment you meant to be
+careful. `assets/SPEC-dodge-clips.md` already asks for the four
+directional clips that remove the compromise.
+
+Four checks in `thumbcheck`, each mutation-proved against its own bug
+and no other: the roll forward while holding forward, the backstep from
+a standstill, the facing kept through the backstep, and the steered
+dodge still turning.
+
 ## Device check
 
 `CLAUDE.md` instructs the assistant to ask which device you are on at

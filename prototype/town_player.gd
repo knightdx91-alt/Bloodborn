@@ -467,12 +467,18 @@ func _town_dodge() -> void:
 		return
 	# Aimed where you are steering, exactly as in the yard — a dodge
 	# repositions (L56), so standing still is the only time it is purely
-	# defensive.
+	# defensive. ZERO hands that case to Fighter.try_dodge, which owns
+	# the rule for both regions.
+	#
+	# This carried the same negation the walk did, so a dodge went the
+	# OPPOSITE way to the direction you were holding. Walking was
+	# reported and fixed; this was the same line in the same file and
+	# survived it.
 	var dir := _input_dir()
-	var away := -global_transform.basis.z
+	var away := Vector3.ZERO
 	if dir.length() > 0.15:
 		var d2: Vector2 = dir.normalized().rotated(-_cam_yaw)
-		away = Vector3(-d2.x, 0.0, -d2.y)
+		away = Vector3(d2.x, 0.0, d2.y)
 	try_dodge(away)
 
 

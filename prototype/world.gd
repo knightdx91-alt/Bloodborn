@@ -1197,6 +1197,9 @@ func _try_dodge() -> void:
 	# Aim it wherever you are steering. L56: a dodge repositions — toward,
 	# around and through are real options — so standing still is the only
 	# case that has to be invented, and backward is the safe reading.
+	# _steer() is ZERO when nothing is held, and Fighter.try_dodge turns
+	# that into the backstep — it used to roll you forward instead, which
+	# is what this comment always said it did not.
 	if not player.try_dodge(_steer()):
 		return
 	_dodge_count += 1
