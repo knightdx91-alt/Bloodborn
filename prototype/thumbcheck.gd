@@ -132,6 +132,55 @@ func _ready() -> void:
 	_touch(0, Vector2(140.0, 480.0), false)
 	await _settle()
 
+	# --- move and look, at the same time ----------------------------------
+	#
+	# Reported from play, after the stick fix: *"it moves the character
+	# but it broke being able to control the camera while moving at the
+	# same time."* The second finger always started a pinch and killed
+	# the stick with it, so the camera died the moment the stick was
+	# down. The rule now: a finger on the OTHER half is the other thumb,
+	# and only a second finger on the same half is a pinch.
+	walker.revive()
+	await _settle()
+	_touch(0, Vector2(140.0, 480.0), true)
+	await _settle()
+	_ok("the left thumb is steering", walker.get("_stick_id") == 0,
+		"the stick did not take the first finger")
+	_touch(1, Vector2(900.0, 300.0), true)
+	await _settle()
+	_ok("a second thumb on the right half works the camera, not a pinch",
+		walker.get("_look_id") == 1 and walker.get("_stick_id") == 0,
+		"stick=%s look=%s" % [str(walker.get("_stick_id")),
+			str(walker.get("_look_id"))])
+	var yaw_before: float = walker.get("_cam_yaw")
+	_lookdrag(1, Vector2(700.0, 300.0), Vector2(-200.0, 0.0))
+	for f in 10:
+		await get_tree().physics_frame
+	var yaw_after: float = walker.get("_cam_yaw")
+	print("      camera yaw went %.3f -> %.3f" % [yaw_before, yaw_after])
+	_ok("the camera turns while the stick is down",
+		absf(yaw_after - yaw_before) > 0.05,
+		"dragging the right thumb moved the camera by %.4f"
+			% absf(yaw_after - yaw_before))
+	_ok("and the stick is still steering",
+		walker.get("_stick_id") == 0,
+		"the stick died when the camera finger landed")
+	_touch(0, Vector2(140.0, 480.0), false)
+	_touch(1, Vector2(700.0, 300.0), false)
+	await _settle()
+
+	# ... and the same-half gesture is still a pinch.
+	_touch(2, Vector2(140.0, 480.0), true)
+	await _settle()
+	_touch(3, Vector2(400.0, 480.0), true)
+	await _settle()
+	_ok("two fingers on the same half still start a pinch",
+		walker.get("_stick_id") == -1,
+		"the stick survived a same-side second finger")
+	_touch(2, Vector2(140.0, 480.0), false)
+	_touch(3, Vector2(400.0, 480.0), false)
+	await _settle()
+
 	# --- and the guard has to be VISIBLE -----------------------------------
 	#
 	# Everything above can pass while the player sees nothing at all, and
@@ -436,6 +485,15 @@ func _drag(index: int, to: Vector2) -> void:
 	var e := InputEventScreenDrag.new()
 	e.index = index
 	e.position = to
+	Input.parse_input_event(e)
+
+
+## A look-drag carries a relative, which is what the camera reads.
+func _lookdrag(index: int, to: Vector2, rel: Vector2) -> void:
+	var e := InputEventScreenDrag.new()
+	e.index = index
+	e.position = to
+	e.relative = rel
 	Input.parse_input_event(e)
 
 

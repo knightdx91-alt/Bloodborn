@@ -102,9 +102,12 @@ var feel: Feel = Feel.new()
 var _stick_id := -1
 var _cam_zoom := ZOOM_MAX
 ## The two fingers of a pinch, by touch index, and what the gesture
-## started from. A pinch is NOT the stick and NOT a look-drag: the
-## moment a second finger lands away from the chips, both of those let
-## go so the gesture cannot also walk you across the square.
+## started from. A pinch starts when a second finger lands on the SAME
+## half of the screen as the first, or when a third finger lands while
+## the stick and the look are both down — never from a finger on the
+## other half, which is the other thumb. The recruited finger lets go
+## of the stick or the look-drag, so a zoom cannot also walk you across
+## the square.
 var _pinch := {}
 var _pinch_from := 0.0
 var _pinch_zoom := ZOOM_MAX
@@ -473,24 +476,65 @@ func _input(event: InputEvent) -> void:
 				_press_chip(chip)
 				get_viewport().set_input_as_handled()
 				return
-			# A second finger down while the first is steering or
-			# looking starts a pinch. Godot has no touch pinch event
-			# — InputEventMagnifyGesture is a trackpad thing — so the
-			# separation is tracked by hand. The first finger joins
-			# the pinch at its current position, and _begin_pinch()
-			# lets go of the stick and the look-drag so a zoom cannot
-			# also walk you across the square. The first finger alone
-			# is NEVER a pinch: putting it in _pinch here is what used
-			# to eat every stick drag before it reached the stick.
-			if _stick_id != -1 or _look_id != -1:
+			# A new finger is sorted by which half of the screen it
+			# lands on, because two thumbs is how the game is actually
+			# played: the left thumb steers, the right thumb works
+			# the camera. A finger on the other half is the other
+			# thumb — NOT a pinch. (Godot has no touch pinch event —
+			# InputEventMagnifyGesture is a trackpad thing — so the
+			# gesture is tracked by hand.)
+			#
+			# The rule, in full:
+			# - one finger down so far: it takes its own half (stick
+			#   on the left, look on the right).
+			# - stick down, new finger on the right half: the camera
+			#   thumb. Move and look at the same time, which used to
+			#   be impossible — the second finger started a pinch
+			#   and killed the stick with it.
+			# - look down, new finger on the left half: the stick
+			#   thumb. Same state, arrived the other way round.
+			# - a second finger on the SAME half: a pinch. The old
+			#   finger joins at its current position and _begin_pinch
+			#   lets it go, so a zoom cannot also walk you across
+			#   the square.
+			# - a third finger: the look finger joins it as a pinch
+			#   and the stick thumb keeps steering — it is not in
+			#   the pinch, so there is nothing to let go of.
+			#
+			# The first finger alone is NEVER a pinch: putting it in
+			# _pinch here is what used to eat every stick drag before
+			# it reached the stick.
+			var right := t.position.x >= vw * 0.5
+			if _stick_id != -1 and _look_id != -1:
 				_pinch.clear()
-				if _stick_id != -1:
+				_pinch[_look_id] = _look_pos
+				_pinch[t.index] = t.position
+				_look_id = -1
+				_pinch_from = _pinch_span()
+				_pinch_zoom = _cam_zoom
+				return
+			if _stick_id != -1:
+				if right:
+					_look_id = t.index
+					_look_pos = t.position
+				else:
+					_pinch.clear()
 					_pinch[_stick_id] = \
 						_stick_origin + _stick_vec * _stick_radius
-				if _look_id != -1:
+					_pinch[t.index] = t.position
+					_begin_pinch()
+				return
+			if _look_id != -1:
+				if not right:
+					_stick_id = t.index
+					_stick_origin = t.position
+					_stick_vec = Vector2.ZERO
+					_show_stick(t.position)
+				else:
+					_pinch.clear()
 					_pinch[_look_id] = _look_pos
-				_pinch[t.index] = t.position
-				_begin_pinch()
+					_pinch[t.index] = t.position
+					_begin_pinch()
 				return
 			if _stick_id == -1 and t.position.x < vw * 0.5:
 				_stick_id = t.index
