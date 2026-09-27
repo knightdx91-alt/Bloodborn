@@ -120,6 +120,15 @@ static func site(terrain: WgTerrain, world_seed: int, cx: int, cz: int) -> Dicti
 	# Not in the capitol's own ground: that is a city, hand-placed.
 	if terrain.capitol_blend(best.x, best.y) > 0.25:
 		return {}
+	# And not on a TOWN SITE. The six sites are levelled ground waiting
+	# for one of lore.md §5's towns, and a procedural hamlet standing
+	# in the middle of where Hammarsted goes is a collision that would
+	# only be discovered when somebody tried to put Hammarsted there.
+	for w in WgTerrain.WEDGES:
+		if Vector2(best.x, best.y).distance_to(
+				Vector2(terrain.town_site(w).x, terrain.town_site(w).z)) \
+				< WgTerrain.TOWN_FLAT + WgTerrain.TOWN_SKIRT:
+			return {}
 
 	return {
 		"at": Vector3(best.x, terrain.height_at(best.x, best.y), best.y),

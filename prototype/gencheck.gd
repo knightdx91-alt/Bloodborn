@@ -320,6 +320,54 @@ func _ready() -> void:
 	_ok("and each in its own country", wrong_wedge.is_empty(),
 		"border noise pushed a town out of its wedge: %s" % str(wrong_wedge))
 
+	# THE GROUND IS READY FOR A TOWN. People build on the flat, and
+	# 750 m of town on a hillside is 750 m of houses floating at one
+	# corner and buried at the other.
+	var worst_town_slope := 0.0
+	var worst_town := ""
+	for w in WgTerrain.WEDGES:
+		var site := t.town_site(w)
+		for probe in [Vector2(0, 0), Vector2(160, 0), Vector2(0, -160),
+				Vector2(-110, 110)]:
+			var sl := t.slope_at(site.x + probe.x, site.z + probe.y, 6.0)
+			if sl > worst_town_slope:
+				worst_town_slope = sl
+				worst_town = t.biomes()[w].town
+	_ok("the ground at every town site is level", worst_town_slope < 0.02,
+		"worst slope %.3f, at %s" % [worst_town_slope, worst_town])
+	print("      worst slope across the six town sites: %.4f" % worst_town_slope)
+
+	# And the country beyond the skirt is still country — a platform
+	# that flattened the whole wedge would be worse than none.
+	var out_slope := 0.0
+	for w in WgTerrain.WEDGES:
+		var site := t.town_site(w)
+		out_slope = maxf(out_slope, t.slope_at(site.x + 1400.0, site.z, 6.0))
+	_ok("and the country past it is not flattened too", out_slope > 0.02,
+		"slope %.4f a kilometre out — the platform is swallowing the wedge"
+			% out_slope)
+
+	# Nothing procedural is squatting where a town goes.
+	var squatters: Array[String] = []
+	for w in WgTerrain.WEDGES:
+		var site := t.town_site(w)
+		var scx2 := int(floor(site.x / WgSettlement.CELL))
+		var scz2 := int(floor(site.z / WgSettlement.CELL))
+		for dx4 in range(-1, 2):
+			for dz4 in range(-1, 2):
+				var b5 := WgSettlement.cached(t, t.seed_value, scx2 + dx4, scz2 + dz4)
+				if b5.kind == "":
+					continue
+				var d5 := Vector2(b5.centre.x, b5.centre.z).distance_to(
+					Vector2(site.x, site.z))
+				if d5 < WgTerrain.TOWN_FLAT + WgTerrain.TOWN_SKIRT:
+					squatters.append("%s at %.0f m from %s"
+						% [b5.name, d5, t.biomes()[w].town])
+	_ok("and no hamlet is squatting on a town site", squatters.is_empty(),
+		"%s — a procedural village standing where a named town goes is a "
+			% str(squatters)
+		+ "collision nobody finds until they try to put the town there")
+
 	var named := {}
 	for b3 in t.biomes():
 		named[b3.town] = b3.name

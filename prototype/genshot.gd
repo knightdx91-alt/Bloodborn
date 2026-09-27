@@ -66,6 +66,20 @@ func _ready() -> void:
 		await _shot("place_" + kind)
 		_clear()
 
+	# A town site: levelled ground waiting for a town, in the steepest
+	# country there is. Hammarsted's wedge has 46 m of relief, so if a
+	# platform reads anywhere it reads here.
+	for w2 in WgTerrain.WEDGES:
+		if t.biomes()[w2].town != "Hammarsted":
+			continue
+		var site := t.town_site(w2)
+		gen.build_block(WorldGen.chunk_of(site), 4)
+		await _settle()
+		cam.position = site + Vector3(0.0, 230.0, 330.0)
+		cam.look_at(site, Vector3.UP)
+		await _shot("site_Hammarsted")
+		_clear()
+
 	# A road, from above and from on it.
 	var segs := WgRoads.near(t, t.seed_value, 0.0, 0.0, 5000.0, 5000.0)
 	if not segs.is_empty():

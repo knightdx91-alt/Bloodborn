@@ -2169,6 +2169,18 @@ And the wedge leans its own odds: the Wistwood is "old forest with
 older ruins", so it has them — 50% of its settlements against 21% in
 the horse plains.
 
+**The six sites are levelled ground**, 420 m of flat with a skirt
+easing out to the country. People build on the flat, and 750 m of town
+on a hillside is 750 m of houses floating at one corner and buried at
+the other — without it, Hammarsted's site sits on a 0.41 slope, which
+is what the check reports if the platform is removed. No procedural
+hamlet is allowed to squat there either; a village standing where a
+named town goes is a collision nobody finds until they try to put the
+town there.
+
+**The land is ready for a town. There is no town.** Six coordinates,
+six names, levelled ground and roads arriving at it.
+
 **Four kinds of settlement**, because one shape repeated is half a
 world however varied the country is: street villages (44%), ring
 villages round a green (22%), farmsteads with a barn and a fenced yard

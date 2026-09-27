@@ -208,6 +208,9 @@ func _init(world_seed: int = 20260927) -> void:
 	_border.seed = world_seed + 9001
 	_border.frequency = 1.0 / 800.0
 
+	# Last, because it samples the fields above.
+	_level_towns()
+
 
 ## How far out the six towns stand from the capitol.
 ##
@@ -258,7 +261,14 @@ func capitol_blend(x: float, z: float) -> float:
 
 ## The ground, in metres. The whole generator hangs off this one
 ## function, and it takes no state but the seed.
-func height_at(x: float, z: float) -> float:
+## The land before anybody levelled any of it.
+##
+## Split out because the town platforms below need to know how high the
+## ground at a town site WOULD have been, and asking `height_at` for
+## that would ask it about a site whose level it is in the middle of
+## computing. A raw function that knows nothing about towns terminates;
+## a clever one does not.
+func _raw_height(x: float, z: float) -> float:
 	# Warp first. Sampling the shape at a bent coordinate is what turns
 	# an even field into country with a grain to it.
 	var wx := x + _warp.get_noise_2d(x, z) * 380.0
@@ -295,6 +305,50 @@ func height_at(x: float, z: float) -> float:
 	var r := sqrt(x * x + z * z)
 	if r > WORLD_R:
 		h -= (r - WORLD_R) * 0.08
+	return h
+
+
+## How wide a town's levelled ground is, and how far the slope out of
+## it reaches. A town is ~750 m across at the size §1a works out, so
+## the platform is that plus room to stand back from the walls.
+const TOWN_FLAT := 420.0
+const TOWN_SKIRT := 320.0
+
+## The height of each town's ground, worked out once from `_raw_height`
+## so the platforms have a level to aim at without recursion.
+var _town_level: PackedFloat32Array = PackedFloat32Array()
+
+
+func _level_towns() -> void:
+	_town_level.resize(WEDGES)
+	for w in WEDGES:
+		var ang := (float(w) + 0.5) / float(WEDGES) * TAU
+		_town_level[w] = _raw_height(cos(ang) * TOWN_RING, sin(ang) * TOWN_RING)
+
+
+## The ground, with the towns' own ground levelled into it.
+##
+## People build on the flat, and 750 m of town on a hillside is 750 m
+## of houses floating at one corner and buried at the other. So each
+## town site gets a platform at the height the land was already at
+## there — levelled, not raised — with a skirt easing out to the
+## country around it. The capitol gets the same treatment through
+## `capitol_blend`, which predates this.
+##
+## The land is READY for a town here. There is no town: see STATUS.
+func height_at(x: float, z: float) -> float:
+	var h := _raw_height(x, z)
+	if _town_level.is_empty():
+		return h
+	for w in WEDGES:
+		var ang := (float(w) + 0.5) / float(WEDGES) * TAU
+		var tx := cos(ang) * TOWN_RING
+		var tz := sin(ang) * TOWN_RING
+		var d := Vector2(x - tx, z - tz).length()
+		if d > TOWN_FLAT + TOWN_SKIRT:
+			continue
+		var t: float = 1.0 - smoothstep(TOWN_FLAT, TOWN_FLAT + TOWN_SKIRT, d)
+		return lerpf(h, _town_level[w], t)
 	return h
 
 
