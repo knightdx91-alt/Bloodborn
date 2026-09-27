@@ -38,6 +38,22 @@ static func cell_rng(world_seed: int, cx: int, cz: int, layer: int) -> RandomNum
 
 
 ## What stands in this cell, if anything: { pieces, keep_clear, kind, at }.
+## Cached per cell, for the same reason WgSettlement is: a chunk asks
+## about nine cells and eight of the answers belong to its neighbours.
+const CACHE_MAX := 512
+static var _cache: Dictionary = {}
+
+static func cached(terrain: WgTerrain, world_seed: int, cx: int, cz: int) -> Dictionary:
+	var key := "%d:%d:%d" % [world_seed, cx, cz]
+	if _cache.has(key):
+		return _cache[key]
+	var out := at_cell(terrain, world_seed, cx, cz)
+	if _cache.size() > CACHE_MAX:
+		_cache.clear()
+	_cache[key] = out
+	return out
+
+
 static func at_cell(terrain: WgTerrain, world_seed: int, cx: int, cz: int) -> Dictionary:
 	var rng := cell_rng(world_seed, cx, cz, 0)
 	if rng.randf() > CHANCE:

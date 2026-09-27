@@ -2119,6 +2119,24 @@ first, last, alone or twice comes out identical — which is what makes
 streaming possible at all, and is the property the usual "walk the area
 and roll for each spot" loop destroys.
 
+### What is in the world
+
+**Six biomes**, one per wedge, differing in ground colour, relief,
+feature size and vegetation — and they read differently, checked by
+looking rather than by asserting.
+
+**Four kinds of settlement**, because one shape repeated is half a
+world however varied the country is: street villages (44%), ring
+villages round a green (22%), farmsteads with a barn and a fenced yard
+(18%), and ruins (16%) built from the SAME kit as the houses, so they
+read as that village a century later rather than as a prop. Across 379
+generated settlements: 149 / 97 / 75 / 58.
+
+**Five kinds of landmark** between them — standing stones, abandoned
+camps, wayshrines, lone towers, and boulder fields gated to biomes with
+rock to give. 207 across 900 cells. L86 is the reason: no minimap means
+the land carries orientation, and orientation needs things to orient by.
+
 ### What the spike measured — this is #28's answer, partly
 
 `genworld.tscn`, reachable from the launcher and labelled a spike.
@@ -2148,8 +2166,17 @@ indices. Writing the packed arrays straight into an `ArrayMesh`, and
 taking normals from the heightfield instead of `generate_normals()`,
 brought it to **30 ms** — under two frames at 60 fps.
 
-Full history: **142 → 54 → 30 ms.** The next move, if it needs one, is
-threading the build; nothing else left is large.
+Full history: **142 → 54 → 30 ms**, then **42 ms** once landmarks were
+added — they cost about 12 ms a chunk and are worth it.
+
+A third guess at where time goes was also wrong, for the record: each
+hamlet and landmark was being built up to NINE times, once per
+neighbouring chunk that asks about its cell, and caching them per cell
+bought only 2 ms. The cache is kept because rebuilding deterministic
+output nine times is wrong regardless, but it was not the cost.
+
+The next real move, if the phone says one is needed, is threading the
+build.
 
 **Still unanswered: what any of this does on the phone.** That is the
 whole question, it cannot be answered here, and the spike is in the

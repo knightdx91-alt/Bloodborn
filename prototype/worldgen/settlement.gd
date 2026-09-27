@@ -67,6 +67,33 @@ static func cell_rng(world_seed: int, cx: int, cz: int, layer: int) -> RandomNum
 ## puts houses and keep-clear rects over the line, and a chunk that only
 ## asked about its own cell would grow trees through its neighbour's
 ## walls.
+## BUILT ONCE PER CELL, not once per chunk that asks.
+##
+## A chunk sweeps its own settlement cell and the eight around it,
+## because a hamlet near a border reaches over the line. That is
+## correct and it meant every hamlet was sited and built up to NINE
+## times — nine flattest-spot searches, nine sets of houses — and all
+## but one chunk threw the result away.
+##
+## Deterministic output is cacheable output: the same cell always gives
+## the same hamlet, so it only has to be worked out once. Bounded,
+## because a walk across the world would otherwise keep every
+## settlement it ever passed.
+const CACHE_MAX := 512
+static var _cache: Dictionary = {}
+
+static func cached(terrain: WgTerrain, world_seed: int, cx: int, cz: int) -> Built:
+	var key := "%d:%d:%d" % [world_seed, cx, cz]
+	if _cache.has(key):
+		return _cache[key]
+	var found := site(terrain, world_seed, cx, cz)
+	var out := build(terrain, world_seed, found) if not found.is_empty() else Built.new()
+	if _cache.size() > CACHE_MAX:
+		_cache.clear()
+	_cache[key] = out
+	return out
+
+
 static func site(terrain: WgTerrain, world_seed: int, cx: int, cz: int) -> Dictionary:
 	var rng := cell_rng(world_seed, cx, cz, 0)
 	if rng.randf() > CHANCE:

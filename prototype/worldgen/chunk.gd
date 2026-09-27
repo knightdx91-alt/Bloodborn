@@ -55,10 +55,9 @@ func build(t: WgTerrain, chunk_x: int, chunk_z: int) -> void:
 	var scz := int(floor(position.z / WgSettlement.CELL))
 	for dx in range(-1, 2):
 		for dz in range(-1, 2):
-			var found := WgSettlement.site(terrain, world_seed, scx + dx, scz + dz)
-			if found.is_empty():
+			var built := WgSettlement.cached(terrain, world_seed, scx + dx, scz + dz)
+			if built.houses == 0 and built.pieces.is_empty():
 				continue
-			var built := WgSettlement.build(terrain, world_seed, found)
 			hamlets.append(built)
 			keep_clear.append_array(built.keep_clear)
 
@@ -69,7 +68,7 @@ func build(t: WgTerrain, chunk_x: int, chunk_z: int) -> void:
 	var lcz := int(floor(position.z / WgLandmark.CELL))
 	for dx in range(-1, 2):
 		for dz in range(-1, 2):
-			var mark := WgLandmark.at_cell(terrain, world_seed, lcx + dx, lcz + dz)
+			var mark := WgLandmark.cached(terrain, world_seed, lcx + dx, lcz + dz)
 			if mark.is_empty() or (mark["pieces"] as Array).is_empty():
 				continue
 			marks.append(mark)
