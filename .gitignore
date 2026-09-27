@@ -54,3 +54,9 @@ prototype/build/
 # purpose and are not these; anything called shot.* is a scratch render.
 prototype/shot.gd
 prototype/shot.tscn
+
+# Baked chunks are committed deliberately, one at a time, as overrides
+# for land somebody changed by hand (tech.md §1a). A whole-world bake
+# is ~1.2 GB and must never be committed wholesale.
+prototype/baked/*
+!prototype/baked/.gitkeep

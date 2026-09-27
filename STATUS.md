@@ -2119,6 +2119,36 @@ first, last, alone or twice comes out identical — which is what makes
 streaming possible at all, and is the property the usual "walk the area
 and roll for each spot" loop destroys.
 
+### Baking, and a correction to yesterday's plan
+
+The land can be written down and read back: `WgBake` writes a chunk's
+heightfield, vertex colours and every placement; `WorldGen` prefers a
+baked chunk over generating one. `bakecheck` asserts the property the
+whole idea rests on — a baked chunk is the SAME chunk, exact to the
+float, not merely similar — and that a bake from another version is
+**refused** rather than quietly used, which is how a week goes into
+debugging the wrong world. Both were mutation-tested; a 5 mm drift
+fails the first.
+
+**And then the numbers contradicted the plan I wrote that morning.**
+A 64 m chunk bakes to 33.5 kB raw, 19.4 kB compressed. At 255 km²
+that is ~62,000 chunks, about **1.2 GB** — not something that ships in
+an APK.
+
+Going back to why §1a said to bake at all, the reasoning was wrong:
+it claimed a seed-regenerated world "cannot hold persistent state".
+That conflates the terrain with the world state. The terrain is
+static and holds nothing because it needs to hold nothing; the clock,
+territory, contracts and war live in `TownWorldState` and always did,
+and are applied on top of whatever the land is.
+
+So the corrected plan is **ship the seed, generate the country, and
+bake only what somebody changes by hand** — overrides, not a world.
+The pleasant part is that the code did not need changing: the loader
+already prefers a bake when one exists and generates when one does
+not, which is exactly the override mechanism. Only the document was
+wrong.
+
 ### What is in the world
 
 **Six biomes**, one per wedge, differing in ground colour, relief,

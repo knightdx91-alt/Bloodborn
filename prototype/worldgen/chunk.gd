@@ -85,6 +85,22 @@ func build(t: WgTerrain, chunk_x: int, chunk_z: int) -> void:
 	_landmarks(marks)
 
 
+## Build from a BAKED chunk instead of generating one.
+##
+## The shipping path, once the land is drafted and committed: the same
+## mesh and the same placements, read off disk rather than worked out.
+## `bakecheck` asserts the two agree exactly, which is the property
+## that makes this safe to prefer.
+func build_baked(data: Dictionary, chunk_x: int, chunk_z: int) -> void:
+	cx = chunk_x
+	cz = chunk_z
+	position = Vector3(float(cx) * SIZE, 0.0, float(cz) * SIZE)
+	_ground_from(data["heights"], data["colours"])
+	_place(data["pieces"])
+	for solid in data["solids"]:
+		_solid(solid["position"], solid["size"], solid.get("yaw", 0.0))
+
+
 ## The ground mesh, and the ground you stand on, from the same grid.
 func _ground() -> void:
 	var half := SIZE * 0.5
@@ -181,6 +197,13 @@ func _ground() -> void:
 			idx[w + 3] = b; idx[w + 4] = d; idx[w + 5] = c
 			w += 6
 
+	_commit_ground(verts, norms, cols, uvs, idx, heights)
+
+
+## The mesh and the body, from arrays either path can produce.
+func _commit_ground(verts: PackedVector3Array, norms: PackedVector3Array,
+		cols: PackedColorArray, uvs: PackedVector2Array,
+		idx: PackedInt32Array, heights: PackedFloat32Array) -> void:
 	var arrays := []
 	arrays.resize(Mesh.ARRAY_MAX)
 	arrays[Mesh.ARRAY_VERTEX] = verts
@@ -237,6 +260,55 @@ static func _ground_material() -> StandardMaterial3D:
 	mat.vertex_color_use_as_albedo = true
 	_shared_ground = mat
 	return _shared_ground
+
+
+## Rebuild the vertex arrays from a bake's heights and colours.
+##
+## Normals and UVs are DERIVED rather than stored: they are a function
+## of the heights and of world position, so storing them would be
+## storing something that can disagree with the thing it came from.
+func _ground_from(heights: PackedFloat32Array, colours: PackedByteArray) -> void:
+	var half := SIZE * 0.5
+	var step := SIZE / float(VERTS - 1)
+	var verts := PackedVector3Array(); verts.resize(VERTS * VERTS)
+	var norms := PackedVector3Array(); norms.resize(VERTS * VERTS)
+	var cols := PackedColorArray(); cols.resize(VERTS * VERTS)
+	var uvs := PackedVector2Array(); uvs.resize(VERTS * VERTS)
+
+	var at = func(ix: int, iz: int) -> float:
+		var cx2: int = clampi(ix, 0, VERTS - 1)
+		var cz2: int = clampi(iz, 0, VERTS - 1)
+		return heights[cz2 * VERTS + cx2]
+
+	for iz in VERTS:
+		for ix in VERTS:
+			var vi := iz * VERTS + ix
+			var lx := -half + float(ix) * step
+			var lz := -half + float(iz) * step
+			var h: float = heights[vi]
+			verts[vi] = Vector3(lx, h, lz)
+			var dx: float = at.call(ix + 1, iz) - at.call(ix - 1, iz)
+			var dz: float = at.call(ix, iz + 1) - at.call(ix, iz - 1)
+			norms[vi] = Vector3(-dx, 2.0 * step, -dz).normalized()
+			cols[vi] = Color(
+				float(colours[vi * 3 + 0]) / 255.0,
+				float(colours[vi * 3 + 1]) / 255.0,
+				float(colours[vi * 3 + 2]) / 255.0)
+			uvs[vi] = Vector2((position.x + lx) / 4.0, (position.z + lz) / 4.0)
+
+	var idx := PackedInt32Array()
+	idx.resize((VERTS - 1) * (VERTS - 1) * 6)
+	var w := 0
+	for iz in VERTS - 1:
+		for ix in VERTS - 1:
+			var a := iz * VERTS + ix
+			var b := a + 1
+			var c := a + VERTS
+			var d := c + 1
+			idx[w] = a; idx[w + 1] = b; idx[w + 2] = c
+			idx[w + 3] = b; idx[w + 4] = d; idx[w + 5] = c
+			w += 6
+	_commit_ground(verts, norms, cols, uvs, idx, heights)
 
 
 func _scatter(keep_clear: Array) -> void:

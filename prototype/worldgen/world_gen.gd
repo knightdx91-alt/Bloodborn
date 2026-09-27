@@ -35,6 +35,11 @@ var _follow: Node3D = null
 ## Counters a harness can read without walking the tree.
 var built_total := 0
 var freed_total := 0
+## How many came off disk rather than out of the noise.
+var loaded_baked := 0
+## Off, and a chunk is always generated. A harness comparing the two
+## needs to be able to say so.
+@export var use_baked := true
 
 signal chunk_built(at: Vector2i, chunk: WgChunk)
 
@@ -108,7 +113,19 @@ func make_chunk(at: Vector2i) -> WgChunk:
 	var c := WgChunk.new()
 	c.name = "Chunk_%d_%d" % [at.x, at.y]
 	add_child(c)
-	c.build(terrain, at.x, at.y)
+	# BAKED IF THERE IS ONE, generated if there is not.
+	#
+	# tech.md §1a: the generator is a content tool and the committed
+	# land is what ships. Preferring the bake here is what makes that
+	# true in the build rather than only in the document — and falling
+	# back keeps the generator usable while the land is still being
+	# drafted, which is where it is now.
+	var baked := WgBake.read(at) if use_baked else {}
+	if not baked.is_empty():
+		c.build_baked(baked, at.x, at.y)
+		loaded_baked += 1
+	else:
+		c.build(terrain, at.x, at.y)
 	live[at] = c
 	built_total += 1
 	chunk_built.emit(at, c)

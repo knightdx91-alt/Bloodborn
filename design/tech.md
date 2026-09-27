@@ -114,24 +114,47 @@ four locked decisions already depend on it being stable:
 - **Territory worth fighting for.** Interchangeable land cannot be
   contested.
 
-And the decisive one, which is structural rather than aesthetic: **a
-world regenerated from a seed on arrival cannot hold persistent state.**
-NMS never stores its world because it can always rebuild it. Marrowmark
-must store its world — the clock (L89), territory, contracts, war, and
-everything players change. That single fact rules out runtime
-generation, whatever its quality.
+And one more, which was the argument this section originally rested on
+and which is **wrong, corrected 2026-09-27 after building it**:
+
+> ~~A world regenerated from a seed on arrival cannot hold persistent
+> state. Marrowmark must store its world — the clock, territory,
+> contracts, war — so runtime generation is ruled out.~~
+
+That conflates the **terrain** with the **world state**. The terrain is
+static: deterministic noise regenerated from a seed is the same hill
+every time and holds nothing, because it needs to hold nothing. The
+state — the clock (L89), territory, contracts, war, everything players
+change — lives in `TownWorldState` and always did, separately, and is
+applied on top of whatever the land is. Regenerating the land at
+runtime does not threaten any of it.
+
+So the case for baking is not persistence. It is two smaller things,
+both real: **load cost**, and **the ability to change the land by
+hand** — a hill that is wrong stops being an argument about noise
+constants and becomes a file somebody edits.
 
 ### The rule: generate offline, bake, and then it is fixed
 
 Procedural generation belongs here as a **content tool, not a runtime
 system.**
 
-1. Run the generator. Get the country.
-2. **Bake it and commit it.** It is now authored content that happens
-   to have been machine-drafted.
-3. Hand-place the landmarks on top — the delve mouth, the shrine, the
-   wreck, the crossroads inn.
-4. Walk it. Cut what is boring. Re-bake.
+1. Ship the **seed**, and generate the country from it.
+2. Walk it. Where something is wrong or worth authoring by hand,
+   **bake that chunk and commit it**.
+3. A baked chunk overrides the generated one; everything else stays
+   generated.
+
+**Why overrides rather than baking the world.** Measured after
+building it: a 64 m chunk bakes to **19.4 kB** compressed (33.5 kB
+raw). At 255 km² that is about 62,000 chunks — **roughly 1.2 GB**,
+which is not something that ships in an APK, and the first version of
+this plan said "bake it and commit it" without knowing that.
+
+Overrides cost nothing for country nobody has touched, and the
+mechanism is the same one either way: the loader prefers a baked chunk
+when one exists and generates when one does not, so the difference
+between the two plans is entirely in how many files get committed.
 
 This is the same relationship the project already runs on everywhere
 else: `sim/` is authoritative and the tuning file is data; the machine
