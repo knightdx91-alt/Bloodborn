@@ -68,9 +68,25 @@ func follow(who: Node3D) -> void:
 
 
 ## The chunk coordinates a world position falls in.
+## Which chunk a point is standing on.
+##
+## ROUND, NOT FLOOR — and this was wrong from the day streaming was
+## written. A chunk is CENTRED on `(cx, cz) * SIZE`: `WgChunk._ground`
+## samples from `position - half` to `position + half`, and both
+## `WgChunk` and `WgBake` decide what stands on a chunk with a rect
+## about that centre. Flooring assumes a chunk STARTS at its
+## coordinate, so it answered half a chunk out — it put a point at
+## x=552 in chunk 8, whose ground runs 480 to 544.
+##
+## It never showed, because everything that used it was asking which
+## chunks to load AROUND something and a block of 5x5 swallows a 32 m
+## error whole. It showed the moment something needed the chunk a
+## particular thing actually stands on: a body dropped on a bridge deck
+## fell through the world, because the chunk built for it was the one
+## next door.
 static func chunk_of(at: Vector3) -> Vector2i:
-	return Vector2i(int(floor(at.x / WgChunk.SIZE)),
-		int(floor(at.z / WgChunk.SIZE)))
+	return Vector2i(int(round(at.x / WgChunk.SIZE)),
+		int(round(at.z / WgChunk.SIZE)))
 
 
 func _process(_delta: float) -> void:

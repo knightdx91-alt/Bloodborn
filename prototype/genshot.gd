@@ -131,6 +131,41 @@ func _ready() -> void:
 		await _shot("river_bank")
 		_clear()
 
+	# WHERE THE ROAD MEETS THE WATER. The shot that matters is from the
+	# road, about to walk on to it: a bridge judged from the air is a
+	# bridge judged as a shape, and the question is whether the track
+	# runs on to a deck or into a river.
+	var decks: Array = []
+	for patch in [Vector2(0.0, 0.0), Vector2(9000.0, -12000.0)]:
+		var pr := WgRoads.near(t, t.seed_value,
+			patch.x, patch.y, patch.x + 5000.0, patch.y + 5000.0)
+		decks.append_array(WgCrossing.near(t, pr, patch.x, patch.y,
+			patch.x + 5000.0, patch.y + 5000.0))
+		if not decks.is_empty():
+			break
+	if not decks.is_empty():
+		var deck: Dictionary = decks[0]
+		var dm: Vector2 = deck["at"]
+		var dy: float = (deck["h0"] + deck["h1"]) * 0.5
+		var dat := Vector3(dm.x, dy, dm.y)
+		print("bridge: %.0f m span at %.0f,%.0f, deck %.1f over water %.1f"
+			% [deck["span"], dat.x, dat.z, dy, t.water_at(dat.x, dat.z)])
+		gen.build_block(WorldGen.chunk_of(dat), 2)
+		await _settle()
+		var dd: Vector2 = deck["dir"]
+		var across := Vector2(-dd.y, dd.x)
+		cam.position = dat + Vector3(across.x * 55.0, 34.0, across.y * 55.0)
+		cam.look_at(dat, Vector3.UP)
+		await _shot("bridge_air")
+		var on_road := Vector3(
+			dat.x - dd.x * (float(deck["span"]) * 0.5 + 12.0), 0.0,
+			dat.z - dd.y * (float(deck["span"]) * 0.5 + 12.0))
+		on_road.y = gen.height_at(on_road.x, on_road.z) + 1.7
+		cam.position = on_road
+		cam.look_at(dat + Vector3(0, 0.5, 0), Vector3.UP)
+		await _shot("bridge_road")
+		_clear()
+
 	# And the things between the places.
 	var want_marks := ["stones", "tower", "shrine", "camp"]
 	var marks: Dictionary = {}

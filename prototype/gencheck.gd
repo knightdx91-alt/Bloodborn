@@ -630,6 +630,114 @@ func _ready() -> void:
 		"%d of %d things within 100 m of six rivers are standing in the water"
 			% [in_water, looked])
 
+	# --- bridges ----------------------------------------------------------
+	#
+	# ROADS WERE LAID BEFORE RIVERS EXISTED and nothing told them. This
+	# found ten of 215 segments running through open water, the deepest
+	# with the full 7 m channel under it — a cart track diving into a
+	# river and out the far side.
+	var road_wet := 0
+	var road_bridged := 0
+	var seg_count := 0
+	var spans: Array[float] = []
+	var all_decks: Array = []
+	for patch in [Vector2(0, 0), Vector2(9000, -12000), Vector2(-15000, 4000),
+			Vector2(6000, 14000), Vector2(-8000, -9000)]:
+		var here := WgRoads.near(t, t.seed_value,
+			patch.x, patch.y, patch.x + 5000.0, patch.y + 5000.0)
+		seg_count += here.size()
+		var decks := WgCrossing.near(t, here, patch.x, patch.y,
+			patch.x + 5000.0, patch.y + 5000.0)
+		for deck in decks:
+			spans.append(deck["span"])
+			all_decks.append(deck)
+		# INSIDE THE SAME BOX THE BRIDGES WERE ASKED FOR.
+		#
+		# The first version of this walked whole segments and compared
+		# them against the bridges near one patch — and the Wheel's
+		# spokes are 23 km long, so it was counting water a spoke
+		# crosses in another wedge entirely and calling it unbridged.
+		# 262 of 359 samples "failed" and the generator was right every
+		# time. A chunk only ever asks about the ground it is on, so
+		# that is what this asks about too.
+		var patch_box := Rect2(patch.x, patch.y, 5000.0, 5000.0)
+		for seg in here:
+			var a3: Vector2 = seg["a"]
+			var b3: Vector2 = seg["b"]
+			var steps := maxi(int(a3.distance_to(b3) / 4.0), 2)
+			for k in steps + 1:
+				var p3 := a3.lerp(b3, float(k) / float(steps))
+				if not patch_box.has_point(p3):
+					continue
+				if t.river_distance(p3.x, p3.y) > WgRivers.CHANNEL:
+					continue
+				road_wet += 1
+				for deck2 in decks:
+					if WgCrossing.covers(deck2, p3.x, p3.y):
+						road_bridged += 1
+						break
+	_ok("roads meet the rivers somewhere", road_wet > 0,
+		"no road in %d segments touches water, so this proves nothing"
+			% seg_count)
+	_ok("and every one of those crossings has a deck over it",
+		road_wet > 0 and road_bridged == road_wet,
+		"%d of %d road samples in open water have no bridge above them"
+			% [road_wet - road_bridged, road_wet])
+	spans.sort()
+	if not spans.is_empty():
+		print("      %d bridges over %d road segments; span %.0f..%.0f m"
+			% [spans.size(), seg_count, spans[0], spans[spans.size() - 1]])
+
+	# And the same crossing every time, which is what lets two chunks
+	# each build their half of one deck without conferring.
+	#
+	# OVER THE PATCHES THAT ACTUALLY HAVE BRIDGES. The first version of
+	# this asked about a 4 km box at the origin, which holds none — so
+	# it compared two empty lists, found them identical, and passed.
+	# The mutation that made the walk step wander proved it: nothing
+	# failed. A check that cannot fail is not a check, and the count is
+	# now asserted first.
+	var fresh_t := WgTerrain.new(20260927)
+	var compared_decks := 0
+	var drift := 0
+	for patch2 in [Vector2(0, 0), Vector2(9000, -12000), Vector2(-15000, 4000),
+			Vector2(6000, 14000), Vector2(-8000, -9000)]:
+		var r_two := WgRoads.near(fresh_t, t.seed_value,
+			patch2.x, patch2.y, patch2.x + 5000.0, patch2.y + 5000.0)
+		var d_two := WgCrossing.near(fresh_t, r_two, patch2.x, patch2.y,
+			patch2.x + 5000.0, patch2.y + 5000.0)
+		var d_one: Array = []
+		for deck5 in all_decks:
+			var q: Vector2 = deck5["at"]
+			if q.x >= patch2.x - 64.0 and q.x <= patch2.x + 5064.0 \
+					and q.y >= patch2.y - 64.0 and q.y <= patch2.y + 5064.0:
+				d_one.append(deck5)
+		if d_one.size() != d_two.size():
+			drift += absi(d_one.size() - d_two.size())
+			continue
+		for i in d_one.size():
+			compared_decks += 1
+			if not (d_one[i]["at"] as Vector2).is_equal_approx(
+					d_two[i]["at"] as Vector2):
+				drift += 1
+	_ok("and a crossing is in the same place every time",
+		compared_decks > 5 and drift == 0,
+		"%d of %d bridges moved between two terrains on one seed"
+			% [drift, compared_decks])
+
+	# A DECK IS ABOVE THE WATER, which is the whole point of it. Ten
+	# centimetres of clearance is a stepping stone, not a bridge.
+	var low := 999.0
+	for deck3 in all_decks:
+		var m4: Vector2 = deck3["at"]
+		var w4 := t.water_at(m4.x, m4.y)
+		if w4 <= WgTerrain.NO_WATER:
+			continue
+		low = minf(low, minf(deck3["h0"], deck3["h1"]) - w4)
+	_ok("and it stands clear of the water",
+		not all_decks.is_empty() and low >= WgCrossing.CLEARANCE - 0.01,
+		"a deck sits only %.2f m above the river" % low)
+
 	# --- chunks -----------------------------------------------------------
 	var gen := WorldGen.new()
 	gen.world_seed = 20260927
@@ -642,6 +750,25 @@ func _ready() -> void:
 	_ok("a chunk builds", c0 != null and c0.get_child_count() > 2,
 		"the chunk is empty")
 	print("      chunk (8,8) placed %d things" % c0.placed)
+	# WHICH CHUNK A POINT IS ON. Asked of the chunk's own footprint,
+	# because that is the thing `chunk_of` has to agree with — and for
+	# half a year it did not: it assumed a chunk starts at its
+	# coordinate when a chunk is centred on it.
+	var off := 0
+	var worst_off := ""
+	for k in 40:
+		var px := -900.0 + float(k) * 47.0
+		var pz := 620.0 - float(k) * 31.0
+		var said := WorldGen.chunk_of(Vector3(px, 0.0, pz))
+		var cen := Vector2(float(said.x), float(said.y)) * WgChunk.SIZE
+		if absf(px - cen.x) > WgChunk.SIZE * 0.5 + 0.001 \
+				or absf(pz - cen.y) > WgChunk.SIZE * 0.5 + 0.001:
+			off += 1
+			worst_off = "%.0f,%.0f was put on the chunk centred %.0f,%.0f" \
+				% [px, pz, cen.x, cen.y]
+	_ok("a point is on the chunk that actually covers it", off == 0,
+		"%d of 40 points land outside their own chunk — %s" % [off, worst_off])
+
 	_ok("and it has ground under it",
 		c0.find_child("GroundBody", true, false) != null,
 		"nothing to stand on")
@@ -688,6 +815,49 @@ func _ready() -> void:
 		"dropped from %.1f onto ground at %.1f and ended at %.1f"
 			% [ground + 6.0, ground, rest])
 	print("      ground %.2f m, body came to rest at %.2f m" % [ground, rest])
+
+	# --- and you can walk over the water -----------------------------
+	#
+	# THE ONE THAT MATTERS. Every check above is about geometry a render
+	# already showed; this is the one that says whether the bridge is a
+	# bridge or a picture of one. A deck with no collision under it
+	# looks perfect from the air and drops you in the river.
+	var walked := false
+	for deck4 in all_decks:
+		var m5: Vector2 = deck4["at"]
+		var deck_y: float = (deck4["h0"] + deck4["h1"]) * 0.5
+		var span_c := gen.make_chunk(WorldGen.chunk_of(
+			Vector3(m5.x, deck_y, m5.y)))
+		if span_c == null:
+			continue
+		await get_tree().process_frame
+		var walker := CharacterBody3D.new()
+		var wcap := CollisionShape3D.new()
+		var wshape := CapsuleShape3D.new()
+		wshape.height = 2.0
+		wshape.radius = 0.4
+		wcap.shape = wshape
+		walker.add_child(wcap)
+		walker.position = Vector3(m5.x, deck_y + 4.0, m5.y)
+		add_child(walker)
+		for i in 120:
+			walker.velocity.y -= 9.8 * (1.0 / 60.0)
+			walker.move_and_slide()
+			await get_tree().physics_frame
+		var landed := walker.global_position.y
+		var river := t.water_at(m5.x, m5.y)
+		_ok("and a body stays on the bridge instead of in the river",
+			landed > deck_y - 0.6,
+			"dropped onto a deck at %.1f over water at %.1f and ended at %.1f"
+				% [deck_y, river, landed])
+		print("      deck %.2f m, water %.2f m, body came to rest at %.2f m"
+			% [deck_y, river, landed])
+		walker.queue_free()
+		walked = true
+		break
+	_ok("there was a bridge to stand on at all", walked,
+		"none of the %d decks found could be built, so the check above "
+			% all_decks.size() + "proved nothing")
 
 	_finish()
 

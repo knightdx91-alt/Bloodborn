@@ -103,6 +103,17 @@ static func gather(terrain: WgTerrain, at: Vector2i) -> Dictionary:
 			hamlets.append(built)
 			keep_clear.append_array(built.keep_clear)
 
+	# Bridges, gathered exactly as WgChunk gathers them. Their
+	# keep-clear goes in before the scatter is asked, or trees grow
+	# through the deck.
+	var bridges: Array = []
+	for span in WgCrossing.near(terrain, roads,
+			origin.x - size, origin.z - size,
+			origin.x + size, origin.z + size):
+		var built_span := WgCrossing.build(terrain, span)
+		bridges.append(built_span)
+		keep_clear.append_array(built_span["keep_clear"])
+
 	var lcx := int(floor(origin.x / WgLandmark.CELL))
 	var lcz := int(floor(origin.z / WgLandmark.CELL))
 	var marks: Array = []
@@ -133,6 +144,15 @@ static func gather(terrain: WgTerrain, at: Vector2i) -> Dictionary:
 			var mp: Vector3 = piece["position"]
 			if mine.has_point(Vector2(mp.x, mp.z)):
 				pieces.append(piece)
+	for built_b in bridges:
+		for piece in built_b["pieces"]:
+			var bp: Vector3 = piece["position"]
+			if mine.has_point(Vector2(bp.x, bp.z)):
+				pieces.append(piece)
+		for solid in built_b["solids"]:
+			var bs: Vector3 = solid["position"]
+			if mine.has_point(Vector2(bs.x, bs.z)):
+				solids.append(solid)
 
 	return {
 		"at": at, "heights": heights, "colours": colours,

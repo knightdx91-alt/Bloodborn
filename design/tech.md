@@ -258,6 +258,17 @@ rivers are is known only to the tracer, so a reader holding the
 heightfield alone cannot work it out. It is a field of one sentinel
 almost everywhere, which is what ZSTD is for.
 
+**Where a road meets a river there is a bridge** [built 2026-09-27].
+Roads were laid before rivers existed and nothing told them: ten of 215
+segments ran through open water. A ford is the wrong answer here —
+making one means either raising the bed, which dams the river and makes
+its surface run uphill at the crossing, or leaving the water alone and
+wading 1.6 m at the bottom of the channel. The valley is fine; it falls
+7 m over 150 m. It is the last sixteen metres of bank that no road can
+take. A crossing is a pure function of the road segment and the rivers,
+and a road segment is already owned exactly once, so two chunks cannot
+both build the same deck.
+
 **A third tool: `genmap.tscn`,** a hillshaded map straight from the
 heightfield with the channels painted. Rendering land to look at it
 means building chunks, and a 3.6 km river needs 3,200 of them; a map

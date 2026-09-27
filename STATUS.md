@@ -38,6 +38,126 @@ get to whether the economy feels right.
 on the evidence in `tech.md` §2a, not on preference — see the L54
 section below.
 
+## Done 2026-09-27 — bridges, and a chunk index that was half a chunk out
+
+Rivers went in this morning and **roads were laid before rivers
+existed**. Nothing told them. Measured across 215 road segments in five
+widely separated patches: **ten ran straight through open water**, the
+deepest with the full 7 m channel under it — a cart track diving into a
+river and out the far side.
+
+**A ford was the first idea and it was wrong.** A ford is where a river
+is naturally shallow and wide, and making one here means one of two
+things: raise the bed, and the water surface steps up three metres at
+the crossing and back down after it — a river running uphill in the
+middle — or leave the water where it is and wade 1.6 m at the bottom of
+the channel. The valley is not the problem; it falls 7 m over 150 m,
+which is a 5% grade a road takes without noticing. It is the last
+sixteen metres, where the bank drops into the channel, that no road can
+do. So: span it.
+
+**No bridge model survives in the shipping kit** — KayKit's two went
+with the 60 MB cut from the APK. So a bridge is built from what did
+survive, the way the standing stones were built from a scaled wall: a
+deck of stretched floor tiles, a parapet of fence either side, and
+piers cut to the bed under each one.
+
+**Every number is against a measured model,** because the first cut
+guessed. It assumed `Floor_Brick` was a one-metre tile and scaled its
+width by six; it is two metres square and two centimetres thick, so the
+render came back with a twelve-metre slab of paper across the river.
+Measured: Floor_Brick 2.00 × 0.02 × 2.00, Prop_WoodenFence_Single
+2.06 × 0.84 × 0.12 along its own X, Wall_UnevenBrick_Straight
+2.00 × 3.12 × 0.41.
+
+17 bridges over 215 road segments, spans 46 to 110 m. The 46 is a
+square crossing of a 32 m river with 7 m of abutment either side; the
+110 is one oblique crossing where the road runs along a meander.
+
+### The bug under the bug
+
+The check that mattered was the one that drops a body on the deck — a
+bridge with no collision looks perfect from the air and drops you in
+the river. It failed, and not for the reason expected: **the body fell
+through the deck AND through the ground,** 19.6 m in two seconds, which
+is free fall having hit nothing at all.
+
+**`WorldGen.chunk_of` has been half a chunk out since streaming was
+written.** A chunk is CENTRED on `(cx, cz) × SIZE` — `WgChunk._ground`
+samples from `position - half` to `position + half`, and both `WgChunk`
+and `WgBake` decide what stands on a chunk with a rect about that
+centre. `chunk_of` floored, which assumes a chunk *starts* at its
+coordinate. It put a point at x=552 in chunk 8, whose ground runs 480
+to 544.
+
+It never showed, because everything that used it was asking which
+chunks to load *around* something, and a 5×5 block swallows a 32 m
+error whole. It showed the moment something needed the chunk a
+particular thing actually stands on.
+
+### And two checks that could not fail
+
+- **The crossing check walked whole segments** and compared them
+  against the bridges near one 5 km patch — and the Wheel's spokes are
+  23 km long, so it counted water a spoke crosses in another wedge
+  entirely and called it unbridged. 262 of 359 samples "failed" and the
+  generator was right every time.
+- **The determinism check compared two empty lists.** It asked about a
+  4 km box at the origin, which holds no bridges. The mutation that
+  made the tracer's step wander proved it: nothing failed. It asserts
+  the compared count first now.
+
+### And a regression the harnesses caught that no render would
+
+The first working version walked **every road segment end to end at
+4 m steps**, asking the rivers about each point. The Wheel's spokes are
+23 km long: 5,850 river queries each, and a query in country nothing
+has looked at traces the 49 source cells that could reach it, which
+past the cache's 4,096-entry limit means tracing them again and again.
+
+It never showed in a render, because a render builds one block and
+waits. **`threadcheck` showed it**: streaming filled 21 of 25 chunks in
+400 frames where it had filled all 25 the day before. A bare
+measurement of one chunk's crossings then ran past ten minutes without
+finishing.
+
+The walk is clipped to the box asked about, plus 400 m — generous,
+because a crossing is kept only if its *middle* is in the box, so that
+slack guarantees any crossing a call keeps was walked whole, which is
+what makes the answer the same whichever chunk asks. **Minutes to
+1 ms**, and threadcheck is back to 25 of 25.
+
+**Skipping steps outside the box was not enough, and `hourcheck` said
+so.** Thornfield sits ON the Wheel, so every chunk around it is handed
+twelve segments 23 km long: even a bare Rect2 test per 4 m step is
+70,000 tests a chunk, times two hundred chunks. The townsfolk stopped
+fanning out — **four of four runs passed on the commit before this one,
+one of four after.** Established by stashing the work and running the
+same harness on clean `main`, rather than assuming it was old.
+
+Intersecting the segment with the box first (Liang–Barsky) turns that
+into a handful of steps, and the indices are still counted from the
+segment's own start so a crossing is found at the same place whichever
+chunk asks. Measured over eight chunks beside Thornfield:
+**0.38 ms, against a 67 ms chunk — 0.6%.** `gencheck` finds the same 17
+bridges with the same spans and the same deck heights, which is the
+point: the clip changed the cost and nothing else.
+
+**What it did not do is make `hourcheck` reliable again.** Three of
+four now, against four of four on `main` — a difference well inside the
+noise of a check that is a wall-clock race, and not something 0.6% of a
+chunk explains. The real number under it is the one that should worry
+us: **a chunk beside Thornfield costs 67 ms**, and the town streams
+radius 8 of them. That is the streaming budget question (the phone
+spike) arriving uninvited on a desktop container, and it is not a
+bridge problem. Not papered over: the wait was briefly widened to 40
+seconds and that was the wrong fix — it still failed, and it would have
+let a genuinely slow town pass quietly. Reverted.
+
+Six new checks, all five mutations landing: no bridges found, a deck
+with no collision, a deck not lifted clear of the water, a tracer that
+wanders, and `chunk_of` flooring again.
+
 ## Done 2026-09-27 — an override that knows which world it came from
 
 The bake mechanism has existed since the generator did: `WorldGen`

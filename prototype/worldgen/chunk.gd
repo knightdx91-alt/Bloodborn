@@ -79,10 +79,24 @@ func build(t: WgTerrain, chunk_x: int, chunk_z: int) -> void:
 		position.x - SIZE, position.z - SIZE,
 		position.x + SIZE, position.z + SIZE)
 
+	# Bridges, where those roads meet water. Asked AFTER the roads
+	# because it is given them rather than fetching them again — and
+	# because nothing about a crossing is allowed to be asked by
+	# `height_at`, which is the recursion `_raw_height` exists to
+	# avoid.
+	var bridges: Array = []
+	for span in WgCrossing.near(terrain, _roads,
+			position.x - SIZE, position.z - SIZE,
+			position.x + SIZE, position.z + SIZE):
+		var built := WgCrossing.build(terrain, span)
+		bridges.append(built)
+		keep_clear.append_array(built["keep_clear"])
+
 	_ground()
 	_scatter(keep_clear)
 	_settlements(hamlets)
 	_landmarks(marks)
+	_bridges(bridges)
 
 
 ## Build from a BAKED chunk instead of generating one.
@@ -416,6 +430,27 @@ func _ground_from(heights: PackedFloat32Array, colours: PackedByteArray) -> void
 			idx[w + 3] = b; idx[w + 4] = d; idx[w + 5] = c
 			w += 6
 	_commit_ground(verts, norms, cols, uvs, idx, heights)
+
+
+## The bridges over this chunk's water.
+##
+## Only the pieces standing on THIS chunk, the same rule a hamlet
+## spanning a border follows — so a bridge does not vanish when one
+## end's chunk unloads, and is not built twice where they overlap.
+func _bridges(bridges: Array) -> void:
+	var half := SIZE * 0.5
+	var mine := Rect2(position.x - half, position.z - half, SIZE, SIZE)
+	for built in bridges:
+		var here: Array = []
+		for piece in built["pieces"]:
+			var p: Vector3 = piece["position"]
+			if mine.has_point(Vector2(p.x, p.z)):
+				here.append(piece)
+		_place(here)
+		for solid in built["solids"]:
+			var sp: Vector3 = solid["position"]
+			if mine.has_point(Vector2(sp.x, sp.z)):
+				_solid(sp, solid["size"], solid.get("yaw", 0.0))
 
 
 func _scatter(keep_clear: Array) -> void:
