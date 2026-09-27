@@ -232,9 +232,10 @@ worst case, exactly as reported.
 It is now placed in `_physics_process`, immediately after
 `move_and_slide()`, and set outright rather than lerped toward.
 Measured: the camera's offset from the walker changes by **0.0000 m**
-frame to frame through a full reversal. The drill yard never had this
-because `world.gd` has always placed its camera inside
-`_physics_process`.
+frame to frame through a full reversal. The drill yard never had this, because the scene that used to be the
+yard always placed its camera inside `_physics_process` — and now that
+the yard is a region inside Thornfield, `TownWalker`'s camera is the
+only camera, so the fix is the only behaviour.
 
 ### The day moves (L89)
 
@@ -266,7 +267,7 @@ hour for itself and drifts out of step.
 > to life — a clear night sky is deep blue, not black.
 >
 > A sweep meant to find the right value measured nothing at all,
-> because `world.gd` re-applies `set_time` every physics frame and
+> because the world re-applies `set_time` every physics frame and
 > overwrote the test's changes before each render. The answer came from
 > moving the constants and looking at the frames.
 >
@@ -441,8 +442,8 @@ The damage triangle (`combat.md` §4) is built and tested in `sim/` and
 is **deliberately not wired in yet**. It resolves a blow against armour
 class and hit location, and a straw dummy has neither; it arrives at
 step 5 with an enemy that wears something. For the same reason the
-sword's damage and the dummy's health are constants in `world.gd` and
-are *not* in `shared/tuning/combat.json` — L4 has weapons coming from
+sword's damage and the pell's health are constants in
+`regions/drill_yard.gd` and are *not* in `shared/tuning/combat.json` — L4 has weapons coming from
 players, so there is no such thing in the design as "the damage of a
 sword".
 
@@ -621,7 +622,17 @@ allowed to."**
 
 ### Where the code lives
 
-- `world.gd` — the fight: who is where, who hit whom, input, camera.
+- `town.tscn` / `town.gd` — the world. Everywhere is in here.
+- `regions/` — the places in it. `hedge_wood.gd` is the Hedges,
+  `drill_yard.gd` the drill yard. A region builds only what is ITS
+  OWN and stands on the world's ground, under the world's sky, on the
+  world's clock (L89). There used to be a `world.gd` that was a whole
+  second world per place; the regions are what is left of it once
+  everything shared had been taken out.
+- `combat/skirmish.gd` — who can hit whom, and what happens when they
+  do. One for the whole world, so any region can put its own fighters
+  and its own struck-things into it.
+- `town_player.gd` — `TownWalker`: the body, the camera, the input.
 - `fighter.gd` — one combatant, player or enemy. They are the same type
   on purpose: `combat.md` §8 promises one ruleset rather than two, and
   the cheapest way to keep that promise is for there to be nothing in
@@ -640,7 +651,7 @@ percentage is there to check the sums, and a player is meant to read a
 hit off the body. The invulnerable window (the character
 flashes blue) has nothing swinging at it yet, so it would otherwise be
 invisible. It comes out when the dummy fights back at step 5.
-`SHOW_DEBUG` in `world.gd` turns it off.
+`SHOW_DEBUG` turns it off.
 
 **The fps number is worth a look on a real phone.** The verification
 browser here has no GPU and renders this at 3–4 fps, which says nothing
@@ -697,8 +708,8 @@ godot --path prototype --headless \
       --export-release "Web" ../docs/index.html
 ```
 
-The import step builds the class cache that `world.gd` needs to see
-`Stamina` and `Dodge`; it lives in `.godot/`, which is not committed,
+The import step builds the class cache the game needs to see
+`Stamina`, `Dodge`, `DrillYard` and every other `class_name`; it lives in `.godot/`, which is not committed,
 so a fresh clone needs it once. The export goes straight to `docs/`,
 which GitHub Pages serves — do not stage it inside the project
 directory, or Godot will re-import the exported PNGs on the next scan.

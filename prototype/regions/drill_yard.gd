@@ -51,7 +51,13 @@ var skirmish: Skirmish = null
 ## Who he is sparring with. Set by the world.
 var quarry: Fighter = null
 
-var _tactics: EnemyTactics = null
+## Which brain he is on. Public for the same reason HedgeWood's is:
+## a tuning instrument has to be able to reseed him to get a
+## repeatable bout out of him.
+var tactics: EnemyTactics = null
+## Set non-zero to make respawns repeatable. Zero — the default, and
+## what the game runs — takes the clock instead.
+@export var respawn_seed := 0
 var _down := 0.0
 var _dummy_skin: StandardMaterial3D = null
 var _dummy_health := 0.0
@@ -200,7 +206,7 @@ func _build_swordsman() -> void:
 		Fighter.ENEMY_CHARACTER, Color(0.26, 0.27, 0.30),
 		Color(0.16, 0.13, 0.10), "light")
 	swordsman.weapon_damage = SWORDSMAN_DAMAGE
-	_tactics = EnemyTactics.new(20260914)
+	tactics = EnemyTactics.new(20260914)
 
 
 func _find(node: Node, cls: String) -> Node:
@@ -266,7 +272,7 @@ func _physics_process(delta: float) -> void:
 ## correct. Reading a man is a different skill from reading an animal,
 ## and the yard is where you learn the first one.
 func _run(delta: float, heading: Vector3, distance: float) -> void:
-	var decision := _tactics.decide(distance, swordsman.stamina, swordsman.is_busy())
+	var decision := tactics.decide(distance, swordsman.stamina, swordsman.is_busy())
 	match decision["intent"]:
 		EnemyTactics.Intent.ATTACK:
 			# Face you before committing.
@@ -278,7 +284,7 @@ func _run(delta: float, heading: Vector3, distance: float) -> void:
 				# fails says something about the fight.
 				swordsman.attack.arc = [Attack.Arc.UPPER_RIGHT,
 					Attack.Arc.OVERHEAD, Attack.Arc.LOWER_LEFT][decision["shape"]]
-				_tactics.threw(decision["shape"])
+				tactics.threw(decision["shape"])
 			swordsman.move(Vector3.ZERO, 0.0, delta)
 		EnemyTactics.Intent.CLOSE:
 			swordsman.move(heading, SWORDSMAN_SPEED, delta)
@@ -306,7 +312,24 @@ func _tick_down(delta: float) -> void:
 	# practice does not pay.
 	swordsman.revive()
 	swordsman.global_position = global_position + SWORDSMAN_HOME
-	_tactics = EnemyTactics.new(Time.get_ticks_msec())
+	# A fresh brain, so the next man is not the last man continued.
+	#
+	# From the CLOCK in play, which is what makes him unpredictable, but
+	# from `respawn_seed` when one is set — because a tuning instrument
+	# measuring five plans against "the same enemy behaviour each time"
+	# gets a different enemy the moment one of them kills him, and then
+	# reports the difference as though it were the plan.
+	tactics = EnemyTactics.new(
+		respawn_seed if respawn_seed != 0 else Time.get_ticks_msec())
+
+
+## Is the pell up? False while it lies knocked over waiting to reset.
+##
+## Public because anything aiming at it needs to know — swinging at a
+## pell that is not there is a swing thrown at nothing, and the capture
+## harness did exactly that until it could ask.
+func pell_standing() -> bool:
+	return _dummy_down <= 0.0
 
 
 ## Struck. Wired to `Skirmish.landed_on_post` — which carries no identity

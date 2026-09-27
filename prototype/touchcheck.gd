@@ -166,182 +166,83 @@ func _ready() -> void:
 	t.queue_free()
 	await _settle()
 
-	# --- and the drill yard must NOT swing on press ---
-	var y: Node3D = load("res://main.tscn").instantiate() as Node3D
+	# --- and a press must NOT fire a phantom swing ------------------------
+	#
+	# This loaded main.tscn, because the drill yard was the scene with a
+	# mouse attack in it. There is one world now and this is it.
+	#
+	# The fault it guards is why touch-to-mouse emulation is left ON
+	# project-wide: Godot presses a Button only from mouse events, so
+	# switching emulation off took every menu in the game down with it,
+	# in every scene, for the rest of the run. The synthesised click
+	# arrives BEFORE the touch, so anything acting on it swings on press
+	# instead of on release.
+	var y: Node3D = load("res://town.tscn").instantiate() as Node3D
 	add_child(y)
-	await get_tree().create_timer(2.0).timeout
-	# Let the yard actually settle. A click in the first seconds, or one
-	# sent while a swing is already running, is refused by the fighter —
-	# which an earlier version of this check happily reported as "mouse
-	# attack is broken". Each probe below starts from rest.
 	await get_tree().create_timer(3.0).timeout
+	var yw: Fighter = null
+	for n in y.get_children():
+		if n is TownWalker: yw = n as Fighter
+	_ok("there is a fighter to swing", yw != null, "no walker")
 
-	# A touch DOWN alone must not swing. This is the exact fault that had
-	# emulation switched off project-wide: the synthesised click arrives
-	# BEFORE the touch, so acting on it fires a swing on press.
-	var swings_before: int = y.get("_swing_count")
-	var d := InputEventScreenTouch.new()
-	d.index = 0
-	d.position = Vector2(500, 300)
-	d.pressed = true
-	Input.parse_input_event(d)
-	await _settle()
-	_ok("a press alone does not swing in the yard",
-		int(y.get("_swing_count")) == swings_before,
-		"swings went %d -> %d on touch-down"
-			% [swings_before, int(y.get("_swing_count"))])
-	var up := InputEventScreenTouch.new()
-	up.index = 0
-	up.position = Vector2(500, 300)
-	up.pressed = false
-	Input.parse_input_event(up)
-	await get_tree().create_timer(3.0).timeout
-
-	# The mechanism itself: a click MARKED emulated is dropped, a real
-	# one is not. That is the whole of the change.
-	#
-	# NOTE: the touch tap->swing path is deliberately NOT asserted here.
-	# A synthetic tap produces no swing on this build OR on the one
-	# before the change, so the harness cannot drive it and an assertion
-	# would only be measuring the harness. That one is checked on a phone.
-	var base: int = y.get("_swing_count")
-	var fake := InputEventMouseButton.new()
-	fake.button_index = MOUSE_BUTTON_LEFT
-	fake.position = Vector2(500, 300)
-	fake.global_position = Vector2(500, 300)
-	fake.pressed = true
-	fake.device = InputEvent.DEVICE_ID_EMULATION
-	Input.parse_input_event(fake)
-	await _settle()
-	_ok("a click emulated from a touch does not swing",
-		int(y.get("_swing_count")) == base,
-		"swings went %d -> %d on an emulated click"
-			% [base, int(y.get("_swing_count"))])
-
-	await get_tree().create_timer(3.0).timeout
-	var base2: int = y.get("_swing_count")
-	var real := InputEventMouseButton.new()
-	real.button_index = MOUSE_BUTTON_LEFT
-	real.position = Vector2(500, 300)
-	real.global_position = Vector2(500, 300)
-	real.pressed = true
-	real.device = 0
-	Input.parse_input_event(real)
-	await _settle()
-	_ok("a real mouse click still swings",
-		int(y.get("_swing_count")) > base2,
-		"mouse attack is broken: swings stayed at %d" % base2)
-
-	# --- Combat you can reach with a thumb --------------------------------
-	#
-	# Reported from play: "there isn't a way to do combat without a
-	# controller when I'm in the hedges or the town." The gestures were
-	# never the whole problem — nothing on screen said they existed, and
-	# an input you cannot discover is not an input.
-	#
-	# Checked in BOTH scenes on purpose. They run the same script, so
-	# there should be no difference; play says there is one, and a check
-	# that only ever looked at the yard is how that difference stayed
-	# invisible.
-	for scene in ["res://main.tscn", "res://hedges.tscn"]:
-		var w: Node3D = load(scene).instantiate() as Node3D
-		add_child(w)
-		await get_tree().create_timer(1.2).timeout
-		var where := "the yard" if scene.ends_with("main.tscn") else "the Hedges"
-
-		var atk: Button = w.get("_attack_btn")
-		var dge: Button = w.get("_dodge_btn")
-		var grd: Button = w.get("_guard_btn")
-		_ok("%s has an attack, a dodge and a guard on screen" % where,
-			atk != null and dge != null and grd != null,
-			"attack=%s dodge=%s guard=%s" % [str(atk != null),
-				str(dge != null), str(grd != null)])
-
-		if atk == null:
-			w.queue_free()
-			await get_tree().process_frame
-			continue
-
+	if yw != null:
 		await _thumb_mode()
-		_ok("and in %s they are only there for a thumb" % where,
-			atk.visible and InputMode.is_touch(),
-			"visible=%s while is_touch=%s"
-				% [str(atk.visible), str(InputMode.is_touch())])
+		await _free(yw)
 
-		# Driven with REAL touches, at the indices two thumbs produce.
+		# Counted off the FIGHTER, not off a debug tally.
 		#
-		# This block used to call `atk.pressed.emit()`, which fires the
-		# signal and proves only that the signal is connected. It went on
-		# passing through the whole life of a bug that made every one of
-		# these chips dead under a second thumb, because Godot
-		# synthesises the mouse click a Button listens for from touch
-		# index 0 and no other. A check that reaches past the input layer
-		# cannot see input bugs.
-		var fighter: Fighter = w.get("player")
-		# A chip is only on screen for a thumb, and _chip_at ignores what
-		# is not on screen — so tell the game a thumb is what it has,
-		# honestly, with a touch. In the yard that touch is itself a tap
-		# and a tap is a swing, so let it finish before counting.
-		# Send the opponent away first.
-		#
-		# These three checks are about whether a BUTTON reaches the
-		# fighter. With a boar in the ring they were also about whether
-		# the fight allowed it that instant — a player mid-stagger
-		# correctly refuses a swing — so the block failed at a different
-		# check on each run and looked like flake. It was not flake: it
-		# was the check reading the fight. Waiting for a clear moment was
-		# not enough either, because the boar charges into the gap.
-		var foe: Fighter = w.get("enemy") as Fighter
-		if foe != null:
-			foe.global_position = Vector3(0.0, 0.0, 400.0)
-		await _thumb_mode()
-		await _free(fighter)
-		var hits_before: int = int(w.get("_swing_count"))
-		await _tap_watch(atk, 0, func() -> bool: return false)
-		_ok("the attack button swings in %s" % where,
-			int(w.get("_swing_count")) > hits_before,
-			"swings %d -> %d — the button is decoration"
-				% [hits_before, int(w.get("_swing_count"))])
-
-		# Let the swing finish before asking for anything else: a fighter
-		# is committed to its own attack, so a dodge during one is
-		# correctly refused and would measure the wrong thing.
-		await _free(fighter)
-		_ok("the dodge button dodges in %s" % where,
-			await _tap_watch(dge, 0, func() -> bool:
-				return not fighter.dodge.can_act()),
-			"pressing Dodge did nothing")
-
-		# Wait for a fighter with nothing running. In the Hedges the boar
-		# charges, and a player mid-stagger correctly REFUSES a swing —
-		# so without this the check blames the chip for the fight. It is
-		# the same trap as the guard flash and the swing clip: a reading
-		# taken while something else is in progress measures the
-		# something else.
-		await _free(fighter)
-		_touch(0, dge.get_global_rect().get_center() + Vector2(0.0, 200.0), true)
-		await get_tree().process_frame
-		var braced_two: bool = await _tap_watch(atk, 1, func() -> bool:
-			return not fighter.attack.can_act())
-		_ok("and both work under a SECOND thumb in %s" % where, braced_two,
-			"a finger already down made the Attack chip deaf — the "
-				+ "reported bug, in the yard as well as the town")
-		_touch(0, dge.get_global_rect().get_center() + Vector2(0.0, 200.0), false)
-		await get_tree().process_frame
-
-		await _free(fighter)
-		_touch(0, grd.get_global_rect().get_center(), true)
-		var braced := false
-		for f in 6:
+		# The yard kept a `_swing_count` for its debug readout and this
+		# read it with `get("_swing_count")` — a string lookup into
+		# another script's private field, which holds exactly until
+		# somebody renames it and then reports a missing swing rather
+		# than a missing field. The town keeps no such tally and should
+		# not have to: whether a blow was thrown is something the
+		# Fighter can be asked directly.
+		var mid := Vector2(500, 300)
+		_touch(0, mid, true)
+		var swung := false
+		for f in 12:
 			await get_tree().process_frame
-			if not fighter.parry.can_act(): braced = true
-		_touch(0, grd.get_global_rect().get_center(), false)
-		await get_tree().process_frame
-		_ok("the guard button raises the guard in %s" % where, braced,
-			"holding Guard did not brace")
+			if not yw.attack.can_act(): swung = true
+		_ok("a press alone does not swing", not swung,
+			"a touch-down threw a blow — the swing-on-press fault")
+		_touch(0, mid, false)
+		await get_tree().create_timer(2.0).timeout
 
-		w.queue_free()
-		await get_tree().process_frame
+		await _free(yw)
+		var fake := InputEventMouseButton.new()
+		fake.button_index = MOUSE_BUTTON_LEFT
+		fake.position = mid
+		fake.global_position = mid
+		fake.pressed = true
+		fake.device = InputEvent.DEVICE_ID_EMULATION
+		Input.parse_input_event(fake)
+		var swung2 := false
+		for f in 12:
+			await get_tree().process_frame
+			if not yw.attack.can_act(): swung2 = true
+		_ok("a click emulated from a touch does not swing", not swung2,
+			"the synthesised click reached the blade")
+
+	# WHAT IS NO LONGER ASKED, AND WHY.
+	#
+	# "A real mouse click still swings" was the third check here, and it
+	# guarded world.gd's mouse attack. The town has no mouse attack path
+	# at all — it swings on KEY_J/Enter, on the pad, and on the touch
+	# chips — so with the yard gone there is no such feature to assert,
+	# and a check that asserts one would be inventing it. Noted rather
+	# than quietly deleted: removing world.gd removes click-to-attack
+	# from the game. That is a real loss on a desk and no loss at all on
+	# a phone with a pad, which is how this is played.
+	#
+	# The block that followed ran the chip checks over BOTH main.tscn and
+	# hedges.tscn, on the reasoning that two scenes running the same
+	# script should behave the same and play said they did not. One
+	# world, one place to check: those chips are the town's chips, the
+	# block above at "--- and the town, which had no combat at all ---"
+	# already presses them, and thumbcheck.gd is the thorough version of
+	# the same question. Kept here would be the same check run twice in
+	# the same scene, which is not coverage.
 
 	print("")
 	print("touch: all clear" if _fails.is_empty() else "FAILED: %s" % ", ".join(_fails))

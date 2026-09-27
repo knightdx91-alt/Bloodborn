@@ -2006,6 +2006,87 @@ can routinely run native builds, the prototype moves to Godot's .NET
 build and `prototype/rules/` is deleted the same day. Named on purpose
 — it is exactly the kind of cost that becomes permanent by drift.
 
+## One world — 2026-09-27, and world.gd is gone
+
+Task #22, finished. Reported from play a while back: *"i want the whole
+thing to just be a big world, where you can go to the arena, and where
+ever else from the main town."*
+
+**1,470 lines of `world.gd` deleted**, with `main.tscn` and
+`hedges.tscn`. That file was a whole second world per place — its own
+ground, sky, clock, camera, input, interface and copy of the player —
+and picking a place from a menu was how you got into it. The launcher
+is one button now, "Enter Thornfield", and the yard and the wood are
+somewhere you walk: north out of the gate to the Hedges, south to the
+yard, on the road that already ran through both.
+
+### What replaced it
+
+Nothing, which is the point. Everything `world.gd` did already existed
+somewhere better and had been extracted one piece at a time:
+
+| `world.gd` did | now |
+|---|---|
+| blade geometry | `combat/skirmish.gd` — one for the world |
+| the stamina bar | `stamina_bar.gd` |
+| hitstop and camera kick | `feel.gd` |
+| the walk/sprint/exhaustion rule | `Fighter.pace` |
+| the Hedges | `regions/hedge_wood.gd` |
+| the drill yard | `regions/drill_yard.gd` |
+| body, camera, input | `town_player.gd` |
+
+A region builds only what is **its own** and stands on the world's
+ground, under the world's sky, on the world's clock (L89).
+
+### The harnesses had to stop needing it first
+
+Seven files loaded the dead scenes or reached into their privates by
+string — `get("enemy")`, `call("_report_kill")`, `get("_swing_count")`.
+Every one of those holds exactly until somebody renames a field, and
+then reports a missing body rather than a missing name.
+
+- `hedgecheck`, `boarcheck`, `soundcheck` go through Thornfield and
+  find the wood in it. `HedgeWood` gained a public `record_kill`, and
+  `beast` stopped being private — which TACTICS an animal runs is the
+  sort of thing a harness exists to ask, and the boar ran on the
+  swordsman's brain once with nothing able to see it.
+- `touchcheck` lost its two-scene loop. One world means one place to
+  check, and its own town block plus `thumbcheck` already press those
+  chips; the same check run twice in one scene is not coverage. It
+  also lost **"a real mouse click still swings"** — see below.
+- `spar.gd` and `demo.gd` stand up a floor, a fighter, one `Skirmish`
+  and a real `DrillYard`. Better than a port: they now measure and
+  film the swordsman the game actually ships, on the tactics it
+  actually runs, without needing a town around him.
+- `Skirmish` gained a `parried` signal, so nothing has to count parries
+  out of another script's debug tally.
+
+### Three bugs found by doing it
+
+1. **`Fighter` does not tick itself** — whoever owns one drives it.
+   `spar`'s new rig forgot, so every state machine stayed frozen at
+   frame one and all five plans reported *identically to the decimal*.
+   Identical results across plans that should differ is what a bot
+   that never acts looks like from outside.
+2. **Nobody revives the player outside the town.** `world.gd` ran both
+   respawn timers. The bot died once and lay there.
+3. **The yard reseeded its swordsman from the clock on respawn**,
+   so a tuning instrument promising "the same enemy behaviour each
+   time" got a different enemy the moment a plan killed him — and
+   would have reported the difference as though it were the plan.
+   `DrillYard.respawn_seed` fixes it and is zero (the clock) in play.
+
+### Two things lost, said out loud rather than discovered later
+
+- **Click-to-attack is gone.** It lived in `world.gd`; the town swings
+  on `KEY_J`/Enter, the pad, and the touch chips. A real loss on a
+  desk, none at all on a phone with a pad, which is how this is
+  played. Easy to add back to `TownWalker` if a desk ever matters.
+- **`demo.gd`'s camera is not the game's camera.** Its rig has a
+  simple chase cam, higher and wider than `TownWalker`'s, so a video
+  cut from it would not show the game's real framing. Fine for
+  checking the tour runs; wrong for anything anyone watches.
+
 ## The world's size, worked out — 2026-09-27
 
 Asked from play: *"this world is supposed to be huge. How large will it

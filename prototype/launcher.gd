@@ -1,7 +1,14 @@
 extends Control
-## Boot menu: pick the drill yard (combat) or Thornfield (town).
-## Keeps combat files untouched — the yard still boots straight into
-## main.tscn when chosen here.
+## The front door, and the settings behind it.
+##
+## It used to be a scene menu — Drill Yard, Thornfield, and for a while
+## the Hedges — because those were three separate worlds and picking one
+## was how you got in. They are one world now, so there is one way in
+## and the menu has stopped being a map.
+##
+## What is left is worth keeping: somewhere to land before the world
+## loads, and the camera preferences, which interface.md §7 asks for and
+## which cannot live in a scene because they outlive any one of them.
 ##
 ## Sized to the VIEWPORT rather than to fixed pixels. The first version
 ## used 72px of title and two 110px buttons, which came to more than
@@ -61,16 +68,15 @@ func _ready() -> void:
 	_sub.modulate = Color(0.7, 0.7, 0.75)
 	_vb.add_child(_sub)
 
-	_buttons.append(_big_button("Drill Yard", "res://main.tscn"))
-	_buttons.append(_big_button("Thornfield", "res://town.tscn"))
-	# The west Hedges. Reachable from the menu for now; the honest way in
-	# is walking out of Thornfield's west gate, which is the next piece.
-	# The Hedges is not a menu entry any more. It stands west of
-	# Thornfield in the same world, and you walk there — so offering it
-	# here would be a door to a SECOND copy of the wood, with its own
-	# boar and its own clock, which is the thing this was built to stop.
-	# hedges.tscn survives as the drill yard's sibling for the harnesses
-	# until the arena moves into the world too.
+	# ONE way in, because there is one world.
+	#
+	# The Hedges stopped being a menu entry when it moved into
+	# Thornfield, and the drill yard has now followed it: both are
+	# places you walk to, north and south down the road through the
+	# gates. Offering either here would be a door to a SECOND copy of
+	# it — its own boar, its own pell, its own clock — which is the
+	# thing all of this was built to stop.
+	_buttons.append(_big_button("Enter Thornfield", "res://town.tscn"))
 	for b in _buttons:
 		_vb.add_child(b)
 

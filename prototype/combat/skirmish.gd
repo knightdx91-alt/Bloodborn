@@ -30,6 +30,12 @@ var watching: Fighter = null
 var show_debug := false
 
 signal landed_on_post(amount: float)
+## A blow met the guard and was turned. Announced rather than tallied
+## here, because who wants to COUNT parries changes — the yard kept a
+## `_parries` for a debug readout and the sparring bot read it out of
+## that scene's privates, which is a tuning instrument depending on a
+## debug line staying named the way it is.
+signal parried(attacker: Fighter, victim: Fighter)
 
 
 func enlist(who: Fighter) -> void:
@@ -126,6 +132,7 @@ func _land(attacker: Fighter, victim: Fighter, damage: float,
 			victim.hurt(through, attacker.attack.arc)
 			return
 		Parry.Outcome.PARRIED:
+			parried.emit(attacker, victim)
 			attacker.stagger(victim.parry.stagger_seconds())
 			# A parry is a clang, not a shove: it rattles rather than
 			# throwing the view, because nothing moved.
