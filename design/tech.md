@@ -81,14 +81,17 @@ and the journey is a chore rather than a risk.
   agree is the main evidence the anchor is not arbitrary.
 - Roughly 3 km of wilderness past the towns → **world radius 9 km.**
 
-Which gives:
+Which gave a ~255 km² world — and that was **rejected from play on
+2026-09-27**, in favour of a world ten times its area. See §1b.
 
-| | |
-|---|---|
-| Mortal world | **~255 km²** |
-| Capitol region | ~12.5 km² (radius 2 km) |
-| Each of six wedges | ~40 km² — about 6 km wide, 7 km deep |
-| Demigod realm (four rings) | the least-anchored figure here; at ~40% of the mortal world, +100 km² |
+| | first derivation | **built** |
+|---|---|---|
+| World radius | 9 km | **28.5 km** |
+| Across | 18 km | **56.9 km** |
+| Mortal world | ~255 km² | **~2,545 km²** |
+| Walk across | 67 min | **211 min** |
+| Town ring | 6 km | **19 km** |
+| Spoke, town to capitol | 22 min | **70 min** |
 
 **Against what exists:** Thornfield's hedge ring is 110 m across and the
 whole playable ground plane is 500 × 500 m = 0.25 km². The mortal world
@@ -226,6 +229,48 @@ it is filling. If streaming will not hold on the hardware, that has to
 be known *before* a single hill is authored, because the answer changes
 the world's shape and not just its size. It is the same discipline as
 the L39 latency spike: build the thing that can say no, first.
+
+---
+
+## 1b. How big it actually is **[DECIDED from play, 2026-09-27]**
+
+§1a derived 255 km² from a twenty-minute spoke. Asked for from play:
+*"I want it 3x how long it would take you to cross Skyrim walking."*
+
+Skyrim is about 6 km across at a walking pace near 1.5 m/s, so walking
+it is roughly 65 minutes and three times that is ~200.
+
+**The trap, which is the useful part of this section.** Marrowmark's
+walk is 4.5 m/s — 16 km/h, a running pace, and three times Skyrim's.
+So matching a crossing *time* needs about **nine times the linear
+size**, not three. A world "3× Skyrim" by feel is nowhere near 3×
+Skyrim by area.
+
+Three ways to land on 200 minutes were put up: slow the character to a
+human pace and keep 255 km²; grow the world and keep the speed; or
+split the difference. **The call was to grow it, ×10 by area.**
+
+    radius    28,460 m       (9,000 x sqrt(10))
+    across    56,921 m
+    area      ~2,545 km²
+    crossing  211 min on foot — or ~84 with a mount at 2.5x
+
+211 against the 200 asked for, and the extra comes free from rounding
+the scale to a clean ×10 of area.
+
+**Asserted as a time, not a distance.** `gencheck` checks the crossing
+in minutes against `Fighter.WALK_SPEED_MAX`, because a distance means
+nothing without the speed — and the speed has been wrong once already.
+The "5 m/s sustainable pace" §1a was originally derived from was an
+artefact of a movement bug, and it sat in this document until the bug
+was fixed. A check that reads the constant cannot repeat that.
+
+**What has not changed is the risk.** §1a called filling the world the
+largest problem in the project, larger than the netcode. It is now ten
+times that problem. Everything in §1a about generating the country and
+hand-placing only what players remember applies with ten times the
+force, and the mount speed matters more than it did — an 84-minute
+crossing is a different game from a 211-minute one.
 
 ---
 

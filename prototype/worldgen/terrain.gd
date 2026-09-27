@@ -19,10 +19,31 @@ extends RefCounted
 ## The Wheel (L1): six wedges around a capitol. Angle decides which,
 ## softened by noise so no border is a drawn line.
 const WEDGES := 6
-## Metres from the centre to the outer edge of the world, per §1a.
-const WORLD_R := 9000.0
+## HOW BIG THE WORLD IS, and where the number came from.
+##
+## Asked for from play: *"I want it 3x how long it would take you to
+## cross Skyrim walking."*
+##
+## Skyrim is about 6 km across at a walking pace near 1.5 m/s, so
+## walking it is roughly 65 minutes; three times that is ~200. The trap
+## is that Marrowmark's walk is 4.5 m/s — 16 km/h, a running pace, three
+## times Skyrim's — so matching a crossing TIME needs nine times the
+## linear size, not three.
+##
+## Settled at **ten times the area**, which is sqrt(10) = 3.162x linear:
+##
+##     radius    28,460 m        (was 9,000)
+##     across    56,921 m
+##     area      ~2,545 km2      (was ~255)
+##     crossing  211 minutes on foot, or ~84 with a mount at 2.5x
+##
+## 211 against the 200 asked for. The remaining risk is unchanged and
+## is the one tech.md §1a names: filling it. Ten times the land is ten
+## times that problem, and it is why the generator exists.
+const WORLD_SCALE := 3.1623
+const WORLD_R := 9000.0 * WORLD_SCALE
 ## The capitol's clearing at the middle.
-const CAPITOL_R := 2000.0
+const CAPITOL_R := 2000.0 * WORLD_SCALE
 
 ## One wedge's character. L86 makes this load-bearing rather than
 ## decorative: with no minimap, the land carries orientation, and a
@@ -219,7 +240,7 @@ func _init(world_seed: int = 20260927) -> void:
 ## also 6 km from each other, so the rim road comes out the same length
 ## without being tuned to — which is the main evidence the number is
 ## not arbitrary.
-const TOWN_RING := 6000.0
+const TOWN_RING := 6000.0 * WORLD_SCALE
 
 
 ## Where a wedge's town stands: the middle of its arc, on the ring.

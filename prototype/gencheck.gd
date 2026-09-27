@@ -101,7 +101,7 @@ func _ready() -> void:
 	var reliefs: Array[float] = []
 	for w in WgTerrain.WEDGES:
 		var ang := (float(w) + 0.5) / float(WgTerrain.WEDGES) * TAU
-		var r := 5000.0
+		var r := WgTerrain.TOWN_RING * 0.83
 		var bx := cos(ang) * r
 		var bz := sin(ang) * r
 		var bi = t.biome_at(bx, bz)
@@ -224,7 +224,7 @@ func _ready() -> void:
 			# about a sample of three.
 			var seen_cells := {}
 			for k in 400:
-				var rr := 2600.0 + float(k % 40) * 190.0
+				var rr := WgTerrain.TOWN_RING * 0.45 + float(k % 40) * 600.0
 				var fan := (float(k / 40) - 4.5) * 0.06
 				var sx := cos(ang2 + fan) * rr
 				var sz := sin(ang2 + fan) * rr
@@ -405,8 +405,28 @@ func _ready() -> void:
 		% [spoke_len, spoke_len / Fighter.WALK_SPEED_MAX / 60.0,
 			Fighter.WALK_SPEED_MAX])
 
+	# THE WORLD IS THE SIZE IT WAS ASKED TO BE.
+	#
+	# "3x how long it would take you to cross Skyrim walking." Skyrim
+	# is ~6 km across at ~1.5 m/s, so ~65 minutes; three times that is
+	# ~200. Asserted as a TIME rather than a distance, because the
+	# distance is meaningless without the walk speed — and the walk
+	# speed has already been wrong once, which is how the old "5 m/s
+	# sustainable pace" got into the design and stayed there.
+	var across := WgTerrain.WORLD_R * 2.0
+	var crossing_min := across / Fighter.WALK_SPEED_MAX / 60.0
+	print("      world %.1f km across — %.0f min on foot at %.1f m/s"
+		% [across / 1000.0, crossing_min, Fighter.WALK_SPEED_MAX])
+	_ok("the world takes about 200 minutes to walk across",
+		crossing_min > 170.0 and crossing_min < 240.0,
+		"%.0f minutes — the world is not the size it was asked to be"
+			% crossing_min)
+	print("      %.0f km2, and a mount at 2.5x crosses in %.0f min"
+		% [PI * (WgTerrain.WORLD_R / 1000.0) * (WgTerrain.WORLD_R / 1000.0),
+			crossing_min / 2.5])
+
 	# --- roads ------------------------------------------------------------
-	var segs := WgRoads.near(t, t.seed_value, 0.0, 0.0, 6000.0, 6000.0)
+	var segs := WgRoads.near(t, t.seed_value, 0.0, 0.0, 19000.0, 19000.0)
 	_ok("the places are joined up", segs.size() > 5,
 		"only %d road segments across 36 km of country" % segs.size())
 	print("      %d road segments" % segs.size())
@@ -431,7 +451,7 @@ func _ready() -> void:
 			% road_dupes)
 
 	_ok("and asking twice gives the same roads",
-		WgRoads.near(t, t.seed_value, 0.0, 0.0, 6000.0, 6000.0).size() == segs.size(),
+		WgRoads.near(t, t.seed_value, 0.0, 0.0, 19000.0, 19000.0).size() == segs.size(),
 		"the road network is not deterministic")
 
 	if not segs.is_empty():

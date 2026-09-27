@@ -2087,6 +2087,50 @@ then reports a missing body rather than a missing name.
   cut from it would not show the game's real framing. Fine for
   checking the tour runs; wrong for anything anyone watches.
 
+## The world got ten times bigger — 2026-09-27
+
+Asked for from play: *"I want it 3x how long it would take you to
+cross Skyrim walking."*
+
+**The trap in that, which is worth remembering.** Skyrim is ~6 km
+across at ~1.5 m/s, so walking it is ~65 minutes and 3x is ~200. But
+Marrowmark's walk is 4.5 m/s — 16 km/h, a running pace, three times
+Skyrim's. Matching a crossing TIME therefore needs about nine times
+the linear size, not three. "3x Skyrim" by feel is nowhere near 3x
+Skyrim by area, and saying so before building it was worth more than
+the building.
+
+Three ways to get 200 minutes were offered — slow the character, grow
+the world, or split it. **The call was to grow it, x10 by area.**
+
+| | was | now |
+|---|---|---|
+| radius | 9 km | **28.5 km** |
+| across | 18 km | **56.9 km** |
+| area | ~255 km² | **~2,545 km²** |
+| walk across | 67 min | **211 min** |
+| town ring | 6 km | **19 km** |
+| spoke to the capitol | 22 min | **70 min** |
+| mounted crossing at 2.5x | — | ~84 min |
+
+One constant, `WORLD_SCALE`. Everything else derives from it, and
+nothing town-sized scales with it — a town is still 750 m across and
+its levelled platform is still 420 m, because a bigger world does not
+mean bigger houses.
+
+**Checked as a TIME, not a distance.** `gencheck` asserts the crossing
+in minutes against `Fighter.WALK_SPEED_MAX`, because a distance is
+meaningless without the speed — and the speed has been wrong once
+already. The "5 m/s sustainable pace" the first derivation rested on
+was an artefact of the sprint bug and sat in `tech.md` until the bug
+was fixed that same day. A check that reads the constant cannot make
+that mistake twice.
+
+**The risk is now ten times what it was.** §1a called filling the
+world the largest problem in the project. That has not changed except
+in size, and the mount speed matters far more than it did: 84 minutes
+is a different game from 211.
+
 ## A procedural world — 2026-09-27
 
 Asked for: *"build the procedural generator for this, I want it to be
