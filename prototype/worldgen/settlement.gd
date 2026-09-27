@@ -45,6 +45,7 @@ class Built extends RefCounted:
 	## Where smoke should come from.
 	var chimneys: Array = []
 	var name := ""
+	var kind := ""
 	var centre := Vector3.ZERO
 	var houses := 0
 
@@ -112,9 +113,34 @@ static func build(terrain: WgTerrain, world_seed: int, found: Dictionary) -> Bui
 	out.centre = at
 	out.name = _name_for(rng)
 
-	# A street, and houses down both sides of it facing in. A village
-	# that is a ring of houses round a green is a different shape and a
-	# later job; every real one starts as somewhere the road widened.
+	# WHAT KIND OF PLACE.
+	#
+	# Every settlement used to be the same shape — a street with houses
+	# down both sides — which meant that whatever the terrain did, the
+	# built world read as one idea repeated. Diversity in the country
+	# without diversity in what people put on it is half a world.
+	#
+	# Weighted rather than uniform: a street is still the commonest
+	# thing, because most places really are somewhere the road widened.
+	var roll := rng.randf()
+	if roll < 0.44:
+		out.kind = "street"
+		_street_village(out, terrain, at, rng)
+	elif roll < 0.66:
+		out.kind = "ring"
+		_ring_village(out, terrain, at, rng)
+	elif roll < 0.84:
+		out.kind = "farmstead"
+		_farmstead(out, terrain, at, rng)
+	else:
+		out.kind = "ruin"
+		_ruin(out, terrain, at, rng)
+	return out
+
+
+## Somewhere the road widened. The commonest kind.
+static func _street_village(out: Built, terrain: WgTerrain, at: Vector3,
+		rng: RandomNumberGenerator) -> void:
 	var street := rng.randf() * TAU
 	var along := Vector3(cos(street), 0.0, sin(street))
 	var across := Vector3(-sin(street), 0.0, cos(street))
@@ -143,11 +169,153 @@ static func build(terrain: WgTerrain, world_seed: int, found: Dictionary) -> Bui
 		out.houses += 1
 
 	_street_props(out, terrain, at, along, across, float(count) * spacing, rng)
-	return out
+
+
+## Houses round a green, facing in. A place with a middle.
+static func _ring_village(out: Built, terrain: WgTerrain, at: Vector3,
+		rng: RandomNumberGenerator) -> void:
+	var count := rng.randi_range(5, 8)
+	var r := rng.randf_range(20.0, 28.0)
+	var turn := rng.randf() * TAU
+	var mostly_brick := rng.randf() < 0.45
+	for i in count:
+		var ang: float = turn + float(i) / float(count) * TAU
+		var pos: Vector3 = at + Vector3(cos(ang) * r, 0.0, sin(ang) * r)
+		pos.y = terrain.height_at(pos.x, pos.z)
+		# Facing the green, snapped to right angles because the kit's
+		# corners and the keep-clear rect both assume it.
+		var yaw: float = atan2(-(at.x - pos.x), -(at.z - pos.z))
+		yaw = round(yaw / (PI * 0.5)) * (PI * 0.5)
+		var plan: Vector2i = PLANS[rng.randi() % PLANS.size()]
+		_house(out, pos, yaw, plan.x, plan.y,
+			rng.randf() < (0.75 if mostly_brick else 0.25), rng)
+		out.houses += 1
+
+	# The green itself: a stall or two, benches, and nothing built.
+	for i in rng.randi_range(3, 7):
+		var ang := rng.randf() * TAU
+		var d := rng.randf() * r * 0.55
+		var p: Vector3 = at + Vector3(cos(ang) * d, 0.0, sin(ang) * d)
+		p.y = terrain.height_at(p.x, p.z)
+		const GREEN := ["Stall_Empty", "Stall_Cart_Empty", "Bench", "Barrel",
+			"Crate_Wooden", "Table_Large", "Prop_Wagon"]
+		out.pieces.append({
+			"path": PROPS + GREEN[rng.randi() % GREEN.size()] + ".gltf",
+			"position": p, "yaw": rng.randf() * TAU, "scale": 1.0,
+		})
+	out.keep_clear.append(Rect2(at.x - r - 10.0, at.z - r - 10.0,
+		(r + 10.0) * 2.0, (r + 10.0) * 2.0))
+
+
+## One family, working land. A house, a barn, fences and the tools.
+static func _farmstead(out: Built, terrain: WgTerrain, at: Vector3,
+		rng: RandomNumberGenerator) -> void:
+	var face: float = round(rng.randf() * 4.0) * (PI * 0.5)
+	var basis := Basis(Vector3.UP, face)
+
+	var house_at: Vector3 = at + basis * Vector3(-9.0, 0.0, 0.0)
+	house_at.y = terrain.height_at(house_at.x, house_at.z)
+	_house(out, house_at, face, 3, 3, rng.randf() < 0.4, rng)
+	out.houses += 1
+
+	# The barn: the biggest plan, no windows to speak of, no chimney.
+	var barn_at: Vector3 = at + basis * Vector3(11.0, 0.0, 4.0)
+	barn_at.y = terrain.height_at(barn_at.x, barn_at.z)
+	_house(out, barn_at, face + PI * 0.5, 4, 4, false, rng, true)
+	out.houses += 1
+
+	# A yard between them, fenced, with the work in it.
+	for i in rng.randi_range(8, 16):
+		var p: Vector3 = at + basis * Vector3(
+			rng.randf_range(-6.0, 8.0), 0.0, rng.randf_range(-11.0, 11.0))
+		p.y = terrain.height_at(p.x, p.z)
+		const FARM := ["FarmCrate_Apple", "FarmCrate_Carrot", "FarmCrate_Empty",
+			"Barrel_Apples", "Barrel", "Bucket_Wooden_1", "Prop_Wagon",
+			"Crate_Wooden", "Bag", "Pouch_Large", "Workbench", "Anvil_Log"]
+		out.pieces.append({
+			"path": PROPS + FARM[rng.randi() % FARM.size()] + ".gltf",
+			"position": p, "yaw": rng.randf() * TAU, "scale": 1.0,
+		})
+	var posts := rng.randi_range(8, 14)
+	for i in posts:
+		var t := float(i) / float(posts - 1)
+		var p: Vector3 = at + basis * Vector3(
+			lerpf(-8.0, 10.0, t), 0.0, -13.0)
+		p.y = terrain.height_at(p.x, p.z)
+		out.pieces.append({
+			"path": KIT + "Prop_WoodenFence_Single.gltf",
+			"position": p, "yaw": face, "scale": 1.0,
+		})
+	out.keep_clear.append(Rect2(at.x - 24.0, at.z - 24.0, 48.0, 48.0))
+
+
+## Somewhere that was a place. Walls, no roofs, and the wood coming back.
+static func _ruin(out: Built, terrain: WgTerrain, at: Vector3,
+		rng: RandomNumberGenerator) -> void:
+	var count := rng.randi_range(2, 4)
+	for i in count:
+		var ang := rng.randf() * TAU
+		var d := rng.randf_range(0.0, 16.0)
+		var pos: Vector3 = at + Vector3(cos(ang) * d, 0.0, sin(ang) * d)
+		pos.y = terrain.height_at(pos.x, pos.z)
+		var yaw: float = round(rng.randf() * 4.0) * (PI * 0.5)
+		_shell(out, pos, yaw, rng.randi_range(3, 4), rng.randi_range(3, 4), rng)
+	# Rubble and what was left behind.
+	for i in rng.randi_range(5, 12):
+		var p: Vector3 = at + Vector3(
+			rng.randf_range(-20.0, 20.0), 0.0, rng.randf_range(-20.0, 20.0))
+		p.y = terrain.height_at(p.x, p.z)
+		const LEFT := ["Barrel", "Crate_Wooden", "Pot_1", "Cauldron",
+			"Bucket_Metal", "Chest_Wood"]
+		out.pieces.append({
+			"path": PROPS + LEFT[rng.randi() % LEFT.size()] + ".gltf",
+			"position": p, "yaw": rng.randf() * TAU, "scale": 1.0,
+		})
+	out.keep_clear.append(Rect2(at.x - 22.0, at.z - 22.0, 44.0, 44.0))
+
+
+## A house with the roof gone and most of a wall with it.
+##
+## Built from the same kit as a standing house, which is the point: a
+## ruin that shares no geometry with the houses around it reads as a
+## prop rather than as the same village a hundred years later.
+static func _shell(out: Built, pos: Vector3, yaw: float, wm: int, dm: int,
+		rng: RandomNumberGenerator) -> void:
+	var wset := "Wall_UnevenBrick"
+	var hw := float(wm)
+	var hd := float(dm)
+	var basis := Basis(Vector3.UP, yaw)
+	var put := func(stem: String, local: Vector3, extra: float) -> void:
+		out.pieces.append({
+			"path": KIT + stem + ".gltf",
+			"position": pos + basis * local,
+			"yaw": yaw + extra, "scale": 1.0,
+		})
+	for i in range(wm):
+		var x := -hw + 1.0 + 2.0 * i
+		# Gaps: a ruin with all four walls is a house somebody has
+		# tidied.
+		if rng.randf() < 0.55:
+			put.call(wset + "_Straight", Vector3(x, 0, hd), 0.0)
+		if rng.randf() < 0.45:
+			put.call(wset + "_Window_Wide_Flat", Vector3(x, 0, -hd), PI)
+	for j in range(dm):
+		var z := -hd + 1.0 + 2.0 * j
+		for sgn in [1.0, -1.0]:
+			if rng.randf() < 0.5:
+				put.call(wset + "_Straight", Vector3(hw * sgn, 0, z), -PI * 0.5 * sgn)
+	for cx in [-hw, hw]:
+		for cz in [-hd, hd]:
+			if rng.randf() < 0.7:
+				put.call("Corner_Exterior_Brick", Vector3(cx, 0, cz), 0.0)
+	if rng.randf() < 0.6:
+		put.call("Prop_Vine1", Vector3(hw - 1.6, 2.12, hd + 0.24), 0.0)
+	out.keep_clear.append(Rect2(pos.x - float(wm) - 2.0, pos.z - float(dm) - 2.0,
+		float(wm * 2) + 4.0, float(dm * 2) + 4.0))
 
 
 static func _house(out: Built, pos: Vector3, yaw: float, wm: int, dm: int,
-		brick: bool, rng: RandomNumberGenerator) -> void:
+		brick: bool, rng: RandomNumberGenerator, barn: bool = false) -> void:
 	var wset := "Wall_UnevenBrick" if brick else "Wall_Plaster"
 	var corner := "Corner_Exterior_Brick" if brick else "Corner_Exterior_Wood"
 	# The brick set is a smaller set: it has a flat door and one window
@@ -166,6 +334,8 @@ static func _house(out: Built, pos: Vector3, yaw: float, wm: int, dm: int,
 			"scale": 1.0,
 		})
 
+	# A barn is a working building: big doors, no glazing, no hearth.
+	var glazing: float = 0.0 if barn else 0.65
 	var door_i := rng.randi_range(1, maxi(1, wm - 2))
 	for i in range(wm):
 		var x := -hw + 1.0 + 2.0 * i
@@ -173,12 +343,12 @@ static func _house(out: Built, pos: Vector3, yaw: float, wm: int, dm: int,
 		if i == door_i:
 			front = wset + ("_Door_Round" if (has_round and rng.randf() < 0.4)
 				else "_Door_Flat")
-		elif rng.randf() < 0.65:
+		elif rng.randf() < glazing:
 			front = wset + "_Window_Wide_Flat"
 		put.call(front, Vector3(x, 0, hd), 0.0)
 
 		var back := wset + "_Straight"
-		if rng.randf() < 0.4:
+		if rng.randf() < glazing * 0.6:
 			back = wset + "_Window_Wide_Flat"
 		put.call(back, Vector3(x, 0, -hd), PI)
 
@@ -186,7 +356,7 @@ static func _house(out: Built, pos: Vector3, yaw: float, wm: int, dm: int,
 		var z := -hd + 1.0 + 2.0 * j
 		for s in [1.0, -1.0]:
 			var stem := wset + "_Straight"
-			if rng.randf() < 0.45:
+			if rng.randf() < glazing * 0.7:
 				stem = wset + ("_Window_Thin_Round" if (has_round and rng.randf() < 0.5)
 					else "_Window_Wide_Flat")
 			put.call(stem, Vector3(hw * s, 0, z), -PI * 0.5 * s)
@@ -197,12 +367,12 @@ static func _house(out: Built, pos: Vector3, yaw: float, wm: int, dm: int,
 
 	put.call("Roof_RoundTiles_%dx%d" % [wm * 2, dm * 2], Vector3(0, 3.12, 0), 0.0)
 
-	if rng.randf() < 0.8:
+	if not barn and rng.randf() < 0.8:
 		var cy := 3.12 + 1.9
 		var local := Vector3(hw * 0.35, cy, -hd * 0.35)
 		put.call("Prop_Chimney" if rng.randf() < 0.6 else "Prop_Chimney2", local, 0.0)
 		out.chimneys.append(pos + basis * (local + Vector3(0, 1.3, 0)))
-	if rng.randf() < 0.35:
+	if not barn and rng.randf() < 0.35:
 		put.call("Stairs_Exterior_Straight",
 			Vector3(-hw + 1.0 + 2.0 * door_i, 0, hd + 1.4), 0.0)
 	if rng.randf() < 0.3:

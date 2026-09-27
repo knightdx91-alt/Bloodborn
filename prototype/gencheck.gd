@@ -175,6 +175,34 @@ func _ready() -> void:
 			"not one prop — it is a model village")
 		_ok("and it is named", built.name != "", "an unnamed hamlet")
 
+		# FOUR KINDS OF PLACE, not one shape repeated.
+		#
+		# Every settlement used to be a street with houses down both
+		# sides, so however varied the country got, what people had put
+		# on it read as one idea over and over. Diverse land carrying
+		# one building pattern is half a world.
+		var kinds_seen := {}
+		var with_houses := 0
+		for cx2 in range(0, 26):
+			for cz2 in range(0, 26):
+				var f2 := WgSettlement.site(t, t.seed_value, cx2, cz2)
+				if f2.is_empty():
+					continue
+				var b2 := WgSettlement.build(t, t.seed_value, f2)
+				kinds_seen[b2.kind] = int(kinds_seen.get(b2.kind, 0)) + 1
+				if b2.houses > 0:
+					with_houses += 1
+		print("      across %d settlements: %s"
+			% [with_houses, str(kinds_seen)])
+		_ok("and the world builds more than one kind of place",
+			kinds_seen.size() >= 4,
+			"only %d kinds in the whole sample: %s"
+				% [kinds_seen.size(), str(kinds_seen.keys())])
+		_ok("and no one kind is the whole world",
+			_commonest(kinds_seen) < 0.7,
+			"one kind is %.0f%% of every settlement"
+				% (_commonest(kinds_seen) * 100.0))
+
 		# Keep-clear: nothing grows through a wall.
 		var near := WgScatter.in_rect(t,
 			built.centre.x - 60.0, built.centre.z - 60.0,
@@ -249,6 +277,18 @@ func _ready() -> void:
 	print("      ground %.2f m, body came to rest at %.2f m" % [ground, rest])
 
 	_finish()
+
+
+## The share of the commonest kind.
+func _commonest(counts: Dictionary) -> float:
+	var total := 0
+	var top := 0
+	for k in counts:
+		total += int(counts[k])
+		top = maxi(top, int(counts[k]))
+	if total == 0:
+		return 1.0
+	return float(top) / float(total)
 
 
 func _same(a: Array, b: Array) -> bool:

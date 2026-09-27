@@ -36,23 +36,39 @@ func _ready() -> void:
 	add_child(cam)
 	cam.current = true
 
-	# Find a hamlet to look at, so one of the shots is of the thing
-	# that is hardest to get right.
+	# One of EACH KIND of place, because the point of having four is
+	# that they look like four.
 	var t := gen.terrain
-	var hamlet := Vector3.ZERO
-	for cx in range(3, 18):
-		for cz in range(3, 18):
+	var want := ["street", "ring", "farmstead", "ruin"]
+	var found_by_kind: Dictionary = {}
+	for cx in range(0, 26):
+		for cz in range(0, 26):
 			var found := WgSettlement.site(t, t.seed_value, cx, cz)
 			if found.is_empty():
 				continue
 			var b := WgSettlement.build(t, t.seed_value, found)
-			if b.houses >= 4:
-				hamlet = b.centre
-				print("looking at %s, %d houses, at %.0f,%.0f"
-					% [b.name, b.houses, hamlet.x, hamlet.z])
-				break
-		if hamlet != Vector3.ZERO:
+			if want.has(b.kind) and not found_by_kind.has(b.kind):
+				found_by_kind[b.kind] = b
+				print("%s: %s at %.0f,%.0f (%d houses)"
+					% [b.kind, b.name, b.centre.x, b.centre.z, b.houses])
+		if found_by_kind.size() == want.size():
 			break
+
+	for kind in want:
+		if not found_by_kind.has(kind):
+			continue
+		var b2 = found_by_kind[kind]
+		var c2 := WorldGen.chunk_of(b2.centre)
+		gen.build_block(c2, 2)
+		await _settle()
+		cam.position = b2.centre + Vector3(30.0, 16.0, 30.0)
+		cam.look_at(b2.centre + Vector3(0, 2, 0), Vector3.UP)
+		await _shot("place_" + kind)
+		_clear()
+
+	var hamlet := Vector3.ZERO
+	if found_by_kind.has("street"):
+		hamlet = found_by_kind["street"].centre
 
 	# --- a hamlet, from a man's height ---
 	if hamlet != Vector3.ZERO:
