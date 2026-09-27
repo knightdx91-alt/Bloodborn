@@ -33,7 +33,10 @@ var skirmish: Skirmish = null
 ## Who the boar is coming for. Set by the world.
 var quarry: Fighter = null
 
-var _beast: BeastTactics = null
+## Which brain is driving. Public because which TACTICS an animal is
+## on is a thing a harness has to be able to ask — the boar ran on
+## the swordsman's brain once, and nothing could see it.
+var beast: BeastTactics = null
 var _charge_dir := Vector3.FORWARD
 var _down := 0.0
 var _rng := RandomNumberGenerator.new()
@@ -109,7 +112,7 @@ func _build_boar() -> void:
 	add_child(boar)
 	boar.setup_beast(BOAR_HEALTH, "boar")
 	boar.weapon_damage = BOAR_DAMAGE
-	_beast = BeastTactics.new(20260916)
+	beast = BeastTactics.new(20260916)
 
 
 ## The world hands the region its player and its combat field.
@@ -124,7 +127,7 @@ func _physics_process(delta: float) -> void:
 	if boar == null or not is_instance_valid(boar):
 		return
 	boar.tick(delta)
-	_beast.tick(delta)
+	beast.tick(delta)
 	_tick_down(delta)
 
 	if _down > 0.0 or quarry == null or not is_instance_valid(quarry):
@@ -153,8 +156,8 @@ func _physics_process(delta: float) -> void:
 ## you do next. Stepping aside is the answer, and it only is one because
 ## of this.
 func _run(delta: float, heading: Vector3, distance: float) -> void:
-	var was_charging := _beast.is_charging()
-	var decision := _beast.decide(distance, boar.stamina, boar.is_busy())
+	var was_charging := beast.is_charging()
+	var decision := beast.decide(distance, boar.stamina, boar.is_busy())
 
 	match decision["intent"]:
 		BeastTactics.Intent.CHARGE:
@@ -162,19 +165,19 @@ func _run(delta: float, heading: Vector3, distance: float) -> void:
 				# Commit. This is the last moment it gets to aim.
 				_charge_dir = heading
 				boar.rotation.y = atan2(-heading.x, -heading.z)
-				_beast.charged(boar.stamina)
+				beast.charged(boar.stamina)
 				Sound.swing(self, boar.global_position + Vector3(0, 0.7, 0))
 			boar.move(_charge_dir, CHARGE_SPEED, delta)
 			if distance <= GORE_REACH and not boar.is_busy():
 				if boar.try_attack("enemyHeavy"):
 					boar.attack.arc = Attack.Arc.LOWER_LEFT
-					_beast.spent()
+					beast.spent()
 
 		BeastTactics.Intent.GORE:
 			boar.rotation.y = atan2(-heading.x, -heading.z)
 			if boar.try_attack("enemyQuick"):
 				boar.attack.arc = Attack.Arc.LOWER_RIGHT
-				_beast.gored()
+				beast.gored()
 			boar.move(Vector3.ZERO, 0.0, delta)
 
 		BeastTactics.Intent.WHEEL:
@@ -193,11 +196,26 @@ func _run(delta: float, heading: Vector3, distance: float) -> void:
 			boar.move(Vector3.ZERO, 0.0, delta)
 
 
+## One boar down, reported to the board.
+##
+## Public because a harness has to be able to say "and another" without
+## waiting for a real boar to die four seconds at a time — the old
+## scene's `_report_kill` was reached the same way, through `call()`,
+## which worked only as long as nobody renamed it.
+##
+## Keyed on the REGION, not on a contract: this knows nothing about
+## contracts and does not need to. It reports a fact about a place, and
+## ContractWorkRules works out whether that was work — saying nothing
+## if you were never paid to do it.
+func record_kill() -> void:
+	ContractWorkRules.record_cull(TownState.current(), region_name(), 1)
+	TownState.save()
+
+
 func _tick_down(delta: float) -> void:
 	if boar.health.is_dead() and _down <= 0.0:
 		_down = RESPAWN_SECONDS
-		ContractWorkRules.record_cull(TownState.current(), region_name(), 1)
-		TownState.save()
+		record_kill()
 		return
 	if _down <= 0.0:
 		return
@@ -209,7 +227,7 @@ func _tick_down(delta: float) -> void:
 	boar.global_position = global_position + Vector3(
 		_rng.randf_range(-FIELD + 6.0, FIELD - 6.0), 1.0,
 		_rng.randf_range(-FIELD + 6.0, FIELD - 6.0))
-	_beast = BeastTactics.new(Time.get_ticks_msec())
+	beast = BeastTactics.new(Time.get_ticks_msec())
 
 
 ## Which wood this is, for the contract board.

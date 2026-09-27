@@ -62,14 +62,26 @@ func _ready() -> void:
 		+ "is gone")
 
 	# --- And in the Hedges ------------------------------------------------
-	var h: Node3D = load("res://hedges.tscn").instantiate() as Node3D
-	add_child(h)
-	await get_tree().create_timer(1.5).timeout
+	# Through Thornfield: the wood is a region in the one world now, not
+	# a scene of its own to load.
+	var town: Node3D = load("res://town.tscn").instantiate() as Node3D
+	add_child(town)
+	await get_tree().create_timer(2.5).timeout
 
-	var boar: Fighter = h.get("enemy")
-	var you: Fighter = h.get("player")
+	var h := town.find_child("HedgeWood", true, false) as HedgeWood
+	if h == null:
+		_ok("the Hedges is a place in the world", false, "no HedgeWood")
+		print("")
+		print("FAILED: %s" % ", ".join(_fails))
+		get_tree().quit()
+		return
+
+	var boar: Fighter = h.boar
+	var you: Fighter = null
+	for n in town.get_children():
+		if n is TownWalker: you = n as Fighter
 	_ok("the Hedges runs the beast brain, not the swordsman's",
-		h.get("beast") != null, "still on EnemyTactics")
+		h.beast != null, "still on EnemyTactics")
 	_ok("and there is a boar and a player", boar != null and you != null,
 		"missing a body")
 
@@ -125,8 +137,12 @@ func _ready() -> void:
 		var boar_hp: float = boar.health.current()
 		var swung := false
 		for attempt in 8:
-			if h.call("_try_attack", Attack.Arc.UPPER_RIGHT):
-				pass
+			# Straight at the Fighter. The old scene had a `_try_attack`
+			# helper that did exactly this and counted the swing for its
+			# debug readout; the town has no such helper and does not
+			# need one, because throwing a blow was always Fighter's job.
+			if you.try_attack():
+				you.attack.arc = Attack.Arc.UPPER_RIGHT
 			swung = true
 			for f in 30:
 				await get_tree().physics_frame

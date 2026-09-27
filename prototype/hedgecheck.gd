@@ -13,16 +13,31 @@ func _ready() -> void:
 	TownState.reset()
 	var state: TownWorldState = TownState.current()
 
-	var h: Node3D = load("res://hedges.tscn").instantiate() as Node3D
-	add_child(h)
+	# THROUGH THORNFIELD, because there is no hedges.tscn any more.
+	#
+	# This used to load a scene whose whole job was to be the Hedges —
+	# its own ground, its own sky, its own clock, its own copy of you.
+	# The wood is a region inside the one world now, so the only honest
+	# way to ask it anything is to walk into the world and find it.
+	var town: Node3D = load("res://town.tscn").instantiate() as Node3D
+	add_child(town)
 	await get_tree().create_timer(3.0).timeout
 
-	_ok("the Hedges knows where it is", String(h.get("place")) == "hedges"
-		and String(h.get("region")) == "the Hedges west",
-		"place '%s' region '%s'" % [str(h.get("place")), str(h.get("region"))])
+	var h := town.find_child("HedgeWood", true, false) as HedgeWood
+	_ok("the Hedges is a place in the world", h != null,
+		"no HedgeWood under Thornfield")
+	if h == null:
+		print("FAILED")
+		get_tree().quit()
+		return
 
-	var boar: Fighter = h.get("enemy")
-	var you: Fighter = h.get("player")
+	_ok("and it knows which wood it is", h.region_name() == "the Hedges west",
+		"region '%s'" % h.region_name())
+
+	var boar: Fighter = h.boar
+	var you: Fighter = null
+	for n in town.get_children():
+		if n is TownWalker: you = n as Fighter
 	_ok("there is a boar and a player", boar != null and you != null, "missing a body")
 	if boar == null or you == null:
 		print("FAILED")
@@ -74,7 +89,7 @@ func _ready() -> void:
 
 	# Killing without a contract is allowed and is not work.
 	var before_taken := state.contracts_taken.size()
-	h.call("_report_kill")
+	h.record_kill()
 	_ok("a kill with no contract is not progress",
 		state.contract_progress.is_empty() and state.contracts_taken.size() == before_taken,
 		"progress %s" % str(state.contract_progress))
@@ -84,23 +99,32 @@ func _ready() -> void:
 	ContractBoardRules.take(state, id)
 	var want := ContractWorkRules.required(state, id)
 	for i in want:
-		h.call("_report_kill")
+		h.record_kill()
 	_ok("a kill with the paper in hand is progress",
 		ContractWorkRules.done(state, id) == want,
 		"done %d of %d" % [ContractWorkRules.done(state, id), want])
 	_ok("and the contract can be handed in", ContractWorkRules.can_hand_in(state, id),
 		"still not finishable")
 
-	# And it survives the walk back to town.
+	# And it survives being dropped and reloaded.
+	#
+	# This used to be called "the walk back to town" and it used to mean
+	# a scene change, because the Hedges was a different scene. There is
+	# no scene change to survive any more — you walk. What is still
+	# worth asking, and is what this always actually tested, is whether
+	# the work round-trips through the SAVE: drop the live state, read
+	# it back off disk, and see if the cull is still there.
 	TownState._state = null
 	var after: TownWorldState = TownState.current()
-	_ok("the work survives the walk back", ContractWorkRules.can_hand_in(after, id),
-		"progress lost between scenes: %s" % str(after.contract_progress))
+	_ok("the work survives a save and reload", ContractWorkRules.can_hand_in(after, id),
+		"progress lost through the save: %s" % str(after.contract_progress))
 
 	# --- the hand-in ---
+	#
+	# In the SAME town, for the same reason. Loading town.tscn a second
+	# time here would stand up a whole second copy of the world — the
+	# exact thing this file's own subject is about removing.
 	print("--- handing the paper in ---")
-	var town: Node3D = load("res://town.tscn").instantiate() as Node3D
-	add_child(town)
 	await get_tree().create_timer(2.5).timeout
 
 	var clerk: TownNPC = null

@@ -231,11 +231,17 @@ func _ready() -> void:
 			"max_distance %.0fm" % placed.max_distance)
 
 	# --- Footsteps come from walking ---------------------------------------
-	var h: Node3D = load("res://hedges.tscn").instantiate() as Node3D
+	# In Thornfield, because there is no hedges.tscn to load any more.
+	# What this asks — does walking make a sound — was never about the
+	# Hedges specifically; it loaded that scene because that scene was
+	# the cheapest place to find a driven player.
+	var h: Node3D = load("res://town.tscn").instantiate() as Node3D
 	add_child(h)
-	await get_tree().create_timer(1.0).timeout
-	var you: Fighter = h.get("player")
-	_ok("there is somebody to walk", you != null, "no player in the Hedges")
+	await get_tree().create_timer(2.5).timeout
+	var you: Fighter = null
+	for n in h.get_children():
+		if n is TownWalker: you = n as Fighter
+	_ok("there is somebody to walk", you != null, "no walker in Thornfield")
 
 	if you != null:
 		# Counted as they SPAWN, not by looking at the children afterwards.
