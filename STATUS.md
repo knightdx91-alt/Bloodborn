@@ -2272,6 +2272,35 @@ you stand still — it should not.
   perfectly healthy, which is the point: no check would have caught
   either, and both were obvious in one frame.
 
+### Five wrong guesses about performance, and what that is worth
+
+Every optimisation attempted on the generator was aimed by a theory,
+and the theory was wrong five times out of five. Kept as a list
+because the pattern is more useful than any of the fixes:
+
+1. **The noise is the cost.** It was 9 ms of 142. Instantiating one
+   scene tree per tree was 107.
+2. **The normals are inverted.** They were not; the render camera was
+   standing inside a hill.
+3. **The ridged-noise crease is too sharp.** Softened it; the number
+   did not move at all.
+4. **Rebuilding hamlets nine times is the landmark cost.** Caching
+   them bought 2 ms of 44.
+5. **27,000 trig calls a chunk must be costing something.**
+   `height_at` recomputed six towns' `cos`/`sin` per sample. Caching
+   them: 2.49 → 2.43 µs per call, chunk 54.5 → 57.9 ms. Nothing, and
+   possibly noise in the wrong direction.
+
+What actually paid, both found by measuring first: batching the models
+into MultiMesh (142 → 54 ms) and writing the mesh arrays directly
+instead of through SurfaceTool (54 → 30 ms).
+
+The fifth fix is kept anyway — recomputing six constants 4,489 times a
+chunk is wrong regardless of the clock, and `town_site` being a lookup
+rather than a heightfield evaluation is plainly better code. But it
+bought no time, and saying it did would make the next person trust a
+number that is not there.
+
 ### And one I got wrong twice, which is the point of looking
 
 A render showed the ironwood forest with its whole foreground pure

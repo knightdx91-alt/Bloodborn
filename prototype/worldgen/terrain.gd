@@ -224,10 +224,12 @@ const TOWN_RING := 6000.0
 
 ## Where a wedge's town stands: the middle of its arc, on the ring.
 func town_site(wedge: int) -> Vector3:
-	var ang := (float(wedge) + 0.5) / float(WEDGES) * TAU
-	var x := cos(ang) * TOWN_RING
-	var z := sin(ang) * TOWN_RING
-	return Vector3(x, height_at(x, z), z)
+	# A lookup. This used to call `height_at`, and WgSettlement.site
+	# calls it twelve times per candidate cell — so siting one hamlet
+	# meant twelve full heightfield evaluations to fetch six constants.
+	if _town_site.is_empty():
+		_level_towns()
+	return _town_site[wedge]
 
 
 ## Godsgrave, at the middle of everything.
@@ -314,16 +316,36 @@ func _raw_height(x: float, z: float) -> float:
 const TOWN_FLAT := 420.0
 const TOWN_SKIRT := 320.0
 
-## The height of each town's ground, worked out once from `_raw_height`
-## so the platforms have a level to aim at without recursion.
+## The six town sites, worked out once.
+##
+## `_town_level` is the height each platform aims at, from
+## `_raw_height` so there is no recursion. `_town_xz` and `_town_site`
+## exist because the first cut recomputed `cos(ang) * TOWN_RING` and
+## `sin(ang) * TOWN_RING` for all six towns inside `height_at` — which
+## is about 27,000 trig calls per chunk to produce six constants that
+## never change.
 var _town_level: PackedFloat32Array = PackedFloat32Array()
+var _town_xz: PackedVector2Array = PackedVector2Array()
+var _town_site: Array[Vector3] = []
+## Squared, so the common case — a sample nowhere near any town — is
+## a subtraction and a compare rather than a square root.
+var _town_reach2 := 0.0
 
 
 func _level_towns() -> void:
 	_town_level.resize(WEDGES)
+	_town_xz.resize(WEDGES)
+	_town_site.resize(WEDGES)
+	_town_reach2 = (TOWN_FLAT + TOWN_SKIRT) * (TOWN_FLAT + TOWN_SKIRT)
 	for w in WEDGES:
 		var ang := (float(w) + 0.5) / float(WEDGES) * TAU
-		_town_level[w] = _raw_height(cos(ang) * TOWN_RING, sin(ang) * TOWN_RING)
+		var x := cos(ang) * TOWN_RING
+		var z := sin(ang) * TOWN_RING
+		_town_xz[w] = Vector2(x, z)
+		_town_level[w] = _raw_height(x, z)
+		# The site's own height IS the platform level, by construction —
+		# the platform is levelled to the ground that was already there.
+		_town_site[w] = Vector3(x, _town_level[w], z)
 
 
 ## The ground, with the towns' own ground levelled into it.
@@ -338,16 +360,17 @@ func _level_towns() -> void:
 ## The land is READY for a town here. There is no town: see STATUS.
 func height_at(x: float, z: float) -> float:
 	var h := _raw_height(x, z)
-	if _town_level.is_empty():
+	if _town_xz.is_empty():
 		return h
-	for w in WEDGES:
-		var ang := (float(w) + 0.5) / float(WEDGES) * TAU
-		var tx := cos(ang) * TOWN_RING
-		var tz := sin(ang) * TOWN_RING
-		var d := Vector2(x - tx, z - tz).length()
-		if d > TOWN_FLAT + TOWN_SKIRT:
+	for w in _town_xz.size():
+		var t2: Vector2 = _town_xz[w]
+		var dx := x - t2.x
+		var dz := z - t2.y
+		var d2 := dx * dx + dz * dz
+		if d2 > _town_reach2:
 			continue
-		var t: float = 1.0 - smoothstep(TOWN_FLAT, TOWN_FLAT + TOWN_SKIRT, d)
+		var t: float = 1.0 - smoothstep(TOWN_FLAT, TOWN_FLAT + TOWN_SKIRT,
+			sqrt(d2))
 		return lerpf(h, _town_level[w], t)
 	return h
 
