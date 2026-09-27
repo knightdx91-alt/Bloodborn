@@ -149,7 +149,18 @@ static func build(terrain: WgTerrain, world_seed: int, found: Dictionary) -> Bui
 	#
 	# Weighted rather than uniform: a street is still the commonest
 	# thing, because most places really are somewhere the road widened.
-	var roll := rng.randf()
+	# The wedge leans the odds. lore.md §5 calls the Wistwood "old
+	# forest with older ruins", and a wedge whose description says
+	# ruins should have more of them than the horse plains do — a
+	# biome that differs only in tree species is a palette, not a
+	# place.
+	var bias: float = terrain.biome_at(at.x, at.z).ruin_bias
+	# SHIFTED UP, not scaled down. The first cut multiplied the roll by
+	# (1 - bias), which shrinks it toward the LOW end — and the low end
+	# is "street". So the wedge described as having older ruins in it
+	# got fewer ruins than the horse plains, exactly inverted, which
+	# the check caught by comparing the two.
+	var roll := clampf(rng.randf() + bias, 0.0, 0.999)
 	if roll < 0.44:
 		out.kind = "street"
 		_street_village(out, terrain, at, rng)

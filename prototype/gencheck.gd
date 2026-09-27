@@ -203,6 +203,61 @@ func _ready() -> void:
 			"one kind is %.0f%% of every settlement"
 				% (_commonest(kinds_seen) * 100.0))
 
+		# THE WEDGE LEANS THE ODDS.
+		#
+		# The Wistwood is "old forest with older ruins" in lore.md §5,
+		# so it has to actually have more of them than the horse
+		# plains do — otherwise the description is a caption on a
+		# picture of the same thing.
+		var wist_ruins := 0
+		var wist_all := 0
+		var reach_ruins := 0
+		var reach_all := 0
+		for w2 in WgTerrain.WEDGES:
+			var bname: String = t.biomes()[w2].name
+			if bname != "the Wistwood" and bname != "the Reaches":
+				continue
+			var ang2 := (float(w2) + 0.5) / float(WgTerrain.WEDGES) * TAU
+			# DISTINCT CELLS. The first cut walked outward in 34 m
+			# steps through 900 m cells, so it counted the same two or
+			# three hamlets twenty times each and reported "80% of 59"
+			# about a sample of three.
+			var seen_cells := {}
+			for k in 400:
+				var rr := 2600.0 + float(k % 40) * 190.0
+				var fan := (float(k / 40) - 4.5) * 0.06
+				var sx := cos(ang2 + fan) * rr
+				var sz := sin(ang2 + fan) * rr
+				var sc3 := int(floor(sx / WgSettlement.CELL))
+				var sz3 := int(floor(sz / WgSettlement.CELL))
+				var ckey := "%d:%d" % [sc3, sz3]
+				if seen_cells.has(ckey):
+					continue
+				seen_cells[ckey] = true
+				# And only cells whose settlement really is in this
+				# wedge — a cell near the border belongs to whichever
+				# country it actually fell in.
+				var b4 := WgSettlement.cached(t, t.seed_value, sc3, sz3)
+				if b4.kind == "":
+					continue
+				if t.biome_at(b4.centre.x, b4.centre.z).name != bname:
+					continue
+				if bname == "the Wistwood":
+					wist_all += 1
+					if b4.kind == "ruin": wist_ruins += 1
+				else:
+					reach_all += 1
+					if b4.kind == "ruin": reach_ruins += 1
+		var wist_rate := float(wist_ruins) / maxf(1.0, float(wist_all))
+		var reach_rate := float(reach_ruins) / maxf(1.0, float(reach_all))
+		print("      ruins: Wistwood %.0f%% of %d, Reaches %.0f%% of %d"
+			% [wist_rate * 100.0, wist_all, reach_rate * 100.0, reach_all])
+		_ok("the Wistwood has older ruins in it than the horse plains",
+			wist_rate > reach_rate,
+			"Wistwood %.0f%% vs Reaches %.0f%% — the wedge's own "
+				% [wist_rate * 100.0, reach_rate * 100.0]
+			+ "description is not reaching the generator")
+
 		# Keep-clear: nothing grows through a wall.
 		var near := WgScatter.in_rect(t,
 			built.centre.x - 60.0, built.centre.z - 60.0,
@@ -240,6 +295,61 @@ func _ready() -> void:
 	_ok("and they are rarer than settlements",
 		mark_count < 400,
 		"%d landmarks is not a landmark, it is scenery" % mark_count)
+
+	# --- the Wheel ---------------------------------------------------------
+	#
+	# lore.md §5 names six towns and the country each one sits in. The
+	# generator makes country; this asks whether it makes THIS country.
+	var towns_ok := true
+	var wrong_wedge: Array[String] = []
+	for w in WgTerrain.WEDGES:
+		var site := t.town_site(w)
+		var r := Vector2(site.x, site.z).length()
+		if absf(r - WgTerrain.TOWN_RING) > 1.0:
+			towns_ok = false
+		# THE ONE AT RISK. The wedge borders are chewed by noise so
+		# they are not drawn lines, and a town sits at its arc's
+		# middle — but a big enough chew could push the middle over a
+		# border, and a town would then stand in its neighbour's
+		# country wearing its own name.
+		var bi = t.biome_at(site.x, site.z)
+		if t.wedge_at(site.x, site.z) != w:
+			wrong_wedge.append("%s in %s" % [t.biomes()[w].town, bi.name])
+	_ok("the six towns stand on the ring", towns_ok,
+		"a town is not at %.0f m from the capitol" % WgTerrain.TOWN_RING)
+	_ok("and each in its own country", wrong_wedge.is_empty(),
+		"border noise pushed a town out of its wedge: %s" % str(wrong_wedge))
+
+	var named := {}
+	for b3 in t.biomes():
+		named[b3.town] = b3.name
+	_ok("and every wedge is somebody's",
+		named.size() == WgTerrain.WEDGES and not named.has(""),
+		"towns and wedges do not pair up: %s" % str(named))
+	print("      %s" % str(named))
+
+	var wheel := WgRoads.wheel(t)
+	var spokes := 0
+	var rim := 0
+	for seg in wheel:
+		if seg.get("kind", "") == "spoke": spokes += 1
+		elif seg.get("kind", "") == "rim": rim += 1
+	_ok("six spokes run to the capitol", spokes == WgTerrain.WEDGES,
+		"%d spokes" % spokes)
+	_ok("and the rim road closes the ring", rim == WgTerrain.WEDGES,
+		"%d rim segments for %d towns" % [rim, WgTerrain.WEDGES])
+
+	# The spoke is the design's own twenty minutes.
+	var spoke_len := 0.0
+	for seg in wheel:
+		if seg.get("kind", "") == "spoke":
+			spoke_len = (seg["a"] as Vector2).distance_to(seg["b"] as Vector2)
+			break
+	_ok("and a spoke is the journey it was designed to be",
+		absf(spoke_len - WgTerrain.TOWN_RING) < 1.0,
+		"a spoke is %.0f m, not %.0f" % [spoke_len, WgTerrain.TOWN_RING])
+	print("      spoke %.0f m — %.0f minutes at 5 m/s"
+		% [spoke_len, spoke_len / 5.0 / 60.0])
 
 	# --- roads ------------------------------------------------------------
 	var segs := WgRoads.near(t, t.seed_value, 0.0, 0.0, 6000.0, 6000.0)

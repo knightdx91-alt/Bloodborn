@@ -2151,9 +2151,23 @@ wrong.
 
 ### What is in the world
 
-**Six biomes**, one per wedge, differing in ground colour, relief,
-feature size and vegetation — and they read differently, checked by
-looking rather than by asserting.
+**The Wheel's own six wedges**, from `lore.md` §5 — not six generic
+biomes with an index. Thornfield in the Hedges, Hammarsted in the
+Ironbarrens, Vellmark in the Reaches, Greywater in the Fens, Candlerow
+in the Wistwood, Coldharrow in the Marches. Each wedge's character is
+what its town is FOR: Hammarsted has the ore, Vellmark the grass to
+raise horses on, Greywater the water to move goods along. A wedge whose
+description does not explain its town is scenery with a label.
+
+The six towns stand on a 6 km ring with Godsgrave at the middle, six
+spokes run in, and the rim road closes the ring — so a spoke is 6,000 m,
+which is the twenty minutes at 5 m/s the whole world scale was derived
+from. It closes back on itself, which is the best evidence the anchor
+was not arbitrary.
+
+And the wedge leans its own odds: the Wistwood is "old forest with
+older ruins", so it has them — 50% of its settlements against 21% in
+the horse plains.
 
 **Four kinds of settlement**, because one shape repeated is half a
 world however varied the country is: street villages (44%), ring

@@ -130,16 +130,18 @@ func _ready() -> void:
 		await _shot("hamlet_street")
 		_clear()
 
-	# --- country, from the air, in three different wedges ---
-	var spots := {
-		"downs": 0.4,
-		"ironwood": 1.6,
-		"moor": 2.8,
-	}
-	for label in spots:
-		var ang: float = spots[label]
+	# --- country, from the air and from the ground, in every wedge ---
+	#
+	# By WEDGE INDEX and the biome's own name, not by hardcoded angles
+	# with hardcoded labels: the labels said "downs", "ironwood" and
+	# "moor" for a week after those biomes had been renamed to the
+	# Wheel's own six, so the files on disk were captioned with
+	# country that no longer existed.
+	for wedge in WgTerrain.WEDGES:
+		var ang: float = (float(wedge) + 0.5) / float(WgTerrain.WEDGES) * TAU
 		var r := 4200.0
 		var at := Vector3(cos(ang) * r, 0.0, sin(ang) * r)
+		var label: String = String(t.biome_at(at.x, at.z).name).replace("the ", "")
 		at.y = gen.height_at(at.x, at.z)
 		var c := WorldGen.chunk_of(at)
 		gen.build_block(c, 3)

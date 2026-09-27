@@ -30,6 +30,11 @@ const CAPITOL_R := 2000.0
 ## count are two wedges nobody can tell apart.
 class Biome extends RefCounted:
 	var name := ""
+	## Whose country this is (lore.md §5).
+	var town := ""
+	## How much more likely a settlement here is a ruin. The Wistwood
+	## is "old forest with older ruins" and has to look like it.
+	var ruin_bias := 0.0
 	var ground: Color = Color(0.38, 0.40, 0.22)
 	## Metres of relief. Flat country and hill country are the first
 	## thing read from a silhouette.
@@ -48,86 +53,110 @@ class Biome extends RefCounted:
 
 
 static func biomes() -> Array:
+	# THE WHEEL'S OWN SIX, from lore.md §5 — not six generic biomes
+	# with a wedge index. Each is a named country with a town in it,
+	# and the town's trade is what the country is for: Hammarsted has
+	# the ore, Vellmark the grass to raise horses on, Greywater the
+	# water to move goods along. A wedge whose character does not
+	# explain its town is scenery with a label.
+	#
+	# Order is the ring order, wedge 0 first, going round.
 	var out: Array = []
 
-	var downs := Biome.new()
-	downs.name = "the Harvest Downs"
-	downs.ground = Color(0.42, 0.44, 0.23)
-	downs.relief = 12.0
-	downs.feature_size = 520.0
-	downs.tree_density = 0.22
-	downs.trees = ["CommonTree_1", "CommonTree_2", "CommonTree_3",
+	# Thornfield — the "safe" starting feel that makes the rest darker.
+	var hedges := Biome.new()
+	hedges.name = "the Hedges"
+	hedges.town = "Thornfield"
+	hedges.ground = Color(0.42, 0.44, 0.23)
+	hedges.relief = 12.0
+	hedges.feature_size = 520.0
+	hedges.tree_density = 0.22
+	hedges.trees = ["CommonTree_1", "CommonTree_2", "CommonTree_3",
 		"CommonTree_4", "CommonTree_5"]
-	downs.rock_density = 0.05
-	downs.bush_density = 0.30
-	downs.grass_density = 1.0
-	downs.height_tint = Color(0.52, 0.50, 0.30)
-	out.append(downs)
+	hedges.rock_density = 0.05
+	hedges.bush_density = 0.30
+	hedges.grass_density = 1.0
+	hedges.height_tint = Color(0.52, 0.50, 0.30)
+	out.append(hedges)
 
-	var iron := Biome.new()
-	iron.name = "the Ironwood"
-	iron.ground = Color(0.24, 0.26, 0.19)
-	iron.relief = 42.0
-	iron.feature_size = 330.0
-	iron.tree_density = 0.85
-	iron.trees = ["Pine_1", "Pine_2", "Pine_3", "CommonTree_2"]
-	iron.rock_density = 0.22
-	iron.bush_density = 0.20
-	iron.grass_density = 0.5
-	iron.height_tint = Color(0.34, 0.33, 0.28)
-	out.append(iron)
+	# Hammarsted — scarred ore hills. Steep, bare and broken: the
+	# country has been dug, and the trees went into the furnaces.
+	var barrens := Biome.new()
+	barrens.name = "the Ironbarrens"
+	barrens.town = "Hammarsted"
+	barrens.ground = Color(0.31, 0.24, 0.20)
+	barrens.relief = 46.0
+	barrens.feature_size = 300.0
+	barrens.tree_density = 0.06
+	barrens.trees = ["DeadTree_1", "DeadTree_2", "Pine_2"]
+	barrens.rock_density = 0.46
+	barrens.bush_density = 0.10
+	barrens.grass_density = 0.25
+	barrens.height_tint = Color(0.44, 0.31, 0.24)
+	out.append(barrens)
 
-	var moor := Biome.new()
-	moor.name = "the Moor"
-	moor.ground = Color(0.34, 0.29, 0.20)
-	moor.relief = 26.0
-	moor.feature_size = 610.0
-	moor.tree_density = 0.05
-	moor.trees = ["DeadTree_1", "DeadTree_2"]
-	moor.rock_density = 0.34
-	moor.bush_density = 0.42
-	moor.grass_density = 0.7
-	moor.height_tint = Color(0.44, 0.36, 0.26)
-	out.append(moor)
+	# Vellmark — open grass plains, for raising horses on.
+	var reaches := Biome.new()
+	reaches.name = "the Reaches"
+	reaches.town = "Vellmark"
+	reaches.ground = Color(0.49, 0.50, 0.27)
+	reaches.relief = 9.0
+	reaches.feature_size = 760.0
+	reaches.tree_density = 0.04
+	reaches.trees = ["CommonTree_1", "CommonTree_4"]
+	reaches.rock_density = 0.04
+	reaches.bush_density = 0.14
+	reaches.grass_density = 1.0
+	reaches.height_tint = Color(0.58, 0.56, 0.32)
+	out.append(reaches)
 
-	var fen := Biome.new()
-	fen.name = "the Fen"
-	fen.ground = Color(0.26, 0.31, 0.21)
-	fen.relief = 5.0
-	fen.feature_size = 700.0
-	fen.tree_density = 0.30
-	fen.trees = ["DeadTree_1", "CommonTree_3", "CommonTree_5"]
-	fen.rock_density = 0.03
-	fen.bush_density = 0.55
-	fen.grass_density = 1.0
-	fen.height_tint = Color(0.30, 0.34, 0.24)
-	out.append(fen)
+	# Greywater — waterways and drowned meadows.
+	var fens := Biome.new()
+	fens.name = "the Fens"
+	fens.town = "Greywater"
+	fens.ground = Color(0.26, 0.31, 0.21)
+	fens.relief = 5.0
+	fens.feature_size = 700.0
+	fens.tree_density = 0.30
+	fens.trees = ["DeadTree_1", "CommonTree_3", "CommonTree_5"]
+	fens.rock_density = 0.03
+	fens.bush_density = 0.55
+	fens.grass_density = 1.0
+	fens.height_tint = Color(0.30, 0.34, 0.24)
+	out.append(fens)
 
-	var high := Biome.new()
-	high.name = "the High Pines"
-	high.ground = Color(0.28, 0.30, 0.24)
-	high.relief = 68.0
-	high.feature_size = 290.0
-	high.tree_density = 0.70
-	high.trees = ["Pine_1", "Pine_2", "Pine_3"]
-	high.rock_density = 0.30
-	high.bush_density = 0.12
-	high.grass_density = 0.35
-	high.height_tint = Color(0.56, 0.56, 0.54)
-	out.append(high)
+	# Candlerow — old forest with older ruins. Dense, dim, and the
+	# wedge where the generator is told to leave more standing walls.
+	var wist := Biome.new()
+	wist.name = "the Wistwood"
+	wist.town = "Candlerow"
+	wist.ground = Color(0.22, 0.27, 0.18)
+	wist.relief = 22.0
+	wist.feature_size = 430.0
+	wist.tree_density = 0.95
+	wist.trees = ["CommonTree_2", "CommonTree_3", "CommonTree_5",
+		"DeadTree_2", "Pine_1"]
+	wist.rock_density = 0.14
+	wist.bush_density = 0.48
+	wist.grass_density = 0.6
+	wist.height_tint = Color(0.28, 0.31, 0.22)
+	wist.ruin_bias = 0.25
+	out.append(wist)
 
-	var chalk := Biome.new()
-	chalk.name = "the Chalk"
-	chalk.ground = Color(0.55, 0.53, 0.38)
-	chalk.relief = 16.0
-	chalk.feature_size = 480.0
-	chalk.tree_density = 0.08
-	chalk.trees = ["CommonTree_1", "CommonTree_4"]
-	chalk.rock_density = 0.16
-	chalk.bush_density = 0.18
-	chalk.grass_density = 0.8
-	chalk.height_tint = Color(0.68, 0.66, 0.52)
-	out.append(chalk)
+	# Coldharrow — dark pine highlands, the dangerous frontier.
+	var marches := Biome.new()
+	marches.name = "the Marches"
+	marches.town = "Coldharrow"
+	marches.ground = Color(0.24, 0.28, 0.24)
+	marches.relief = 68.0
+	marches.feature_size = 290.0
+	marches.tree_density = 0.70
+	marches.trees = ["Pine_1", "Pine_2", "Pine_3"]
+	marches.rock_density = 0.30
+	marches.bush_density = 0.12
+	marches.grass_density = 0.35
+	marches.height_tint = Color(0.50, 0.52, 0.50)
+	out.append(marches)
 
 	return out
 
@@ -178,6 +207,29 @@ func _init(world_seed: int = 20260927) -> void:
 	_border.noise_type = FastNoiseLite.TYPE_SIMPLEX
 	_border.seed = world_seed + 9001
 	_border.frequency = 1.0 / 800.0
+
+
+## How far out the six towns stand from the capitol.
+##
+## Derived in tech.md §1a rather than chosen: a twenty-minute spoke run
+## at the 5 m/s that does not drain stamina. Six towns on that ring are
+## also 6 km from each other, so the rim road comes out the same length
+## without being tuned to — which is the main evidence the number is
+## not arbitrary.
+const TOWN_RING := 6000.0
+
+
+## Where a wedge's town stands: the middle of its arc, on the ring.
+func town_site(wedge: int) -> Vector3:
+	var ang := (float(wedge) + 0.5) / float(WEDGES) * TAU
+	var x := cos(ang) * TOWN_RING
+	var z := sin(ang) * TOWN_RING
+	return Vector3(x, height_at(x, z), z)
+
+
+## Godsgrave, at the middle of everything.
+func capitol_site() -> Vector3:
+	return Vector3(0.0, height_at(0.0, 0.0), 0.0)
 
 
 ## Which wedge, as a float index that can be rounded or blended.
