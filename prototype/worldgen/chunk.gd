@@ -30,6 +30,7 @@ var world_seed := 0
 ## What was put here, for harnesses to count without walking the tree.
 var placed := 0
 var settlements: Array[String] = []
+var landmarks: Array[String] = []
 
 
 func build(t: WgTerrain, chunk_x: int, chunk_z: int) -> void:
@@ -61,9 +62,23 @@ func build(t: WgTerrain, chunk_x: int, chunk_z: int) -> void:
 			hamlets.append(built)
 			keep_clear.append_array(built.keep_clear)
 
+	# Landmarks, on their own finer grid. Same neighbour sweep and the
+	# same reason: one near a cell border reaches over the line.
+	var marks: Array = []
+	var lcx := int(floor(position.x / WgLandmark.CELL))
+	var lcz := int(floor(position.z / WgLandmark.CELL))
+	for dx in range(-1, 2):
+		for dz in range(-1, 2):
+			var mark := WgLandmark.at_cell(terrain, world_seed, lcx + dx, lcz + dz)
+			if mark.is_empty() or (mark["pieces"] as Array).is_empty():
+				continue
+			marks.append(mark)
+			keep_clear.append_array(mark["keep_clear"])
+
 	_ground()
 	_scatter(keep_clear)
 	_settlements(hamlets)
+	_landmarks(marks)
 
 
 ## The ground mesh, and the ground you stand on, from the same grid.
@@ -246,6 +261,22 @@ func _settlements(hamlets: Array) -> void:
 			settlements.append(built.name)
 
 
+func _landmarks(marks: Array) -> void:
+	var half := SIZE * 0.5
+	var mine := Rect2(position.x - half, position.z - half, SIZE, SIZE)
+	for mark in marks:
+		var here: Array = []
+		for piece in mark["pieces"]:
+			var p: Vector3 = piece["position"]
+			if not mine.has_point(Vector2(p.x, p.z)):
+				continue
+			here.append(piece)
+		if not here.is_empty():
+			_place(here)
+			if not landmarks.has(mark["kind"]):
+				landmarks.append(mark["kind"])
+
+
 ## Everything of one model, in ONE node.
 ##
 ## A chunk holds a few hundred trees, tufts, barrels and wall pieces,
@@ -285,9 +316,17 @@ func _place(items: Array) -> void:
 			for i in group.size():
 				var item: Dictionary = group[i]
 				var p: Vector3 = item["position"]
-				var sc: float = item.get("scale", 1.0)
-				var basis := Basis(Vector3.UP, item.get("yaw", 0.0)).scaled(
-					Vector3(sc, sc, sc))
+				# Scale may be a float or a Vector3.
+				#
+				# Uniform only, at first — which quietly defeated the
+				# standing stones: the pack has no menhir, so they are
+				# a wide flat rock stretched upward, and stretching it
+				# uniformly just made a bigger wide flat rock lying in
+				# the grass. A render showed a stone circle that was a
+				# gravel patch.
+				var raw = item.get("scale", 1.0)
+				var scv: Vector3 = raw if raw is Vector3 else Vector3(raw, raw, raw)
+				var basis := Basis(Vector3.UP, item.get("yaw", 0.0)).scaled(scv)
 				var placement := Transform3D(basis, p - position)
 				mm.set_instance_transform(i, placement * (part["xform"] as Transform3D))
 			var mmi := MultiMeshInstance3D.new()

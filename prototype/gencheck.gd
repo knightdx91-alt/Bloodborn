@@ -217,6 +217,30 @@ func _ready() -> void:
 		_ok("and nothing grows through its walls", inside == 0,
 			"%d scattered things standing inside the keep-clear rects" % inside)
 
+	# --- landmarks --------------------------------------------------------
+	#
+	# L86 again, and the sharpest case of it: with no minimap the land
+	# carries orientation, and orientation needs things to orient BY.
+	# Six biomes of empty country all look identical once you are
+	# standing in one.
+	var mark_kinds := {}
+	var mark_count := 0
+	for cx3 in range(0, 30):
+		for cz3 in range(0, 30):
+			var m := WgLandmark.at_cell(t, t.seed_value, cx3, cz3)
+			if m.is_empty() or (m["pieces"] as Array).is_empty():
+				continue
+			mark_count += 1
+			mark_kinds[m["kind"]] = int(mark_kinds.get(m["kind"], 0)) + 1
+	print("      %d landmarks in 900 cells: %s" % [mark_count, str(mark_kinds)])
+	_ok("there are landmarks between the places", mark_count > 40,
+		"only %d landmarks in 900 cells — the country is empty" % mark_count)
+	_ok("and more than one sort of them", mark_kinds.size() >= 4,
+		"only %d sorts: %s" % [mark_kinds.size(), str(mark_kinds.keys())])
+	_ok("and they are rarer than settlements",
+		mark_count < 400,
+		"%d landmarks is not a landmark, it is scenery" % mark_count)
+
 	# --- chunks -----------------------------------------------------------
 	var gen := WorldGen.new()
 	gen.world_seed = 20260927

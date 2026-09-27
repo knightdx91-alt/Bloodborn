@@ -66,6 +66,31 @@ func _ready() -> void:
 		await _shot("place_" + kind)
 		_clear()
 
+	# And the things between the places.
+	var want_marks := ["stones", "tower", "shrine", "camp"]
+	var marks: Dictionary = {}
+	for cx in range(0, 30):
+		for cz in range(0, 30):
+			var m := WgLandmark.at_cell(t, t.seed_value, cx, cz)
+			if m.is_empty() or (m["pieces"] as Array).is_empty():
+				continue
+			if want_marks.has(m["kind"]) and not marks.has(m["kind"]):
+				marks[m["kind"]] = m
+		if marks.size() == want_marks.size():
+			break
+	for kind in want_marks:
+		if not marks.has(kind):
+			continue
+		var at2: Vector3 = marks[kind]["at"]
+		gen.build_block(WorldGen.chunk_of(at2), 1)
+		await _settle()
+		var eye2 := at2 + Vector3(13.0, 0.0, 13.0)
+		eye2.y = gen.height_at(eye2.x, eye2.z) + 4.0
+		cam.position = eye2
+		cam.look_at(at2 + Vector3(0, 1.5, 0), Vector3.UP)
+		await _shot("mark_" + kind)
+		_clear()
+
 	var hamlet := Vector3.ZERO
 	if found_by_kind.has("street"):
 		hamlet = found_by_kind["street"].centre
