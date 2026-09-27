@@ -32,7 +32,9 @@ content volume.** Concretely —
   by *palette, layout, faith, and trade*, not by unique architecture.
 - **Procedural wedges, handcrafted landmarks.** Generate the country
   between towns; hand-place only what players will remember — a
-  delve mouth, a shrine, a wreck, a crossroads inn.
+  delve mouth, a shrine, a wreck, a crossroads inn. **§1a is this
+  line worked out properly**, including how big "the country" is and
+  which half of the generation question is actually the hard one.
 - **Generate the text volume.** This design already runs an LLM
   layer for NPCs (P11). The same pipeline drafts barks, item
   descriptions, rumor phrasings, and epitaphs. Author the *systems*
@@ -41,6 +43,142 @@ content volume.** Concretely —
   scale are studio work. L29 already prefers contract boards, rumor,
   and mystery over authored quest volume — that lock was written for
   design reasons and pays off enormously here.
+
+## 1a. Filling the country — procedural land, authored places
+
+Written 2026-09-27, when the scale was worked out in numbers for the
+first time and the answer turned out to be large enough that "generate
+it" stopped being a throwaway line in §1 and became the plan that has
+to be right.
+
+### How big, derived rather than asserted
+
+The design says "large" wedges and an "extra-large" capitol and never
+says a distance. So the number is derived from the one thing the design
+does commit to — **travel time** — because spokes, the rim road,
+caravans, escorts and banditry are all content that only exists if a
+journey takes long enough to be worth ambushing.
+
+The anchor is the prototype's own movement: **5.0 m/s is the fastest
+sustainable pace**, because stamina drain begins above `SPRINT_THRESHOLD`
+(combat.md §2). Everything else follows from one assumption, stated so it
+can be argued with: **a spoke run, town to capitol, is twenty minutes.**
+Shorter and an ambush is meaningless because you simply run home; longer
+and the journey is a chore rather than a risk.
+
+- 20 min at 5 m/s = **6 km**, so the town ring sits 6 km out from the
+  capitol.
+- Six towns on that ring are 6 km apart from each other, so the rim
+  road comes out the same length without being tuned to. That the two
+  agree is the main evidence the anchor is not arbitrary.
+- Roughly 3 km of wilderness past the towns → **world radius 9 km.**
+
+Which gives:
+
+| | |
+|---|---|
+| Mortal world | **~255 km²** |
+| Capitol region | ~12.5 km² (radius 2 km) |
+| Each of six wedges | ~40 km² — about 6 km wide, 7 km deep |
+| Demigod realm (four rings) | the least-anchored figure here; at ~40% of the mortal world, +100 km² |
+
+**Against what exists:** Thornfield's hedge ring is 110 m across and the
+whole playable ground plane is 500 × 500 m = 0.25 km². The mortal world
+alone is about **a thousand times** the ground the game currently
+stands on. A finished Thornfield — one that takes two or three minutes
+to cross rather than twenty-two seconds — is ~0.44 km² on its own,
+which the entire present world could not contain.
+
+These numbers are a starting point for argument, not a lock. The one to
+challenge first is the twenty minutes; everything scales off it.
+
+### Why the No Man's Sky model does not transfer
+
+The obvious reference for filling a world this size generates it, and
+the reason that works there does not hold here.
+
+**No Man's Sky generates because nothing in it has to be remembered.**
+Its planets are visited once, by one player, and abandoned. Nothing is
+contested, traded across, or navigated by. The world is disposable by
+design — which is an architecture, not a flaw.
+
+Marrowmark's land is the thing players fight over and remember, and
+four locked decisions already depend on it being stable:
+
+- **L86** — no minimap; the land carries orientation, and a screenshot
+  must be **locatable**. That requires fixed, distinctive terrain.
+- **Maps are player-made goods.** A map is worth coin only if the
+  territory is fixed and knowing it is an advantage.
+- **Caravans, escorts, banditry.** An ambush spot is a tactic only if
+  the same ridge is there tomorrow and the whole server learns it.
+- **Territory worth fighting for.** Interchangeable land cannot be
+  contested.
+
+And the decisive one, which is structural rather than aesthetic: **a
+world regenerated from a seed on arrival cannot hold persistent state.**
+NMS never stores its world because it can always rebuild it. Marrowmark
+must store its world — the clock (L89), territory, contracts, war, and
+everything players change. That single fact rules out runtime
+generation, whatever its quality.
+
+### The rule: generate offline, bake, and then it is fixed
+
+Procedural generation belongs here as a **content tool, not a runtime
+system.**
+
+1. Run the generator. Get the country.
+2. **Bake it and commit it.** It is now authored content that happens
+   to have been machine-drafted.
+3. Hand-place the landmarks on top — the delve mouth, the shrine, the
+   wreck, the crossroads inn.
+4. Walk it. Cut what is boring. Re-bake.
+
+This is the same relationship the project already runs on everywhere
+else: `sim/` is authoritative and the tuning file is data; the machine
+drafts and a person decides; the result is checked in and guarded. A
+generator that runs in CI and a world that is a build artifact both fit
+§8's working method without inventing a new discipline.
+
+**The hard limit, stated so it is not discovered late: generation is
+good at country and useless at composition.** It will give plausible
+hills, rivers and treelines. It will not give a place where a fight is
+interesting — and `combat.md` §1 says terrain *is* fighting space. So
+anywhere combat actually happens is hand-composed. That is a far smaller
+set than 255 km², and naming it in advance is what keeps the generated
+land from quietly becoming the fighting land.
+
+### Where the cost actually is
+
+Not the generator. The generator is the cheap half. The expensive half
+is everything it implies:
+
+- a heightfield pipeline,
+- per-wedge biome, palette and vegetation rules (L86 is a *requirement*
+  on the generator, not a decoration applied after it),
+- scatter rules that respect keep-clear areas,
+- roads carved to follow the road network rather than draped over it,
+- navmesh baking at this scale,
+- **chunked streaming with LOD.**
+
+The last is the real engineering, and it is the one this project has
+done nothing toward. The game currently stands on a single 500 × 500 m
+plane loaded whole, on an Android phone. Streaming 255 km² is a larger
+job than drafting it, and it is the piece most likely to decide the
+shape of the world rather than merely its contents.
+
+### The next step is not land
+
+**One 2 × 2 km slice, generated and streamed, holding framerate on the
+target phone.**
+
+That spike answers the only question that currently matters — whether
+the device can hold a world of this order at all — and everything after
+it is filling. If streaming will not hold on the hardware, that has to
+be known *before* a single hill is authored, because the answer changes
+the world's shape and not just its size. It is the same discipline as
+the L39 latency spike: build the thing that can say no, first.
+
+---
 
 ## 2. Engine: Godot 4 **[DECIDED — L54, revised 2026-09-14]**
 

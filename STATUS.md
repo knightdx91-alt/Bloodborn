@@ -2006,6 +2006,57 @@ can routinely run native builds, the prototype moves to Godot's .NET
 build and `prototype/rules/` is deleted the same day. Named on purpose
 — it is exactly the kind of cost that becomes permanent by drift.
 
+## The world's size, worked out — 2026-09-27
+
+Asked from play: *"this world is supposed to be huge. How large will it
+be with everything together? How large would the starting town be
+compared to what it is now"* — and then whether it could be built
+procedurally.
+
+**`tech.md` §1a is the answer**, written the same day. The short of it:
+
+- **~255 km² mortal world**, derived from travel time rather than
+  asserted: 5.0 m/s is the fastest pace that does not drain stamina, a
+  spoke run is assumed to be twenty minutes, and everything follows.
+  Six wedges of ~40 km² around a ~12.5 km² capitol, world radius 9 km.
+  The twenty minutes is the assumption to argue with first.
+- **About a thousand times the ground the game stands on today.** The
+  whole 500 × 500 m plane is 0.25 km²; a finished Thornfield is ~0.44
+  km² on its own, so the present world could not contain one town.
+- **Thornfield is ~46× too small by area, ~7× by width** — 110 m
+  across against a target of ~750 m, twenty-two seconds to cross
+  against two and a half minutes.
+- **Procedural, but baked — never at runtime.** A world rebuilt from a
+  seed on arrival cannot hold persistent state, and this one has a
+  clock, territory, contracts and a war in it. Generate offline, commit
+  the result, hand-place the landmarks, walk it, cut what is boring.
+- **Generation is good at country and useless at composition.**
+  Anywhere combat happens is hand-composed, because combat.md §1 makes
+  terrain fighting space.
+- **The next step is not land.** One 2 × 2 km slice, generated and
+  streamed, holding framerate on the phone. Streaming is a bigger job
+  than drafting, the project has done nothing toward it, and it can
+  still say no — so it goes first, the way the L39 latency spike did.
+
+### Open, found while measuring: the sprint does nothing
+
+`Fighter.pace` at full stick computes `lerpf(4.5 * 0.32, 7.0, 1.0)` =
+**7.0**, which is exactly `SPRINT_SPEED`. So:
+
+- a fully-pushed stick already runs at sprint speed, and the sprint
+  trigger changes nothing;
+- 7.0 is above `SPRINT_THRESHOLD` (5.0), so **stamina drains whenever
+  the stick is pushed all the way** — asked for or not;
+- on a keyboard `_input_dir` returns a unit vector, so on desktop you
+  are always sprinting and always draining.
+
+Almost certainly a one-line fix — full stick should reach
+`WALK_SPEED_MAX`, not `SPRINT_SPEED`, which is what having both
+constants implies. **Not fixed yet on purpose:** step 4 was signed off
+("stamina is fine") on a build that behaves this way, and changing what
+full stick costs changes what was judged. Needs the designer's word
+first.
+
 ## Next, in order
 
 **The design side is complete.** Every document identified as missing
