@@ -53,12 +53,21 @@ func _ready() -> void:
 	gen.per_frame = 1
 	add_child(gen)
 
-	# THE GROUND FIRST, then the body.
+	# The ground first, then the body — but NOT for the reason this
+	# comment used to give.
 	#
-	# A CharacterBody3D spawned over a chunk that has not been built yet
-	# has nothing to stand on and is in free fall by the time it does —
-	# it ends up under the world, which reads as the generator having
-	# made a hole.
+	# It claimed a body spawned over an unbuilt chunk falls through the
+	# world. Mutation-tested by deleting this call: it does not. What
+	# actually saves you is WorldGen's nearest-first queue — after a
+	# spawn or a jump the chunk underfoot is the nearest missing one,
+	# so it is built on the very next frame and the body falls for one
+	# frame, which on any device is centimetres.
+	#
+	# Kept because one frame of grey where the ground should be is
+	# still one frame of grey, and on a phone a chunk is not free.
+	# Insurance, not a load-bearing wall, and the difference is worth
+	# writing down so nobody later "optimises" the queue on the
+	# assumption that this call is what holds the player up.
 	start = gen.terrain.town_site(0)   # Thornfield's wedge
 	var here := WorldGen.chunk_of(start)
 	gen.build_block(here, 1)
@@ -158,9 +167,9 @@ func _next_stop() -> void:
 		return
 	_stop = (_stop + 1) % _stops.size()
 	var to: Vector3 = _stops[_stop]["at"]
-	# Ground first, then the body — the same rule as spawning. Built
-	# outside the frame budget on purpose: a jump that streams in over
-	# the next four seconds drops you through the world first.
+	# Ground first, as at spawn, and with the same caveat: the
+	# nearest-first queue is what keeps you out of the void, and this
+	# only spares you the frame of grey. See `_ready`.
 	gen.build_block(WorldGen.chunk_of(to), 1)
 	walker.global_position = Vector3(to.x, gen.height_at(to.x, to.z) + 1.2, to.z)
 	walker.velocity = Vector3.ZERO
