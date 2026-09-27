@@ -2395,9 +2395,13 @@ falls into three piles, and none of it is design:
      order is to prove the streaming first.
    - **Bake as overrides, not as a world** (`tech.md` §1a, corrected)
      — the mechanism exists, the workflow around it does not.
-   - The Wheel's actual geography — six named towns, the capitol, the
-     spokes and the rim road — is still a map nobody has drawn. The
-     generator makes country; it does not yet make *this* country.
+   - **The Wheel's geography is drawn** (2026-09-27): six named towns
+     on a 6 km ring, Godsgrave at the middle, six spokes and the rim
+     road. What is NOT there is the towns themselves — a town site is
+     a coordinate and a name, and the only town that exists as a place
+     you can walk into is Thornfield, which was hand-built and is not
+     on the ring. Putting the built Thornfield at its own site, and
+     giving the other five anything at all, is the next real piece.
 3. **Trademark clearance on "Marrowmark"** (`naming.md` §5) — blocks
    anything public. Classes 9 and 41, plus a common-law sweep, plus an
    attorney.
