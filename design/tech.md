@@ -160,11 +160,29 @@ is everything it implies:
 - navmesh baking at this scale,
 - **chunked streaming with LOD.**
 
-The last is the real engineering, and it is the one this project has
-done nothing toward. The game currently stands on a single 500 × 500 m
-plane loaded whole, on an Android phone. Streaming 255 km² is a larger
-job than drafting it, and it is the piece most likely to decide the
-shape of the world rather than merely its contents.
+The last is the real engineering. The game stood on a single
+500 × 500 m plane loaded whole, on an Android phone; streaming 255 km²
+is a larger job than drafting it, and it is the piece most likely to
+decide the shape of the world rather than merely its contents.
+
+**Built and measured, 2026-09-27.** A 64 m chunk — heightfield, mesh,
+collision, scatter and any settlement on it:
+
+| | |
+|---|---|
+| first working version | 142 ms |
+| models batched into MultiMesh | 54 ms |
+| mesh arrays written directly, normals off the heightfield | **30 ms** |
+
+Which is under two frames at 60 fps, from nine. Both large wins came
+from measuring rather than guessing, and the first guess was wrong by
+an order of magnitude: the noise was assumed to be the cost and is 9 ms
+of it, while instantiating one scene tree per tree was 107 ms.
+
+**What this does not tell us is the only thing that matters.** All of
+the above is a desktop-class container. The question is the phone, the
+spike is in the APK to answer it, and until it has been walked there
+the streaming budget is unproven.
 
 ### The next step is not land
 
