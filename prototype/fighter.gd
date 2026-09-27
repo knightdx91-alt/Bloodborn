@@ -181,7 +181,22 @@ var _speed_before_freeze := 1.0
 ##
 ## The same fault, and the same fix, as `Skirmish`, `Feel` and
 ## `StaminaBar` before it.
-const WALK_SPEED_MAX := 4.5
+## SLOWED from 4.5 on 2026-09-27, from play.
+##
+## 4.5 m/s is 16 km/h — a competitive running pace, called a walk. At
+## 3.0 it is a steady jog, which is what a traveller with a pack
+## actually moves at, and it leaves a real gap to SPRINT_SPEED's 7.0
+## rather than the near-nothing that gap used to be.
+##
+## It stays below SPRINT_THRESHOLD (5.0), so a full stick is still
+## free — that is the property the sprint fix established and it must
+## not be lost to a tuning change.
+##
+## This also slows footwork IN A FIGHT, because `pace` governs both.
+## combat.md §1 makes terrain fighting space and spacing is the fight,
+## so this is the tuning knob most likely to want moving after a
+## session with a pad.
+const WALK_SPEED_MAX := 3.0
 const SPRINT_SPEED := 7.0
 const SPRINT_THRESHOLD := 5.0
 const EXHAUSTED_WALK := 1.6

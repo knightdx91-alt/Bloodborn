@@ -86,12 +86,12 @@ Which gave a ~255 km² world — and that was **rejected from play on
 
 | | first derivation | **built** |
 |---|---|---|
-| World radius | 9 km | **28.5 km** |
-| Across | 18 km | **56.9 km** |
-| Mortal world | ~255 km² | **~2,545 km²** |
-| Walk across | 67 min | **211 min** |
-| Town ring | 6 km | **19 km** |
-| Spoke, town to capitol | 22 min | **70 min** |
+| World radius | 9 km | **35.1 km** |
+| Across | 18 km | **70.2 km** |
+| Mortal world | ~255 km² | **~3,870 km²** |
+| Walk across | 67 min | **390 min** |
+| Town ring | 6 km | **23.4 km** |
+| Spoke, town to capitol | 22 min | **130 min** |
 
 **Against what exists:** Thornfield's hedge ring is 110 m across and the
 whole playable ground plane is 500 × 500 m = 0.25 km². The mortal world
@@ -248,15 +248,31 @@ Skyrim by area.
 
 Three ways to land on 200 minutes were put up: slow the character to a
 human pace and keep 255 km²; grow the world and keep the speed; or
-split the difference. **The call was to grow it, ×10 by area.**
+split the difference. **The call was to grow it — ×10 by area at first, then again to a
+260-minute crossing, and to slow the walk on top.**
 
-    radius    28,460 m       (9,000 x sqrt(10))
-    across    56,921 m
-    area      ~2,545 km²
-    crossing  211 min on foot — or ~84 with a mount at 2.5x
+    radius    35,100 m       (9,000 x 3.9)
+    across    70,200 m
+    area      ~3,870 km²
+    sized     260 min at 4.5 m/s
+    walk      3.0 m/s — so 390 min on foot, ~156 mounted at 2.5x
 
-211 against the 200 asked for, and the extra comes free from rounding
-the scale to a clean ×10 of area.
+**Size and speed are two decisions now, held in two constants.**
+`SIZED_AT_SPEED` records the pace the map was measured against and
+does not move; `Fighter.WALK_SPEED_MAX` is what you actually travel
+at. Keeping them apart means a feel tweak to the walk cannot drag the
+map behind it, and it is why `gencheck` checks them separately.
+
+The walk went from 4.5 m/s to 3.0 because 4.5 is 16 km/h — a
+competitive running pace wearing the word "walk". 3.0 is a steady jog
+and leaves a real gap to `SPRINT_SPEED`. It stays below
+`SPRINT_THRESHOLD`, so a full stick is still free; that property was
+won by fixing the sprint bug and a tuning change is exactly how it
+would be lost, so there is a check on it.
+
+It also slows footwork **in a fight**, because `pace` governs both.
+§1 of `combat.md` makes terrain fighting space, so this is the first
+number to revisit with a pad in hand.
 
 **Asserted as a time, not a distance.** `gencheck` checks the crossing
 in minutes against `Fighter.WALK_SPEED_MAX`, because a distance means

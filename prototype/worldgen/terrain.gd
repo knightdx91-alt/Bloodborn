@@ -30,17 +30,31 @@ const WEDGES := 6
 ## times Skyrim's — so matching a crossing TIME needs nine times the
 ## linear size, not three.
 ##
-## Settled at **ten times the area**, which is sqrt(10) = 3.162x linear:
+## Grown again the same day, to a **260-minute crossing** at the 4.5 m/s
+## the walk ran at when the size was chosen:
 ##
-##     radius    28,460 m        (was 9,000)
-##     across    56,921 m
-##     area      ~2,545 km2      (was ~255)
-##     crossing  211 minutes on foot, or ~84 with a mount at 2.5x
+##     radius    35,100 m        (9,000 x 3.9)
+##     across    70,200 m
+##     area      ~3,871 km2      (was ~255, then ~2,545)
 ##
-## 211 against the 200 asked for. The remaining risk is unchanged and
-## is the one tech.md §1a names: filling it. Ten times the land is ten
-## times that problem, and it is why the generator exists.
-const WORLD_SCALE := 3.1623
+## The walk was then slowed, which makes the real crossing longer than
+## 260 — see `SIZED_AT_SPEED` below and `Fighter.WALK_SPEED_MAX`.
+##
+## The remaining risk is unchanged and is the one tech.md §1a names:
+## filling it. This is fifteen times the land that section costed, and
+## it is why the generator exists.
+const WORLD_SCALE := 3.9
+
+## The walking speed the world was SIZED against, 2026-09-27.
+##
+## Kept as its own constant because the size and the speed are now two
+## decisions rather than one: the world was sized so that 4.5 m/s gives
+## a 260-minute crossing, and the walk was then slowed on purpose. If
+## the walk changes again the world does not have to, and a check that
+## confused the two would drag the map around behind a feel tweak.
+const SIZED_AT_SPEED := 4.5
+## What the crossing was sized to take, in minutes, at that speed.
+const SIZED_CROSSING_MIN := 260.0
 const WORLD_R := 9000.0 * WORLD_SCALE
 ## The capitol's clearing at the middle.
 const CAPITOL_R := 2000.0 * WORLD_SCALE

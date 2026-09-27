@@ -2087,7 +2087,7 @@ then reports a missing body rather than a missing name.
   cut from it would not show the game's real framing. Fine for
   checking the tour runs; wrong for anything anyone watches.
 
-## The world got ten times bigger — 2026-09-27
+## The world got fifteen times bigger, and the walk slowed — 2026-09-27
 
 Asked for from play: *"I want it 3x how long it would take you to
 cross Skyrim walking."*
@@ -2103,15 +2103,35 @@ the building.
 Three ways to get 200 minutes were offered — slow the character, grow
 the world, or split it. **The call was to grow it, x10 by area.**
 
-| | was | now |
-|---|---|---|
-| radius | 9 km | **28.5 km** |
-| across | 18 km | **56.9 km** |
-| area | ~255 km² | **~2,545 km²** |
-| walk across | 67 min | **211 min** |
-| town ring | 6 km | **19 km** |
-| spoke to the capitol | 22 min | **70 min** |
-| mounted crossing at 2.5x | — | ~84 min |
+Grown once more the same day, and the walk slowed with it:
+
+| | first | x10 | **built** |
+|---|---|---|---|
+| radius | 9 km | 28.5 km | **35.1 km** |
+| across | 18 km | 56.9 km | **70.2 km** |
+| area | ~255 km² | ~2,545 km² | **~3,870 km²** |
+| walk | 4.5 m/s | 4.5 m/s | **3.0 m/s** |
+| walk across | 67 min | 211 min | **390 min** |
+| town ring | 6 km | 19 km | **23.4 km** |
+| spoke to the capitol | 22 min | 70 min | **130 min** |
+| mounted at 2.5x | — | ~84 min | **~156 min** |
+
+The world is sized so that **4.5 m/s gives 260 minutes**, and the walk
+was then slowed to 3.0 — so the real crossing is 390 minutes, six and
+a half hours on foot.
+
+**Size and speed are now two decisions, and two constants.**
+`WgTerrain.SIZED_AT_SPEED` records the pace the map was measured
+against; `Fighter.WALK_SPEED_MAX` is the pace you actually move at.
+`gencheck` asserts them separately, so a feel tweak to the walk cannot
+drag the map around behind it — and it asserts that a full stick stays
+below `SPRINT_THRESHOLD`, which is the property the sprint fix won and
+is the one a tuning change would silently take back.
+
+**3.0 m/s also slows footwork in a fight**, because `pace` governs
+both. combat.md §1 makes terrain fighting space and spacing is the
+fight, so this is the first number to revisit after a session with a
+pad.
 
 One constant, `WORLD_SCALE`. Everything else derives from it, and
 nothing town-sized scales with it — a town is still 750 m across and

@@ -413,17 +413,33 @@ func _ready() -> void:
 	# distance is meaningless without the walk speed — and the walk
 	# speed has already been wrong once, which is how the old "5 m/s
 	# sustainable pace" got into the design and stayed there.
+	# TWO SEPARATE FACTS, because the size and the walk are now two
+	# decisions. The world was sized so that SIZED_AT_SPEED gives
+	# SIZED_CROSSING_MIN; the walk was then slowed deliberately, which
+	# makes the real crossing longer. Checking them together would let
+	# a feel tweak to the walk drag the map around behind it.
 	var across := WgTerrain.WORLD_R * 2.0
-	var crossing_min := across / Fighter.WALK_SPEED_MAX / 60.0
-	print("      world %.1f km across — %.0f min on foot at %.1f m/s"
-		% [across / 1000.0, crossing_min, Fighter.WALK_SPEED_MAX])
-	_ok("the world takes about 200 minutes to walk across",
-		crossing_min > 170.0 and crossing_min < 240.0,
-		"%.0f minutes — the world is not the size it was asked to be"
-			% crossing_min)
-	print("      %.0f km2, and a mount at 2.5x crosses in %.0f min"
-		% [PI * (WgTerrain.WORLD_R / 1000.0) * (WgTerrain.WORLD_R / 1000.0),
-			crossing_min / 2.5])
+	var sized_min := across / WgTerrain.SIZED_AT_SPEED / 60.0
+	var real_min := across / Fighter.WALK_SPEED_MAX / 60.0
+	print("      world %.1f km across, %.0f km2"
+		% [across / 1000.0,
+			PI * (WgTerrain.WORLD_R / 1000.0) * (WgTerrain.WORLD_R / 1000.0)])
+	print("      sized for %.0f min at %.1f m/s; the walk is %.1f m/s, so %.0f min"
+		% [sized_min, WgTerrain.SIZED_AT_SPEED, Fighter.WALK_SPEED_MAX, real_min])
+	print("      a mount at 2.5x crosses in %.0f min" % (real_min / 2.5))
+	_ok("the world is the size it was sized to be",
+		absf(sized_min - WgTerrain.SIZED_CROSSING_MIN) < 5.0,
+		"%.0f min at the sizing speed, not %.0f"
+			% [sized_min, WgTerrain.SIZED_CROSSING_MIN])
+	_ok("and the walk is slower than the speed it was sized at",
+		Fighter.WALK_SPEED_MAX < WgTerrain.SIZED_AT_SPEED,
+		"the walk is %.1f m/s — it was meant to be slowed below %.1f"
+			% [Fighter.WALK_SPEED_MAX, WgTerrain.SIZED_AT_SPEED])
+	_ok("and walking is still free at a full stick",
+		Fighter.WALK_SPEED_MAX < Fighter.SPRINT_THRESHOLD,
+		"a full stick at %.1f m/s is above SPRINT_THRESHOLD %.1f, so the "
+			% [Fighter.WALK_SPEED_MAX, Fighter.SPRINT_THRESHOLD]
+		+ "sprint bug is back")
 
 	# --- roads ------------------------------------------------------------
 	var segs := WgRoads.near(t, t.seed_value, 0.0, 0.0, 19000.0, 19000.0)
