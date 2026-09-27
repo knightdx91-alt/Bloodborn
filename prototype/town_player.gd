@@ -410,7 +410,22 @@ func _set_zoom(to: float) -> void:
 ## Which chip is this touch landing on, if any? Without the question,
 ## tapping Talk also starts a camera drag, because _input runs before the
 ## GUI gets a look at the event.
+## Chips belonging to somebody else — a region, or a harness — that
+## still have to be reachable by a thumb.
+##
+## A plain Button added to the screen beside the walker does NOT work,
+## and the way it fails is subtle: Godot synthesises the mouse click a
+## Button listens for from touch index 0 only, so it is deaf under a
+## second thumb; and the walker reads raw touch in `_input`, which runs
+## before GUI, so pressing it also starts a camera drag. Anything that
+## wants to be a chip has to be dispatched the way the chips are.
+var extra_chips: Array[Button] = []
+
+
 func _chip_at(at: Vector2) -> Button:
+	for b in extra_chips:
+		if b != null and b.visible and b.get_global_rect().has_point(at):
+			return b
 	for b in [_talk_btn, _back_btn, _attack_btn, _dodge_btn, _guard_btn]:
 		if b != null and b.visible and b.get_global_rect().has_point(at):
 			return b
