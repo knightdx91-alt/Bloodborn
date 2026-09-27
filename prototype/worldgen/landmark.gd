@@ -74,6 +74,11 @@ static func at_cell(terrain: WgTerrain, world_seed: int, cx: int, cz: int) -> Di
 	var z := (float(cz) + rng.randf_range(0.2, 0.8)) * CELL
 	if terrain.slope_at(x, z, 4.0) > MAX_SLOPE:
 		return {}
+	# Not standing in a river. A stone circle is put up on dry ground
+	# and a camp is pitched on it; the pieces reach out about 20 m from
+	# the centre, so the margin covers the water plus its banks.
+	if terrain.river_distance(x, z) < 40.0:
+		return {}
 	# Not inside the capitol, which is built rather than found.
 	if terrain.capitol_blend(x, z) > 0.3:
 		return {}

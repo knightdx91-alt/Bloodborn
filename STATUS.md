@@ -38,6 +38,115 @@ get to whether the economy feels right.
 on the evidence in `tech.md` §2a, not on preference — see the L54
 section below.
 
+## Done 2026-09-27 — water, and a world with shape to it
+
+The generator made land and nothing else. `lore.md` §5 gives Greywater
+a river-port of barges and smugglers and the Fens "waterways and
+drowned meadows", and neither is possible on dry ground — so rivers
+were the largest single thing missing from the country.
+
+They are **carved, not painted**. A blue stripe on a hillside is the
+classic generator tell; these cut a valley into `height_at` itself, so
+the land leans toward the water from 150 m away and a river is legible
+from a ridge a kilometre off, which is what makes it useful for
+orientation (L86) rather than decorative. A river is traced by walking
+downhill from a spring in 90 m steps, keeping a heading, and the cut
+follows the course: flat bed, bank, then the long fall of the valley
+floor.
+
+**One river per 9.4 km², and they are streamable.** A source is a pure
+function of its own cell, so a chunk only has to trace the 49 cells
+within a river's own length of it to know what water can reach it —
+which is the whole reason a river's length is capped at 3.6 km. The
+lookup costs about 2.4 µs a height sample, ~10 ms on a chunk's
+heightfield, and that runs on a worker thread.
+
+### Five things this got wrong first
+
+Worth writing down, because four of the five are the same mistake:
+
+- **Every river died in four steps.** The tracer stopped at `best_h <
+  1.0` — "reached the low country". There is no sea here: heights are
+  measured from Thornfield's own ground, so 0 m is an arbitrary datum
+  and half the Fens, the Hedges and the Reaches sit below 1 m. Two
+  earlier spring thresholds failed the same way. **Three absolute
+  height tests in one function, in a world with no absolute heights.**
+- **The first rivers were blobs, not lines.** Steepest descent over all
+  eight neighbours at a 90 m step folded back on itself inside its own
+  valley; a section showed every sample from −250 m to +100 m cut the
+  full 7 m. Water has momentum — the course keeps a heading and turns
+  within a 41° cone — and that is the whole difference.
+- **The first water was a flood.** A single smoothstep from the channel
+  out to the valley edge has barely moved at 25 m, so the surface stood
+  above the ground for 25 m either side: a 50 m sheet lying across the
+  country. The channel has three parts now.
+- **A "river" climbed 23 m above its own source.** The pooling
+  allowance (a few rising steps, so a hollow fills and overflows) was
+  written for country where 90 m of step was a metre or two. `gencheck`
+  caught it. Water fills a hollow to the level it came in at and no
+  higher, and that is now the hard stop.
+- **And one check that could not fail.** "It lies in a valley it cut"
+  asked for a drop of `DEPTH * 0.4`, so setting `DEPTH` to zero — the
+  exact bug — set the bar to zero too and the mutation sailed through.
+  A threshold derived from the thing under test cannot test it. It asks
+  for 2.5 m now, a number of its own, at both banks.
+
+### And one the rivers created
+
+**Nothing in the generator knew water existed.** The first render of a
+bank had trees standing in the channel: `gencheck` now counts them, and
+with the rule removed it finds **1,200 of 6,101 things within 100 m of
+six rivers standing in open water.**
+
+The settlement placer was worse, and would have gone wrong quietly. A
+hamlet site is chosen by walking to the **flattest ground in the cell**
+— and the flattest ground anywhere near a river is its bed, because the
+channel is cut to a level floor. The search did not merely tolerate
+building in the water, it actively preferred it.
+
+All six river checks are mutation-proven: no sources, no cut, a course
+that depends on something other than its cell, the town guards removed,
+and the scatter's water rule removed each produce the right failure with
+the right message.
+
+### And the swell — four wedges that were not country
+
+A hillshaded map of the whole 42 km (new tool: `genmap.tscn`) showed
+the other half of this plainly. Four of the six wedges were
+**featureless at map scale**, because a wedge is one relief number over
+645 km² and four of those numbers are small. The Fens *should* be flat
+— Greywater is drowned meadow, not highland — but flat over an hour's
+walk is not flat country, it is no country.
+
+So the world has a second field underneath the biomes: **broad swells
+about 5 km across, belonging to no wedge**, that lift and drop the land
+by tens of metres and make each wedge's own texture rougher on the high
+ground. Measured across the six:
+
+| wedge | before | after | slope median |
+|---|---|---|---|
+| the Fens | 4.7 m | 31.8 m | 0.07 |
+| the Reaches | 8.1 m | 31.6 m | 0.08 |
+| the Hedges | 10.6 m | 32.6 m | 0.09 |
+| the Wistwood | 18.9 m | 36.5 m | 0.13 |
+| the Ironbarrens | 28.0 m | 47.7 m | 0.21 |
+| the Marches | 40.5 m | 56.4 m | 0.34 |
+
+(height spread, 5th to 95th percentile, 9,000 samples)
+
+The flat countries kept their slopes — the Fens still read as flat
+underfoot — and gained somewhere to be flat *between*.
+
+### One more thing the origin shift broke
+
+`genshot`'s wedge tour fanned out from (0,0) at 4.2 km, which toured
+all six wedges for as long as (0,0) was Godsgrave. Since Thornfield
+became the origin it is 23.4 km out on one spoke, so **all six shots
+landed in the Hedges** — six files, one biome, each overwriting the
+last. The shift was checked against the generator's asserts and against
+a render of the town, and it still quietly broke the one tool whose
+job is to show the six wedges apart.
+
 ## Done 2026-09-16 — the NPC menus, and L90
 
 The conversation with an NPC was default Godot in a hardcoded 520×300

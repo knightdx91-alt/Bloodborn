@@ -140,6 +140,16 @@ static func site(terrain: WgTerrain, world_seed: int, cx: int, cz: int) -> Dicti
 
 	if best_slope > MAX_SLOPE:
 		return {}
+	# NOT IN THE RIVER — and this one would have gone wrong quietly.
+	#
+	# A site is chosen by walking to the FLATTEST ground in the cell,
+	# and the flattest ground anywhere near a river is its bed: the
+	# channel is cut to a level floor. So the search does not merely
+	# tolerate building in the water, it actively prefers it. A hamlet
+	# needs the river beside it, not under it, and 70 m is the whole
+	# channel plus its banks.
+	if terrain.river_distance(best.x, best.y) < 70.0:
+		return {}
 	# Not in the capitol's own ground: that is a city, hand-placed.
 	if terrain.capitol_blend(best.x, best.y) > 0.25:
 		return {}

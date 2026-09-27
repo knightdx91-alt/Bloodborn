@@ -99,6 +99,38 @@ func _ready() -> void:
 		await _shot("road_ground")
 		_clear()
 
+	# WATER. From the air, so the valley reads, and from the bank, so
+	# you can see whether it is a river or a blue stripe.
+	var found_river := PackedVector2Array()
+	for cx in range(-4, 5):
+		for cz in range(-4, 5):
+			var rp := WgRivers.trace(t, t.seed_value, cx, cz)
+			if rp.size() > found_river.size():
+				found_river = rp
+	if found_river.size() > 6:
+		var w3: Vector2 = found_river[found_river.size() / 2]
+		var wat := Vector3(w3.x, gen.height_at(w3.x, w3.y), w3.y)
+		print("river: %d points, mid at %.0f,%.0f, cut %.1f m"
+			% [found_river.size(), wat.x, wat.z, t.river_cut(wat.x, wat.z)])
+		gen.build_block(WorldGen.chunk_of(wat), 3)
+		await _settle()
+		cam.position = wat + Vector3(0.0, 210.0, 300.0)
+		cam.look_at(wat, Vector3.UP)
+		await _shot("river_air")
+		# ACROSS the river, from its own bank. A diagonal offset put the
+		# camera 100 m away in whatever direction, which on a meander is
+		# as likely to be up the course as across it — the first bank
+		# shot was a close-up of a reed.
+		var flow: Vector2 = (found_river[found_river.size() / 2 + 1]
+			- found_river[found_river.size() / 2 - 1]).normalized()
+		var side := Vector2(-flow.y, flow.x) * 34.0
+		var bank := Vector3(wat.x + side.x, 0.0, wat.z + side.y)
+		bank.y = gen.height_at(bank.x, bank.z) + 2.2
+		cam.position = bank
+		cam.look_at(wat + Vector3(flow.x * 40.0, 0.0, flow.y * 40.0), Vector3.UP)
+		await _shot("river_bank")
+		_clear()
+
 	# And the things between the places.
 	var want_marks := ["stones", "tower", "shrine", "camp"]
 	var marks: Dictionary = {}
@@ -151,10 +183,21 @@ func _ready() -> void:
 	# "moor" for a week after those biomes had been renamed to the
 	# Wheel's own six, so the files on disk were captioned with
 	# country that no longer existed.
+	# AROUND THE CAPITOL, not around the origin.
+	#
+	# This fanned out from (0,0) at 4.2 km, which toured all six wedges
+	# for as long as (0,0) was Godsgrave. Since Thornfield became the
+	# origin, (0,0) is 23.4 km out on one spoke and every one of these
+	# six shots landed in the Hedges — six files, one biome, each
+	# overwriting the last. Worth the note: the shift was checked
+	# against the generator's asserts and against a render of the town,
+	# and it still quietly broke the one tool whose whole job is to show
+	# the six wedges apart.
+	var tour := t.capitol_site()
 	for wedge in WgTerrain.WEDGES:
 		var ang: float = (float(wedge) + 0.5) / float(WgTerrain.WEDGES) * TAU
-		var r := 4200.0
-		var at := Vector3(cos(ang) * r, 0.0, sin(ang) * r)
+		var r := WgTerrain.CAPITOL_R + 4200.0
+		var at := Vector3(tour.x + cos(ang) * r, 0.0, tour.z + sin(ang) * r)
 		var label: String = String(t.biome_at(at.x, at.z).name).replace("the ", "")
 		at.y = gen.height_at(at.x, at.z)
 		var c := WorldGen.chunk_of(at)

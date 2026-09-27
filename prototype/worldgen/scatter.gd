@@ -120,6 +120,18 @@ static func _try(terrain: WgTerrain, b, cx: int, cz: int, layer: int,
 	if worn > (0.25 if kind == "grass" else 0.02):
 		return
 
+	# NOTHING GROWS IN THE RIVER.
+	#
+	# A tree standing in open water is as old a generator tell as a
+	# river running uphill, and the scatter had no idea water existed:
+	# the first render of a bank had trees in the channel. The waterline
+	# is the edge of the drawn sheet, so this is the same number the
+	# mesh uses rather than a second one that can drift from it —
+	# anything at the margin roots in the shallows, which is where bank
+	# plants belong.
+	if terrain.river_distance(x, z) <= WgRivers.SHEET:
+		return
+
 	out.append({
 		"path": NATURE + kit[rng.randi() % kit.size()] + ".gltf",
 		"position": Vector3(x, terrain.height_at(x, z), z),

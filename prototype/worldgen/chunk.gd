@@ -96,6 +96,7 @@ func build_baked(data: Dictionary, chunk_x: int, chunk_z: int) -> void:
 	cz = chunk_z
 	position = Vector3(float(cx) * SIZE, 0.0, float(cz) * SIZE)
 	_ground_from(data["heights"], data["colours"])
+	_water(data["water"])
 	_place(data["pieces"])
 	for solid in data["solids"]:
 		_solid(solid["position"], solid["size"], solid.get("yaw", 0.0))
@@ -127,11 +128,15 @@ func _ground() -> void:
 	var wide := VERTS + 2
 	var grid := PackedFloat32Array()
 	grid.resize(wide * wide)
+	var water := PackedFloat32Array()
+	water.resize(VERTS * VERTS)
 	for iz in wide:
 		for ix in wide:
 			var wx := position.x - half + float(ix - 1) * step
 			var wz := position.z - half + float(iz - 1) * step
 			grid[iz * wide + ix] = terrain.height_at(wx, wz)
+			if ix > 0 and iz > 0 and ix <= VERTS and iz <= VERTS:
+				water[(iz - 1) * VERTS + (ix - 1)] = terrain.water_at(wx, wz)
 
 	# ARRAYS DIRECTLY, not SurfaceTool.
 	#
@@ -198,6 +203,7 @@ func _ground() -> void:
 			w += 6
 
 	_commit_ground(verts, norms, cols, uvs, idx, heights)
+	_water(water)
 
 
 ## The mesh and the body, from arrays either path can produce.
@@ -260,6 +266,107 @@ static func _ground_material() -> StandardMaterial3D:
 	mat.vertex_color_use_as_albedo = true
 	_shared_ground = mat
 	return _shared_ground
+
+
+## The rivers, as a sheet of water lying in the cut they made.
+##
+## A CARVED CHANNEL WITH NOTHING IN IT IS A DRY GULLY. The cut is what
+## makes water legible from a ridge (L86) and it was worth doing first,
+## but for a while it stood alone and what the generator actually made
+## was a country full of empty ditches.
+##
+## Built from the same grid as the ground and from a level sampled the
+## same way, so the surface meets the bank exactly where the arithmetic
+## says it does and there is no seam to tune.
+##
+## Quads only where ALL FOUR corners are wet. A quad with one dry corner
+## would stretch the sheet up the bank to a vertex with no water level,
+## which is the classic ragged-edged puddle.
+func _water(level: PackedFloat32Array) -> void:
+	if level.is_empty():
+		return
+	var any := false
+	for v in level:
+		if v > WgTerrain.NO_WATER:
+			any = true
+			break
+	if not any:
+		return
+
+	var half := SIZE * 0.5
+	var step := SIZE / float(VERTS - 1)
+	var verts := PackedVector3Array()
+	var norms := PackedVector3Array()
+	var uvs := PackedVector2Array()
+	var idx := PackedInt32Array()
+	# Only the wet vertices get into the mesh, so `map` remembers where
+	# each one went; -1 is "this vertex is dry".
+	var map := PackedInt32Array()
+	map.resize(VERTS * VERTS)
+	for i in VERTS * VERTS:
+		map[i] = -1
+		if level[i] <= WgTerrain.NO_WATER:
+			continue
+		var ix := i % VERTS
+		var iz := i / VERTS
+		map[i] = verts.size()
+		verts.push_back(Vector3(-half + float(ix) * step, level[i],
+			-half + float(iz) * step))
+		# FLAT UP. The surface does slope downstream, but shading it by
+		# its own slope would make the river a different colour from one
+		# end to the other; water reflects the sky, and the sky is up.
+		norms.push_back(Vector3.UP)
+		uvs.push_back(Vector2((position.x - half + float(ix) * step) / 8.0,
+			(position.z - half + float(iz) * step) / 8.0))
+
+	for iz in VERTS - 1:
+		for ix in VERTS - 1:
+			var a := map[iz * VERTS + ix]
+			var b := map[iz * VERTS + ix + 1]
+			var c := map[(iz + 1) * VERTS + ix]
+			var d := map[(iz + 1) * VERTS + ix + 1]
+			if a < 0 or b < 0 or c < 0 or d < 0:
+				continue
+			# Same winding as the ground: clockwise seen from above.
+			idx.push_back(a); idx.push_back(b); idx.push_back(c)
+			idx.push_back(b); idx.push_back(d); idx.push_back(c)
+	if idx.is_empty():
+		return
+
+	var arrays := []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = verts
+	arrays[Mesh.ARRAY_NORMAL] = norms
+	arrays[Mesh.ARRAY_TEX_UV] = uvs
+	arrays[Mesh.ARRAY_INDEX] = idx
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	mesh.surface_set_material(0, _water_material())
+	var mi := MeshInstance3D.new()
+	mi.name = "Water"
+	mi.mesh = mesh
+	add_child(mi)
+
+
+static var _shared_water: StandardMaterial3D = null
+
+static func _water_material() -> StandardMaterial3D:
+	if _shared_water != null:
+		return _shared_water
+	var mat := StandardMaterial3D.new()
+	# Dark, and green rather than blue. Lowland river water carries silt
+	# and reflects the bank; the postcard blue belongs to deep sea and
+	# reads as a texture swatch laid on the ground.
+	mat.albedo_color = Color(0.13, 0.20, 0.20, 0.90)
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.roughness = 0.12
+	mat.metallic = 0.25
+	mat.metallic_specular = 0.9
+	# NO BACKFACE CULLING: standing in the river and looking up at the
+	# surface is a thing that will happen.
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	_shared_water = mat
+	return _shared_water
 
 
 ## Rebuild the vertex arrays from a bake's heights and colours.

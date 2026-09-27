@@ -18,7 +18,9 @@ extends RefCounted
 ## any number of saved bytes.
 
 const MAGIC := 0x4D524B31  # "MRK1"
-const VERSION := 1
+## 2: the water level per vertex. A bake written before rivers existed
+## describes a country of dry gullies, so it is refused, not adapted.
+const VERSION := 2
 const DIR := "res://baked"
 
 
@@ -51,6 +53,13 @@ static func gather(terrain: WgTerrain, at: Vector2i) -> Dictionary:
 	heights.resize(verts * verts)
 	var colours := PackedByteArray()
 	colours.resize(verts * verts * 3)
+	# STORED, not derived. The water level is not a function of the
+	# ground height — the sheet lies in the cut, and the cut is only
+	# known to the river tracer — so a reader with the heightfield alone
+	# cannot work out where the rivers are. It is a field of one sentinel
+	# almost everywhere, which is exactly what ZSTD is good at.
+	var water := PackedFloat32Array()
+	water.resize(verts * verts)
 
 	var roads := WgRoads.near(terrain, terrain.seed_value,
 		origin.x - size, origin.z - size, origin.x + size, origin.z + size)
@@ -66,6 +75,7 @@ static func gather(terrain: WgTerrain, at: Vector2i) -> Dictionary:
 			var slope: float = Vector2(dx, dz).length() / (2.0 * step)
 			var wx := origin.x - half + float(ix) * step
 			var wz := origin.z - half + float(iz) * step
+			water[vi] = terrain.water_at(wx, wz)
 			var col := terrain.shade(wx, wz, h, slope)
 			var worn := WgRoads.wear(roads, wx, wz)
 			if worn > 0.0:
@@ -124,7 +134,7 @@ static func gather(terrain: WgTerrain, at: Vector2i) -> Dictionary:
 
 	return {
 		"at": at, "heights": heights, "colours": colours,
-		"pieces": pieces, "solids": solids,
+		"water": water, "pieces": pieces, "solids": solids,
 	}
 
 
@@ -158,6 +168,11 @@ static func write(data: Dictionary, dir: String = DIR,
 	var colours: PackedByteArray = data["colours"]
 	f.store_32(colours.size())
 	f.store_buffer(colours)
+
+	var water: PackedFloat32Array = data["water"]
+	f.store_32(water.size())
+	for wl in water:
+		f.store_float(wl)
 
 	# A string table, because the same model path repeats a hundred
 	# times in a chunk and storing it a hundred times is the one piece
@@ -226,6 +241,12 @@ static func read(at: Vector2i, dir: String = DIR) -> Dictionary:
 	var cn := f.get_32()
 	var colours := f.get_buffer(cn)
 
+	var wn := f.get_32()
+	var water := PackedFloat32Array()
+	water.resize(wn)
+	for i in wn:
+		water[i] = f.get_float()
+
 	var pn := f.get_32()
 	var paths: Array[String] = []
 	for i in pn:
@@ -259,5 +280,5 @@ static func read(at: Vector2i, dir: String = DIR) -> Dictionary:
 	f.close()
 	return {
 		"at": Vector2i(cx, cz), "heights": heights, "colours": colours,
-		"pieces": pieces, "solids": solids,
+		"water": water, "pieces": pieces, "solids": solids,
 	}

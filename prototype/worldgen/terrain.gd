@@ -218,6 +218,11 @@ var _shape: FastNoiseLite
 var _detail: FastNoiseLite
 var _warp: FastNoiseLite
 var _border: FastNoiseLite
+var _swell: FastNoiseLite
+
+## Metres the swell lifts or drops the land, on top of the wedge's own
+## relief. See `_init`.
+const SWELL := 30.0
 
 
 func _init(world_seed: int = 20260927) -> void:
@@ -251,6 +256,30 @@ func _init(world_seed: int = 20260927) -> void:
 	_warp.noise_type = FastNoiseLite.TYPE_SIMPLEX
 	_warp.seed = world_seed + 4241
 	_warp.frequency = 1.0 / 1300.0
+
+	# THE SWELL. Slow, world-wide, and belonging to no wedge.
+	#
+	# A map of the whole country showed the problem plainly: four of the
+	# six wedges were featureless at map scale, because a wedge is one
+	# relief number applied evenly over 645 km2 and four of those numbers
+	# are small. The Fens SHOULD be flat — Greywater is drowned meadow,
+	# not highland — but flat over an hour's walk is not flat country,
+	# it is no country.
+	#
+	# So the world gets a second, much slower field underneath the
+	# biomes: broad swells about 5 km across that lift and drop the whole
+	# land by tens of metres regardless of whose wedge it is. It gives
+	# the flat countries somewhere to be flat BETWEEN, and it makes the
+	# steep ones vary instead of being uniformly steep. It also makes
+	# each wedge's own texture rougher on the high ground, which is the
+	# way real hill country reads: broken on the tops, smooth in the
+	# bottoms.
+	_swell = FastNoiseLite.new()
+	_swell.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+	_swell.seed = world_seed + 1553
+	_swell.frequency = 1.0 / 5200.0
+	_swell.fractal_octaves = 2
+	_swell.fractal_gain = 0.5
 
 	# And a field to chew the wedge borders, so a biome edge is a
 	# ragged transition rather than a radius line drawn on a map.
@@ -370,7 +399,11 @@ func _raw_height(x: float, z: float) -> float:
 	var steep: float = clampf((b.relief - 20.0) / 50.0, 0.0, 1.0)
 	var combined: float = lerpf(shape, ridged * 2.0 - 1.0, steep * 0.6)
 
-	var h := combined * b.relief
+	# The swell is sampled at the WARPED coordinate like the shape, so
+	# the two agree about where a rise is rather than crossing each
+	# other at a slight angle and cancelling into mush.
+	var mood := _swell.get_noise_2d(wx, wz)
+	var h := combined * b.relief * (1.0 + mood * 0.6) + mood * SWELL
 	h += _detail.get_noise_2d(gx, gz) * (1.4 + b.relief * 0.06)
 
 	# The capitol sits in a bowl of quiet ground.
@@ -428,6 +461,174 @@ func _level_towns() -> void:
 		_town_site[w] = Vector3(x, _town_level[w], z)
 
 
+## THE LAND BEFORE ANY RIVER CUT IT.
+##
+## Rivers are traced by walking downhill, and they must walk down THIS
+## rather than down the finished land: tracing against ground a river
+## has already cut lets it chase its own valley in circles, a loop that
+## ends only by running out of steps.
+func bare_height(x: float, z: float) -> float:
+	return _platformed(x, z)
+
+
+## Rivers near a point, traced once and kept.
+##
+## Lazily, by source cell, because tracing every river in 3,870 km2 to
+## answer one height query would be absurd — and eagerly caching the
+## whole world would be 1.4 million traces. A point can only be reached
+## by a source within the trace's own length, which is why that length
+## is bounded: it is what makes "which rivers matter here" a small,
+## answerable question.
+var _river_traced: Dictionary = {}
+var _river_grid: Dictionary = {}
+## Bucket side, and it is deliberately TWICE the valley half-width.
+##
+## A lookup must see every segment within `VALLEY` of the point. At a
+## bucket of exactly VALLEY that takes the 3x3 block around the point —
+## nine dictionary probes on every height sample in the world, and
+## almost all of them miss, because almost nowhere is within 150 m of
+## water. At twice VALLEY the point's own bucket already reaches 300 m
+## one way, so only the 2x2 block on the side the point sits in is
+## needed: four probes instead of nine, for the same coverage.
+const RIVER_BUCKET := 300.0
+const RIVER_CACHE_MAX := 4096
+
+
+## The source cell the last query was in, so a run of samples across
+## one chunk does the 25-cell sweep once instead of 4,489 times. That
+## sweep was formatting twenty-five dictionary keys as STRINGS per
+## height query and cost 24 us a sample against a 2.4 us baseline.
+var _river_last := Vector2i(-2147483647, -2147483647)
+
+
+func _ensure_rivers(x: float, z: float) -> void:
+	var cx := int(floor(x / WgRivers.SOURCE_CELL))
+	var cz := int(floor(z / WgRivers.SOURCE_CELL))
+	var here := Vector2i(cx, cz)
+	if here == _river_last:
+		return
+	_river_last = here
+	var reach: int = int(ceil(WgRivers.STEP * float(WgRivers.MAX_STEPS)
+		/ WgRivers.SOURCE_CELL))
+	for dx in range(-reach, reach + 1):
+		for dz in range(-reach, reach + 1):
+			var key := Vector2i(cx + dx, cz + dz)
+			if _river_traced.has(key):
+				continue
+			_river_traced[key] = true
+			var path := WgRivers.trace(self, seed_value, cx + dx, cz + dz)
+			if path.size() < 2:
+				continue
+			# Bucket each segment into every cell it touches, so a
+			# lookup only ever tests water that is actually near.
+			for i in range(path.size() - 1):
+				var a: Vector2 = path[i]
+				var b: Vector2 = path[i + 1]
+				var bx0 := int(floor(minf(a.x, b.x) / RIVER_BUCKET))
+				var bx1 := int(floor(maxf(a.x, b.x) / RIVER_BUCKET))
+				var bz0 := int(floor(minf(a.y, b.y) / RIVER_BUCKET))
+				var bz1 := int(floor(maxf(a.y, b.y) / RIVER_BUCKET))
+				for bx in range(bx0, bx1 + 1):
+					for bz in range(bz0, bz1 + 1):
+						var bk := Vector2i(bx, bz)
+						# FLAT, pairwise: a bucket is a,b,a,b,... in one
+						# PackedVector2Array rather than an Array of
+						# two-element Arrays. Every height sample in the
+						# world walks these, and an Array of Arrays makes
+						# each segment two Variant lookups and a heap
+						# object; the packed form is neither.
+						if not _river_grid.has(bk):
+							_river_grid[bk] = PackedVector2Array()
+						var arr: PackedVector2Array = _river_grid[bk]
+						arr.push_back(a)
+						arr.push_back(b)
+						_river_grid[bk] = arr
+	if _river_traced.size() > RIVER_CACHE_MAX:
+		_river_traced.clear()
+		_river_grid.clear()
+		_river_last = Vector2i(-2147483647, -2147483647)
+
+
+## How much the water has taken out of the land here.
+func river_cut(x: float, z: float) -> float:
+	_ensure_rivers(x, z)
+	return WgRivers.cut_for(_nearest_water(x, z))
+
+
+## The 2x2 block of buckets that is guaranteed to hold every segment
+## within `VALLEY` of the point — see `RIVER_BUCKET`.
+func _nearest_water(x: float, z: float) -> float:
+	var bxf := x / RIVER_BUCKET
+	var bzf := z / RIVER_BUCKET
+	var bx := int(floor(bxf))
+	var bz := int(floor(bzf))
+	# Which side of its own bucket the point is in decides which
+	# neighbours can possibly be nearer than the far wall.
+	var ox := bx - 1 if bxf - float(bx) < 0.5 else bx + 1
+	var oz := bz - 1 if bzf - float(bz) < 0.5 else bz + 1
+	# Unrolled. NOT because it was measured faster — it was not.
+	#
+	# The theory was that `for dx in [0, sx]` allocates two Arrays on
+	# every height sample in the world. It does, and removing them moved
+	# the cost by nothing: 1.79 us against 1.86. So the ~2 us a river
+	# lookup adds to a height sample is the four Dictionary probes
+	# themselves, and that is what a GDScript Dictionary costs. Kept
+	# because it is no worse and says plainly which four buckets are
+	# read; recorded because a sixth failed performance theory in this
+	# generator is worth writing down rather than quietly deleting.
+	var p := Vector2(x, z)
+	var best := _probe(p, Vector2i(bx, bz), INF)
+	if best > WgRivers.CHANNEL:
+		best = _probe(p, Vector2i(ox, bz), best)
+	if best > WgRivers.CHANNEL:
+		best = _probe(p, Vector2i(bx, oz), best)
+	if best > WgRivers.CHANNEL:
+		best = _probe(p, Vector2i(ox, oz), best)
+	return best
+
+
+func _probe(p: Vector2, bk: Vector2i, best: float) -> float:
+	if not _river_grid.has(bk):
+		return best
+	var arr: PackedVector2Array = _river_grid[bk]
+	for i in range(0, arr.size(), 2):
+		var d := WgRivers.to_segment(p, arr[i], arr[i + 1])
+		if d < best:
+			best = d
+	return best
+
+
+## Where the water surface is, or `NO_WATER` if this point is dry.
+##
+## Taken from the land BEFORE the cut rather than from the finished
+## ground, so the surface is as smooth as the country is: reading it off
+## `height_at` would make the water copy every ripple in its own bed,
+## and a river with a bumpy surface is not a river.
+##
+## It still slopes, because `_platformed` slopes — which is right. A
+## river runs downhill and its surface goes with it.
+const NO_WATER := -1.0e9
+
+func water_at(x: float, z: float) -> float:
+	_ensure_rivers(x, z)
+	if _nearest_water(x, z) > WgRivers.SHEET:
+		return NO_WATER
+	# A platform is not to be flooded. The cut fades out across the
+	# skirt (see `height_at`), so the water has to fade with it and then
+	# stop: drawing a sheet at the open-country level over ground that
+	# has been levelled back up would put a river through the market.
+	var t := town_blend(x, z)
+	if t > 0.25:
+		return NO_WATER
+	return _platformed(x, z) - WgRivers.DEPTH * (1.0 - t) + WgRivers.RISE
+
+
+## How far the nearest water is, for anything that needs to keep off it.
+func river_distance(x: float, z: float) -> float:
+	_ensure_rivers(x, z)
+	return _nearest_water(x, z)
+
+
 ## The ground, with the towns' own ground levelled into it.
 ##
 ## People build on the flat, and 750 m of town on a hillside is 750 m
@@ -439,6 +640,38 @@ func _level_towns() -> void:
 ##
 ## The land is READY for a town here. There is no town: see STATUS.
 func height_at(x: float, z: float) -> float:
+	# WATER DOES NOT CUT THROUGH A TOWN.
+	#
+	# A platform is engineered ground: it is the one place in the world
+	# where people have already decided what the land does. A 7 m channel
+	# through the middle of Thornfield's market would put the smithy in a
+	# ravine. So the cut is faded out across the same skirt the platform
+	# uses, which reads as the river being bridged or culverted where the
+	# town meets it rather than as water stopping at a line.
+	var cut := river_cut(x, z)
+	if cut <= 0.0:
+		return _platformed(x, z)
+	return _platformed(x, z) - cut * (1.0 - town_blend(x, z))
+
+
+## How much a point belongs to a town's levelled ground: 1 on the flat,
+## 0 past the skirt. `capitol_blend` is the same idea, older.
+func town_blend(x: float, z: float) -> float:
+	var best := capitol_blend(x, z)
+	for w in _town_xz.size():
+		var t2: Vector2 = _town_xz[w]
+		var dx := x - t2.x
+		var dz := z - t2.y
+		var d2 := dx * dx + dz * dz
+		if d2 > _town_reach2:
+			continue
+		best = maxf(best, 1.0 - smoothstep(TOWN_FLAT,
+			TOWN_FLAT + TOWN_SKIRT, sqrt(d2)))
+	return clampf(best, 0.0, 1.0)
+
+
+## The land with the town platforms in it, but no water.
+func _platformed(x: float, z: float) -> float:
 	var h := _raw_height(x, z)
 	if _town_xz.is_empty():
 		return h
@@ -478,7 +711,12 @@ func ground_at(x: float, z: float) -> Color:
 ## build time actually went.
 func shade(x: float, z: float, h: float, slope: float) -> Color:
 	var b := biome_at(x, z)
-	var lift: float = clampf((h + b.relief) / (b.relief * 2.0 + 0.001), 0.0, 1.0)
+	# Scaled by the relief AND the swell, because since the swell exists
+	# a height of 30 m says nothing about whether this is high ground for
+	# here. Without it every flat wedge's tint saturates the moment the
+	# land rises at all, and the Fens come out the colour of a hilltop.
+	var span: float = b.relief + SWELL
+	var lift: float = clampf((h + span) / (span * 2.0), 0.0, 1.0)
 	var c: Color = b.ground.lerp(b.height_tint, lift * 0.55)
 	var s: float = clampf(slope / 1.3, 0.0, 1.0)
 	# Steep ground shows its bones — but only where it is genuinely

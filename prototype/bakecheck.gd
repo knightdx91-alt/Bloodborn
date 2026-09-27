@@ -13,6 +13,25 @@ const DIR := "user://bakecheck"
 var _fails: Array[String] = []
 
 
+## Chunks worth probing for a river: a ring of them around a traced
+## course, rather than a guess. There is one river per ~9 km2 and a
+## chunk is 0.004 km2, so picking coordinates by eye finds dry land.
+func _wet_candidates(t: WgTerrain) -> Array:
+	var out: Array = []
+	for cx in range(-3, 4):
+		for cz in range(-3, 4):
+			var path := WgRivers.trace(t, t.seed_value, cx, cz)
+			if path.size() < 8:
+				continue
+			for i in [path.size() / 3, path.size() * 2 / 3]:
+				var p: Vector2 = path[i]
+				out.append(Vector2i(int(floor(p.x / WgChunk.SIZE)),
+					int(floor(p.y / WgChunk.SIZE))))
+			if out.size() >= 8:
+				return out
+	return out
+
+
 func _ok(n: String, c: bool, d: String) -> void:
 	if c: print("  ok    %s" % n)
 	else: _fails.append(n); print("  FAIL  %s — %s" % [n, d])
@@ -58,6 +77,52 @@ func _ready() -> void:
 		if c0[i] != c1[i]:
 			cdiff += 1
 	_ok("and every colour", cdiff == 0, "%d colour bytes differ" % cdiff)
+
+	# --- water -----------------------------------------------------------
+	#
+	# ON A CHUNK THAT ACTUALLY HAS WATER IN IT. Comparing two fields of
+	# the dry sentinel would pass however badly the water was written,
+	# which is the whole failure mode this is here to catch — so the
+	# first thing asserted is that a wet chunk was found at all.
+	var wet_at := Vector2i(0, 0)
+	var wet_n := 0
+	for probe in _wet_candidates(t):
+		var w: PackedFloat32Array = WgBake.gather(t, probe)["water"]
+		var count := 0
+		for v in w:
+			if v > WgTerrain.NO_WATER:
+				count += 1
+		if count > wet_n:
+			wet_n = count
+			wet_at = probe
+	_ok("a chunk with a river in it was found", wet_n > 20,
+		"the wettest chunk probed has %d wet vertices" % wet_n)
+	print("      chunk %s has %d wet vertices of %d"
+		% [str(wet_at), wet_n, WgChunk.VERTS * WgChunk.VERTS])
+
+	var wet_made := WgBake.gather(t, wet_at)
+	WgBake.write(wet_made, DIR)
+	var wet_back := WgBake.read(wet_at, DIR)
+	var w0: PackedFloat32Array = wet_made["water"]
+	var w1: PackedFloat32Array = wet_back.get("water", PackedFloat32Array())
+	var wdiff := 0
+	for i in w0.size():
+		if i >= w1.size() or w0[i] != w1[i]:
+			wdiff += 1
+	_ok("and its water survives exactly", w0.size() == w1.size() and wdiff == 0,
+		"wrote %d water levels, read %d, %d differ"
+			% [w0.size(), w1.size(), wdiff])
+
+	# And the sheet is actually built from it — a level that reads back
+	# perfectly and is then never used is the same as not storing it.
+	var wet_chunk := WgChunk.new()
+	add_child(wet_chunk)
+	wet_chunk.build_baked(wet_back, wet_at.x, wet_at.y)
+	await get_tree().process_frame
+	_ok("and a baked chunk has water standing on it",
+		wet_chunk.find_child("Water", true, false) != null,
+		"the baked chunk has no water mesh")
+	wet_chunk.queue_free()
 
 	var p0: Array = made["pieces"]
 	var p1: Array = back["pieces"]

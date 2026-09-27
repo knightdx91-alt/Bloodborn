@@ -503,6 +503,133 @@ func _ready() -> void:
 		_ok("and nothing grows in the ruts", in_ruts == 0,
 			"%d things standing in the road" % in_ruts)
 
+	# --- water ------------------------------------------------------------
+	#
+	# A RIVER THAT RUNS UPHILL is the classic generator bug, and the one
+	# thing about rivers that arithmetic CAN settle. Everything else here
+	# was settled by rendering a map and looking at it.
+	var rivers: Array = []
+	for rcx in range(-9, 10):
+		for rcz in range(-9, 10):
+			var rp := WgRivers.trace(t, t.seed_value, rcx, rcz)
+			if not rp.is_empty():
+				rivers.append(rp)
+	_ok("there is water in the world", rivers.size() > 20,
+		"%d rivers traced over %.0f km2" % [rivers.size(),
+			pow(19.0 * WgRivers.SOURCE_CELL / 1000.0, 2.0)])
+
+	# Against BARE height — the land before the cut. Judging a river
+	# against the ground it dug would be judging it against itself.
+	var worst_climb := 0.0
+	var worst_at := ""
+	var total_drop := 0.0
+	for path in rivers:
+		var pts: PackedVector2Array = path
+		var src := t.bare_height(pts[0].x, pts[0].y)
+		total_drop += src - t.bare_height(
+			pts[pts.size() - 1].x, pts[pts.size() - 1].y)
+		for i in range(1, pts.size()):
+			var rise := t.bare_height(pts[i].x, pts[i].y) - src
+			if rise > worst_climb:
+				worst_climb = rise
+				worst_at = "%.0f,%.0f" % [pts[i].x, pts[i].y]
+	_ok("and none of it runs uphill", worst_climb <= 0.0,
+		"a river reaches %.1f m ABOVE its own source at %s"
+			% [worst_climb, worst_at])
+	print("      %d rivers, mean source-to-mouth drop %.1f m"
+		% [rivers.size(), total_drop / float(maxi(rivers.size(), 1))])
+
+	# A CELL THAT ACTUALLY SPRINGS. Asking about a fixed (3,-2) compared
+	# two empty paths and called them different, which is a check that
+	# fails for a reason that has nothing to do with determinism.
+	var fresh := WgTerrain.new(20260927)
+	var drifted := 0
+	var compared := 0
+	for rcx in range(-9, 10):
+		for rcz in range(-9, 10):
+			var one_p := WgRivers.trace(t, t.seed_value, rcx, rcz)
+			if one_p.is_empty():
+				continue
+			compared += 1
+			if not _same_path(one_p,
+					WgRivers.trace(fresh, t.seed_value, rcx, rcz)):
+				drifted += 1
+	_ok("and it is the same water every time", compared > 0 and drifted == 0,
+		"%d of %d courses differ between two terrains on one seed"
+			% [drifted, compared])
+
+	# The cut is what makes water legible from a ridge (L86). A channel
+	# that is not actually lower than its banks is a blue stripe.
+	#
+	# 2.5 METRES, A NUMBER OF ITS OWN. The first version of this asked
+	# for `DEPTH * 0.4`, so setting DEPTH to zero — the exact bug it is
+	# here to catch — also set the bar to zero and the check sailed
+	# through the mutation. A threshold derived from the thing under
+	# test cannot test it.
+	#
+	# BOTH banks, at the valley's edge and perpendicular to the flow: a
+	# river running along a hillside has high ground on one side anyway,
+	# and asking only that side would credit it for a valley it does not
+	# have.
+	var carved := 0
+	for path in rivers:
+		var pts2: PackedVector2Array = path
+		var mid := pts2.size() / 2
+		var m: Vector2 = pts2[mid]
+		var flow: Vector2 = (pts2[mid + 1] - pts2[mid - 1]).normalized()
+		var perp := Vector2(-flow.y, flow.x) * (WgRivers.VALLEY + 60.0)
+		var bed := t.height_at(m.x, m.y)
+		var banks: float = minf(
+			t.height_at(m.x + perp.x, m.y + perp.y),
+			t.height_at(m.x - perp.x, m.y - perp.y))
+		if banks - bed > 2.5:
+			carved += 1
+	_ok("and it lies in a valley it cut",
+		float(carved) / float(maxi(rivers.size(), 1)) > 0.6,
+		"only %d of %d channels sit below their own banks"
+			% [carved, rivers.size()])
+
+	# WATER DOES NOT CUT THROUGH A TOWN. A 7 m channel through the
+	# market would put the smithy in a ravine, and the town platforms
+	# are the one part of this world that is not the generator's to
+	# reshape.
+	var flooded := 0
+	var scarred := 0.0
+	for w3 in WgTerrain.WEDGES:
+		var site := t.town_site(w3)
+		for k in 48:
+			var ang3 := float(k) / 48.0 * TAU
+			var rr := WgTerrain.TOWN_FLAT * 0.8
+			var px := site.x + cos(ang3) * rr
+			var pz := site.z + sin(ang3) * rr
+			if t.water_at(px, pz) > WgTerrain.NO_WATER:
+				flooded += 1
+			scarred = maxf(scarred,
+				t.bare_height(px, pz) - t.height_at(px, pz))
+	_ok("and none of it runs through a town", flooded == 0,
+		"%d samples on town ground have water on them" % flooded)
+	_ok("and no town platform is cut by it", scarred < 1.0,
+		"a town's levelled ground is dug %.1f m deeper than it was levelled to"
+			% scarred)
+
+	# AND NOTHING STANDS IN IT. A tree in open water is as old a tell as
+	# a river running uphill, and the scatter had no idea water existed
+	# until this went in.
+	var in_water := 0
+	var looked := 0
+	for k2 in mini(rivers.size(), 6):
+		var pts3: PackedVector2Array = rivers[k2]
+		var m3: Vector2 = pts3[pts3.size() / 2]
+		for item in WgScatter.in_rect(t, m3.x - 100.0, m3.y - 100.0,
+				m3.x + 100.0, m3.y + 100.0):
+			looked += 1
+			var ip: Vector3 = item["position"]
+			if t.river_distance(ip.x, ip.z) <= WgRivers.SHEET:
+				in_water += 1
+	_ok("and nothing grows in it", looked > 50 and in_water == 0,
+		"%d of %d things within 100 m of six rivers are standing in the water"
+			% [in_water, looked])
+
 	# --- chunks -----------------------------------------------------------
 	var gen := WorldGen.new()
 	gen.world_seed = 20260927
@@ -588,6 +715,15 @@ func _same(a: Array, b: Array) -> bool:
 	ka.sort()
 	kb.sort()
 	return ka == kb
+
+
+func _same_path(a: PackedVector2Array, b: PackedVector2Array) -> bool:
+	if a.size() != b.size() or a.is_empty():
+		return false
+	for i in a.size():
+		if not a[i].is_equal_approx(b[i]):
+			return false
+	return true
 
 
 func _key(item: Dictionary) -> String:

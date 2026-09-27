@@ -192,6 +192,56 @@ anywhere combat actually happens is hand-composed. That is a far smaller
 set than 255 km², and naming it in advance is what keeps the generated
 land from quietly becoming the fighting land.
 
+### What the generator actually makes **[built 2026-09-27]**
+
+Stated here because "plausible hills, rivers and treelines" above was a
+promise, and the promise is now a set of numbers that can be argued
+with.
+
+**The six wedges are the Wheel's own six** (`lore.md` §5), not six
+generic biomes with an index. Each has its relief, feature size,
+ground and height colours, tree species, and scatter densities, and
+each explains its town: Hammarsted has the ore hills, Vellmark the
+grass, Greywater the water.
+
+**Underneath them, a swell.** A second, much slower field — swells
+about 5 km across belonging to no wedge — lifts and drops the land by
+tens of metres and makes each wedge's texture rougher on the high
+ground. It exists because a map of the whole world showed four of the
+six wedges **featureless at map scale**: a wedge is one relief number
+over 645 km², and four of those numbers are small. The Fens should be
+flat, but flat over an hour's walk is no country at all. With the swell
+the flattest wedge has 32 m of height spread and a median slope of
+0.07 — still flat underfoot, with somewhere to be flat between.
+
+**Rivers are carved, not painted.** A blue stripe on a hillside is the
+classic generator tell. A river is traced downhill from a spring on
+local high ground, in 90 m steps, keeping a heading; the cut goes into
+the heightfield itself, so the land leans toward the water from 150 m
+out and the river is legible from a ridge a kilometre away — which is
+what makes it useful for orientation (L86) rather than decorative. One
+per 9.4 km².
+
+**Rivers are streamable for one specific reason:** a course is a pure
+function of its own source cell, and its length is capped at 3.6 km, so
+a patch of ground only has to trace the 49 cells within a river's reach
+of it to know every drop of water that can touch it. Uncapped length
+would make "which rivers matter here" unanswerable without generating
+the world. The lookup costs about **2.4 µs a height sample** — roughly
+10 ms on a chunk's heightfield, on a worker thread.
+
+**The water surface is stored in the bake, not derived.** Where the
+rivers are is known only to the tracer, so a reader holding the
+heightfield alone cannot work it out. It is a field of one sentinel
+almost everywhere, which is what ZSTD is for.
+
+**A third tool: `genmap.tscn`,** a hillshaded map straight from the
+heightfield with the channels painted. Rendering land to look at it
+means building chunks, and a 3.6 km river needs 3,200 of them; a map
+costs one height sample a pixel and shows shapes — river networks, the
+wheel of wedges — that no ground-level shot can. It does not replace
+looking at a frame, which remains the rule.
+
 ### Where the cost actually is
 
 Not the generator. The generator is the cheap half. The expensive half
