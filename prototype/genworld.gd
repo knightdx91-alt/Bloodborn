@@ -106,6 +106,33 @@ func _ready() -> void:
 	layer.add_child(jump)
 	walker.extra_chips.append(jump)
 
+	# A SWITCH FOR THE QUESTION I COULD NOT ANSWER.
+	#
+	# Threading moves the chunk's data-gathering off the main thread:
+	# measured, that is 47 ms of the 55 a chunk costs, leaving 8. Which
+	# should make the stall disappear — but this was developed in a
+	# container that renders in software, where frame times are
+	# dominated by rasterising geometry rather than by generating it,
+	# and every frame-pacing measurement came out contradictory.
+	#
+	# A phone has a GPU and a spare core. So rather than ship a guess,
+	# the spike lets you flip it and watch the worst-frame number
+	# yourself. That IS the answer, and it is one only the device has.
+	var thread_chip := UI.chip("Thread", 1.0)
+	thread_chip.anchor_left = 1.0
+	thread_chip.anchor_right = 1.0
+	thread_chip.offset_left = -150.0
+	thread_chip.offset_top = 108.0
+	thread_chip.offset_right = -24.0
+	thread_chip.offset_bottom = 180.0
+	thread_chip.pressed.connect(func() -> void:
+		gen.threaded = not gen.threaded
+		_worst = 999.0      # a fresh worst case for the new mode
+		_samples = 0
+		_sum = 0.0)
+	layer.add_child(thread_chip)
+	walker.extra_chips.append(thread_chip)
+
 	_read = Label.new()
 	_read.add_theme_font_size_override("font_size", 18)
 	_read.add_theme_color_override("font_color", Color(0.95, 0.94, 0.90))
@@ -193,6 +220,7 @@ func _process(_delta: float) -> void:
 		label = str(_stops[_stop]["what"])
 	_read.text = ("fps %d   worst %d   mean %d\n"
 		+ "chunks %d   built %d   freed %d\n"
+		+ ("threaded" if gen.threaded else "SYNCHRONOUS") + "\n"
 		+ "%s\n%s\n%.0f, %.0f") % [
 			int(fps), int(_worst if _worst < 999.0 else fps),
 			int(_sum / maxf(1.0, float(_samples))),

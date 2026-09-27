@@ -2272,6 +2272,53 @@ you stand still — it should not.
   perfectly healthy, which is the point: no check would have caught
   either, and both were obvious in one frame.
 
+### Threading the chunk build — and what the container could not say
+
+A chunk costs ~55 ms on the main thread, which is a three-frame stall
+whatever the work costs. Threading does not make it cheaper; it makes
+it invisible. That argument is structural rather than a guess about
+where time goes, which is why it was worth doing after five guesses
+had failed.
+
+**Measured, and reliable** — `get_ticks_usec` around the calls:
+
+| | |
+|---|---|
+| `gather` — pure data, threadable | 47.2 ms |
+| `assemble` — nodes, must be main thread | 8.2 ms |
+
+So threaded mode does **8 ms on the main thread per chunk instead of
+55**. The split needed no new code: `WgBake.gather` already WAS the
+pure-data half, because baking needed exactly that separation, and
+`build_baked` already was the assembly half.
+
+Each worker gets its **own `WgTerrain`**. That looks wasteful and is
+the cheapest correct answer: FastNoiseLite is not documented as
+thread-safe, and a deterministic generator on the same seed produces
+an identical terrain, so there is nothing to share and nothing to
+lock. The three static caches that workers do touch — settlements,
+landmarks, and the Wheel's roads — are behind mutexes, held around the
+dictionary only and never around the work.
+
+`threadcheck` asks the only question that matters: **is a threaded
+chunk the same chunk?** Eight workers on one cell all agree with a
+single thread; six chunks built concurrently match six built alone;
+the Wheel's twelve road segments are built once rather than once per
+thread (a race there would double every road and look like the
+ownership rule failing); and threaded streaming fills a block exactly
+once.
+
+**What this container could not answer: whether it helps.** Every
+frame-pacing measurement came out contradictory — worst frame 41 ms
+synchronous against 126 ms threaded on one test, and `TIME_PROCESS`
+reporting 190 ms inside a 47 ms frame, which is impossible. The cause
+is almost certainly that this machine renders in software, so frame
+time is dominated by rasterising accumulated geometry rather than by
+generating it, and the threaded run reaches full geometry sooner.
+
+So the spike has a **Thread** chip. Flip it on the phone and watch the
+worst-frame number. That is the answer, and only the device has it.
+
 ### Five wrong guesses about performance, and what that is worth
 
 Every optimisation attempted on the generator was aimed by a theory,

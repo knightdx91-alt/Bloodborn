@@ -40,17 +40,28 @@ static func cell_rng(world_seed: int, cx: int, cz: int, layer: int) -> RandomNum
 ## What stands in this cell, if anything: { pieces, keep_clear, kind, at }.
 ## Cached per cell, for the same reason WgSettlement is: a chunk asks
 ## about nine cells and eight of the answers belong to its neighbours.
+## Guarded for the same reason WgSettlement's is: chunks are prepared
+## on worker threads, and a Dictionary read during another thread's
+## write fails intermittently and looks like a generator bug.
 const CACHE_MAX := 512
 static var _cache: Dictionary = {}
+static var _lock := Mutex.new()
 
 static func cached(terrain: WgTerrain, world_seed: int, cx: int, cz: int) -> Dictionary:
 	var key := "%d:%d:%d" % [world_seed, cx, cz]
-	if _cache.has(key):
-		return _cache[key]
+	_lock.lock()
+	var hit: bool = _cache.has(key)
+	var got: Dictionary = _cache[key] if hit else {}
+	_lock.unlock()
+	if hit:
+		return got
+
 	var out := at_cell(terrain, world_seed, cx, cz)
+	_lock.lock()
 	if _cache.size() > CACHE_MAX:
 		_cache.clear()
 	_cache[key] = out
+	_lock.unlock()
 	return out
 
 

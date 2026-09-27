@@ -41,10 +41,19 @@ const MAX_SPAN := WgSettlement.CELL * 1.9
 ##
 ## Built once — twelve segments for the whole world.
 static var _wheel: Array = []
+static var _wheel_lock := Mutex.new()
 
 static func wheel(terrain: WgTerrain) -> Array:
+	# Built once, and guarded because worker threads ask for it. Two
+	# threads racing here would each build a twelve-segment array and
+	# append into the same one — giving twenty-four segments, every
+	# road drawn twice, and gencheck's no-duplicates check failing in
+	# a way that points at the ownership rule rather than at threads.
+	_wheel_lock.lock()
 	if not _wheel.is_empty():
-		return _wheel
+		var done: Array = _wheel
+		_wheel_lock.unlock()
+		return done
 	var towns: Array = []
 	for w in WgTerrain.WEDGES:
 		var t := terrain.town_site(w)
@@ -57,7 +66,9 @@ static func wheel(terrain: WgTerrain) -> Array:
 		_wheel.append({"a": towns[i], "b": hub, "kind": "spoke"})
 		_wheel.append({"a": towns[i], "b": towns[(i + 1) % towns.size()],
 			"kind": "rim"})
-	return _wheel
+	var out2: Array = _wheel
+	_wheel_lock.unlock()
+	return out2
 
 
 ## Every road segment that could touch a rectangle of world.

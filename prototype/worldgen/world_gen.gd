@@ -93,14 +93,93 @@ func _refresh(centre: Vector2i) -> void:
 		freed_total += 1
 
 
+## OFF THE MAIN THREAD.
+##
+## This is the one optimisation on the generator that is structural
+## rather than a guess about where time goes — and five of those
+## guesses were wrong, so the distinction matters. A chunk costs ~48 ms
+## and that is a three-frame stall no matter how cheap the work gets;
+## moving it to a worker does not make it cheaper, it makes it
+## invisible.
+##
+## Only the DATA is threaded. `WgBake.gather` is a pure function of the
+## seed and the coordinates — no nodes, no scene tree — and it already
+## exists, because baking needed exactly this split. Assembly stays on
+## the main thread, where it must: `add_child`, resource loading and
+## MultiMesh construction are not safe off it.
+##
+## Each worker gets its OWN WgTerrain. That looks wasteful and is the
+## cheapest correct answer: FastNoiseLite is not documented as
+## thread-safe, and because the generator is deterministic a second
+## terrain on the same seed is the same terrain. No sharing, no lock,
+## no doubt.
+@export var threaded := true
+## How many may be in flight at once.
+@export var in_flight_max := 2
+
+var _jobs: Dictionary = {}          # Vector2i -> { task, terrain, data }
+var _thread_terrain: Array = []
+
+
 func _work() -> void:
-	var made := 0
-	while made < per_frame and not _wanted.is_empty():
-		var at: Vector2i = _wanted.pop_front()
+	if not threaded:
+		var made := 0
+		while made < per_frame and not _wanted.is_empty():
+			var at: Vector2i = _wanted.pop_front()
+			if live.has(at):
+				continue
+			make_chunk(at)
+			made += 1
+		return
+
+	# Anything finished gets assembled, within the frame budget.
+	var done := 0
+	for at in _jobs.keys():
+		if done >= per_frame:
+			break
+		var job: Dictionary = _jobs[at]
+		if not WorkerThreadPool.is_task_completed(job["task"]):
+			continue
+		WorkerThreadPool.wait_for_task_completion(job["task"])
+		_jobs.erase(at)
+		_thread_terrain.append(job["terrain"])
 		if live.has(at):
 			continue
-		make_chunk(at)
-		made += 1
+		var c := WgChunk.new()
+		c.name = "Chunk_%d_%d" % [at.x, at.y]
+		add_child(c)
+		c.build_baked(job["data"], at.x, at.y)
+		live[at] = c
+		built_total += 1
+		chunk_built.emit(at, c)
+		done += 1
+
+	# And start more, up to the limit.
+	while _jobs.size() < in_flight_max and not _wanted.is_empty():
+		var at2: Vector2i = _wanted.pop_front()
+		if live.has(at2) or _jobs.has(at2):
+			continue
+		_start(at2)
+
+
+func _start(at: Vector2i) -> void:
+	var mine: WgTerrain = _thread_terrain.pop_back() if not _thread_terrain.is_empty() \
+		else WgTerrain.new(world_seed)
+	var job := {"task": -1, "terrain": mine, "data": {}}
+	_jobs[at] = job
+	job["task"] = WorkerThreadPool.add_task(func() -> void:
+		job["data"] = WgBake.gather(mine, at))
+
+
+## Wait for every worker and drop what they were building.
+##
+## Godot will not let the scene tree go while a task is still running,
+## and a chunk half-assembled into a freed node is a crash rather than
+## a glitch.
+func _exit_tree() -> void:
+	for at in _jobs:
+		WorkerThreadPool.wait_for_task_completion(_jobs[at]["task"])
+	_jobs.clear()
 
 
 ## Build one chunk now, outside the budget. Used by the bakery and by

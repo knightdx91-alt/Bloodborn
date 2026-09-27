@@ -79,18 +79,41 @@ static func cell_rng(world_seed: int, cx: int, cz: int, layer: int) -> RandomNum
 ## the same hamlet, so it only has to be worked out once. Bounded,
 ## because a walk across the world would otherwise keep every
 ## settlement it ever passed.
+## GUARDED, because chunks are prepared on worker threads.
+##
+## A Dictionary is not safe to read while another thread writes it, and
+## the failure would be the worst kind: intermittent, and shaped like a
+## generator bug rather than a threading one.
+##
+## The lock is held only around the dictionary itself, never around
+## `build` — siting a hamlet is the expensive part and holding a lock
+## through it would serialise every worker onto one core, which is the
+## opposite of the point.
 const CACHE_MAX := 512
 static var _cache: Dictionary = {}
+static var _lock := Mutex.new()
 
 static func cached(terrain: WgTerrain, world_seed: int, cx: int, cz: int) -> Built:
 	var key := "%d:%d:%d" % [world_seed, cx, cz]
-	if _cache.has(key):
-		return _cache[key]
+	_lock.lock()
+	var hit: bool = _cache.has(key)
+	var got: Built = _cache[key] if hit else null
+	_lock.unlock()
+	if hit:
+		return got
+
+	# Outside the lock. Two threads may do this same work for the same
+	# cell and that is fine: the generator is deterministic, so they
+	# produce the same hamlet and whichever stores last stores an equal
+	# value.
 	var found := site(terrain, world_seed, cx, cz)
 	var out := build(terrain, world_seed, found) if not found.is_empty() else Built.new()
+
+	_lock.lock()
 	if _cache.size() > CACHE_MAX:
 		_cache.clear()
 	_cache[key] = out
+	_lock.unlock()
 	return out
 
 
