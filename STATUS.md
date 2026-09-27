@@ -2132,6 +2132,16 @@ villages round a green (22%), farmsteads with a barn and a fenced yard
 read as that village a century later rather than as a prop. Across 379
 generated settlements: 149 / 97 / 75 / 58.
 
+**Roads between the settlements.** Deterministic without global
+knowledge, which a road normally needs: every settlement cell links
+only to its EAST and SOUTH neighbours, so each possible link is owned
+by exactly one cell, every chunk derives the same network from the same
+hashes, and no link is drawn twice or missed at a border. Roads tint
+and clear rather than cut — flattening the ground under one would mean
+`height_at` knowing where settlements are, and settlements are sited by
+searching `height_at` for level ground, which is a loop. A track that
+follows the contours is also what a medieval road actually did.
+
 **Five kinds of landmark** between them — standing stones, abandoned
 camps, wayshrines, lone towers, and boulder fields gated to biomes with
 rock to give. 207 across 900 cells. L86 is the reason: no minimap means

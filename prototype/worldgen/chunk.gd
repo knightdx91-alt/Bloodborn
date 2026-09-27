@@ -31,6 +31,7 @@ var world_seed := 0
 var placed := 0
 var settlements: Array[String] = []
 var landmarks: Array[String] = []
+var _roads: Array = []
 
 
 func build(t: WgTerrain, chunk_x: int, chunk_z: int) -> void:
@@ -73,6 +74,10 @@ func build(t: WgTerrain, chunk_x: int, chunk_z: int) -> void:
 				continue
 			marks.append(mark)
 			keep_clear.append_array(mark["keep_clear"])
+
+	_roads = WgRoads.near(terrain, world_seed,
+		position.x - SIZE, position.z - SIZE,
+		position.x + SIZE, position.z + SIZE)
 
 	_ground()
 	_scatter(keep_clear)
@@ -143,7 +148,14 @@ func _ground() -> void:
 			var slope: float = Vector2(dx, dz).length() / (2.0 * step)
 			verts[vi] = Vector3(lx, h, lz)
 			norms[vi] = Vector3(-dx, 2.0 * step, -dz).normalized()
-			cols[vi] = terrain.shade(position.x + lx, position.z + lz, h, slope)
+			var wx2 := position.x + lx
+			var wz2 := position.z + lz
+			var col := terrain.shade(wx2, wz2, h, slope)
+			# A worn track over the top, faded at the verge.
+			var worn := WgRoads.wear(_roads, wx2, wz2)
+			if worn > 0.0:
+				col = col.lerp(WgRoads.surface(), worn)
+			cols[vi] = col
 			# UVs in WORLD metres, not chunk-local, so the ground
 			# texture runs across a chunk border without restarting —
 			# otherwise every seam is a visible tile reset even though
@@ -231,7 +243,7 @@ func _scatter(keep_clear: Array) -> void:
 	var half := SIZE * 0.5
 	var items := WgScatter.in_rect(terrain,
 		position.x - half, position.z - half,
-		position.x + half, position.z + half, keep_clear)
+		position.x + half, position.z + half, keep_clear, _roads)
 	_place(items)
 
 

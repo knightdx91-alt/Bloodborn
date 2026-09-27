@@ -241,6 +241,57 @@ func _ready() -> void:
 		mark_count < 400,
 		"%d landmarks is not a landmark, it is scenery" % mark_count)
 
+	# --- roads ------------------------------------------------------------
+	var segs := WgRoads.near(t, t.seed_value, 0.0, 0.0, 6000.0, 6000.0)
+	_ok("the places are joined up", segs.size() > 5,
+		"only %d road segments across 36 km of country" % segs.size())
+	print("      %d road segments" % segs.size())
+
+	# EACH LINK OWNED ONCE. A cell links east and south only, so no
+	# pair can be produced twice — if it could, a road would be drawn
+	# over itself and the ownership rule would be a lie that a chunk at
+	# a border could contradict.
+	var road_pairs := {}
+	var road_dupes := 0
+	for seg in segs:
+		var sa: Vector2 = seg["a"]
+		var sb: Vector2 = seg["b"]
+		var r_lo := sa if (sa.x < sb.x or (sa.x == sb.x and sa.y < sb.y)) else sb
+		var r_hi := sb if r_lo == sa else sa
+		var r_key := "%.1f,%.1f-%.1f,%.1f" % [r_lo.x, r_lo.y, r_hi.x, r_hi.y]
+		if road_pairs.has(r_key):
+			road_dupes += 1
+		road_pairs[r_key] = true
+	_ok("and no road is laid twice", road_dupes == 0,
+		"%d duplicate segments — the east/south ownership rule is leaking"
+			% road_dupes)
+
+	_ok("and asking twice gives the same roads",
+		WgRoads.near(t, t.seed_value, 0.0, 0.0, 6000.0, 6000.0).size() == segs.size(),
+		"the road network is not deterministic")
+
+	if not segs.is_empty():
+		var seg0: Dictionary = segs[0]
+		var r_mid: Vector2 = (seg0["a"] as Vector2).lerp(seg0["b"] as Vector2, 0.5)
+		var wear_on := WgRoads.wear(segs, r_mid.x, r_mid.y)
+		var r_perp := ((seg0["b"] as Vector2) - (seg0["a"] as Vector2)).orthogonal().normalized()
+		var r_off := r_mid + r_perp * 30.0
+		var wear_off := WgRoads.wear(segs, r_off.x, r_off.y)
+		_ok("the track is worn where it runs", wear_on > 0.9,
+			"wear %.2f in the middle of a road" % wear_on)
+		_ok("and the field beside it is not", wear_off < 0.01,
+			"wear %.2f thirty metres off the road" % wear_off)
+
+		var road_area := WgScatter.in_rect(t, r_mid.x - 40.0, r_mid.y - 40.0,
+			r_mid.x + 40.0, r_mid.y + 40.0, [], segs)
+		var in_ruts := 0
+		for item in road_area:
+			var rp: Vector3 = item["position"]
+			if WgRoads.wear(segs, rp.x, rp.z) > 0.3:
+				in_ruts += 1
+		_ok("and nothing grows in the ruts", in_ruts == 0,
+			"%d things standing in the road" % in_ruts)
+
 	# --- chunks -----------------------------------------------------------
 	var gen := WorldGen.new()
 	gen.world_seed = 20260927

@@ -66,6 +66,25 @@ func _ready() -> void:
 		await _shot("place_" + kind)
 		_clear()
 
+	# A road, from above and from on it.
+	var segs := WgRoads.near(t, t.seed_value, 0.0, 0.0, 5000.0, 5000.0)
+	if not segs.is_empty():
+		var seg: Dictionary = segs[0]
+		var mid: Vector2 = (seg["a"] as Vector2).lerp(seg["b"] as Vector2, 0.5)
+		var at3 := Vector3(mid.x, gen.height_at(mid.x, mid.y), mid.y)
+		gen.build_block(WorldGen.chunk_of(at3), 2)
+		await _settle()
+		cam.position = at3 + Vector3(0.0, 95.0, 95.0)
+		cam.look_at(at3, Vector3.UP)
+		await _shot("road_air")
+		var along: Vector2 = ((seg["b"] as Vector2) - (seg["a"] as Vector2)).normalized()
+		var eye3 := Vector3(mid.x - along.x * 26.0, 0.0, mid.y - along.y * 26.0)
+		eye3.y = gen.height_at(eye3.x, eye3.z) + 1.7
+		cam.position = eye3
+		cam.look_at(at3 + Vector3(0, 1.5, 0), Vector3.UP)
+		await _shot("road_ground")
+		_clear()
+
 	# And the things between the places.
 	var want_marks := ["stones", "tower", "shrine", "camp"]
 	var marks: Dictionary = {}

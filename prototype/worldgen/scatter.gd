@@ -55,7 +55,8 @@ static func cell_rng(world_seed: int, cx: int, cz: int, layer: int) -> RandomNum
 ## chunk, answer a harness, or be baked to disk without three versions
 ## of the rules.
 static func in_rect(terrain: WgTerrain, x0: float, z0: float,
-		x1: float, z1: float, keep_clear: Array = []) -> Array:
+		x1: float, z1: float, keep_clear: Array = [],
+		roads: Array = []) -> Array:
 	var out: Array = []
 	var c0x := int(floor(x0 / CELL))
 	var c0z := int(floor(z0 / CELL))
@@ -64,33 +65,33 @@ static func in_rect(terrain: WgTerrain, x0: float, z0: float,
 
 	for cx in range(c0x, c1x):
 		for cz in range(c0z, c1z):
-			_cell(terrain, cx, cz, x0, z0, x1, z1, keep_clear, out)
+			_cell(terrain, cx, cz, x0, z0, x1, z1, keep_clear, roads, out)
 	return out
 
 
 static func _cell(terrain: WgTerrain, cx: int, cz: int,
 		x0: float, z0: float, x1: float, z1: float,
-		keep_clear: Array, out: Array) -> void:
+		keep_clear: Array, roads: Array, out: Array) -> void:
 	var b := terrain.biome_at(float(cx) * CELL, float(cz) * CELL)
 
 	_try(terrain, b, cx, cz, 0, b.tree_density, b.trees,
-		Vector2(0.75, 1.35), "tree", x0, z0, x1, z1, keep_clear, out)
+		Vector2(0.75, 1.35), "tree", x0, z0, x1, z1, keep_clear, roads, out)
 	_try(terrain, b, cx, cz, 1, b.rock_density,
 		["RockPath_Round_Small_1", "RockPath_Round_Small_2",
 			"RockPath_Round_Wide"],
-		Vector2(0.6, 1.8), "rock", x0, z0, x1, z1, keep_clear, out)
+		Vector2(0.6, 1.8), "rock", x0, z0, x1, z1, keep_clear, roads, out)
 	_try(terrain, b, cx, cz, 2, b.bush_density,
 		["Bush_Common", "Bush_Common_Flowers", "Fern_1"],
-		Vector2(0.7, 1.3), "bush", x0, z0, x1, z1, keep_clear, out)
+		Vector2(0.7, 1.3), "bush", x0, z0, x1, z1, keep_clear, roads, out)
 	_try(terrain, b, cx, cz, 3, b.grass_density,
 		["Grass_Common_Tall", "Grass_Wispy_Tall"],
-		Vector2(0.8, 1.4), "grass", x0, z0, x1, z1, keep_clear, out)
+		Vector2(0.8, 1.4), "grass", x0, z0, x1, z1, keep_clear, roads, out)
 
 
 static func _try(terrain: WgTerrain, b, cx: int, cz: int, layer: int,
 		density: float, kit: Array, scale_range: Vector2, kind: String,
 		x0: float, z0: float, x1: float, z1: float,
-		keep_clear: Array, out: Array) -> void:
+		keep_clear: Array, roads: Array, out: Array) -> void:
 	if kit.is_empty() or density <= 0.0:
 		return
 	var rng := cell_rng(terrain.seed_value, cx, cz, layer)
@@ -112,6 +113,12 @@ static func _try(terrain: WgTerrain, b, cx: int, cz: int, layer: int,
 		var r: Rect2 = rect
 		if r.has_point(Vector2(x, z)):
 			return
+	# Nothing grows in the ruts. Grass creeps back to the verge, which
+	# is why this tests the wear rather than a flat width: a road with
+	# a hard-edged empty strip beside it reads as a corridor.
+	var worn := WgRoads.wear(roads, x, z)
+	if worn > (0.25 if kind == "grass" else 0.02):
+		return
 
 	out.append({
 		"path": NATURE + kit[rng.randi() % kit.size()] + ".gltf",
