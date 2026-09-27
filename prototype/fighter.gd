@@ -164,6 +164,28 @@ var _frozen_for := 0.0
 var _speed_before_freeze := 1.0
 ## How far the model hangs below the capsule's own bottom, so the soles
 ## meet the ground rather than hovering over it. See `setup`.
+## How fast a body travels, in one place, because both regions ask.
+##
+## `combat.md` §2, amended from play on 2026-09-14: *"You slow to a
+## walk. Not a multiplier on the jog — a walking pace, which matters
+## because it has to cross the threshold where the WALK ANIMATION
+## plays. A jog at 60% is still a jog on screen and says nothing."*
+##
+## That rule lived inside `world.gd`, so it applied in the drill yard
+## and nowhere else — and Thornfield calls `move()` with a flat
+## constant, so an exhausted fighter in the town kept full speed and
+## sprinting there never drained anything. Reported from play: *"your
+## movement speed and swing speed should be slowed."* The swing already
+## laboured, because that rule lives in `Attack` where both regions
+## read it. The walk did not, because this one did not.
+##
+## The same fault, and the same fix, as `Skirmish`, `Feel` and
+## `StaminaBar` before it.
+const WALK_SPEED_MAX := 4.5
+const SPRINT_SPEED := 7.0
+const SPRINT_THRESHOLD := 5.0
+const EXHAUSTED_WALK := 1.6
+
 const FOOT_DROP := 0.07
 const IFRAME_COLOR := Color(0.45, 0.80, 1.00)
 ## A blow landing, made visible on the thing that took it.
@@ -400,6 +422,35 @@ func _show_iframes(delta: float) -> void:
 	_iframes_shown = invulnerable
 	for i in skins.size():
 		skins[i].albedo_color = IFRAME_COLOR if invulnerable else skin_base_colors[i]
+
+## How fast this fighter should be travelling right now, and the drain
+## that comes with it.
+##
+## `push` is how far the stick or thumb is pushed, 0..1. `sprinting` is
+## the sprint input held. Call it once per frame before `move`, because
+## it also spends the bar.
+func pace(push: float, sprinting: bool, delta: float) -> float:
+	var speed := 0.0
+	if sprinting:
+		speed = SPRINT_SPEED
+	elif push > 0.0:
+		# How far you push is how fast you go. The curve is squared
+		# because a linear ramp put almost the whole throw above walking
+		# pace and the walk was unreachable.
+		var t: float = clampf(push, 0.0, 1.0)
+		speed = lerpf(WALK_SPEED_MAX * 0.32, SPRINT_SPEED, t * t)
+
+	# At zero stamina you are not stunned, you are slow (combat.md §2).
+	if stamina.is_exhausted():
+		speed = minf(speed, EXHAUSTED_WALK)
+
+	# Sprinting drains. L55 keeps the rate low on purpose — disengage is
+	# a first-class answer, so fleeing has to stay affordable.
+	if speed > SPRINT_THRESHOLD and not is_busy():
+		stamina.sprint(delta)
+
+	return speed
+
 
 ## Move under the fighter's own steam, or under a dodge if one is running.
 func move(desired: Vector3, speed: float, delta: float) -> void:

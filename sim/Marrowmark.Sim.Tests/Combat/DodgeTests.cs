@@ -221,5 +221,42 @@ namespace Marrowmark.Sim.Tests.Combat
 
             Assert.Equal(first, s.NextDodgeCost(), 3);
         }
+
+        [Fact]
+        public void An_exhausted_fighter_cannot_dodge_at_all()
+        {
+            // combat.md §2, amended from play: "when your stamina drains
+            // completely you're not supposed to be able to dodge until it
+            // recovers some." It used to run short and recover long
+            // instead, which made emptying the bar a discount rather than
+            // a commitment.
+            var s = Bar();
+            var d = New();
+
+            s.Spend(150f);
+            Assert.True(s.IsExhausted, "the bar never emptied, so this tests nothing");
+
+            Assert.False(d.TryStart(s));
+        }
+
+        [Fact]
+        public void And_can_again_once_the_bar_has_recovered_some()
+        {
+            // Not "once it is full" — exhaustion clears at
+            // ExhaustionRecoveryFraction, and the dodge comes back with it.
+            var s = Bar();
+            var d = New();
+            s.Spend(150f);
+            Assert.True(s.IsExhausted);
+
+            for (var i = 0; i < 400 && s.IsExhausted; i++) s.Tick(0.05f);
+
+            Assert.False(s.IsExhausted);
+            Assert.True(
+                s.Current < s.EffectiveMax,
+                "the bar refilled completely, so this does not show that a "
+                    + "PARTIAL recovery is enough");
+            Assert.True(d.TryStart(s));
+        }
     }
 }

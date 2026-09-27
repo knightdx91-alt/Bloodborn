@@ -113,6 +113,24 @@ namespace Marrowmark.Sim.Combat
             if (stamina == null) throw new ArgumentNullException(nameof(stamina));
             if (_phase != DodgePhase.Ready) return false;
 
+            // Spent means spent: no dodge until the bar has recovered
+            // enough to clear exhaustion (StaminaProfile's
+            // ExhaustionRecoveryFraction, 30% of max).
+            //
+            // This is an AMENDMENT to combat.md §2, which read "At zero
+            // stamina you are not stunned — you are *slow*", and which
+            // this code implemented by letting an exhausted dodge run
+            // short and recover long. Changed on the designer's call
+            // from play: "when your stamina drains completely you're not
+            // supposed to be able to dodge until it recovers some."
+            //
+            // It makes emptying the bar a real commitment rather than a
+            // discount, which is what §1 asks of every other action —
+            // and it leaves the exhausted-dodge numbers below in place
+            // for the case they still cover: a dodge that costs more
+            // than is left but does not empty you.
+            if (stamina.IsExhausted) return false;
+
             var paid = stamina.SpendDodge(efficiency);
 
             _phase = _profile.StartupSeconds > 0f

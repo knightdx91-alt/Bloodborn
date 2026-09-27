@@ -72,6 +72,16 @@ func try_start(stamina: Stamina, efficiency: float = 1.0) -> bool:
 	if _phase != Phase.READY:
 		return false
 
+	# Spent means spent: no dodge until the bar has recovered enough to
+	# clear exhaustion (30% of max). An AMENDMENT to combat.md §2's "at
+	# zero stamina you are not stunned, you are slow", made on the
+	# designer's call from play — "when your stamina drains completely
+	# you're not supposed to be able to dodge until it recovers some."
+	# The exhausted-dodge numbers below still cover the case they always
+	# did: a dodge costing more than is left without emptying you.
+	if stamina.is_exhausted():
+		return false
+
 	var paid := stamina.spend_dodge(efficiency)
 
 	_phase = Phase.STARTUP if _p.get("startupSeconds", 0.0) > 0.0 else Phase.INVULNERABLE

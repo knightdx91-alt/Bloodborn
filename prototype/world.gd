@@ -796,31 +796,17 @@ func _move_player(delta: float) -> void:
 	var pushed := dir.length()
 	dir = dir.normalized()
 
-	# On touch, how far you drag is how fast you go. The curve is squared
-	# on purpose: a linear ramp put almost the whole stick above walking
-	# pace, so the walk was unreachable by thumb.
-	var speed := SPEED
+	# How far you push is how fast you go, on stick as on thumb. The
+	# squaring, the exhausted walk and the sprint drain are all
+	# Fighter.pace's now — the rule used to live here, which is why
+	# Thornfield went without one entirely. A stick is finer than a drag,
+	# so `_pad_push` against the drag length is still the first thing to
+	# suspect if the pad feels different from the phone.
 	var stick := _pad_push()
-	if Input.is_key_pressed(KEY_SHIFT) \
-			or Input.get_joy_axis(PAD, PAD_SPRINT_AXIS) > PAD_SPRINT_PULL:
-		speed = SPRINT
-	elif stick > 0.0 or _touch_id != -1:
-		# How far you push is how fast you go, on stick as on thumb. The
-		# curve is squared because a linear ramp put almost the whole
-		# throw above walking pace and the walk was unreachable. A stick
-		# is finer than a drag, so this is the first number to suspect if
-		# the pad feels different from the phone.
-		var t: float = clamp(stick if stick > 0.0 else pushed, 0.0, 1.0)
-		speed = lerp(SPEED * 0.32, SPRINT, t * t)
-
-	# At zero stamina you are not stunned, you are slow (combat.md §2).
-	if player.stamina.is_exhausted():
-		speed = minf(speed, EXHAUSTED_WALK)
-
-	# Sprinting drains. L55 keeps the rate low on purpose — disengage is a
-	# first-class answer, so fleeing has to stay affordable.
-	if speed > SPRINT_THRESHOLD and not player.is_busy():
-		player.stamina.sprint(delta)
+	var push: float = clampf(stick if stick > 0.0 else pushed, 0.0, 1.0)
+	var sprinting: bool = Input.is_key_pressed(KEY_SHIFT) \
+		or Input.get_joy_axis(PAD, PAD_SPRINT_AXIS) > PAD_SPRINT_PULL
+	var speed: float = player.pace(push, sprinting, delta)
 
 	player.move(dir, speed, delta)
 

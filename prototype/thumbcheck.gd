@@ -253,6 +253,75 @@ func _ready() -> void:
 		"rolled toward +X and ended facing %s, so the one roll clip is "
 			% str(sideways.round()) + "playing sideways")
 
+	# --- one thumb still walks --------------------------------------------
+	#
+	# Reported from play: *"when I touch the screen it shows like a
+	# joystick that doesn't move."* The pinch work put EVERY non-chip
+	# touch into `_pinch` when it lands — that is how a second finger
+	# gets noticed — and then returned from the drag handler for anything
+	# in `_pinch`, one finger included. So the stick drew itself and the
+	# drag never reached it, and the camera could not be turned either.
+	#
+	# Nothing caught it. The zoom checks used TWO fingers, and the one
+	# check that touched the stick asserted `_stick_id == -1` — that a
+	# pinch does NOT start a walk, which is the opposite question. No
+	# check had ever dragged one finger and asked whether the body moved.
+	# This one does, and it measures the BODY rather than `_stick_vec`,
+	# because a stick that reports a direction nobody walks in is exactly
+	# what was shipped.
+	#
+	# Every touch here waits on `process_frame`, not `physics_frame`.
+	# `Input.parse_input_event` is flushed on the IDLE frame, so a check
+	# that sends a touch and then waits for a physics tick reads the
+	# state before the event has been delivered — and reports a working
+	# stick as dead. Holding a KEY is different: that is polled with
+	# `is_key_pressed` rather than delivered, which is why the walking
+	# checks below are on the physics clock and were never affected.
+	walker.revive()
+	walker.global_position = Vector3(0.0, 1.0, -30.0)
+	walker.velocity = Vector3.ZERO
+	walker.rotation = Vector3.ZERO
+	walker.set("_cam_yaw", 0.0)
+	await _idle(walker)
+	var stood_at: Vector3 = walker.global_position
+
+	# Touched, lifted, and touched AGAIN — because the first touch of a
+	# session worked, and it was every one after it that did not. A check
+	# that pressed once would have passed on the broken build.
+	_touch(0, Vector2(150.0, 480.0), true)
+	await get_tree().process_frame
+	_touch(0, Vector2(150.0, 480.0), false)
+	await get_tree().process_frame
+	_ok("the stick lets go when the finger does",
+		walker.get("_stick_id") == -1,
+		"the stick is still latched to a finger that has been lifted, so "
+			+ "nothing can take it again")
+
+	_touch(0, Vector2(150.0, 480.0), true)
+	await get_tree().process_frame
+	_ok("one finger takes the stick", walker.get("_stick_id") == 0,
+		"the stick did not take a single finger on the SECOND touch")
+	# Push it up the screen, which is forward.
+	for step in 6:
+		_drag(0, Vector2(150.0, 480.0 - 20.0 * (step + 1)))
+		await get_tree().process_frame
+	var pushed: Vector2 = walker.get("_stick_vec")
+	print("      the stick reads %s" % str(pushed))
+	_ok("and dragging it moves the stick", pushed.length() > 0.3,
+		"the knob reports %s after a 120px drag" % str(pushed))
+
+	for f in 40:
+		await get_tree().physics_frame
+	var walked: Vector3 = walker.global_position - stood_at
+	walked.y = 0.0
+	_touch(0, Vector2(150.0, 360.0), false)
+	await _settle()
+	print("      one thumb walked %s" % str(walked.round()))
+	_ok("and the body actually walks", walked.length() > 1.0,
+		"the stick was held for forty frames and the body moved %.2fm — "
+			% walked.length() + "a joystick that does not move is exactly "
+			+ "what was reported from play")
+
 	# --- and the camera can be pulled in ----------------------------------
 	#
 	# Asked for from play: *"we need an option to be able to zoom in and
@@ -409,6 +478,72 @@ func _ready() -> void:
 		_ok("and appears the moment the bar moves", bar.showing() > 0.5,
 			"stamina was spent and the bar stayed at alpha %.2f"
 				% bar.showing())
+
+	# --- running out of breath -------------------------------------------
+	#
+	# Reported from play: *"when your stamina drains completely you're
+	# not supposed to be able to dodge until it recovers some, and your
+	# movement speed and swing speed should be slowed."*
+	#
+	# The swing already laboured, because that rule lives in `Attack`
+	# where every region reads it. The WALK did not: the exhausted-pace
+	# rule sat inside `world.gd`, so the drill yard had it and Thornfield
+	# — the whole game — did not. Same fault as the stamina bar.
+	#
+	# Measured as distance actually covered, because the complaint was
+	# about how fast the body goes, not about what a constant says.
+	walker.revive()
+	await _idle(walker)
+	walker.global_position = Vector3(0.0, 1.0, -30.0)
+	walker.velocity = Vector3.ZERO
+	walker.rotation = Vector3.ZERO
+	walker.set("_cam_yaw", 0.0)
+	for f in 10:
+		await get_tree().physics_frame
+
+	var fresh_from: Vector3 = walker.global_position
+	_hold(KEY_W, true)
+	for f in 40:
+		await get_tree().physics_frame
+	_hold(KEY_W, false)
+	var fresh: float = fresh_from.distance_to(walker.global_position)
+
+	walker.stamina.spend(150.0)
+	_ok("the bar can be emptied", walker.stamina.is_exhausted(),
+		"spending 150 did not exhaust a 100-point bar")
+	await _idle(walker)
+	walker.global_position = Vector3(0.0, 1.0, -30.0)
+	walker.velocity = Vector3.ZERO
+	for f in 10:
+		await get_tree().physics_frame
+	var spent_from: Vector3 = walker.global_position
+	_hold(KEY_W, true)
+	for f in 40:
+		await get_tree().physics_frame
+	_hold(KEY_W, false)
+	var spent: float = spent_from.distance_to(walker.global_position)
+
+	print("      fresh walked %.2fm, spent walked %.2fm" % [fresh, spent])
+	_ok("an exhausted fighter is slower in the TOWN",
+		spent < fresh * 0.75 and spent > 0.05,
+		"fresh covered %.2fm and spent covered %.2fm — combat.md §2 says "
+			% [fresh, spent] + "you slow to a walk, and that rule lived in "
+			+ "world.gd where the town could never reach it")
+
+	_ok("and cannot dodge while the bar is empty",
+		not walker.try_dodge(Vector3(0.0, 0.0, -1.0)),
+		"a spent fighter still rolled — emptying the bar is supposed to "
+			+ "be a commitment, not a discount")
+
+	for f in 400:
+		await get_tree().physics_frame
+		if not walker.stamina.is_exhausted():
+			break
+	_ok("the bar recovers out of exhaustion",
+		not walker.stamina.is_exhausted(), "still exhausted after 400 frames")
+	_ok("and the dodge comes back with it",
+		walker.try_dodge(Vector3(0.0, 0.0, -1.0)),
+		"the bar recovered and the dodge was still refused")
 
 	_finish()
 

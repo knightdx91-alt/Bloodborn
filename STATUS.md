@@ -3,7 +3,7 @@
 Short, current, and written to be read on a phone. Updated at the end
 of each working session.
 
-**Last updated:** 2026-09-17
+**Last updated:** 2026-09-27
 
 ---
 
@@ -1022,6 +1022,78 @@ instrumenting rather than by reasoning about them:
 something else.** Worth naming, since it has now cost four rounds.
 
 All sixteen harnesses clear, and 406 C# tests.
+
+## Fixed 2026-09-27 — the joystick that did not move, and running out of breath
+
+**Reported from play:** *"Ok the zoom is good, but when your stamina
+drains completely you're not supposed to be able to dodge until it
+recovers some, and your movement speed and swing speed should be slowed.
+But now I can't move my character, when I touch the screen it shows like
+a joystick that doesn't move."*
+
+### Two bugs, both mine, both shipped in 0.1.83
+
+The pinch work broke walking in Thornfield **twice over**, and the first
+fix only found half of it.
+
+**One.** The drag handler read `if _pinch.has(dr.index)` and returned
+unconditionally. Every touch that is not on a chip is recorded in
+`_pinch` when it lands — that is how a second finger gets noticed at
+all — so a single finger matched too, and every drag returned before
+reaching the stick. That broke the **first** touch.
+
+**Two.** The release chain tested `_pinch` before `_stick_id`, in an
+`elif`. The pinch branch therefore always won and the two below it were
+**dead code**: `_stick_id` was never cleared, so after one
+touch-and-release the stick stayed latched to a finger that was gone and
+`_stick_id == -1` was never true again. That broke **every touch after
+the first**, and it survived the first fix.
+
+### The checks that let it through
+
+The zoom checks used **two** fingers. The one check that touched the
+stick asserted `_stick_id == -1` — that a pinch does *not* start a walk,
+which is the opposite question. **No check had ever put one finger down
+and asked whether the body moved.** There is one now, it presses twice
+(once passed happily on the broken build), and it measures the BODY
+rather than `_stick_vec`, because a stick reporting a direction nobody
+walks in is exactly what shipped.
+
+**And a harness rule worth keeping.** `Input.parse_input_event` is
+flushed on the **idle** frame. A check that sends a touch and then awaits
+`physics_frame` reads the state before the event has been delivered, and
+reports a working stick as dead — which is what the first three attempts
+at this check did. Holding a KEY is different: that is polled with
+`is_key_pressed` rather than delivered, which is why the walking and
+exhaustion checks were never affected and passed throughout.
+
+### Running out of breath
+
+Two of the three asks were already specified, and one contradicted the
+spec.
+
+**The swing already laboured.** That rule lives in `Attack`, which every
+region reads, so it worked everywhere.
+
+**The walk did not.** `combat.md` §2, amended from play on 2026-09-14,
+says *"You slow to a walk. Not a multiplier on the jog — a walking
+pace."* It was implemented — inside `world.gd`, where only the drill
+yard could reach it. Thornfield called `move()` with a flat constant, so
+a spent fighter there kept full pace and sprinting cost nothing. Now
+`Fighter.pace`, shared by both: the same fault and the same fix as
+`Skirmish`, `Feel` and `StaminaBar`. The town gains a proportional stick
+and sprint drain it never had. Measured: fresh walks 3.97m in forty
+frames, exhausted walks **0.99m**.
+
+**No dodge on an empty bar is an AMENDMENT**, not an implementation.
+§2 read *"At zero stamina you are not stunned — you are slow"*, and the
+code implemented exactly that: an exhausted dodge ran short and
+recovered long. Changed on the designer's call, through `sim/` first per
+L88, with two tests and the GDScript mirror. It makes emptying the bar a
+commitment rather than a discount. **The design document still says the
+old thing** — it should be amended to match, and has not been.
+
+408 C# tests, and all sixteen harnesses.
 
 ## Device check
 

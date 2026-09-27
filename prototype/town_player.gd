@@ -22,6 +22,9 @@ const MODEL := "res://assets/models/paladin.fbx"
 const IDLE_CLIP := "res://assets/animations/anim_Idle.fbx"
 const WALK_CLIP := "res://assets/animations/anim_Walking.fbx"
 const SPEED := 4.5
+## The same two the yard reads, so the town does not invent a third.
+const PAD_SPRINT_AXIS := JOY_AXIS_TRIGGER_LEFT
+const PAD_SPRINT_PULL := 0.5
 ## Matches world.gd's player so the town is not a different character.
 const PLAYER_HEALTH := 100.0
 const TALK_RANGE := 3.0
@@ -483,22 +486,39 @@ func _input(event: InputEvent) -> void:
 				_show_stick(t.position)
 			elif _look_id == -1 and t.position.x >= vw * 0.5:
 				_look_id = t.index
-		elif _chip_touch.has(t.index):
-			_release_chip(_chip_touch[t.index])
-			_chip_touch.erase(t.index)
-			get_viewport().set_input_as_handled()
-		elif _pinch.has(t.index):
-			# Lifting one finger ends the pinch. The other is NOT
+		else:
+			# A finger lifting leaves the pinch FIRST and unconditionally,
+			# whatever else it was also doing.
+			#
+			# This was an `elif` in a chain that tested `_pinch` before
+			# `_stick_id`. Every finger that is not on a chip is in
+			# `_pinch` — that is how a second one gets noticed — so the
+			# pinch branch always won and the two below it were DEAD
+			# CODE. `_stick_id` was never cleared, so after a single
+			# touch-and-release the stick stayed latched to a finger that
+			# was gone: it sat on screen, and the next touch could not
+			# take it because `_stick_id == -1` was never true again.
+			#
+			# That is the second half of "it shows like a joystick that
+			# doesn't move", and the half that survived the first fix.
+			# The drag handler returning early broke the FIRST touch;
+			# this broke every touch after it.
+			#
+			# Lifting one finger also ends a pinch, and the other is NOT
 			# promoted to a stick or a look-drag: it never started one,
-			# and inheriting a walk from the end of a zoom is the kind
-			# of thing that makes a control scheme feel haunted.
+			# and inheriting a walk from the end of a zoom is the kind of
+			# thing that makes a control scheme feel haunted.
 			_pinch.erase(t.index)
-		elif t.index == _stick_id:
-			_stick_id = -1
-			_stick_vec = Vector2.ZERO
-			_hide_stick()
-		elif t.index == _look_id:
-			_look_id = -1
+			if _chip_touch.has(t.index):
+				_release_chip(_chip_touch[t.index])
+				_chip_touch.erase(t.index)
+				get_viewport().set_input_as_handled()
+			elif t.index == _stick_id:
+				_stick_id = -1
+				_stick_vec = Vector2.ZERO
+				_hide_stick()
+			elif t.index == _look_id:
+				_look_id = -1
 	elif event is InputEventMouseButton and event.pressed:
 		# The wheel, for a desk. A click synthesised from a touch carries
 		# no wheel, so there is nothing to filter here.
@@ -509,15 +529,28 @@ func _input(event: InputEvent) -> void:
 			_set_zoom(_cam_zoom + ZOOM_WHEEL_STEP)
 	elif event is InputEventScreenDrag:
 		var dr := event as InputEventScreenDrag
+		if _pinch.has(dr.index) and _pinch.size() >= 2:
+			# TWO fingers is a pinch and owns the drag. ONE is not, and
+			# must fall through to the stick and the look below.
+			#
+			# This read `if _pinch.has(dr.index)` and returned
+			# unconditionally. Every touch that is not on a chip is
+			# recorded in `_pinch` when it lands — that is how a second
+			# finger is noticed at all — so a single finger matched too,
+			# and EVERY drag in Thornfield returned before reaching the
+			# stick. The stick drew itself and then never moved, and the
+			# camera could not be turned either. Shipped in 0.1.83 and
+			# reported immediately: "when I touch the screen it shows
+			# like a joystick that doesn't move."
+			_pinch[dr.index] = dr.position
+			var apart := _pinch_span()
+			if _pinch_from > 1.0:
+				# Fingers apart zooms IN, which is the way every map and
+				# photo on the device already behaves.
+				_set_zoom(_pinch_zoom * (_pinch_from / maxf(apart, 1.0)))
+			return
 		if _pinch.has(dr.index):
 			_pinch[dr.index] = dr.position
-			if _pinch.size() == 2:
-				var apart := _pinch_span()
-				if _pinch_from > 1.0:
-					# Fingers apart zooms IN, which is the way every map
-					# and photo on the device already behaves.
-					_set_zoom(_pinch_zoom * (_pinch_from / maxf(apart, 1.0)))
-			return
 		if dr.index == _look_id:
 			_look_drag += Vector2(
 				-dr.relative.x * Settings.yaw_sign(),
@@ -579,6 +612,16 @@ func _unhandled_input(event: InputEvent) -> void:
 ## town answering an input meant for the menu.
 ## The attack button went down. Nothing swings yet: what swings depends
 ## on how long it stays down.
+## Is the sprint held? Shift on a keyboard, the trigger on a pad — the
+## same two the yard reads, so the town does not invent a third.
+func _sprinting() -> bool:
+	if UI.modal_open():
+		return false
+	if Input.is_key_pressed(KEY_SHIFT):
+		return true
+	return Input.get_joy_axis(PAD, PAD_SPRINT_AXIS) > PAD_SPRINT_PULL
+
+
 func _begin_attack() -> void:
 	if UI.modal_open():
 		return
@@ -732,11 +775,22 @@ func _physics_process(delta: float) -> void:
 		# that.
 		heading = Vector3(d2.x, 0.0, d2.y)
 
+	# How fast, asked of Fighter rather than answered here.
+	#
+	# This passed a flat SPEED, so Thornfield had no walk, no sprint and
+	# no exhaustion: a spent fighter kept full pace and running never
+	# cost anything. combat.md §2 has said otherwise since it was amended
+	# from play on 2026-09-14 — the rule simply lived inside world.gd,
+	# where only the drill yard could reach it. Reported from play:
+	# "your movement speed and swing speed should be slowed."
+	var push: float = clampf(dir.length(), 0.0, 1.0)
+	var speed: float = pace(push, _sprinting(), delta)
+
 	# Fighter.move does the steering, the gravity, the animation and the
 	# footsteps, and refuses to move a body that is mid-swing — which is
 	# combat.md §6's telegraph, and has to hold in the town as much as
 	# anywhere else.
-	move(heading, SPEED, delta)
+	move(heading, speed, delta)
 
 	# The camera is placed HERE, in the physics step, immediately after
 	# the body has moved — and set outright rather than lerped toward.
