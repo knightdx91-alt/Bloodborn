@@ -2366,10 +2366,28 @@ falls into three piles, and none of it is design:
      **`SPEC-character-v4.md`** — characters that look like people
      instead of grey mannequins.
      `SPEC-dodge-clips.md` — four directional dodges.
-2. **Trademark clearance on "Marrowmark"** (`naming.md` §5) — blocks
+2. **The world, which is new since 2026-09-27 and is now the largest
+   pile.** `prototype/worldgen/` drafts country, settlements,
+   landmarks and roads, and streams them. What it needs next, in
+   order:
+   - **Walk the spike on the phone.** The only open question about
+     streaming is the device, everything else has been measured, and
+     nothing about the world's shape can be settled until it is
+     answered. If it will not hold, threading the chunk build is the
+     next move.
+   - **Nothing in the generated world is the GAME yet** — no combat,
+     no people, no contracts. It is country. Joining it to Thornfield
+     is a real piece of work and has not been started, and the honest
+     order is to prove the streaming first.
+   - **Bake as overrides, not as a world** (`tech.md` §1a, corrected)
+     — the mechanism exists, the workflow around it does not.
+   - The Wheel's actual geography — six named towns, the capitol, the
+     spokes and the rim road — is still a map nobody has drawn. The
+     generator makes country; it does not yet make *this* country.
+3. **Trademark clearance on "Marrowmark"** (`naming.md` §5) — blocks
    anything public. Classes 9 and 41, plus a common-law sweep, plus an
    attorney.
-3. **Tuning and content** — numbers that need a controller in hand
+4. **Tuning and content** — numbers that need a controller in hand
    (`combat.md` §9), the six town names and the currency, per-spell
    rule-breaks, regional palettes. All of it downstream of something
    playable existing.
