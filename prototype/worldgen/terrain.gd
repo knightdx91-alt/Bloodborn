@@ -196,6 +196,22 @@ static func biomes() -> Array:
 	return out
 
 
+## THORNFIELD IS THE ORIGIN.
+##
+## The hand-built town stands at (0,0) and every coordinate in
+## `town.gd`, and every harness that asserts one, is relative to that.
+## Moving the town out to its site on the ring would have broken all of
+## it at once, so the WORLD moves instead: these shift wheel
+## coordinates so that wedge 0's town site lands exactly on the game's
+## origin, and `_origin_h` drops its platform to exactly y = 0.
+##
+## The Wheel is unchanged — Godsgrave and the other five towns simply
+## sit at their true offsets from Thornfield rather than from a point
+## nobody stands on.
+var _origin_x := 0.0
+var _origin_z := 0.0
+var _origin_h := 0.0
+
 var seed_value := 0
 var _all: Array = []
 var _shape: FastNoiseLite
@@ -243,6 +259,18 @@ func _init(world_seed: int = 20260927) -> void:
 	_border.seed = world_seed + 9001
 	_border.frequency = 1.0 / 800.0
 
+	# THE ORIGIN, before anything samples the ground.
+	#
+	# Wedge 0 is the Hedges, which is Thornfield's. Its site becomes the
+	# game's (0,0). `_origin_h` is read while it is still zero, so that
+	# first call returns the true unshifted height; afterwards every
+	# height is relative to it.
+	var ang0 := 0.5 / float(WEDGES) * TAU
+	_origin_x = cos(ang0) * TOWN_RING
+	_origin_z = sin(ang0) * TOWN_RING
+	_origin_h = 0.0
+	_origin_h = _raw_height(0.0, 0.0)
+
 	# Last, because it samples the fields above.
 	_level_towns()
 
@@ -269,14 +297,22 @@ func town_site(wedge: int) -> Vector3:
 
 ## Godsgrave, at the middle of everything.
 func capitol_site() -> Vector3:
-	return Vector3(0.0, height_at(0.0, 0.0), 0.0)
+	var x := -_origin_x
+	var z := -_origin_z
+	return Vector3(x, height_at(x, z), z)
 
 
 ## Which wedge, as a float index that can be rounded or blended.
 func wedge_at(x: float, z: float) -> int:
-	var angle := atan2(z, x)
+	# Game coordinates in, wheel coordinates for the maths. Everything
+	# public on this class takes the game's frame; only the three
+	# primitives that read a position convert, which keeps the shift in
+	# one layer instead of sprinkled through the file.
+	var wx := x + _origin_x
+	var wz := z + _origin_z
+	var angle := atan2(wz, wx)
 	# Pushed off the true angle so the six seams are not radial lines.
-	angle += _border.get_noise_2d(x, z) * 0.45
+	angle += _border.get_noise_2d(wx, wz) * 0.45
 	var t := fposmod(angle / TAU, 1.0)
 	return int(floor(t * float(WEDGES))) % WEDGES
 
@@ -290,7 +326,9 @@ func biome_at(x: float, z: float) -> Biome:
 ## one place all six palettes meet (L86) and a place that reads as built
 ## rather than grown.
 func capitol_blend(x: float, z: float) -> float:
-	var r := sqrt(x * x + z * z)
+	var wx := x + _origin_x
+	var wz := z + _origin_z
+	var r := sqrt(wx * wx + wz * wz)
 	if r >= CAPITOL_R:
 		return 0.0
 	return clampf(1.0 - r / CAPITOL_R, 0.0, 1.0)
@@ -306,10 +344,13 @@ func capitol_blend(x: float, z: float) -> float:
 ## computing. A raw function that knows nothing about towns terminates;
 ## a clever one does not.
 func _raw_height(x: float, z: float) -> float:
-	# Warp first. Sampling the shape at a bent coordinate is what turns
+	# Into the wheel's frame first — see `_origin_x`.
+	var gx := x + _origin_x
+	var gz := z + _origin_z
+	# Then warp. Sampling the shape at a bent coordinate is what turns
 	# an even field into country with a grain to it.
-	var wx := x + _warp.get_noise_2d(x, z) * 380.0
-	var wz := z + _warp.get_noise_2d(x + 5000.0, z - 5000.0) * 380.0
+	var wx := gx + _warp.get_noise_2d(gx, gz) * 380.0
+	var wz := gz + _warp.get_noise_2d(gx + 5000.0, gz - 5000.0) * 380.0
 
 	var b := biome_at(x, z)
 	var shape := _shape.get_noise_2d(wx / (b.feature_size / 420.0),
@@ -330,7 +371,7 @@ func _raw_height(x: float, z: float) -> float:
 	var combined: float = lerpf(shape, ridged * 2.0 - 1.0, steep * 0.6)
 
 	var h := combined * b.relief
-	h += _detail.get_noise_2d(x, z) * (1.4 + b.relief * 0.06)
+	h += _detail.get_noise_2d(gx, gz) * (1.4 + b.relief * 0.06)
 
 	# The capitol sits in a bowl of quiet ground.
 	var cap := capitol_blend(x, z)
@@ -339,10 +380,12 @@ func _raw_height(x: float, z: float) -> float:
 
 	# And the world does not run for ever: the far edge falls away, so
 	# the horizon is land ending rather than land stopping.
-	var r := sqrt(x * x + z * z)
+	var r := sqrt(gx * gx + gz * gz)
 	if r > WORLD_R:
 		h -= (r - WORLD_R) * 0.08
-	return h
+	# Everything is measured from Thornfield's ground, so the town's
+	# own (0,0,0) needs no vertical fudge to sit on the world.
+	return h - _origin_h
 
 
 ## How wide a town's levelled ground is, and how far the slope out of
@@ -374,8 +417,10 @@ func _level_towns() -> void:
 	_town_reach2 = (TOWN_FLAT + TOWN_SKIRT) * (TOWN_FLAT + TOWN_SKIRT)
 	for w in WEDGES:
 		var ang := (float(w) + 0.5) / float(WEDGES) * TAU
-		var x := cos(ang) * TOWN_RING
-		var z := sin(ang) * TOWN_RING
+		# In the GAME's frame, so wedge 0 comes out at (0,0) and the
+		# rest at their true offsets from Thornfield.
+		var x := cos(ang) * TOWN_RING - _origin_x
+		var z := sin(ang) * TOWN_RING - _origin_z
 		_town_xz[w] = Vector2(x, z)
 		_town_level[w] = _raw_height(x, z)
 		# The site's own height IS the platform level, by construction —

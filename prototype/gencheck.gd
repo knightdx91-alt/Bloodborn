@@ -99,11 +99,16 @@ func _ready() -> void:
 	var seen: Array[String] = []
 	var colours: Array[Color] = []
 	var reliefs: Array[float] = []
+	# AROUND THE CAPITOL, not around the game's origin. Thornfield sits
+	# at (0,0) now, so sampling six angles from there lands six points
+	# in Thornfield's own corner and reports three biomes for six
+	# wedges — which is what it did.
+	var hub2 := t.capitol_site()
 	for w in WgTerrain.WEDGES:
 		var ang := (float(w) + 0.5) / float(WgTerrain.WEDGES) * TAU
 		var r := WgTerrain.TOWN_RING * 0.83
-		var bx := cos(ang) * r
-		var bz := sin(ang) * r
+		var bx := hub2.x + cos(ang) * r
+		var bz := hub2.z + sin(ang) * r
 		var bi = t.biome_at(bx, bz)
 		if not seen.has(bi.name):
 			seen.append(bi.name)
@@ -226,8 +231,8 @@ func _ready() -> void:
 			for k in 400:
 				var rr := WgTerrain.TOWN_RING * 0.45 + float(k % 40) * 600.0
 				var fan := (float(k / 40) - 4.5) * 0.06
-				var sx := cos(ang2 + fan) * rr
-				var sz := sin(ang2 + fan) * rr
+				var sx := hub2.x + cos(ang2 + fan) * rr
+				var sz := hub2.z + sin(ang2 + fan) * rr
 				var sc3 := int(floor(sx / WgSettlement.CELL))
 				var sz3 := int(floor(sz / WgSettlement.CELL))
 				var ckey := "%d:%d" % [sc3, sz3]
@@ -302,9 +307,13 @@ func _ready() -> void:
 	# generator makes country; this asks whether it makes THIS country.
 	var towns_ok := true
 	var wrong_wedge: Array[String] = []
+	var hub3 := t.capitol_site()
 	for w in WgTerrain.WEDGES:
 		var site := t.town_site(w)
-		var r := Vector2(site.x, site.z).length()
+		# Distance from the CAPITOL. It used to be distance from the
+		# origin, which was the same thing only while the capitol was
+		# the origin.
+		var r := Vector2(site.x - hub3.x, site.z - hub3.z).length()
 		if absf(r - WgTerrain.TOWN_RING) > 1.0:
 			towns_ok = false
 		# THE ONE AT RISK. The wedge borders are chewed by noise so
@@ -442,7 +451,8 @@ func _ready() -> void:
 		+ "sprint bug is back")
 
 	# --- roads ------------------------------------------------------------
-	var segs := WgRoads.near(t, t.seed_value, 0.0, 0.0, 19000.0, 19000.0)
+	var segs := WgRoads.near(t, t.seed_value,
+		hub2.x - 24000.0, hub2.z - 24000.0, hub2.x + 24000.0, hub2.z + 24000.0)
 	_ok("the places are joined up", segs.size() > 5,
 		"only %d road segments across 36 km of country" % segs.size())
 	print("      %d road segments" % segs.size())
@@ -467,7 +477,8 @@ func _ready() -> void:
 			% road_dupes)
 
 	_ok("and asking twice gives the same roads",
-		WgRoads.near(t, t.seed_value, 0.0, 0.0, 19000.0, 19000.0).size() == segs.size(),
+		WgRoads.near(t, t.seed_value, hub2.x - 24000.0, hub2.z - 24000.0,
+			hub2.x + 24000.0, hub2.z + 24000.0).size() == segs.size(),
 		"the road network is not deterministic")
 
 	if not segs.is_empty():

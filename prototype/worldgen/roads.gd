@@ -58,7 +58,15 @@ static func wheel(terrain: WgTerrain) -> Array:
 	for w in WgTerrain.WEDGES:
 		var t := terrain.town_site(w)
 		towns.append(Vector2(t.x, t.z))
-	var hub := Vector2.ZERO
+	# ASKED FOR, not assumed to be the origin.
+	#
+	# This was Vector2.ZERO. The moment Thornfield became the game's
+	# origin, that made every spoke run to Thornfield instead of to
+	# Godsgrave — six great roads converging on the starting village
+	# and none reaching the capitol. gencheck caught it as a spoke of
+	# length 0.
+	var hub_site := terrain.capitol_site()
+	var hub := Vector2(hub_site.x, hub_site.z)
 	for i in towns.size():
 		# A spoke in, and a rim segment on to the next town. Each is
 		# produced once, so the no-duplicates rule holds for these the

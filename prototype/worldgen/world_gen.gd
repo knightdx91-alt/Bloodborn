@@ -22,6 +22,19 @@ extends Node3D
 
 const HYSTERESIS := 1
 
+## Chunks the SCENE supplies itself, as a half-width in chunks.
+##
+## Thornfield builds its own ground — a flat plane it has stood on
+## since before there was a generator — and it sits on the levelled
+## platform at its town site, which is flat at exactly the same height.
+## So the two meet without a seam, and the generator simply leaves that
+## square alone rather than drawing a second floor inside it.
+##
+## Chunk-aligned on purpose: a hole measured in metres would cut chunks
+## in half and leave the town's plane fighting a generated one along
+## the join.
+@export var hole_chunks := 0
+
 @export var radius := 3
 @export var per_frame := 1
 @export var world_seed := 20260927
@@ -73,6 +86,8 @@ func _refresh(centre: Vector2i) -> void:
 	for dx in range(-radius, radius + 1):
 		for dz in range(-radius, radius + 1):
 			var at := Vector2i(centre.x + dx, centre.y + dz)
+			if in_hole(at):
+				continue
 			if not live.has(at):
 				_wanted.append(at)
 
@@ -119,6 +134,12 @@ func _refresh(centre: Vector2i) -> void:
 
 var _jobs: Dictionary = {}          # Vector2i -> { task, terrain, data }
 var _thread_terrain: Array = []
+
+
+## Is this chunk the scene's own ground rather than the generator's?
+func in_hole(at: Vector2i) -> bool:
+	return hole_chunks > 0 \
+		and absi(at.x) <= hole_chunks and absi(at.y) <= hole_chunks
 
 
 func _work() -> void:
@@ -187,6 +208,8 @@ func _exit_tree() -> void:
 func make_chunk(at: Vector2i) -> WgChunk:
 	if live.has(at):
 		return live[at]
+	if in_hole(at):
+		return null
 	if terrain == null:
 		terrain = WgTerrain.new(world_seed)
 	var c := WgChunk.new()

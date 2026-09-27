@@ -117,6 +117,12 @@ func _ready() -> void:
 	add_child(field)
 	field.enlist(walker)
 
+	# And the rest of the world, once there is somebody to stream
+	# around. This has to come after the walker is in the tree — the
+	# generator follows a node, and the first version called it up with
+	# the roads, before the walker existed at all.
+	_open_world(walker)
+
 	# The Hedges, west of Thornfield and IN it — not a scene behind a
 	# menu. You walk out of the north gate, down the road, and the wood
 	# is there.
@@ -334,7 +340,18 @@ func _house(pos: Vector3, yaw: float, wm: int, dm: int, opts: Dictionary = {}) -
 
 # ---------------------------------------------------------------- terrain ---
 
-const GROUND := 500.0
+## The town's own ground, and the hole it takes in the generated world.
+##
+## 576 m rather than 500 because it is now NINE CHUNKS on a side, and
+## the generator leaves exactly those nine alone. A round number of
+## metres would have cut chunks in half and left the town's plane
+## fighting a generated one along the join.
+##
+## It lands flush: Thornfield stands on its levelled town platform,
+## which is flat for 420 m from the centre, so the whole of this square
+## and a margin beyond it is at exactly y = 0 either way.
+const GROUND := 576.0
+const GROUND_CHUNKS := 4      # half-width, so 9 x 9
 
 
 func _terrain() -> void:
@@ -362,6 +379,32 @@ func _terrain() -> void:
 	ground.add_child(col)
 
 
+## The rest of the world, streamed around the town.
+##
+## Thornfield stopped being a 500 m plane with nothing past its fields
+## and became a place in a 3,870 km² world: walk out of the north gate
+## far enough and you are in the Hedges, then in open country, and the
+## road keeps going to Godsgrave 23 km away.
+##
+## The town keeps its own ground (see GROUND) and the generator fills
+## everything outside it. That is not a compromise — the hand-built
+## town is better than anything the generator would put there, and
+## `tech.md` §1a says exactly this: generate the country, hand-place
+## what players remember.
+func _open_world(who: Node3D) -> void:
+	var gen := WorldGen.new()
+	gen.name = "World"
+	gen.world_seed = 20260927
+	gen.hole_chunks = GROUND_CHUNKS
+	# Modest, because the town is already a heavy scene and a phone has
+	# to carry both. Four chunks is 288 m past the town's own ground.
+	gen.radius = 8
+	gen.per_frame = 1
+	add_child(gen)
+	# The ground under the town's own square is the town's, so the first
+	# streamed chunks are all outside it and none of them is underfoot —
+	# nothing to build before the body can stand.
+	gen.follow(who)
 func _roads() -> void:
 	var dirt := _ground_mat(Color(0.44, 0.37, 0.27), 24.0)
 	# North-south main road through both gates.

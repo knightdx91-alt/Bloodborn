@@ -2087,6 +2087,53 @@ then reports a missing body rather than a missing name.
   cut from it would not show the game's real framing. Fine for
   checking the tour runs; wrong for anything anyone watches.
 
+## Thornfield stands in the world — 2026-09-27
+
+The hand-built town and the 3,870 km² of generated country were two
+separate things: the town built its own 500 m plane and stood on it,
+with nothing past its fields. Walk out of the north gate now and you
+are in the Hedges, then in open country, and the road keeps going —
+Godsgrave is 23 km down it.
+
+**The world moved to the town, not the town to the world.** Moving
+Thornfield out to its site on the ring would have broken every
+coordinate in `town.gd` and every harness asserting one, at once.
+Instead `WgTerrain` carries an origin offset so wedge 0's town site
+lands exactly on the game's (0,0), and `_origin_h` drops its platform
+to exactly y = 0. Measured: the site is (0.000, 0.000, 0.000), the
+ground there is 0.0000 m, the slope 0.00000, and the biome is the
+Hedges — Thornfield's own country. The Wheel is unchanged; Godsgrave
+and the other five simply sit at their true offsets from Thornfield
+rather than from a point nobody stands on.
+
+**The town keeps its own ground and the generator leaves a hole.**
+`GROUND` went 500 → 576 m so it is exactly nine chunks on a side, and
+`WorldGen.hole_chunks` skips those nine. A hole measured in metres
+would have cut chunks in half and left the town's plane fighting a
+generated one along the join. It lands flush because the platform is
+flat for 420 m and the town's square is 288 m — both at y = 0.
+
+That is not a compromise. `tech.md` §1a says generate the country and
+hand-place what players remember; the hand-built town is better than
+anything the generator would put there.
+
+### And a real bug the move exposed
+
+`WgRoads.wheel` had the capitol hardcoded as `Vector2.ZERO`. The moment
+Thornfield became the origin, that made **every spoke run to
+Thornfield instead of Godsgrave** — six great roads converging on the
+starting village and none reaching the capitol. `gencheck` caught it
+as a spoke of length 0. It asks the terrain now.
+
+Two checks were also measuring from the origin when they meant the
+capitol, which were the same point only while the capitol was the
+origin: the six-wedge biome sample landed six points in Thornfield's
+corner and reported three biomes for six wedges.
+
+All twelve town harnesses clear, and the join is invisible in the
+render (`assets/evidence/worldgen/town_join.jpg`) — Thornfield sits in
+oak country running to the horizon with no seam where its plane ends.
+
 ## The world got fifteen times bigger, and the walk slowed — 2026-09-27
 
 Asked for from play: *"I want it 3x how long it would take you to
