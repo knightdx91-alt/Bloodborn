@@ -2141,9 +2141,15 @@ Fixed with **MultiMesh** — the pieces are grouped by model and each
 group becomes one node drawing any number of copies from a transform
 array. Cost stops scaling with the number of trees and starts scaling
 with the number of DISTINCT trees, which is eighteen for the world.
-**142 ms → 54 ms.** Still ~3 frames, so more is needed before this is
-smooth, and the obvious next moves are threading the build and cutting
-the mesh commit.
+**142 ms → 54 ms.** Then measured again rather than guessed again: the
+biggest thing left was `SurfaceTool`, at 17.7 ms, because it is a
+script call per vertex and per index across 4,225 vertices and 24,576
+indices. Writing the packed arrays straight into an `ArrayMesh`, and
+taking normals from the heightfield instead of `generate_normals()`,
+brought it to **30 ms** — under two frames at 60 fps.
+
+Full history: **142 → 54 → 30 ms.** The next move, if it needs one, is
+threading the build; nothing else left is large.
 
 **Still unanswered: what any of this does on the phone.** That is the
 whole question, it cannot be answered here, and the spike is in the
@@ -2162,6 +2168,34 @@ you stand still — it should not.
   their own trunks. The timing number that came with that frame looked
   perfectly healthy, which is the point: no check would have caught
   either, and both were obvious in one frame.
+
+### And one I got wrong twice, which is the point of looking
+
+A render showed the ironwood forest with its whole foreground pure
+black behind lit trees. I theorised the analytic normals were
+inverted, measured them against a forward-difference "truth", got
+45 degrees of error and believed it. Then theorised the ridged-noise
+crease was too sharp for a one-metre grid, softened it, and the number
+did not move at all.
+
+Both wrong. The forward-difference comparison was not truth, just a
+worse approximation: against the mesh's own averaged face normals the
+central differences the code uses are out by 29.9 degrees at worst and
+the forward ones by 34.8, so the code was already the better of the
+two and the tail is the terrain genuinely being rough at vertex scale.
+Reading the built chunk back settled it — **zero inverted normals and
+zero dark vertices in 4,225.**
+
+The bug was in the render harness. `genshot` put the ground camera at
+the TARGET point's height and then moved it forty metres away, so
+wherever the land rose in between the camera stood inside a hill and
+looked out through the back of it. Eye height is now sampled under the
+camera.
+
+Worth writing down because the lesson is not "check the normals": it
+is that two plausible theories about the generator survived a
+measurement each, and what settled it was reading the actual data out
+of the actual chunk.
 
 Renders are committed at `prototype/assets/evidence/worldgen/`.
 

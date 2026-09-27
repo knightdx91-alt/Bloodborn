@@ -98,26 +98,47 @@ func _ground() -> void:
 			var wz := position.z - half + float(iz - 1) * step
 			grid[iz * wide + ix] = terrain.height_at(wx, wz)
 
-	var st := SurfaceTool.new()
-	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	# ARRAYS DIRECTLY, not SurfaceTool.
+	#
+	# SurfaceTool is a script call per vertex and per index, and at
+	# 4,225 vertices and 24,576 indices that was 17.7 ms — the single
+	# biggest item left in a chunk once the models were batched.
+	# Writing the packed arrays and handing them to ArrayMesh does the
+	# same work with no per-vertex call overhead.
+	#
+	# Normals come from the heightfield rather than from
+	# `generate_normals()`: the grid already holds every neighbour, so
+	# the true surface normal is two subtractions and a normalize, and
+	# it is smooth across chunk borders for free because it is derived
+	# from world-space heights rather than from this chunk's triangles.
+	var verts := PackedVector3Array(); verts.resize(VERTS * VERTS)
+	var norms := PackedVector3Array(); norms.resize(VERTS * VERTS)
+	var cols := PackedColorArray(); cols.resize(VERTS * VERTS)
+	var uvs := PackedVector2Array(); uvs.resize(VERTS * VERTS)
+
 	for iz in VERTS:
 		for ix in VERTS:
 			var lx := -half + float(ix) * step
 			var lz := -half + float(iz) * step
 			var gi := (iz + 1) * wide + (ix + 1)
-			var h := grid[gi]
-			heights[iz * VERTS + ix] = h
+			var h: float = grid[gi]
+			var vi := iz * VERTS + ix
+			heights[vi] = h
 			var dx: float = grid[gi + 1] - grid[gi - 1]
 			var dz: float = grid[gi + wide] - grid[gi - wide]
 			var slope: float = Vector2(dx, dz).length() / (2.0 * step)
-			st.set_color(terrain.shade(position.x + lx, position.z + lz, h, slope))
+			verts[vi] = Vector3(lx, h, lz)
+			norms[vi] = Vector3(-dx, 2.0 * step, -dz).normalized()
+			cols[vi] = terrain.shade(position.x + lx, position.z + lz, h, slope)
 			# UVs in WORLD metres, not chunk-local, so the ground
 			# texture runs across a chunk border without restarting —
 			# otherwise every seam is a visible tile reset even though
 			# the heights match perfectly.
-			st.set_uv(Vector2((position.x + lx) / 4.0, (position.z + lz) / 4.0))
-			st.add_vertex(Vector3(lx, h, lz))
+			uvs[vi] = Vector2((position.x + lx) / 4.0, (position.z + lz) / 4.0)
 
+	var idx := PackedInt32Array()
+	idx.resize((VERTS - 1) * (VERTS - 1) * 6)
+	var w := 0
 	for iz in VERTS - 1:
 		for ix in VERTS - 1:
 			var a := iz * VERTS + ix
@@ -130,13 +151,23 @@ func _ground() -> void:
 			# pure black under a lit sky, because every face on it was
 			# pointing at the centre of the earth. A render caught it
 			# in one frame; no arithmetic in the generator would have.
-			st.add_index(a); st.add_index(b); st.add_index(c)
-			st.add_index(b); st.add_index(d); st.add_index(c)
-	st.generate_normals()
+			idx[w] = a; idx[w + 1] = b; idx[w + 2] = c
+			idx[w + 3] = b; idx[w + 4] = d; idx[w + 5] = c
+			w += 6
+
+	var arrays := []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = verts
+	arrays[Mesh.ARRAY_NORMAL] = norms
+	arrays[Mesh.ARRAY_COLOR] = cols
+	arrays[Mesh.ARRAY_TEX_UV] = uvs
+	arrays[Mesh.ARRAY_INDEX] = idx
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 
 	var mi := MeshInstance3D.new()
 	mi.name = "Ground"
-	mi.mesh = st.commit()
+	mi.mesh = mesh
 	mi.mesh.surface_set_material(0, _ground_material())
 	add_child(mi)
 

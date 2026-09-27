@@ -63,7 +63,9 @@ func _ready() -> void:
 		cam.look_at(hamlet + Vector3(0, 2, 0), Vector3.UP)
 		await _shot("hamlet")
 
-		cam.position = hamlet + Vector3(9.0, 2.2, 16.0)
+		var street_eye := hamlet + Vector3(9.0, 0.0, 16.0)
+		street_eye.y = gen.height_at(street_eye.x, street_eye.z) + 1.7
+		cam.position = street_eye
 		cam.look_at(hamlet + Vector3(0, 2.0, 0), Vector3.UP)
 		await _shot("hamlet_street")
 		_clear()
@@ -86,8 +88,20 @@ func _ready() -> void:
 		cam.look_at(at, Vector3.UP)
 		await _shot("air_" + label)
 
-		cam.position = at + Vector3(0.0, 2.0, 40.0)
-		cam.look_at(at + Vector3(0, 3.0, 0), Vector3.UP)
+		# EYE HEIGHT ABOVE THE GROUND UNDER THE CAMERA, not above the
+		# ground under the subject.
+		#
+		# This put the camera at the TARGET's height and then moved it
+		# 40 m away, so wherever the land rose in between the camera
+		# ended up inside a hill, looking out through the back of it.
+		# That is what the black foreground was in the ironwood shot —
+		# and I spent two wrong theories on the generator's normals
+		# before reading the chunk data and finding not one inverted
+		# normal and not one dark vertex in 4,225.
+		var eye := at + Vector3(0.0, 0.0, 40.0)
+		eye.y = gen.height_at(eye.x, eye.z) + 1.7
+		cam.position = eye
+		cam.look_at(at + Vector3(0, 2.0, 0), Vector3.UP)
 		await _shot("ground_" + label)
 		_clear()
 

@@ -217,7 +217,16 @@ func height_at(x: float, z: float) -> float:
 		wz / (b.feature_size / 420.0))
 	# Ridged, for the steeper country: folding the field about zero puts
 	# creases in it where the smooth version has a plain hump.
-	var ridged: float = 1.0 - absf(shape)
+	#
+	# SOFTENED, with sqrt(s^2 + e) instead of abs(s). A true absolute
+	# value makes a knife-edge crease, and a heightfield sampled at one
+	# metre cannot represent one: the mesh straddles the fold, the
+	# vertex normal comes out near-vertical on ground that is actually
+	# folding hard, and the lighting goes wrong along every ridge in
+	# the world. Measured against the true surface normal, the sharp
+	# version was out by up to 45 degrees. The epsilon rounds the fold
+	# to something a metre grid can actually carry.
+	var ridged: float = 1.0 - sqrt(shape * shape + 0.012)
 	var steep: float = clampf((b.relief - 20.0) / 50.0, 0.0, 1.0)
 	var combined: float = lerpf(shape, ridged * 2.0 - 1.0, steep * 0.6)
 
