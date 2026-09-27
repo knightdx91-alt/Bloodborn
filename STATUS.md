@@ -1090,8 +1090,26 @@ frames, exhausted walks **0.99m**.
 code implemented exactly that: an exhausted dodge ran short and
 recovered long. Changed on the designer's call, through `sim/` first per
 L88, with two tests and the GDScript mirror. It makes emptying the bar a
-commitment rather than a discount. **The design document still says the
-old thing** — it should be amended to match, and has not been.
+commitment rather than a discount. `combat.md` §2 now carries the
+amendment, dated today: the refusal keys off **exhaustion** rather than
+zero, so it clears at the same threshold the laboured swing and the
+walking pace do and a partial recovery hands back all three at once.
+An unaffordable *swing* is deliberately left as it was — that is still
+the thing you can throw when you should not.
+
+### The merge, and whose fix won
+
+The stick fix landed twice, independently, and they collided on push.
+Mine kept every finger in `_pinch` and taught each consumer to count
+them; the other removes the cause — the first finger is never put in
+`_pinch` at all — and routes a second finger by **which half of the
+screen** it lands on: other half means the other thumb, same half means
+a pinch. Mine would still have read a thumb on the camera as a zoom and
+stopped the walk, so the touch routing in `town_player.gd` is entirely
+the other one's. What was kept from mine is the part it never touched —
+`Fighter.pace`, which is why exhaustion survived the merge.
+
+`thumbcheck` now carries both sets of checks and passes all of them.
 
 408 C# tests, and all sixteen harnesses.
 

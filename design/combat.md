@@ -282,7 +282,10 @@ the game together.
   they are limited, not broken. A caravan guard who drops their load
   before a fight is making a real tactical choice.
 - At zero stamina you are not stunned — you are *slow*. Recovery
-  frames lengthen, and that is the vulnerability.
+  frames lengthen, and that is the vulnerability. (Amended twice from
+  play, below: the slowness is now the whole body rather than the
+  recovery alone, and the dodge is the one thing an empty bar refuses
+  outright.)
 
 Exhaustion should read as a fighter running out of breath, not as a
 status effect with an icon.
@@ -313,6 +316,30 @@ status effect with an icon.
 > The swing's slowdown is fixed when the swing starts rather than read
 > live, because §1's loop is reading a commitment: a blow that sped up
 > halfway because the bar crossed a threshold would be unanswerable.
+
+> **Amended 2026-09-27, from play.** The dodge is the exception to "not
+> stunned — slow". An empty bar now **refuses** it outright, until the
+> bar has recovered some.
+>
+> It used to run short and recover long, on the reasoning that a dodge
+> you cannot pay for should still happen. In the hand that reads as a
+> discount rather than a commitment: panic-rolling on empty still moved
+> you, still spent the escalating cost, and still offered the
+> invulnerable window — so emptying the bar cost you a little distance
+> rather than the option. "When your stamina drains completely you're
+> not supposed to be able to dodge until it recovers some."
+>
+> The refusal is **exhaustion**, not zero — it clears at
+> `ExhaustionRecoveryFraction`, the same threshold the laboured swing
+> and the walking pace clear at, so one state governs the whole body and
+> a partial recovery hands back all three together. Waiting for a full
+> bar would be a lockout, which is the status effect this section keeps
+> refusing to become.
+>
+> What survives unchanged: a swing you cannot afford still happens and
+> is still punished in its recovery. The *attack* is the thing you can
+> throw when you should not; the dodge is the thing you have to have
+> kept something back for. That is the trade this amendment buys.
 
 ## 3. Where skill lives (the L18 problem) **[core]**
 
