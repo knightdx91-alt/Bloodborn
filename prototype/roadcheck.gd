@@ -33,15 +33,32 @@ func _ready() -> void:
 	add_child(town)
 	await get_tree().create_timer(3.0).timeout
 
+	# BY NAME, not "the first Waypost you find".
+	#
+	# There are two signs now — the Hedges north, the drill yard south —
+	# and this took the last one it walked past, which was the yard's.
+	# Everything below then asked the yard's sign the Hedges' questions
+	# and failed honestly: it does not name the wood and it does not
+	# stand on the north road. The check was right and its grip on the
+	# world was loose, which is the failure mode to watch for every time
+	# a second one of anything arrives.
 	var post: Waypost = null
+	var yard_post: Waypost = null
 	var walker: TownWalker = null
 	var wood: HedgeWood = null
 	for n in town.get_children():
-		if n is Waypost: post = n as Waypost
+		if n is Waypost and n.name == "HedgesRoad": post = n as Waypost
+		if n is Waypost and n.name == "YardRoad": yard_post = n as Waypost
 		if n is TownWalker: walker = n as TownWalker
 		if n is HedgeWood: wood = n as HedgeWood
 
-	_ok("there is a signpost out of Thornfield", post != null, "no Waypost")
+	_ok("there is a signpost out of Thornfield", post != null, "no HedgesRoad Waypost")
+	_ok("and one on the south road to the yard", yard_post != null,
+		"no YardRoad Waypost")
+	if yard_post != null:
+		_ok("and it too is a sign, not a door",
+			yard_post.destination == "",
+			"the yard sign loads scene '%s'" % yard_post.destination)
 	_ok("and somebody to walk the road", walker != null, "no TownWalker")
 	_ok("and a wood at the end of it", wood != null, "no HedgeWood")
 	if post == null or walker == null or wood == null:

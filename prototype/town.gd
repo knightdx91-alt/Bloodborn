@@ -33,6 +33,16 @@ const RING_R := 55.0  # hedge-ring radius; town is ~110 m across
 ## a sprint. That is a feel number and the first thing to change if the
 ## journey drags.
 const HEDGES_AT := Vector3(0.0, 0.0, -190.0)
+## Where the drill yard stands, relative to the market square.
+##
+## South, opposite the wood, because the two are opposites and the road
+## through both gates already ran north-south. Work is north, practice
+## is south, and the square is between them.
+##
+## Closer in than the Hedges — 150 m against 190 — because you go to
+## the yard to try something and come back, and a walk that is right
+## for a day's work is wrong for a warm-up.
+const YARD_AT := Vector3(0.0, 0.0, 150.0)
 
 var _cache: Dictionary = {}
 var _mats: Dictionary = {}
@@ -115,6 +125,16 @@ func _ready() -> void:
 	wood.position = HEDGES_AT
 	add_child(wood)
 	wood.hunted_by(walker, field)
+
+	# The drill yard, south of Thornfield and IN it. It was the last
+	# place still behind a menu button, which is what made it a second
+	# WORLD rather than a second place: its own ground, its own sky, its
+	# own clock and its own copy of you. Now it is somewhere you walk.
+	var yard := DrillYard.new()
+	yard.name = "DrillYard"
+	yard.position = YARD_AT
+	add_child(yard)
+	yard.sparred_by(walker, field)
 
 
 # ---------------------------------------------------------------- assets ---
@@ -354,8 +374,12 @@ func _roads() -> void:
 	# square, so the road runs from the south gate all the way out to it
 	# — a road that stops short of where it is going is a prop.
 	var north_end: float = HEDGES_AT.z + HedgeWood.FIELD
-	var run: float = 56.0 - north_end
-	_quad(Vector3(0, 0.04, (56.0 + north_end) * 0.5), Vector2(5, run), dirt)
+	# And the south end runs on to the yard's gateless north side, for
+	# the same reason: it stopped at 56, the south gate, back when the
+	# yard was a menu button and there was nothing down there to reach.
+	var south_end: float = YARD_AT.z - DrillYard.YARD
+	var run: float = south_end - north_end
+	_quad(Vector3(0, 0.04, (south_end + north_end) * 0.5), Vector2(5, run), dirt)
 	# East-west lane.
 	_quad(Vector3(0, 0.04, 18), Vector2(102, 4), dirt)
 	# Market square paving.
@@ -554,6 +578,31 @@ func _waypost() -> void:
 	# looking up the road at the gate.
 	post.returns_facing = PI
 	add_child(post)
+
+	# And the same sign on the south road, for the yard. Written as a
+	# distance rather than a name because the yard belongs to the town
+	# — "the drill yard", not "Drill Yard", which is how a menu entry
+	# reads and how this used to read.
+	var drill := Waypost.new()
+	drill.name = "YardRoad"
+	drill.destination = ""
+	drill.label = ""
+	drill.reads = "The drill yard\n   200 yards"
+	drill.returns_to = Vector3(0.0, 1.0, RING_R - 5.0)
+	# Beside the road and well clear of the gate, the same 4.5 m off the
+	# ruts the Hedges sign sits at — that clearance was found by a
+	# harness trying to stand at the first placement and being launched
+	# sixty-four metres into the air by the gate's collision.
+	drill.position = Vector3(-4.5, 0.0, RING_R + 9.0)
+	# Turned to face back up the road toward the gate, which is the
+	# direction anybody reading it is walking FROM. The Hedges sign is
+	# unrotated because it stands on the NORTH road; this one is on the
+	# south, so it needs the half turn the other did not.
+	drill.rotation.y = PI
+	# Facing into town on the way back. Fighter faces -Z, so 0 is
+	# looking down the road at the gate from the south side.
+	drill.returns_facing = 0.0
+	add_child(drill)
 
 
 func _gates() -> void:

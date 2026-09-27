@@ -2012,19 +2012,25 @@ build and `prototype/rules/` is deleted the same day. Named on purpose
 has been written, and every structural question is locked. What remains
 falls into three piles, and none of it is design:
 
-1. **Stage 1 is built.** `tech.md` §6's six steps: move and look,
-   dodge, attack and hit, an enemy that fights back, and the parry —
-   all playable in a browser. **Only step 4 remains, and it is not
-   construction.**
-   - **Step 4 is the stamina tuning.** The economy is wired and
-     `spar.gd` now answers the half that is not about feel — whether
-     any one answer is strictly better — and says no. **What is left
-     is genuinely feel**, and `combat.md` §9 is explicit that it needs
-     a controller: run it, and tell me when a fight feels wrong.
-     **Still unjudged as of 2026-09-15.** The first play session spent
-     itself on five things that were broken before the economy could be
-     felt at all; those are fixed, so the next session can actually
-     reach the question.
+1. **Stage 1 is DONE.** `tech.md` §6's six steps: move and look,
+   dodge, attack and hit, an enemy that fights back, the parry, and
+   the stamina economy — all playable, and all six now signed off.
+   - **Step 4 is judged. 2026-09-27: "Stamina is fine."** The economy
+     is wired, `spar.gd` had already answered the half that is not
+     about feel — whether any one answer is strictly better — and said
+     no, and the remaining half was always going to be a judgement
+     rather than a measurement. It has now been made, so **Stage 1's
+     six steps are complete** and nothing in `tech.md` §6 is
+     outstanding.
+
+     Recorded rather than closed silently, because it is the kind of
+     answer that gets revisited: the numbers in
+     `shared/tuning/combat.json` are now load-bearing, and if a later
+     session wants to move one it is moving something that was played
+     and accepted, not a placeholder. The dodge refusal amended into
+     §2 the same day is the one part of the economy that changed
+     *after* this judgement — it was reported from play as a rule, not
+     a number, and is not what "fine" was answering.
    - **The arcs need animations before they mean anything** — see the
      warning above. This is now the highest-value blocked item, and it
      is blocked on Muse rather than on either of us.
