@@ -21,7 +21,6 @@ extends Fighter
 const MODEL := "res://assets/models/paladin.fbx"
 const IDLE_CLIP := "res://assets/animations/anim_Idle.fbx"
 const WALK_CLIP := "res://assets/animations/anim_Walking.fbx"
-const SPEED := 4.5
 ## The same two the yard reads, so the town does not invent a third.
 const PAD_SPRINT_AXIS := JOY_AXIS_TRIGGER_LEFT
 const PAD_SPRINT_PULL := 0.5
@@ -85,6 +84,10 @@ const ZOOM_WHEEL_STEP := 0.06
 var _cam_yaw := 0.0
 var _cam_pitch := 0.0
 var _look_id := -1
+## Where the look finger currently is. Only used to hand its position
+## to the pinch when a second finger lands; the look itself only needs
+## the drag deltas.
+var _look_pos := Vector2.ZERO
 ## Accumulated by a finger on the right half of the screen, spent once
 ## per frame. Touch has no camera otherwise, and a phone without a pad
 ## is the commonest way this is played.
@@ -101,9 +104,12 @@ var feel: Feel = Feel.new()
 var _stick_id := -1
 var _cam_zoom := ZOOM_MAX
 ## The two fingers of a pinch, by touch index, and what the gesture
-## started from. A pinch is NOT the stick and NOT a look-drag: the
-## moment a second finger lands away from the chips, both of those let
-## go so the gesture cannot also walk you across the square.
+## started from. A pinch starts when a second finger lands on the SAME
+## half of the screen as the first, or when a third finger lands while
+## the stick and the look are both down — never from a finger on the
+## other half, which is the other thumb. The recruited finger lets go
+## of the stick or the look-drag, so a zoom cannot also walk you across
+## the square.
 var _pinch := {}
 var _pinch_from := 0.0
 var _pinch_zoom := ZOOM_MAX
@@ -472,12 +478,65 @@ func _input(event: InputEvent) -> void:
 				_press_chip(chip)
 				get_viewport().set_input_as_handled()
 				return
-			# A second finger anywhere off the chips is a pinch. Godot
-			# has no touch pinch event — InputEventMagnifyGesture is a
-			# trackpad thing — so the separation is tracked by hand.
-			_pinch[t.index] = t.position
-			if _pinch.size() == 2:
-				_begin_pinch()
+			# A new finger is sorted by which half of the screen it
+			# lands on, because two thumbs is how the game is actually
+			# played: the left thumb steers, the right thumb works
+			# the camera. A finger on the other half is the other
+			# thumb — NOT a pinch. (Godot has no touch pinch event —
+			# InputEventMagnifyGesture is a trackpad thing — so the
+			# gesture is tracked by hand.)
+			#
+			# The rule, in full:
+			# - one finger down so far: it takes its own half (stick
+			#   on the left, look on the right).
+			# - stick down, new finger on the right half: the camera
+			#   thumb. Move and look at the same time, which used to
+			#   be impossible — the second finger started a pinch
+			#   and killed the stick with it.
+			# - look down, new finger on the left half: the stick
+			#   thumb. Same state, arrived the other way round.
+			# - a second finger on the SAME half: a pinch. The old
+			#   finger joins at its current position and _begin_pinch
+			#   lets it go, so a zoom cannot also walk you across
+			#   the square.
+			# - a third finger: the look finger joins it as a pinch
+			#   and the stick thumb keeps steering — it is not in
+			#   the pinch, so there is nothing to let go of.
+			#
+			# The first finger alone is NEVER a pinch: putting it in
+			# _pinch here is what used to eat every stick drag before
+			# it reached the stick.
+			var right := t.position.x >= vw * 0.5
+			if _stick_id != -1 and _look_id != -1:
+				_pinch.clear()
+				_pinch[_look_id] = _look_pos
+				_pinch[t.index] = t.position
+				_look_id = -1
+				_pinch_from = _pinch_span()
+				_pinch_zoom = _cam_zoom
+				return
+			if _stick_id != -1:
+				if right:
+					_look_id = t.index
+					_look_pos = t.position
+				else:
+					_pinch.clear()
+					_pinch[_stick_id] = \
+						_stick_origin + _stick_vec * _stick_radius
+					_pinch[t.index] = t.position
+					_begin_pinch()
+				return
+			if _look_id != -1:
+				if not right:
+					_stick_id = t.index
+					_stick_origin = t.position
+					_stick_vec = Vector2.ZERO
+					_show_stick(t.position)
+				else:
+					_pinch.clear()
+					_pinch[_look_id] = _look_pos
+					_pinch[t.index] = t.position
+					_begin_pinch()
 				return
 			if _stick_id == -1 and t.position.x < vw * 0.5:
 				_stick_id = t.index
@@ -486,39 +545,23 @@ func _input(event: InputEvent) -> void:
 				_show_stick(t.position)
 			elif _look_id == -1 and t.position.x >= vw * 0.5:
 				_look_id = t.index
-		else:
-			# A finger lifting leaves the pinch FIRST and unconditionally,
-			# whatever else it was also doing.
-			#
-			# This was an `elif` in a chain that tested `_pinch` before
-			# `_stick_id`. Every finger that is not on a chip is in
-			# `_pinch` — that is how a second one gets noticed — so the
-			# pinch branch always won and the two below it were DEAD
-			# CODE. `_stick_id` was never cleared, so after a single
-			# touch-and-release the stick stayed latched to a finger that
-			# was gone: it sat on screen, and the next touch could not
-			# take it because `_stick_id == -1` was never true again.
-			#
-			# That is the second half of "it shows like a joystick that
-			# doesn't move", and the half that survived the first fix.
-			# The drag handler returning early broke the FIRST touch;
-			# this broke every touch after it.
-			#
-			# Lifting one finger also ends a pinch, and the other is NOT
+				_look_pos = t.position
+		elif _chip_touch.has(t.index):
+			_release_chip(_chip_touch[t.index])
+			_chip_touch.erase(t.index)
+			get_viewport().set_input_as_handled()
+		elif _pinch.has(t.index):
+			# Lifting one finger ends the pinch. The other is NOT
 			# promoted to a stick or a look-drag: it never started one,
-			# and inheriting a walk from the end of a zoom is the kind of
-			# thing that makes a control scheme feel haunted.
+			# and inheriting a walk from the end of a zoom is the kind
+			# of thing that makes a control scheme feel haunted.
 			_pinch.erase(t.index)
-			if _chip_touch.has(t.index):
-				_release_chip(_chip_touch[t.index])
-				_chip_touch.erase(t.index)
-				get_viewport().set_input_as_handled()
-			elif t.index == _stick_id:
-				_stick_id = -1
-				_stick_vec = Vector2.ZERO
-				_hide_stick()
-			elif t.index == _look_id:
-				_look_id = -1
+		elif t.index == _stick_id:
+			_stick_id = -1
+			_stick_vec = Vector2.ZERO
+			_hide_stick()
+		elif t.index == _look_id:
+			_look_id = -1
 	elif event is InputEventMouseButton and event.pressed:
 		# The wheel, for a desk. A click synthesised from a touch carries
 		# no wheel, so there is nothing to filter here.
@@ -529,29 +572,17 @@ func _input(event: InputEvent) -> void:
 			_set_zoom(_cam_zoom + ZOOM_WHEEL_STEP)
 	elif event is InputEventScreenDrag:
 		var dr := event as InputEventScreenDrag
-		if _pinch.has(dr.index) and _pinch.size() >= 2:
-			# TWO fingers is a pinch and owns the drag. ONE is not, and
-			# must fall through to the stick and the look below.
-			#
-			# This read `if _pinch.has(dr.index)` and returned
-			# unconditionally. Every touch that is not on a chip is
-			# recorded in `_pinch` when it lands — that is how a second
-			# finger is noticed at all — so a single finger matched too,
-			# and EVERY drag in Thornfield returned before reaching the
-			# stick. The stick drew itself and then never moved, and the
-			# camera could not be turned either. Shipped in 0.1.83 and
-			# reported immediately: "when I touch the screen it shows
-			# like a joystick that doesn't move."
-			_pinch[dr.index] = dr.position
-			var apart := _pinch_span()
-			if _pinch_from > 1.0:
-				# Fingers apart zooms IN, which is the way every map and
-				# photo on the device already behaves.
-				_set_zoom(_pinch_zoom * (_pinch_from / maxf(apart, 1.0)))
-			return
 		if _pinch.has(dr.index):
 			_pinch[dr.index] = dr.position
+			if _pinch.size() == 2:
+				var apart := _pinch_span()
+				if _pinch_from > 1.0:
+					# Fingers apart zooms IN, which is the way every map
+					# and photo on the device already behaves.
+					_set_zoom(_pinch_zoom * (_pinch_from / maxf(apart, 1.0)))
+			return
 		if dr.index == _look_id:
+			_look_pos = dr.position
 			_look_drag += Vector2(
 				-dr.relative.x * Settings.yaw_sign(),
 				-dr.relative.y * Settings.pitch_sign()) * CAM_DRAG_RATE
@@ -604,14 +635,6 @@ func _unhandled_input(event: InputEvent) -> void:
 		_end_attack()
 
 
-## Swing, in town.
-##
-## Thin wrappers rather than calls straight into Fighter, because a
-## conversation is not a fight: with a panel open the same button is
-## moving a highlight, and a sword coming out behind it would be the
-## town answering an input meant for the menu.
-## The attack button went down. Nothing swings yet: what swings depends
-## on how long it stays down.
 ## Is the sprint held? Shift on a keyboard, the trigger on a pad — the
 ## same two the yard reads, so the town does not invent a third.
 func _sprinting() -> bool:
@@ -622,6 +645,14 @@ func _sprinting() -> bool:
 	return Input.get_joy_axis(PAD, PAD_SPRINT_AXIS) > PAD_SPRINT_PULL
 
 
+## Swing, in town.
+##
+## Thin wrappers rather than calls straight into Fighter, because a
+## conversation is not a fight: with a panel open the same button is
+## moving a highlight, and a sword coming out behind it would be the
+## town answering an input meant for the menu.
+## The attack button went down. Nothing swings yet: what swings depends
+## on how long it stays down.
 func _begin_attack() -> void:
 	if UI.modal_open():
 		return
@@ -777,8 +808,8 @@ func _physics_process(delta: float) -> void:
 
 	# How fast, asked of Fighter rather than answered here.
 	#
-	# This passed a flat SPEED, so Thornfield had no walk, no sprint and
-	# no exhaustion: a spent fighter kept full pace and running never
+	# This passed a flat constant, so Thornfield had no walk, no sprint
+	# and no exhaustion: a spent fighter kept full pace and running never
 	# cost anything. combat.md §2 has said otherwise since it was amended
 	# from play on 2026-09-14 — the rule simply lived inside world.gd,
 	# where only the drill yard could reach it. Reported from play:
