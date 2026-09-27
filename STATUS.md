@@ -2185,6 +2185,16 @@ neighbouring chunk that asks about its cell, and caching them per cell
 bought only 2 ms. The cache is kept because rebuilding deterministic
 output nine times is wrong regardless, but it was not the cost.
 
+Roads added about 6 ms, so a **warm chunk is 48 ms**.
+
+And one number worth knowing before the phone is blamed for it: a
+**cold chunk is 141 ms**, because the first one into a region pays to
+site and build every settlement cell its road sweep touches, about
+sixteen of them. After that they are cached and the cost is the 48. It
+matters at load and when walking into country nobody has been to;
+`genworld` builds nine chunks up front, which is where most of that
+gets paid.
+
 The next real move, if the phone says one is needed, is threading the
 build.
 
