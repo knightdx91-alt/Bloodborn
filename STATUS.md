@@ -38,6 +38,107 @@ get to whether the economy feels right.
 on the evidence in `tech.md` §2a, not on preference — see the L54
 section below.
 
+## Done 2026-09-27 — an override that knows which world it came from
+
+The bake mechanism has existed since the generator did: `WorldGen`
+looks in `res://baked` before it reaches for the noise, `bakecheck`
+asserts a baked chunk is byte-identical to the generated one, and
+`tech.md` §1a settles that overrides — not baked regions — are the plan
+(945,000 chunks and 18.3 GB is not a budget problem, it is an
+impossibility).
+
+**What did not exist was the part that makes it safe to use.** A baked
+chunk is cut to fit the land around it. When the generator changes,
+that land moves and the override does not, and the seam between them is
+a step you walk into. The generator moved **twice in one day** — rivers
+cut 7 m channels, the swell moved whole regions by tens of metres — and
+nothing in the project would have said a word about it.
+
+So a bake now records **which generator cut it**:
+`WgTerrain.fingerprint()` samples the finished land on a spiral across
+all six wedges — height, ground colour, water — plus what the scatter,
+the settlement placer and the landmark placer put at fixed cells, and
+hashes the lot as rounded integers. Any change to noise, biome, river,
+road or scatter rules moves it.
+
+**It is a fingerprint of the GENERATOR, never of the chunk.** That
+distinction is the whole design: an override deliberately differs from
+what the generator would make there, so "regenerate it and compare"
+would call every hand edit stale and be useless.
+
+`bake.tscn --check` walks the committed overrides and names the stale
+ones. Three new checks in `bakecheck` cover it, mutation-proven by
+stamping a bake with somebody else's fingerprint.
+
+### What the fingerprint could not see, four times over
+
+A hash that misses the change you just made is worse than no hash,
+because it says "fresh" with authority. So `ci/fingerprint-coverage.sh`
+moves one generator constant at a time and asserts the number moves —
+it edits source files, which is why it is a script rather than a
+harness. Fifteen changes, all caught now. **Four were not, and each
+was a different kind of blind spot:**
+
+- **River depth.** Dropping it from 7.00 m to 6.90 m left the
+  fingerprint bit-identical. Of course it did: one river per 9.4 km²
+  means a blind sample is a kilometre and a half from the nearest
+  channel, where the cut has no effect and `river_distance` has already
+  returned its ceiling. The fingerprint now asks **on** the rivers.
+- **Road wear.** Never seen at all — the wear is blended into a chunk's
+  vertex colours, not into `ground_at`, so no height or colour sample
+  in the world touches it.
+- **The six town platforms.** Widening one by a metre moved nothing,
+  because no blind sample in 3,870 km² lands on one of six platforms.
+- **A wedge's own tree list.** Changing what grows in the Fens moved
+  nothing, because all eight scatter rects happened to sit in other
+  wedges.
+
+And two chances — how often a river springs, how often a landmark
+stands — that sixty samples missed for a reason worth writing down:
+**moving a probability by one point in a hundred flips one cell in a
+hundred**, so sixty cells miss it more often than not. Four hundred
+catch it 98 times in 100.
+
+### And the cost, measured twice because the first guess was wrong
+
+The first version took **2.1 seconds**. The obvious culprit was
+`WgRoads.wear`, which tests a sample against all 1,800 segments —
+cutting 260 wear calls to 12 saved **nothing at all**. Measured
+properly, the time was four hundred landmark cells at 4 ms each, so the
+gate was split out (`WgLandmark.stands`, like `WgRivers.springs`) to
+ask "is one here" without placing every stone of a circle.
+
+**That saved nothing either** — 1,924 ms — which is how it became clear
+the gate was never the cost. The cells were a kilometre apart, and a
+point in a part of the world nothing has looked at traces the 49 river
+source cells that could reach it; past 4,096 traced cells the cache
+throws itself away and starts again. Four hundred *adjacent* cells is
+6.8 km of country and one sweep.
+
+**2,145 ms → 635 ms**, and worked out once per terrain. Two wrong
+theories and one measurement, which is now the ordinary ratio in this
+generator.
+
+### And the hand-edit path, which was a sentence rather than a thing
+
+§1a's case for baking at all is that a hill that is wrong "stops being
+a tuning argument about noise constants and becomes a file somebody
+edits". That was true of the mechanism and false of the practice: the
+file is a compressed binary blob and nobody edits one.
+
+`--out` writes a chunk as JSON and `--in` reads it back. **The list of
+what stands on it is plain text and that is the point** — a house moved
+two metres, a tree deleted, a shrine added, all by typing. The
+heightfield, colours and water go out as base64 so they come back
+*exactly*: a chunk that round-tripped to six decimal places would fail
+`bakecheck`'s identity assert, and that assert is worth more than the
+ability to retype 4,225 numbers, which nobody was ever going to use.
+
+**An edit keeps its own provenance.** Putting a chunk back does not
+stamp it with today's fingerprint: a hand edit does not make a stale
+chunk fresh, because the land around it has still moved, and restamping
+would hide the exact thing `--check` exists to find.
+
 ## Done 2026-09-27 — water, and a world with shape to it
 
 The generator made land and nothing else. `lore.md` §5 gives Greywater

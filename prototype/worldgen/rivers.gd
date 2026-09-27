@@ -78,22 +78,21 @@ static func cell_rng(world_seed: int, cx: int, cz: int) -> RandomNumberGenerator
 	return rng
 
 
-## Trace one river from its source, as a list of points.
-##
-## Uses `_bare_height` — the land BEFORE any river cut it — so a river
-## follows the shape of the country rather than the shape of itself.
-## Tracing against the cut land would let a river chase its own valley
-## in circles, which is a loop that terminates only by running out of
-## steps.
-static func trace(terrain: WgTerrain, world_seed: int, cx: int, cz: int) -> PackedVector2Array:
-	var out := PackedVector2Array()
+## IS THERE A SPRING HERE? Its own function because the fingerprint
+## that guards baked overrides has to ask this of sixty cells without
+## tracing sixty rivers — and because asking it twice in two places is
+## how the two answers drift apart.
+static func springs(terrain: WgTerrain, world_seed: int,
+		cx: int, cz: int) -> bool:
 	var rng := cell_rng(world_seed, cx, cz)
 	if rng.randf() > SOURCE_CHANCE:
-		return out
-
-	var p := Vector2(
+		return false
+	return _springs(terrain, Vector2(
 		(float(cx) + rng.randf()) * SOURCE_CELL,
-		(float(cz) + rng.randf()) * SOURCE_CELL)
+		(float(cz) + rng.randf()) * SOURCE_CELL))
+
+
+static func _springs(terrain: WgTerrain, p: Vector2) -> bool:
 	# A SPRING IS ON LOCAL HIGH GROUND, not above some number.
 	#
 	# Two absolute thresholds failed here, and the second failed for an
@@ -120,10 +119,34 @@ static func trace(terrain: WgTerrain, world_seed: int, cx: int, cz: int) -> Pack
 	# "higher than its surroundings at all" is the honest reading of
 	# local high ground.
 	if h0 <= around / 4.0:
+		return false
+	return true
+
+
+## Trace one river from its source, as a list of points.
+##
+## Uses `_bare_height` — the land BEFORE any river cut it — so a river
+## follows the shape of the country rather than the shape of itself.
+## Tracing against the cut land would let a river chase its own valley
+## in circles, which is a loop that terminates only by running out of
+## steps.
+static func trace(terrain: WgTerrain, world_seed: int, cx: int, cz: int) -> PackedVector2Array:
+	var out := PackedVector2Array()
+	var rng := cell_rng(world_seed, cx, cz)
+	if rng.randf() > SOURCE_CHANCE:
+		return out
+
+	var p := Vector2(
+		(float(cx) + rng.randf()) * SOURCE_CELL,
+		(float(cz) + rng.randf()) * SOURCE_CELL)
+	if not _springs(terrain, p):
 		return out
 
 	out.append(p)
-	var here := terrain.bare_height(p.x, p.y)
+	# The source's own height, which is the ceiling for the whole
+	# course — see the stop below.
+	var h0 := terrain.bare_height(p.x, p.y)
+	var here := h0
 	var climbed := 0
 	# WATER HAS MOMENTUM, and the first cut did not.
 	#

@@ -65,6 +65,34 @@ static func cached(terrain: WgTerrain, world_seed: int, cx: int, cz: int) -> Dic
 	return out
 
 
+## IS THERE ANYTHING IN THIS CELL? The gate, without building what is
+## behind it.
+##
+## `at_cell` costs about 4 ms because it places every stone of a circle
+## and every plank of a camp. The fingerprint that guards baked
+## overrides has to ask four hundred cells whether a landmark stands
+## there, and four hundred of those was 1.7 seconds — measured, after a
+## guess that it was the roads turned out to be wrong by a factor of
+## thirty. Asking the gate alone is a hundredth of that.
+##
+## Kept beside `at_cell` and reading the same constants, because a
+## second copy of this test is a second answer waiting to disagree.
+static func stands(terrain: WgTerrain, world_seed: int,
+		cx: int, cz: int) -> bool:
+	var rng := cell_rng(world_seed, cx, cz, 0)
+	if rng.randf() > CHANCE:
+		return false
+	var x := (float(cx) + rng.randf_range(0.2, 0.8)) * CELL
+	var z := (float(cz) + rng.randf_range(0.2, 0.8)) * CELL
+	if terrain.slope_at(x, z, 4.0) > MAX_SLOPE:
+		return false
+	if terrain.river_distance(x, z) < 40.0:
+		return false
+	if terrain.capitol_blend(x, z) > 0.3:
+		return false
+	return true
+
+
 static func at_cell(terrain: WgTerrain, world_seed: int, cx: int, cz: int) -> Dictionary:
 	var rng := cell_rng(world_seed, cx, cz, 0)
 	if rng.randf() > CHANCE:

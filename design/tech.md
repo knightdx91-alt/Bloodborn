@@ -178,6 +178,29 @@ mechanism is the same one either way: the loader prefers a baked chunk
 when one exists and generates when one does not, so the difference
 between the two plans is entirely in how many files get committed.
 
+**What makes an override safe to keep is knowing which generator cut
+it** [built 2026-09-27]. A baked chunk is cut to fit the land around
+it. When the generator changes, that land moves and the override does
+not, and the seam between them is a step you walk into — this project
+moved it twice in one day (rivers cut 7 m channels; the swell moved
+whole regions by tens of metres) and nothing would have noticed.
+
+So a bake records `WgTerrain.fingerprint()`, and `bake.tscn --check`
+names the stale ones. It is a fingerprint **of the generator, never of
+the chunk**: an override deliberately differs from what the generator
+would make there, so "regenerate and compare" would call every hand
+edit stale and be useless. `ci/fingerprint-coverage.sh` moves one
+generator constant at a time and asserts the number moves.
+
+**And the hand-edit path is real now.** "A file somebody edits" was
+true of the mechanism and false of the practice, because the file is a
+compressed binary blob. `bake.tscn --out` writes a chunk as JSON and
+`--in` reads it back: the list of what stands on it is plain text — a
+house moved two metres, a tree deleted, a shrine added — while the
+heightfield, colours and water travel as base64 so they return exactly.
+Putting a chunk back keeps its **own** provenance: a hand edit does not
+make a stale chunk fresh, because the land around it has still moved.
+
 This is the same relationship the project already runs on everywhere
 else: `sim/` is authoritative and the tuning file is data; the machine
 drafts and a person decides; the result is checked in and guarded. A

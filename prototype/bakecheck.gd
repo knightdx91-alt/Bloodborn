@@ -124,6 +124,64 @@ func _ready() -> void:
 		"the baked chunk has no water mesh")
 	wet_chunk.queue_free()
 
+	# --- provenance, and the hand-edit path ------------------------------
+	#
+	# THE ONE THAT MATTERS. An override is cut to fit the land around
+	# it; when the generator moves, that land moves and the override
+	# does not, and the seam is a step you walk into. Rivers and the
+	# swell both moved it by tens of metres in one day.
+	var print_now := t.fingerprint()
+	_ok("the generator has a fingerprint", print_now != 0,
+		"fingerprint is zero, which is the 'not recorded' value")
+	_ok("and it is the same one asked twice",
+		WgTerrain.new(20260927).fingerprint() == print_now,
+		"two terrains on one seed fingerprint differently")
+	_ok("and a different world has a different one",
+		WgTerrain.new(99).fingerprint() != print_now,
+		"seed 99 fingerprints the same as seed 20260927")
+
+	var stamped := WgBake.gather(t, at)
+	stamped["fingerprint"] = print_now
+	WgBake.write(stamped, DIR)
+	_ok("a bake remembers which generator cut it",
+		WgBake.stale(at, t, DIR) == WgBake.FRESH,
+		"a bake stamped with the current fingerprint does not read fresh")
+
+	stamped["fingerprint"] = print_now ^ 0x5a5a5a
+	WgBake.write(stamped, DIR)
+	_ok("and a bake from an older one is called stale",
+		WgBake.stale(at, t, DIR) == WgBake.STALE,
+		"a bake stamped with someone else's fingerprint reads fresh")
+	WgBake.write(made, DIR)
+
+	# The text path. `tech.md` §1a's case for baking is that a wrong
+	# hill "becomes a file somebody edits" — which was true of the
+	# mechanism and false of the practice until this existed.
+	var text := WgBake.to_json(stamped)
+	var parsed := WgBake.from_json(text)
+	_ok("a chunk can be written out as text and read back",
+		not parsed.is_empty() and (parsed["at"] as Vector2i) == at,
+		"the round trip did not come back as chunk %s" % str(at))
+	var jworst := 0.0
+	var jh0: PackedFloat32Array = stamped["heights"]
+	var jh1: PackedFloat32Array = parsed.get("heights", PackedFloat32Array())
+	for i in jh0.size():
+		jworst = maxf(jworst, absf(jh0[i] - (jh1[i] if i < jh1.size() else 1e9)))
+	_ok("and every height survives the text exactly", jworst == 0.0,
+		"worst height difference through JSON %.9f m" % jworst)
+	var jwater: PackedFloat32Array = parsed.get("water", PackedFloat32Array())
+	var jw0: PackedFloat32Array = stamped["water"]
+	var jwd := 0
+	for i in jw0.size():
+		if i >= jwater.size() or jw0[i] != jwater[i]:
+			jwd += 1
+	_ok("and the water with it", jwd == 0,
+		"%d water levels differ through JSON" % jwd)
+	_ok("and what stands on it is there to be edited",
+		(parsed["pieces"] as Array).size() == (stamped["pieces"] as Array).size()
+			and text.contains("\"path\""),
+		"the piece list did not survive, or is not readable text")
+
 	var p0: Array = made["pieces"]
 	var p1: Array = back["pieces"]
 	_ok("and every piece is there", p0.size() == p1.size(),

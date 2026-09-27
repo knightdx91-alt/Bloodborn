@@ -688,6 +688,202 @@ func _platformed(x: float, z: float) -> float:
 	return h
 
 
+## A NUMBER THAT CHANGES WHENEVER THE GENERATOR DOES.
+##
+## A baked chunk is an OVERRIDE: it deliberately differs from what the
+## generator would make there, because differing is the whole point of
+## having baked it. So "is this bake stale" cannot be asked by
+## regenerating that chunk and comparing — that question calls every
+## hand edit stale and is therefore useless.
+##
+## It has to be asked of the GENERATOR, away from the chunk. If the
+## land the generator makes has moved, an override cut to fit the old
+## land no longer meets its neighbours, and the seam is a hole you walk
+## into. This session made exactly that change twice over — rivers cut
+## 7 m channels, and the swell moved whole regions by tens of metres —
+## and nothing would have noticed.
+##
+## Sampled over the whole world and across everything a chunk is made
+## of: height, ground colour, water, roads, and what stands on the
+## land. A change to any of those rules moves this number.
+var _fingerprint := 0
+
+func fingerprint() -> int:
+	# WORKED OUT ONCE. It samples eight hundred cells and a spiral of
+	# the finished land, which is nothing to pay once and a great deal
+	# to pay per chunk — and the bake tool stamps every chunk it writes.
+	if _fingerprint != 0:
+		return _fingerprint
+	var h := 0x811c9dc5
+	var hub := capitol_site()
+	for i in 24:
+		# A spiral out from the capitol, so the samples cross every
+		# wedge at several radii rather than clustering in one country.
+		#
+		# TWENTY-FOUR, not forty. Each point is in a different part of
+		# the world, so each one is a cold river-cache sweep — 49 source
+		# cells traced to answer one height query. That made the spiral
+		# 6 ms a sample, which is forty times what a warm one costs.
+		var a := float(i) / 24.0 * TAU * 5.0
+		var r := (0.08 + 0.88 * float(i) / 24.0) * WORLD_R
+		var x := hub.x + cos(a) * r
+		var z := hub.z + sin(a) * r
+		# ROUNDED TO INTEGERS before hashing. A hash of raw floats would
+		# be a hash of the last bit of a transcendental function, which
+		# is not something two builds have to agree about.
+		h = _mix(h, int(round(height_at(x, z) * 64.0)))
+		h = _mix(h, int(round(minf(river_distance(x, z), 9999.0))))
+		var c := ground_at(x, z)
+		h = _mix(h, int(round(c.r * 255.0)) * 65536
+			+ int(round(c.g * 255.0)) * 256 + int(round(c.b * 255.0)))
+
+	# AND THE WATER, ASKED WHERE THE WATER IS.
+	#
+	# The spiral above does not catch a change to the rivers, and this
+	# was found by making one: dropping DEPTH from 7.0 m to 6.9 m left
+	# the fingerprint bit-identical. Of course it did — one river per
+	# 9.4 km2 means a blind sample is a kilometre and a half from the
+	# nearest channel, where the cut has no effect at all and
+	# `river_distance` has already given up and returned its ceiling.
+	#
+	# A fingerprint that misses the exact change that moved the land
+	# this afternoon is not a fingerprint. So it asks ON the rivers:
+	# where the course goes, and how deep the water has cut there.
+	for k in 6:
+		var path := WgRivers.trace(self, seed_value, 3 + k * 5, -7 - k * 4)
+		h = _mix(h, path.size())
+		for i in range(0, path.size(), 4):
+			var q: Vector2 = path[i]
+			h = _mix(h, int(round(q.x * 2.0)) ^ int(round(q.y * 2.0)))
+			h = _mix(h, int(round(river_cut(q.x, q.y) * 128.0)))
+			var w := water_at(q.x, q.y)
+			h = _mix(h, 0 if w <= NO_WATER else int(round(w * 64.0)))
+
+	# THE SIX TOWN SITES, and each wedge's own scatter.
+	#
+	# Both added after a miss. Widening a town platform by a metre moved
+	# nothing, because no blind sample in 3,870 km2 lands on one of six
+	# platforms; and changing which trees grow in the Fens moved
+	# nothing, because the eight scatter rects below all happened to sit
+	# in other wedges. A fingerprint has to be asked where the rule
+	# lives, not only where the sampler happened to walk.
+	for w in WEDGES:
+		var site := town_site(w)
+		h = _mix(h, int(round(site.x)) ^ int(round(site.z)))
+		for f in [0.0, 0.75, 1.0, 1.4]:
+			var d: float = TOWN_FLAT * float(f)
+			h = _mix(h, int(round(height_at(site.x + d, site.z) * 64.0)))
+			h = _mix(h, int(round(town_blend(site.x + d, site.z) * 4096.0)))
+		# ...and what grows in that wedge, sampled in the wedge rather
+		# than wherever the scatter loop below happens to fall.
+		var near_town := WgScatter.in_rect(self,
+			site.x + 900.0, site.z + 900.0,
+			site.x + 1020.0, site.z + 1020.0)
+		h = _mix(h, near_town.size())
+		for item in near_town:
+			var tp: Vector3 = item["position"]
+			h = _mix(h, hash(item["path"]) ^ int(round(tp.z * 4.0)))
+
+	# HOW OFTEN a river springs, over enough cells to see it.
+	#
+	# The six courses above catch the shape of a river. They do NOT
+	# catch how many there are: nudging `SOURCE_CHANCE` from 0.55 to
+	# 0.56 left all six with the same verdict and the fingerprint
+	# unmoved. Sixty was not enough either, and the arithmetic says why:
+	# moving a chance by one point in a hundred flips one cell in a
+	# hundred, so sixty cells miss it more often than not. Four hundred
+	# catch it 98 times in 100, and the verdict is cheap —
+	# `WgRivers.springs` exists so this can ask four hundred cells
+	# without tracing four hundred rivers.
+	for k in 400:
+		h = _mix(h, 1 if WgRivers.springs(self, seed_value,
+			-31 + (k % 20), 19 - (k / 20)) else 0)
+
+	# THE ROADS, which no height or colour sample sees at all: the wear
+	# is blended into a chunk's vertex colours, not into `ground_at`.
+	# Widening a track by half a metre changed nothing here until this
+	# went in.
+	var segs := WgRoads.near(self, seed_value, 0.0, 0.0, 4000.0, 4000.0)
+	h = _mix(h, segs.size())
+	# WHERE the roads run: every endpoint, which is a cheap loop.
+	for seg in segs:
+		var a2: Vector2 = seg["a"]
+		var b2: Vector2 = seg["b"]
+		h = _mix(h, int(round(a2.x)) ^ int(round(a2.y * 3.0)))
+		h = _mix(h, int(round(b2.x)) ^ int(round(b2.y * 3.0)))
+	# And HOW WIDE they are worn, at a dozen points only: `wear` tests
+	# the sample against every segment it was given, so a dozen calls
+	# against 1,800 segments is 21,600 tests and 260 calls was 1.4
+	# million — which was almost the whole of this function's two
+	# seconds.
+	for i in range(0, segs.size(), maxi(segs.size() / 12, 1)):
+		var seg2: Dictionary = segs[i]
+		var mid: Vector2 = (seg2["a"] as Vector2).lerp(seg2["b"] as Vector2, 0.5)
+		h = _mix(h, int(round(WgRoads.wear(segs, mid.x, mid.y) * 1024.0)))
+		h = _mix(h, int(round(WgRoads.wear(segs,
+			mid.x + 6.0, mid.y + 6.0) * 1024.0)))
+
+	# And what stands on the land, which no height sample would catch.
+	#
+	# Same arithmetic as the springs: a one-point change in the chance
+	# flips one cell in a hundred, so it takes hundreds of cells to see
+	# it. A landmark cell is cheap to ask, so it gets four hundred; a
+	# settlement site walks a grid of slope samples, so it gets eight
+	# and a coarser change is the price.
+	# NEIGHBOURING CELLS, not four hundred scattered ones.
+	#
+	# Scattered was 1.7 seconds and stayed 1.7 seconds after the gate
+	# was made cheap, which is how it became clear the gate was never
+	# the cost. `stands` asks `river_distance`, and a point in a part of
+	# the world nothing has looked at yet traces the 49 source cells
+	# that could reach it — so four hundred points a kilometre apart is
+	# four hundred cold sweeps, and past 4,096 traced cells the cache
+	# throws itself away and starts again. Twenty by twenty adjacent
+	# cells is 6.8 km of country and one sweep.
+	#
+	# It costs nothing in what this catches: how often a landmark
+	# stands is one number for the whole world, and what a landmark IS
+	# per biome is the six built in full below.
+	for k in 400:
+		h = _mix(h, 1 if WgLandmark.stands(self, seed_value,
+			23 + (k % 20), -17 + (k / 20)) else 0)
+	# And a few built in full, for what a landmark IS rather than
+	# whether one is there.
+	for k in 6:
+		var mark := WgLandmark.at_cell(self, seed_value,
+			41 + k * 13, -29 - k * 7)
+		h = _mix(h, 1 if mark.is_empty() else
+			(mark["pieces"] as Array).size() + 2)
+		if not mark.is_empty():
+			h = _mix(h, hash(mark["kind"]))
+	for k in 8:
+		var cx := 9 + k * 37
+		var cz := -14 - k * 23
+		var found := WgSettlement.site(self, seed_value, cx, cz)
+		h = _mix(h, 1 if found.is_empty() else 2)
+		if not found.is_empty():
+			var at3: Vector3 = found["at"]
+			h = _mix(h, int(round(at3.x)) ^ int(round(at3.z)))
+		var items := WgScatter.in_rect(self,
+			float(cx) * 128.0, float(cz) * 128.0,
+			float(cx) * 128.0 + 96.0, float(cz) * 128.0 + 96.0)
+		h = _mix(h, items.size())
+		for item in items:
+			var ip: Vector3 = item["position"]
+			h = _mix(h, hash(item["path"]) ^ int(round(ip.x * 4.0)))
+	# Never zero: zero is the "no provenance recorded" value a bake
+	# written by hand has, and a fingerprint that could collide with it
+	# would call an unstamped chunk fresh.
+	_fingerprint = maxi(h & 0x7fffffff, 1)
+	return _fingerprint
+
+
+static func _mix(h: int, v: int) -> int:
+	var n: int = (h ^ (v & 0xffffffff)) * 16777619
+	n = n & 0xffffffff
+	return n ^ (n >> 15)
+
+
 ## The surface normal, from finite differences. Used to keep trees off
 ## cliffs and to tint steep ground as rock.
 func slope_at(x: float, z: float, step: float = 2.0) -> float:

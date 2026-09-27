@@ -20,7 +20,9 @@ extends RefCounted
 const MAGIC := 0x4D524B31  # "MRK1"
 ## 2: the water level per vertex. A bake written before rivers existed
 ## describes a country of dry gullies, so it is refused, not adapted.
-const VERSION := 2
+## 3: the generator's fingerprint, so a bake can say WHICH generator it
+##    was cut to fit. See `WgTerrain.fingerprint`.
+const VERSION := 3
 const DIR := "res://baked"
 
 
@@ -159,6 +161,9 @@ static func write(data: Dictionary, dir: String = DIR,
 	f.store_32(version)
 	f.store_32(at.x)
 	f.store_32(at.y)
+	# WHICH GENERATOR THIS WAS CUT TO FIT. Zero means "not recorded",
+	# which is what a hand-written test fixture has.
+	f.store_32(int(data.get("fingerprint", 0)))
 
 	var heights: PackedFloat32Array = data["heights"]
 	f.store_32(heights.size())
@@ -211,6 +216,122 @@ static func write(data: Dictionary, dir: String = DIR,
 	return true
 
 
+## THE HAND-EDIT PATH.
+##
+## `tech.md` §1a's case for baking at all is that "a hill that is wrong
+## stops being a tuning argument about noise constants and becomes a
+## file somebody edits". That sentence was true of the mechanism and
+## false of the practice: the file is a compressed binary blob and
+## nobody edits one.
+##
+## So a chunk can be written out as JSON and read back. **The list of
+## what stands on it is plain text and is the point** — a house moved
+## two metres, a tree deleted, a shrine added, all by typing. The
+## heightfield, the colours and the water are base64 so they survive
+## EXACTLY: a chunk that read back only to six decimal places would
+## fail `bakecheck`'s identity assert, and that assert is worth more
+## than being able to retype 4,225 heights, which nobody was ever
+## going to do.
+static func to_json(data: Dictionary) -> String:
+	var at: Vector2i = data["at"]
+	var pieces: Array = []
+	for piece in data["pieces"]:
+		var p: Vector3 = piece["position"]
+		var raw = piece.get("scale", 1.0)
+		var sc: Vector3 = raw if raw is Vector3 else Vector3(raw, raw, raw)
+		pieces.append({
+			"path": piece["path"],
+			"at": [p.x, p.y, p.z],
+			"yaw": float(piece.get("yaw", 0.0)),
+			"scale": [sc.x, sc.y, sc.z],
+		})
+	var solids: Array = []
+	for solid in data["solids"]:
+		var sp: Vector3 = solid["position"]
+		var ss: Vector3 = solid["size"]
+		solids.append({
+			"at": [sp.x, sp.y, sp.z],
+			"size": [ss.x, ss.y, ss.z],
+			"yaw": float(solid.get("yaw", 0.0)),
+		})
+	return JSON.stringify({
+		"chunk": [at.x, at.y],
+		"version": VERSION,
+		"fingerprint": int(data.get("fingerprint", 0)),
+		"note": "pieces and solids are yours to edit; "
+			+ "heights, colours and water are the generator's",
+		"heights": Marshalls.raw_to_base64(
+			(data["heights"] as PackedFloat32Array).to_byte_array()),
+		"colours": Marshalls.raw_to_base64(data["colours"]),
+		"water": Marshalls.raw_to_base64(
+			(data["water"] as PackedFloat32Array).to_byte_array()),
+		"pieces": pieces,
+		"solids": solids,
+	}, "\t")
+
+
+## Read back what `to_json` wrote. Empty dictionary if it will not parse.
+static func from_json(text: String) -> Dictionary:
+	var parsed = JSON.parse_string(text)
+	if typeof(parsed) != TYPE_DICTIONARY:
+		push_error("that is not a chunk")
+		return {}
+	var d: Dictionary = parsed
+	for key in ["chunk", "heights", "colours", "water", "pieces", "solids"]:
+		if not d.has(key):
+			push_error("chunk JSON has no %s" % key)
+			return {}
+	var at: Array = d["chunk"]
+	var pieces: Array = []
+	for piece in d["pieces"]:
+		var a: Array = piece["at"]
+		var sc: Array = piece.get("scale", [1.0, 1.0, 1.0])
+		pieces.append({
+			"path": String(piece["path"]),
+			"position": Vector3(a[0], a[1], a[2]),
+			"yaw": float(piece.get("yaw", 0.0)),
+			"scale": Vector3(sc[0], sc[1], sc[2]),
+		})
+	var solids: Array = []
+	for solid in d["solids"]:
+		var sa: Array = solid["at"]
+		var ss: Array = solid["size"]
+		solids.append({
+			"position": Vector3(sa[0], sa[1], sa[2]),
+			"size": Vector3(ss[0], ss[1], ss[2]),
+			"yaw": float(solid.get("yaw", 0.0)),
+		})
+	return {
+		"at": Vector2i(int(at[0]), int(at[1])),
+		"heights": Marshalls.base64_to_raw(d["heights"]).to_float32_array(),
+		"colours": Marshalls.base64_to_raw(d["colours"]),
+		"water": Marshalls.base64_to_raw(d["water"]).to_float32_array(),
+		"pieces": pieces,
+		"solids": solids,
+		"fingerprint": int(d.get("fingerprint", 0)),
+	}
+
+
+## Is this bake cut to fit a generator that no longer exists?
+##
+## An override that is stale is not merely out of date — its EDGES no
+## longer meet the generated land around it, and a 30 m step at a chunk
+## border is a hole you walk into. Answered by asking the generator,
+## never by regenerating the chunk: see `WgTerrain.fingerprint`.
+static func stale(at: Vector2i, terrain: WgTerrain,
+		dir: String = DIR) -> int:
+	var data := read(at, dir)
+	if data.is_empty():
+		return MISSING
+	var stored: int = int(data.get("fingerprint", 0))
+	if stored == 0:
+		return UNKNOWN
+	return FRESH if stored == terrain.fingerprint() else STALE
+
+
+enum { MISSING = 0, FRESH = 1, STALE = 2, UNKNOWN = 3 }
+
+
 ## Read a baked chunk. Empty dictionary if there is not one.
 static func read(at: Vector2i, dir: String = DIR) -> Dictionary:
 	var path := path_for(at, dir)
@@ -231,6 +352,7 @@ static func read(at: Vector2i, dir: String = DIR) -> Dictionary:
 		return {}
 	var cx := f.get_32()
 	var cz := f.get_32()
+	var fingerprint := f.get_32()
 
 	var hn := f.get_32()
 	var heights := PackedFloat32Array()
@@ -281,4 +403,5 @@ static func read(at: Vector2i, dir: String = DIR) -> Dictionary:
 	return {
 		"at": Vector2i(cx, cz), "heights": heights, "colours": colours,
 		"water": water, "pieces": pieces, "solids": solids,
+		"fingerprint": fingerprint,
 	}
