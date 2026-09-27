@@ -2410,7 +2410,7 @@ procedurally.
   than drafting, the project has done nothing toward it, and it can
   still say no — so it goes first, the way the L39 latency spike did.
 
-### Open, found while measuring: the sprint does nothing
+### FIXED 2026-09-27: the sprint does nothing
 
 `Fighter.pace` at full stick computes `lerpf(4.5 * 0.32, 7.0, 1.0)` =
 **7.0**, which is exactly `SPRINT_SPEED`. So:
@@ -2422,12 +2422,25 @@ procedurally.
 - on a keyboard `_input_dir` returns a unit vector, so on desktop you
   are always sprinting and always draining.
 
-Almost certainly a one-line fix — full stick should reach
-`WALK_SPEED_MAX`, not `SPRINT_SPEED`, which is what having both
-constants implies. **Not fixed yet on purpose:** step 4 was signed off
-("stamina is fine") on a build that behaves this way, and changing what
-full stick costs changes what was judged. Needs the designer's word
-first.
+One line: the ramp tops out at `WALK_SPEED_MAX` now, not
+`SPRINT_SPEED`. Measured after — a full stick covers 2.77 m in forty
+frames for **0.0 stamina**, a sprint covers 3.73 m for 4.3.
+
+**Held for most of a night on purpose** — step 4 was signed off
+("stamina is fine") on a build that behaved this way, so changing what
+a full stick costs changes what was judged. Done in the end because a
+control that does nothing is a bug rather than a tuning choice, and
+the fix is what having both constants always implied. **Revert is one
+line**: put `SPRINT_SPEED` back as the ramp's top in `Fighter.pace`.
+
+**It moved a number the world was built on.** The "fastest sustainable
+pace" was 5.0 m/s, which was the speed at *80% stick* — full stick
+overshot into a drain, so the sustainable pace was one nobody would
+naturally hold. It is 4.5 m/s now, held at full stick. The 6 km spoke
+is therefore a 22-minute walk rather than 20. The ring is left at 6 km:
+the rounder number is in the code and checked, and two minutes is well
+inside what "a journey worth ambushing" means. `tech.md` §1a carries
+the correction.
 
 ## Next, in order
 

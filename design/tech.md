@@ -59,15 +59,23 @@ does commit to — **travel time** — because spokes, the rim road,
 caravans, escorts and banditry are all content that only exists if a
 journey takes long enough to be worth ambushing.
 
-The anchor is the prototype's own movement: **5.0 m/s is the fastest
-sustainable pace**, because stamina drain begins above `SPRINT_THRESHOLD`
-(combat.md §2). Everything else follows from one assumption, stated so it
+The anchor is the prototype's own movement: **4.5 m/s is the fastest
+sustainable pace** — `WALK_SPEED_MAX`, which a full stick now gives and
+which sits below `SPRINT_THRESHOLD`, so it can be held indefinitely.
+
+> **Corrected 2026-09-27.** This read 5.0 m/s, which was an artefact of
+> a bug: `pace` ramped a full stick all the way to `SPRINT_SPEED`, so
+> the sustainable pace was the speed at *80% stick* — a deflection
+> nobody would naturally hold — and a full stick silently drained. With
+> the ramp topping out at a walk, the honest number is 4.5. Everything else follows from one assumption, stated so it
 can be argued with: **a spoke run, town to capitol, is twenty minutes.**
 Shorter and an ambush is meaningless because you simply run home; longer
 and the journey is a chore rather than a risk.
 
-- 20 min at 5 m/s = **6 km**, so the town ring sits 6 km out from the
-  capitol.
+- 20 min at 4.5 m/s = 5.4 km; the ring was built at **6 km**, which is
+  a 22-minute walk. Kept at 6 because the rounder number is already in
+  the code and checked, and two minutes is well inside what "a journey
+  worth ambushing" means.
 - Six towns on that ring are 6 km apart from each other, so the rim
   road comes out the same length without being tuned to. That the two
   agree is the main evidence the anchor is not arbitrary.

@@ -434,11 +434,22 @@ func pace(push: float, sprinting: bool, delta: float) -> float:
 	if sprinting:
 		speed = SPRINT_SPEED
 	elif push > 0.0:
-		# How far you push is how fast you go. The curve is squared
-		# because a linear ramp put almost the whole throw above walking
-		# pace and the walk was unreachable.
+		# How far you push is how fast you go, up to a WALK. The curve
+		# is squared because a linear ramp put almost the whole throw
+		# above walking pace and the walk was unreachable.
+		#
+		# The top of the ramp was SPRINT_SPEED, which made a fully
+		# pushed stick identical to a sprint: the sprint control did
+		# nothing, and since 7.0 is above SPRINT_THRESHOLD you drained
+		# stamina whenever the stick was down. On a keyboard
+		# `_input_dir` returns a unit vector, so on a desk you were
+		# always sprinting and always draining — and a spent bar then
+		# slowed you to EXHAUSTED_WALK, so sprinting could cover LESS
+		# ground than walking. Found while deriving the world's scale
+		# from travel time, where "the fastest pace that does not
+		# drain" turned out to be a pace nothing could actually hold.
 		var t: float = clampf(push, 0.0, 1.0)
-		speed = lerpf(WALK_SPEED_MAX * 0.32, SPRINT_SPEED, t * t)
+		speed = lerpf(WALK_SPEED_MAX * 0.32, WALK_SPEED_MAX, t * t)
 
 	# At zero stamina you are not stunned, you are slow (combat.md §2).
 	if stamina.is_exhausted():

@@ -396,8 +396,14 @@ func _ready() -> void:
 	_ok("and a spoke is the journey it was designed to be",
 		absf(spoke_len - WgTerrain.TOWN_RING) < 1.0,
 		"a spoke is %.0f m, not %.0f" % [spoke_len, WgTerrain.TOWN_RING])
-	print("      spoke %.0f m — %.0f minutes at 5 m/s"
-		% [spoke_len, spoke_len / 5.0 / 60.0])
+	# 4.5 m/s is WALK_SPEED_MAX, which is now what a full stick gives
+	# and is below SPRINT_THRESHOLD, so it is the fastest pace that can
+	# be held indefinitely. It used to read 5.0, which was the speed at
+	# 80% stick — full stick overshot into sprint and drained, so the
+	# "sustainable pace" was one nobody would naturally hold.
+	print("      spoke %.0f m — %.0f minutes at %.1f m/s"
+		% [spoke_len, spoke_len / Fighter.WALK_SPEED_MAX / 60.0,
+			Fighter.WALK_SPEED_MAX])
 
 	# --- roads ------------------------------------------------------------
 	var segs := WgRoads.near(t, t.seed_value, 0.0, 0.0, 6000.0, 6000.0)

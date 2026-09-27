@@ -557,6 +557,71 @@ func _ready() -> void:
 	_hold(KEY_W, false)
 	var fresh: float = fresh_from.distance_to(walker.global_position)
 
+	# --- a walk must not cost what a sprint costs -----------------------
+	#
+	# `pace` lerped a full stick all the way to SPRINT_SPEED, so a
+	# fully-pushed stick already ran at sprint pace — the sprint
+	# control did nothing, and because 7.0 is above SPRINT_THRESHOLD
+	# you drained stamina whenever the stick was down. On a keyboard
+	# `_input_dir` returns a unit vector, so on a desk you were always
+	# sprinting and always draining.
+	#
+	# Measured as "did the bar move at all" rather than by how much:
+	# the walker starts full, regeneration cannot push past the cap, so
+	# any drop at all is drain.
+	walker.revive()
+	await _idle(walker)
+	walker.global_position = Vector3(0.0, 1.0, -30.0)
+	walker.velocity = Vector3.ZERO
+	for f in 10:
+		await get_tree().physics_frame
+
+	var walk_stam: float = walker.stamina.current()
+	var walk_from: Vector3 = walker.global_position
+	_hold(KEY_W, true)
+	for f in 40:
+		await get_tree().physics_frame
+	_hold(KEY_W, false)
+	var walk_dist: float = walk_from.distance_to(walker.global_position)
+	var walked_cost: float = walk_stam - walker.stamina.current()
+
+	walker.revive()
+	await _idle(walker)
+	walker.global_position = Vector3(0.0, 1.0, -30.0)
+	walker.velocity = Vector3.ZERO
+	for f in 10:
+		await get_tree().physics_frame
+
+	var run_stam: float = walker.stamina.current()
+	var run_from: Vector3 = walker.global_position
+	_hold(KEY_SHIFT, true)
+	_hold(KEY_W, true)
+	for f in 40:
+		await get_tree().physics_frame
+	_hold(KEY_W, false)
+	_hold(KEY_SHIFT, false)
+	var run_dist: float = run_from.distance_to(walker.global_position)
+	var run_cost: float = run_stam - walker.stamina.current()
+
+	print("      walk %.2fm costing %.1f | sprint %.2fm costing %.1f"
+		% [walk_dist, walked_cost, run_dist, run_cost])
+	_ok("a full stick is a walk, and walking is free",
+		walked_cost <= 0.01,
+		"holding forward cost %.1f stamina — a full stick is running"
+			% walked_cost)
+	_ok("and the sprint actually goes faster", run_dist > walk_dist * 1.2,
+		"walk %.2fm vs sprint %.2fm — the sprint control does nothing"
+			% [walk_dist, run_dist])
+	_ok("and the sprint is what costs", run_cost > 0.5,
+		"sprinting cost %.1f stamina — running is free" % run_cost)
+
+	walker.revive()
+	await _idle(walker)
+	walker.global_position = Vector3(0.0, 1.0, -30.0)
+	walker.velocity = Vector3.ZERO
+	for f in 10:
+		await get_tree().physics_frame
+
 	walker.stamina.spend(150.0)
 	_ok("the bar can be emptied", walker.stamina.is_exhausted(),
 		"spending 150 did not exhaust a 100-point bar")
