@@ -18,7 +18,14 @@ extends Node3D
 ##   built    — should settle once you stop; climbing while standing
 ##              still means the hysteresis is not holding
 
-const START := Vector3(2720.0, 0.0, 2930.0)
+## Where the spike opens.
+##
+## Thornfield's own site on the ring, rather than the arbitrary
+## coordinate this used before the Wheel existed — the starting town
+## is where a player would start, and opening anywhere else made the
+## spike feel like a sample of country rather than a place in a world.
+## Resolved at startup because it depends on the terrain.
+var start := Vector3.ZERO
 
 var gen: WorldGen
 var walker: TownWalker
@@ -52,11 +59,12 @@ func _ready() -> void:
 	# has nothing to stand on and is in free fall by the time it does —
 	# it ends up under the world, which reads as the generator having
 	# made a hole.
-	var here := WorldGen.chunk_of(START)
+	start = gen.terrain.town_site(0)   # Thornfield's wedge
+	var here := WorldGen.chunk_of(start)
 	gen.build_block(here, 1)
 
 	walker = TownWalker.new()
-	walker.position = Vector3(START.x, gen.height_at(START.x, START.z) + 1.2, START.z)
+	walker.position = Vector3(start.x, gen.height_at(start.x, start.z) + 1.2, start.z)
 	add_child(walker)
 	gen.follow(walker)
 
@@ -107,11 +115,16 @@ func _ready() -> void:
 ## pointing at the wrong country.
 func _find_stops() -> void:
 	var t := gen.terrain
+	# THE SIX TOWN SITES, and the capitol. Not six points at an
+	# arbitrary radius: the whole shape of the world is six towns on a
+	# ring around Godsgrave, and standing where each one will be is
+	# what makes that shape legible from inside rather than on paper.
 	for w in WgTerrain.WEDGES:
-		var ang := (float(w) + 0.5) / float(WgTerrain.WEDGES) * TAU
-		var r := 4200.0
-		var p := Vector3(cos(ang) * r, 0.0, sin(ang) * r)
-		_stops.append({"at": p, "what": t.biome_at(p.x, p.z).name})
+		var site := t.town_site(w)
+		var b := t.biome_at(site.x, site.z)
+		_stops.append({"at": site, "what": "%s — %s" % [b.town, b.name]})
+	var hub := t.capitol_site()
+	_stops.append({"at": hub, "what": "Godsgrave — the capitol"})
 
 	var want := ["street", "ring", "farmstead", "ruin"]
 	var got: Dictionary = {}
