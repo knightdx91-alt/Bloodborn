@@ -308,6 +308,24 @@ from measuring rather than guessing, and the first guess was wrong by
 an order of magnitude: the noise was assumed to be the cost and is 9 ms
 of it, while instantiating one scene tree per tree was 107 ms.
 
+**Where that time goes, measured 2026-09-27** with `genprofile.tscn`,
+which builds real chunks through `WgChunk.build` with timing on rather
+than reconstructing the path:
+
+| | |
+|---|---|
+| sampling the heightfield | 62% |
+| filling the vertex arrays | 17% |
+| scatter | 14% |
+| everything else | under 5% |
+
+Two cuts since, both measured: the river lookup was being done twice
+per vertex (`height_at` and `water_at` ask the same question), and the
+road-wear test ran against roads too far away to reach the chunk. A
+chunk went **55.3 ms to 41.8 ms**. What remains is the heightfield
+itself — 4,489 height samples and 4,225 water samples at about 4 µs
+each — and that is the number the spike below is really about.
+
 **What this does not tell us is the only thing that matters.** All of
 the above is a desktop-class container. The question is the phone, the
 spike is in the APK to answer it, and until it has been walked there

@@ -555,9 +555,27 @@ func river_cut(x: float, z: float) -> float:
 	return WgRivers.cut_for(_nearest_water(x, z))
 
 
+## The last point this was asked about, and the answer.
+##
+## A chunk asks it TWICE for every vertex: once through `height_at`,
+## which needs the cut, and once through `water_at`, which needs to
+## know whether to put a surface there. Same point, same four bucket
+## probes, same answer — 4,225 times a chunk.
+var _water_at := Vector2(1e30, 1e30)
+var _water_was := 0.0
+
+
 ## The 2x2 block of buckets that is guaranteed to hold every segment
 ## within `VALLEY` of the point — see `RIVER_BUCKET`.
 func _nearest_water(x: float, z: float) -> float:
+	if _water_at.x == x and _water_at.y == z:
+		return _water_was
+	_water_was = _nearest_water_raw(x, z)
+	_water_at = Vector2(x, z)
+	return _water_was
+
+
+func _nearest_water_raw(x: float, z: float) -> float:
 	var bxf := x / RIVER_BUCKET
 	var bzf := z / RIVER_BUCKET
 	var bx := int(floor(bxf))

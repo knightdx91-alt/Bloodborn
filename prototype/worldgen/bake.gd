@@ -66,6 +66,10 @@ static func gather(terrain: WgTerrain, at: Vector2i) -> Dictionary:
 	var roads := WgRoads.near(terrain, terrain.seed_value,
 		origin.x - size, origin.z - size, origin.x + size, origin.z + size)
 
+	# Same cull as WgChunk._ground, and for the same reason — the two
+	# have to produce byte-identical colours or `bakecheck` fails.
+	var worn_by := WgRoads.touching(roads,
+		Rect2(origin.x - half, origin.z - half, size, size))
 	for iz in verts:
 		for ix in verts:
 			var gi := (iz + 1) * wide + (ix + 1)
@@ -79,7 +83,7 @@ static func gather(terrain: WgTerrain, at: Vector2i) -> Dictionary:
 			var wz := origin.z - half + float(iz) * step
 			water[vi] = terrain.water_at(wx, wz)
 			var col := terrain.shade(wx, wz, h, slope)
-			var worn := WgRoads.wear(roads, wx, wz)
+			var worn := WgRoads.wear(worn_by, wx, wz)
 			if worn > 0.0:
 				col = col.lerp(WgRoads.surface(), worn)
 			colours[vi * 3 + 0] = int(clampf(col.r, 0.0, 1.0) * 255.0)

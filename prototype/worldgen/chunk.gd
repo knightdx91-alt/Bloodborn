@@ -43,6 +43,7 @@ func build(t: WgTerrain, chunk_x: int, chunk_z: int) -> void:
 
 	var keep_clear: Array = []
 	var hamlets: Array = []
+	var _t := Time.get_ticks_usec()
 
 	# NEIGHBOURING CELLS TOO.
 	#
@@ -62,6 +63,8 @@ func build(t: WgTerrain, chunk_x: int, chunk_z: int) -> void:
 			hamlets.append(built)
 			keep_clear.append_array(built.keep_clear)
 
+	_t = _spent("hamlets", _t)
+
 	# Landmarks, on their own finer grid. Same neighbour sweep and the
 	# same reason: one near a cell border reaches over the line.
 	var marks: Array = []
@@ -75,9 +78,12 @@ func build(t: WgTerrain, chunk_x: int, chunk_z: int) -> void:
 			marks.append(mark)
 			keep_clear.append_array(mark["keep_clear"])
 
+	_t = _spent("landmarks", _t)
+
 	_roads = WgRoads.near(terrain, world_seed,
 		position.x - SIZE, position.z - SIZE,
 		position.x + SIZE, position.z + SIZE)
+	_t = _spent("roads", _t)
 
 	# Bridges, where those roads meet water. Asked AFTER the roads
 	# because it is given them rather than fetching them again — and
@@ -92,11 +98,39 @@ func build(t: WgTerrain, chunk_x: int, chunk_z: int) -> void:
 		bridges.append(built)
 		keep_clear.append_array(built["keep_clear"])
 
+	_t = _spent("crossings", _t)
+
 	_ground()
+	_t = _spent("ground", _t)
 	_scatter(keep_clear)
+	_t = _spent("scatter", _t)
 	_settlements(hamlets)
+	_t = _spent("settlements", _t)
 	_landmarks(marks)
+	_t = _spent("landmarks build", _t)
 	_bridges(bridges)
+	_t = _spent("bridges", _t)
+
+
+## WHERE A CHUNK'S TIME GOES, when anything is asking.
+##
+## Off by default and one boolean test when it is off, because this
+## generator has had six wrong guesses about its own cost and one
+## measurement that mattered — so the measurement wants to be the easy
+## thing to reach for. `genprofile.tscn` turns it on and prints the
+## table.
+static var profile := false
+static var spent: Dictionary = {}
+
+static func _spent(phase: String, since: int) -> int:
+	var now := Time.get_ticks_usec()
+	if profile:
+		spent[phase] = int(spent.get(phase, 0)) + (now - since)
+	return now
+
+
+static func profile_reset() -> void:
+	spent = {}
 
 
 ## Build from a BAKED chunk instead of generating one.
@@ -139,6 +173,7 @@ func _ground() -> void:
 	# own neighbours costs nothing and is the same number. The border
 	# ring exists so the edge vertices have neighbours to difference
 	# against rather than a special case that flattens the chunk rim.
+	var _g := Time.get_ticks_usec()
 	var wide := VERTS + 2
 	var grid := PackedFloat32Array()
 	grid.resize(wide * wide)
@@ -151,6 +186,8 @@ func _ground() -> void:
 			grid[iz * wide + ix] = terrain.height_at(wx, wz)
 			if ix > 0 and iz > 0 and ix <= VERTS and iz <= VERTS:
 				water[(iz - 1) * VERTS + (ix - 1)] = terrain.water_at(wx, wz)
+
+	_g = _spent("  ground: sampling", _g)
 
 	# ARRAYS DIRECTLY, not SurfaceTool.
 	#
@@ -169,6 +206,12 @@ func _ground() -> void:
 	var norms := PackedVector3Array(); norms.resize(VERTS * VERTS)
 	var cols := PackedColorArray(); cols.resize(VERTS * VERTS)
 	var uvs := PackedVector2Array(); uvs.resize(VERTS * VERTS)
+	# Only the roads that can reach a vertex of THIS chunk. `_roads`
+	# covers a 192 m box because a hamlet link just outside still wears
+	# ground inside; the wear test below runs 4,225 times and does not
+	# need the ones that cannot. See `WgRoads.touching`.
+	var worn_by := WgRoads.touching(_roads,
+		Rect2(position.x - half, position.z - half, SIZE, SIZE))
 
 	for iz in VERTS:
 		for ix in VERTS:
@@ -187,7 +230,7 @@ func _ground() -> void:
 			var wz2 := position.z + lz
 			var col := terrain.shade(wx2, wz2, h, slope)
 			# A worn track over the top, faded at the verge.
-			var worn := WgRoads.wear(_roads, wx2, wz2)
+			var worn := WgRoads.wear(worn_by, wx2, wz2)
 			if worn > 0.0:
 				col = col.lerp(WgRoads.surface(), worn)
 			cols[vi] = col
@@ -196,6 +239,8 @@ func _ground() -> void:
 			# otherwise every seam is a visible tile reset even though
 			# the heights match perfectly.
 			uvs[vi] = Vector2((position.x + lx) / 4.0, (position.z + lz) / 4.0)
+
+	_g = _spent("  ground: vertices", _g)
 
 	var idx := PackedInt32Array()
 	idx.resize((VERTS - 1) * (VERTS - 1) * 6)
@@ -216,8 +261,11 @@ func _ground() -> void:
 			idx[w + 3] = b; idx[w + 4] = d; idx[w + 5] = c
 			w += 6
 
+	_g = _spent("  ground: indices", _g)
 	_commit_ground(verts, norms, cols, uvs, idx, heights)
+	_g = _spent("  ground: mesh+body", _g)
 	_water(water)
+	_g = _spent("  ground: water mesh", _g)
 
 
 ## The mesh and the body, from arrays either path can produce.

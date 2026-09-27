@@ -38,6 +38,63 @@ get to whether the economy feels right.
 on the evidence in `tech.md` §2a, not on preference — see the L54
 section below.
 
+## Done 2026-09-27 — where a chunk's 56 ms actually go
+
+Six guesses about this generator's cost have been wrong and one
+measurement was right, so the first thing built here was the
+instrument: **`genprofile.tscn`**, which builds real chunks through
+`WgChunk.build` with timing on — the real path rather than a
+reconstruction of it that can drift out of step.
+
+The answer, for chunks beside Thornfield:
+
+| | |
+|---|---|
+| `_ground` | **89%** |
+| — sampling the heightfield | 27.2 ms |
+| — filling the vertex arrays | 21.6 ms |
+| scatter | 5.5 ms |
+| everything else, bridges included | under 1 ms |
+
+**Two things fixed, both measured, neither guessed.**
+
+**The river lookup was done twice per vertex.** `height_at` needs the
+cut and `water_at` needs to know whether to draw a surface, and both
+ask `_nearest_water` — the same point, the same four bucket probes,
+the same answer, 4,225 times a chunk. A one-entry memo: **27.2 ms →
+22.9 ms of sampling.**
+
+**The wear test ran against roads that could not reach the chunk.** A
+chunk is handed the roads within a 192 m box, because a hamlet link
+just outside it still wears ground inside — but the vertex loop tests
+every vertex against every one of them, and a road more than a verge
+away from the chunk's own 64 m square cannot touch a single vertex.
+Found by ablation rather than by staring: with `shade()` removed the
+vertex loop was 14.4 ms, with `WgRoads.wear` removed it was 8.4 ms, so
+**wear was 13.2 ms of 21.6 and `shade` was 7.2**.
+
+Culling once per chunk instead of once per vertex: **vertices 21.6 ms →
+8.5 ms**, and a whole chunk **55.3 ms → 41.8 ms**.
+
+The cull is only safe if it is exact — one dropped segment is a road
+that stops at a chunk border — so `gencheck` asks the same question
+both ways at every vertex of four chunks and requires the same answer
+to the bit.
+
+### And the check could not fail, again
+
+It probed four chunks picked by eye. **No road crossed any of them**,
+so both sides answered nought at every vertex and shrinking the cull
+changed nothing. Third time today. The chunks are now *found* by
+looking for wear, and the worn count is asserted before the comparison
+is believed: 1,510 worn vertices across four chunks, and the two
+mutations move 600 and 1,510 of them.
+
+**What is left is the heightfield itself** — 35.6 ms of a road chunk's
+57, being 4,489 height samples and 4,225 water samples at about 4 µs
+each. That is the next thing worth attacking, and it is the same
+number the phone spike is really about.
+
 ## Done 2026-09-27 — bridges, and a chunk index that was half a chunk out
 
 Rivers went in this morning and **roads were laid before rivers

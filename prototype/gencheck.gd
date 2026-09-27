@@ -630,6 +630,64 @@ func _ready() -> void:
 		"%d of %d things within 100 m of six rivers are standing in the water"
 			% [in_water, looked])
 
+	# CULLING THE ROADS CHANGES NOTHING.
+	#
+	# A chunk's vertex loop tests wear against only the segments that
+	# can reach its own square, because testing all of them was 13.2 ms
+	# of a 54 ms chunk. That is only safe if it is EXACT — one dropped
+	# segment is a stripe of road that stops at a chunk border — so this
+	# asks the same question both ways at every vertex of several
+	# chunks and requires the same answer to the bit.
+	# ON CHUNKS THAT ACTUALLY HAVE A ROAD ON THEM. The first version of
+	# this probed four chunks by eye, none of which a road crossed —
+	# both sides answered nought at every vertex and the mutation that
+	# shrank the cull could not fail. So the chunks are FOUND, by
+	# looking for wear, and the count of worn vertices is asserted
+	# before the comparison is believed.
+	var cull_diff := 0
+	var cull_worn := 0
+	var cull_chunks := 0
+	var probe_half := WgChunk.SIZE * 0.5
+	var probe_step := WgChunk.SIZE / float(WgChunk.VERTS - 1)
+	for k in 220:
+		if cull_chunks >= 4:
+			break
+		var pcx := -6 + (k % 22)
+		var pcz := -5 + (k / 22)
+		var ox := float(pcx) * WgChunk.SIZE
+		var oz := float(pcz) * WgChunk.SIZE
+		var all_roads := WgRoads.near(t, t.seed_value,
+			ox - WgChunk.SIZE, oz - WgChunk.SIZE,
+			ox + WgChunk.SIZE, oz + WgChunk.SIZE)
+		var some := WgRoads.touching(all_roads,
+			Rect2(ox - probe_half, oz - probe_half,
+				WgChunk.SIZE, WgChunk.SIZE))
+		var worn_here := 0
+		var diff_here := 0
+		for iz in WgChunk.VERTS:
+			for ix in WgChunk.VERTS:
+				var wx := ox - probe_half + float(ix) * probe_step
+				var wz := oz - probe_half + float(iz) * probe_step
+				var full := WgRoads.wear(all_roads, wx, wz)
+				if full > 0.0:
+					worn_here += 1
+				if full != WgRoads.wear(some, wx, wz):
+					diff_here += 1
+		if worn_here == 0:
+			continue
+		cull_chunks += 1
+		cull_worn += worn_here
+		cull_diff += diff_here
+	_ok("there is road on the chunks this was asked about",
+		cull_chunks >= 3 and cull_worn > 200,
+		"only %d chunks with %d worn vertices between them — comparing "
+			% [cull_chunks, cull_worn] + "unworn ground proves nothing")
+	_ok("and culling the roads changes none of them", cull_diff == 0,
+		"%d vertices are worn differently once the far roads are dropped"
+			% cull_diff)
+	print("      %d worn vertices across %d chunks, %d changed by the cull"
+		% [cull_worn, cull_chunks, cull_diff])
+
 	# --- bridges ----------------------------------------------------------
 	#
 	# ROADS WERE LAID BEFORE RIVERS EXISTED and nothing told them. This
