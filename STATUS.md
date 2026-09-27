@@ -2208,6 +2208,13 @@ and are applied on top of whatever the land is.
 
 So the corrected plan is **ship the seed, generate the country, and
 bake only what somebody changes by hand** — overrides, not a world.
+
+**And that got much starker when the world grew.** At ~3,870 km² a
+full bake is 945,000 chunks and **18.3 GB** — not a budget problem, an
+impossibility. Even a one-kilometre skirt around the six towns and the
+capitol is 104 MB. So an override is a chunk, not a region: tens of
+hand-fixed chunks, and everything else has to be earned by the
+generator making the right land first time.
 The pleasant part is that the code did not need changing: the loader
 already prefers a bake when one exists and generates when one does
 not, which is exactly the override mechanism. Only the document was

@@ -158,9 +158,20 @@ system.**
 
 **Why overrides rather than baking the world.** Measured after
 building it: a 64 m chunk bakes to **19.4 kB** compressed (33.5 kB
-raw). At 255 km² that is about 62,000 chunks — **roughly 1.2 GB**,
-which is not something that ships in an APK, and the first version of
-this plan said "bake it and commit it" without knowing that.
+raw). At the 255 km² this section first costed, that was about 62,000
+chunks and **roughly 1.2 GB** — already unshippable, and the first
+version of this plan said "bake it and commit it" without knowing it.
+
+At the world's actual size (§1b, ~3,870 km²) it is **945,000 chunks
+and 18.3 GB.** Not a budget problem — an impossibility, by three
+orders of magnitude.
+
+Even a thin skirt of baked land is expensive: one kilometre around
+each of the six towns and the capitol is 22 km², 5,400 chunks, **104
+MB**. So baking is not for regions at all. It is for **individual
+chunks somebody fixed by hand** — tens of them, not thousands — and
+anything larger has to be earned back by the generator producing the
+right land in the first place.
 
 Overrides cost nothing for country nobody has touched, and the
 mechanism is the same one either way: the loader prefers a baked chunk
