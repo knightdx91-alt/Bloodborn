@@ -2087,6 +2087,84 @@ then reports a missing body rather than a missing name.
   cut from it would not show the game's real framing. Fine for
   checking the tour runs; wrong for anything anyone watches.
 
+## A procedural world — 2026-09-27
+
+Asked for: *"build the procedural generator for this, I want it to be
+diverse. Include buildings and props as well. Just like no mans sky."*
+
+`prototype/worldgen/` — terrain, scatter, settlements, chunks,
+streaming. `tech.md` §1a has the reasoning; this is what got built.
+
+**Diverse by construction, not by dice.** Six biomes, one per wedge of
+the Wheel, differing in ground colour, relief, feature size and what
+grows: the Harvest Downs broad and farmed, the Ironwood steep and
+piney, the Moor open with dead trees and boulders, the Fen flat and
+wet, the High Pines severe, the Chalk pale and bare. That spread is
+L86 being a requirement rather than decoration. The terrain is
+domain-warped before sampling, which is most of what stops generated
+country looking generated — straight fractal noise has the same
+character everywhere, and bending the coordinates first folds it into
+ridges and basins that read as though water put them there.
+
+**Buildings are the modular kit on its 2 m grid** — walls, windows,
+doors, corners, tiled roofs, chimneys, stoops, vines — varied by plan,
+material and window placement rather than by unique geometry. Then the
+clutter that says somebody lives there: barrels, crates, carts, stalls,
+benches, workbenches, fence lines. Hamlets are sited on the flattest
+ground in their cell and named from parts.
+
+**Everything hashes from its own coordinates.** No running RNG
+anywhere. A tree depends on its cell and nothing else, so a chunk built
+first, last, alone or twice comes out identical — which is what makes
+streaming possible at all, and is the property the usual "walk the area
+and roll for each spot" loop destroys.
+
+### What the spike measured — this is #28's answer, partly
+
+`genworld.tscn`, reachable from the launcher and labelled a spike.
+
+A chunk is 64 m and cost **142 ms** to build. That is ~9 frames at
+60 fps, so one chunk per frame is a visible stall. Broken down, and
+the breakdown was **not** what I predicted:
+
+| | |
+|---|---|
+| the whole 67x67 heightfield | 9 ms |
+| the scatter decisions | 3 ms |
+| instantiating ~150 models | **107 ms** |
+
+I had assumed the noise was the cost and written a comment in the code
+saying so. It was wrong by an order of magnitude. The noise is cheap;
+one scene tree per tree is not.
+
+Fixed with **MultiMesh** — the pieces are grouped by model and each
+group becomes one node drawing any number of copies from a transform
+array. Cost stops scaling with the number of trees and starts scaling
+with the number of DISTINCT trees, which is eighteen for the world.
+**142 ms → 54 ms.** Still ~3 frames, so more is needed before this is
+smooth, and the obvious next moves are threading the build and cutting
+the mesh commit.
+
+**Still unanswered: what any of this does on the phone.** That is the
+whole question, it cannot be answered here, and the spike is in the
+APK so it can be. Watch fps, and whether `built` keeps climbing while
+you stand still — it should not.
+
+### Two bugs only a render caught
+
+- **The world was pure black under a lit sky.** The triangle winding
+  was counter-clockwise seen from above, so every ground face pointed
+  at the centre of the earth. It rendered perfectly; it just took no
+  light.
+- **MultiMesh painted the hamlet one colour.** `material_override`
+  forces ONE material onto every surface, so tiled roofs, plastered
+  walls and stone came out as clapboard and the trees came out as
+  their own trunks. The timing number that came with that frame looked
+  perfectly healthy, which is the point: no check would have caught
+  either, and both were obvious in one frame.
+
+Renders are committed at `prototype/assets/evidence/worldgen/`.
+
 ## The world's size, worked out — 2026-09-27
 
 Asked from play: *"this world is supposed to be huge. How large will it

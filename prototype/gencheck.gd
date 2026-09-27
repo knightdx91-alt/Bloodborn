@@ -220,6 +220,34 @@ func _ready() -> void:
 	_ok("and its edge meets its neighbour's", seam_ok,
 		"the ground jumps %.3f m across a chunk border" % worst)
 
+	# --- and you can stand on it ------------------------------------------
+	#
+	# The one that matters for a spike. A HeightMapShape3D built from
+	# the wrong grid, or scaled wrongly, or wound the wrong way, gives
+	# ground you fall straight through — and the generator looks
+	# perfect in every render right up until a body is put on it.
+	var at := Vector3(8.0 * WgChunk.SIZE, 0.0, 8.0 * WgChunk.SIZE)
+	var ground := t.height_at(at.x, at.z)
+	var body := CharacterBody3D.new()
+	var cap := CollisionShape3D.new()
+	var shape := CapsuleShape3D.new()
+	shape.height = 2.0
+	shape.radius = 0.4
+	cap.shape = shape
+	body.add_child(cap)
+	body.position = Vector3(at.x, ground + 6.0, at.z)
+	add_child(body)
+	for i in 120:
+		body.velocity.y -= 9.8 * (1.0 / 60.0)
+		body.move_and_slide()
+		await get_tree().physics_frame
+	var rest := body.global_position.y
+	_ok("and a body lands on it instead of falling through",
+		rest > ground - 0.5 and rest < ground + 3.0,
+		"dropped from %.1f onto ground at %.1f and ended at %.1f"
+			% [ground + 6.0, ground, rest])
+	print("      ground %.2f m, body came to rest at %.2f m" % [ground, rest])
+
 	_finish()
 
 

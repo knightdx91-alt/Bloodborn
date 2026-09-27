@@ -248,11 +248,21 @@ func slope_at(x: float, z: float, step: float = 2.0) -> float:
 ## Ground colour at a point: the biome's, shifted by height and by how
 ## steep it is, so a hillside is not the valley floor repainted.
 func ground_at(x: float, z: float) -> Color:
+	return shade(x, z, height_at(x, z), slope_at(x, z))
+
+
+## The same answer as `ground_at`, for a caller that already knows the
+## height and the slope.
+##
+## A chunk does: it samples the heightfield once into a grid and can
+## difference that grid for nothing. Asking `ground_at` instead made
+## every vertex cost five more height samples, which is where a chunk's
+## build time actually went.
+func shade(x: float, z: float, h: float, slope: float) -> Color:
 	var b := biome_at(x, z)
-	var h := height_at(x, z)
 	var lift: float = clampf((h + b.relief) / (b.relief * 2.0 + 0.001), 0.0, 1.0)
 	var c: Color = b.ground.lerp(b.height_tint, lift * 0.55)
-	var s: float = clampf(slope_at(x, z) / 1.3, 0.0, 1.0)
+	var s: float = clampf(slope / 1.3, 0.0, 1.0)
 	# Steep ground shows its bones — but only where it is genuinely
 	# steep. At 0.8 toward grey over a 0.9 slope range, the steeper
 	# wedges came out uniformly slate and lost the palette L86 makes

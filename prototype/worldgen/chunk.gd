@@ -73,15 +73,44 @@ func _ground() -> void:
 	var heights := PackedFloat32Array()
 	heights.resize(VERTS * VERTS)
 
+	# SAMPLE THE HEIGHTFIELD ONCE, WITH A BORDER, AND REUSE IT.
+	#
+	# The first cut asked `ground_at` per vertex, and `ground_at` asks
+	# `slope_at`, and `slope_at` asks `height_at` four more times, so
+	# every vertex cost five height samples instead of one.
+	#
+	# Worth fixing, but NOT where a chunk's time actually went — which
+	# is worth writing down, because the guess was wrong by an order of
+	# magnitude. Measured: the whole 67x67 heightfield is 9 ms and the
+	# scatter decisions are 3 ms. Instantiating the models was 107 ms.
+	# The noise was never the problem; one scene tree per tree was.
+	#
+	# The grid already holds every height needed. Taking slope from its
+	# own neighbours costs nothing and is the same number. The border
+	# ring exists so the edge vertices have neighbours to difference
+	# against rather than a special case that flattens the chunk rim.
+	var wide := VERTS + 2
+	var grid := PackedFloat32Array()
+	grid.resize(wide * wide)
+	for iz in wide:
+		for ix in wide:
+			var wx := position.x - half + float(ix - 1) * step
+			var wz := position.z - half + float(iz - 1) * step
+			grid[iz * wide + ix] = terrain.height_at(wx, wz)
+
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	for iz in VERTS:
 		for ix in VERTS:
 			var lx := -half + float(ix) * step
 			var lz := -half + float(iz) * step
-			var h := terrain.height_at(position.x + lx, position.z + lz)
+			var gi := (iz + 1) * wide + (ix + 1)
+			var h := grid[gi]
 			heights[iz * VERTS + ix] = h
-			st.set_color(terrain.ground_at(position.x + lx, position.z + lz))
+			var dx: float = grid[gi + 1] - grid[gi - 1]
+			var dz: float = grid[gi + wide] - grid[gi - wide]
+			var slope: float = Vector2(dx, dz).length() / (2.0 * step)
+			st.set_color(terrain.shade(position.x + lx, position.z + lz, h, slope))
 			# UVs in WORLD metres, not chunk-local, so the ground
 			# texture runs across a chunk border without restarting —
 			# otherwise every seam is a visible tile reset even though
@@ -158,15 +187,14 @@ func _scatter(keep_clear: Array) -> void:
 	var items := WgScatter.in_rect(terrain,
 		position.x - half, position.z - half,
 		position.x + half, position.z + half, keep_clear)
-	for item in items:
-		_put(item)
+	_place(items)
 
 
 func _settlements(hamlets: Array) -> void:
 	var half := SIZE * 0.5
 	var mine := Rect2(position.x - half, position.z - half, SIZE, SIZE)
 	for built in hamlets:
-		var any := false
+		var here: Array = []
 		for piece in built.pieces:
 			var p: Vector3 = piece["position"]
 			# Only the pieces standing on THIS chunk. A hamlet spanning
@@ -175,8 +203,9 @@ func _settlements(hamlets: Array) -> void:
 			# doubled where they overlap.
 			if not mine.has_point(Vector2(p.x, p.z)):
 				continue
-			_put(piece)
-			any = true
+			here.append(piece)
+		var any: bool = not here.is_empty()
+		_place(here)
 		for solid in built.solids:
 			var p2: Vector3 = solid["position"]
 			if not mine.has_point(Vector2(p2.x, p2.z)):
@@ -186,21 +215,110 @@ func _settlements(hamlets: Array) -> void:
 			settlements.append(built.name)
 
 
-func _put(item: Dictionary) -> void:
-	var scene := load(item["path"]) as PackedScene
+## Everything of one model, in ONE node.
+##
+## A chunk holds a few hundred trees, tufts, barrels and wall pieces,
+## and instantiating each as its own scene tree cost 107 ms of the
+## chunk's 142 — by far the largest single thing in the generator, and
+## it would have been worse on a phone, where it is also a few hundred
+## more draw calls every frame afterwards.
+##
+## A MultiMeshInstance3D draws any number of copies of one mesh from an
+## array of transforms, in one call. So the pieces are grouped by model
+## and each group becomes one node. The cost stops scaling with the
+## number of trees and starts scaling with the number of DISTINCT
+## trees, which is eighteen for the whole world.
+##
+## Collision is deliberately not included: a tree you can walk through
+## is a smaller problem than a chunk that takes a fifth of a second to
+## arrive, and what needs solidity — buildings — gets its box from
+## `_solid` instead.
+func _place(items: Array) -> void:
+	var by_model: Dictionary = {}
+	for item in items:
+		var path: String = item["path"]
+		if not by_model.has(path):
+			by_model[path] = []
+		by_model[path].append(item)
+
+	for path in by_model:
+		var parts := _model_parts(path)
+		if parts.is_empty():
+			continue
+		var group: Array = by_model[path]
+		for part in parts:
+			var mm := MultiMesh.new()
+			mm.transform_format = MultiMesh.TRANSFORM_3D
+			mm.mesh = part["mesh"]
+			mm.instance_count = group.size()
+			for i in group.size():
+				var item: Dictionary = group[i]
+				var p: Vector3 = item["position"]
+				var sc: float = item.get("scale", 1.0)
+				var basis := Basis(Vector3.UP, item.get("yaw", 0.0)).scaled(
+					Vector3(sc, sc, sc))
+				var placement := Transform3D(basis, p - position)
+				mm.set_instance_transform(i, placement * (part["xform"] as Transform3D))
+			var mmi := MultiMeshInstance3D.new()
+			mmi.multimesh = mm
+			# ONLY when the source node actually carried an override.
+			#
+			# A MultiMesh already draws the mesh's own per-surface
+			# materials. Setting an override here forces ONE material
+			# onto every surface, so the first pass painted the whole
+			# hamlet in whichever material happened to be on surface 0:
+			# tiled roofs and plastered walls all came out as clapboard,
+			# and the trees came out as their own trunks. A render
+			# caught it; the timing number that came with it looked
+			# perfectly healthy.
+			if part["material"] != null:
+				mmi.material_override = part["material"]
+			add_child(mmi)
+		placed += group.size()
+
+
+## The meshes inside a model file, with where they sit inside it.
+##
+## Cached across every chunk: the same eighteen trees and thirty-odd
+## props are asked for everywhere, and loading and walking a scene to
+## find its meshes is the expensive half of instantiating it.
+static var _parts_cache: Dictionary = {}
+
+static func _model_parts(path: String) -> Array:
+	if _parts_cache.has(path):
+		return _parts_cache[path]
+	var out: Array = []
+	var scene := load(path) as PackedScene
 	if scene == null:
-		return
-	var inst := scene.instantiate() as Node3D
-	if inst == null:
-		return
-	var p: Vector3 = item["position"]
-	inst.position = p - position
-	inst.rotation.y = item.get("yaw", 0.0)
-	var s: float = item.get("scale", 1.0)
-	if not is_equal_approx(s, 1.0):
-		inst.scale = Vector3(s, s, s)
-	add_child(inst)
-	placed += 1
+		_parts_cache[path] = out
+		return out
+	var root := scene.instantiate() as Node3D
+	if root == null:
+		_parts_cache[path] = out
+		return out
+	_collect(root, root, out)
+	root.queue_free()
+	_parts_cache[path] = out
+	return out
+
+
+static func _collect(node: Node, root: Node3D, out: Array) -> void:
+	if node is MeshInstance3D:
+		var mi := node as MeshInstance3D
+		if mi.mesh != null:
+			out.append({
+				"mesh": mi.mesh,
+				# Relative to the model's own root, so a wall piece whose
+				# geometry sits off its origin lands where the file
+				# intended rather than at the placement point.
+				"xform": root.global_transform.affine_inverse() * mi.global_transform,
+				# The node's own override, if it has one — NOT
+				# `get_active_material`, which falls back to the mesh's
+				# surface material and so always returns something.
+				"material": mi.material_override,
+			})
+	for child in node.get_children():
+		_collect(child, root, out)
 
 
 func _solid(at: Vector3, size: Vector3, yaw: float) -> void:

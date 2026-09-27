@@ -77,6 +77,17 @@ func _ready() -> void:
 	# it — its own boar, its own pell, its own clock — which is the
 	# thing all of this was built to stop.
 	_buttons.append(_big_button("Enter Thornfield", "res://town.tscn"))
+	# AND ONE SPIKE, which is not a place.
+	#
+	# genworld.tscn is an instrument you can stand inside: the
+	# procedural country, streamed, with the frame rate on screen. It
+	# is here because the question it exists to answer — can this
+	# device hold a world of that order — can only be answered on the
+	# device, and the device is a phone that cannot run a harness.
+	#
+	# It comes out the day the generated land is baked and the real
+	# world is built on it. Labelled so nobody mistakes it for the game.
+	_buttons.append(_big_button("Generated world (spike)", "res://genworld.tscn"))
 	for b in _buttons:
 		_vb.add_child(b)
 
