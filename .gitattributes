@@ -28,45 +28,21 @@
 # the build is stored as plain git objects.
 docs/** -filter -diff -merge
 
-# ── Git LFS: binary assets ───────────────────────────────────────────
-# Run `git lfs install` once on your machine before the first commit
-# that contains any of these.
-
-# Images
-*.png  filter=lfs diff=lfs merge=lfs -text
-*.jpg  filter=lfs diff=lfs merge=lfs -text
-*.jpeg filter=lfs diff=lfs merge=lfs -text
-*.tga  filter=lfs diff=lfs merge=lfs -text
-*.tif  filter=lfs diff=lfs merge=lfs -text
-*.tiff filter=lfs diff=lfs merge=lfs -text
-*.psd  filter=lfs diff=lfs merge=lfs -text
-*.exr  filter=lfs diff=lfs merge=lfs -text
-*.hdr  filter=lfs diff=lfs merge=lfs -text
-
-# Models
-*.fbx   filter=lfs diff=lfs merge=lfs -text
-*.obj   filter=lfs diff=lfs merge=lfs -text
-*.blend filter=lfs diff=lfs merge=lfs -text
-*.dae   filter=lfs diff=lfs merge=lfs -text
-*.gltf  filter=lfs diff=lfs merge=lfs -text
-*.glb   filter=lfs diff=lfs merge=lfs -text
-
-# Audio
-*.wav  filter=lfs diff=lfs merge=lfs -text
-*.mp3  filter=lfs diff=lfs merge=lfs -text
-*.ogg  filter=lfs diff=lfs merge=lfs -text
-*.aif  filter=lfs diff=lfs merge=lfs -text
-
-# Video
-*.mp4 filter=lfs diff=lfs merge=lfs -text
-*.mov filter=lfs diff=lfs merge=lfs -text
-
-# Fonts
-*.ttf filter=lfs diff=lfs merge=lfs -text
-*.otf filter=lfs diff=lfs merge=lfs -text
-
-# Native libraries
-*.dll    filter=lfs diff=lfs merge=lfs -text
-*.so     filter=lfs diff=lfs merge=lfs -text
-*.dylib  filter=lfs diff=lfs merge=lfs -text
-*.bundle filter=lfs diff=lfs merge=lfs -text
+# ── Binary assets: stored in git directly, NOT in LFS ──────────────
+# This block used to route every image, model, audio and font file to
+# Git LFS. It never took effect: `git lfs install` was not run on the
+# machines that committed the assets, so all 313 MB of them are plain
+# git objects — `git lfs ls-files` lists nothing — and every clone, the
+# GitHub Pages build and the Android APK workflow (which checks out
+# WITHOUT lfs: true) all depend on that.
+#
+# Found 2026-10-09 when a fresh container with LFS installed reported
+# 48 untouched townsfolk models and textures as "modified": the clean
+# filter wanted to rewrite each into a 132-byte pointer, which would
+# have shipped stubs to the APK. Rules that describe a policy the repo
+# does not follow are worse than none, so they are gone.
+#
+# If LFS is ever wanted, it is a deliberate migration, not a drift:
+# `git lfs migrate import`, `lfs: true` on every checkout step, and the
+# GitHub LFS quota (1 GB storage / 1 GB bandwidth a month on the free
+# tier, against a 313 MB asset tree) checked first.
