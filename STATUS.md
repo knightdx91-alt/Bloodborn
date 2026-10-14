@@ -3,7 +3,7 @@
 Short, current, and written to be read on a phone. Updated at the end
 of each working session.
 
-**Last updated:** 2026-09-27
+**Last updated:** 2026-10-14
 
 ---
 
@@ -12,7 +12,7 @@ of each working session.
 Design is **93 locked decisions** and **complete** — every structural
 question locked, every missing document written. Every system a player
 touches in their first hundred hours is specified, and most of it is
-**written, tested and running** as engine-free C# — 335 tests.
+**written, tested and running** as engine-free C# — 408 tests.
 
 **Stage 1 is built and playable in any browser**: a character who walks
 and runs, a dodge with invulnerability frames, a sword, a training
@@ -20,19 +20,19 @@ dummy, an enemy that fights back with three readable attack shapes, and
 a parry that staggers him and buys a free punish. That is every
 construction step of `tech.md` §6.
 
-**What is left of Stage 1 is step 4, the stamina tuning — and it needs
-you rather than me.** See the finding below: right now the dodge
-answers everything for free, which means nothing else has a reason to
-exist. **The instrument exists and has been used**: an Android APK and
-a wired Xbox pad, so the scheme being judged is the one that ships
-rather than touch, which ships nowhere.
+**Stage 1 is complete.** Step 4 was judged from play on 2026-09-27
+("stamina is fine") — see "Next, in order". What is left of the combat
+work is the four Mixamo clips (`prototype/assets/SPEC-attack-clips.md`)
+that make the arcs visible, and then **Stage 2**, which is where L39 is
+actually passed or failed.
 
-**The first real play session happened 2026-09-14, and it found five
-things I could not have found from here** — see "What play found"
-below. Four were bugs, two of them genuine faults in `sim/` rather
-than presentation. **The stamina numbers themselves are still
-unjudged**: play kept hitting things that were broken before it could
-get to whether the economy feels right.
+**Reviewed 2026-10-14 — read `design/review-2026-10-14.md` next.** A
+second look at the project as it stands, checked in a fresh container
+rather than read off this file: what is really built, where the plan
+has drifted from its own order of work, why the world size wants
+re-arguing, and the seven things to do next. Its headline: the
+project is strong where it has been played and has spent its last big
+push on country instead of on the one result that can end it.
 
 **The engine is Godot** (L54, revised 2026-09-14 from Unity). Decided
 on the evidence in `tech.md` §2a, not on preference — see the L54
