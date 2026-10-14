@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Device Check</title>
+<meta name="description" content="What can this tablet or phone run? Reads the device, runs a render test, and rates it for emulators, games and the Marrowmark builds.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: a single column instrument sheet. The tier and the verdicts first, then what runs, then the readings, then a report to paste back. */
+  :root {
+    --bg: #f3f1ec; --panel: #ffffff; --fg: #1d1b17; --muted: #6b665c; --line: #d9d4ca;
+    --accent: #9a4a1c; --good: #2f6b3a; --warn: #9a6a12; --bad: #9b2e2e;
+    --font-body: "IBM Plex Sans", "Segoe UI", Roboto, system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+    padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #17161a; --panel: #211f25; --fg: #ece8e0; --muted: #a39c90; --line: #35323b;
+      --accent: #e0905c; --good: #7fc389; --warn: #e0b35a; --bad: #e07a7a; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #17161a; --panel: #211f25; --fg: #ece8e0; --muted: #a39c90; --line: #35323b;
+    --accent: #e0905c; --good: #7fc389; --warn: #e0b35a; --bad: #e07a7a; color-scheme: dark;
+  }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.5;
+    padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 20px 48px;
+  }
+  main { max-width: 640px; margin: 0 auto; display: grid; gap: 28px; }
+  h1 { font-size: 1.6rem; font-weight: 600; margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+  h2 { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 0 0 10px; }
+  p { margin: 0; }
+  .lede { color: var(--muted); max-width: 60ch; }
+  .tier { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; display: grid; gap: 4px; }
+  .tier .name { font-size: 1.25rem; font-weight: 600; }
+  .tier .why { color: var(--muted); }
+  .verdicts { display: grid; gap: 10px; }
+  .verdict { display: grid; grid-template-columns: 12px 1fr; gap: 12px; align-items: start; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
+  .verdict .dot { width: 12px; height: 12px; border-radius: 50%; margin-top: 6px; background: var(--muted); }
+  .verdict.good .dot { background: var(--good); } .verdict.warn .dot { background: var(--warn); } .verdict.bad .dot { background: var(--bad); }
+  .verdict strong { font-weight: 600; } .verdict span { color: var(--muted); display: block; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+  td, th { padding: 8px 0; border-bottom: 1px solid var(--line); vertical-align: top; text-align: left; }
+  td:first-child { color: var(--muted); width: 42%; padding-right: 12px; }
+  .readings td:last-child { font-family: var(--font-mono); font-size: 0.88rem; font-variant-numeric: tabular-nums; word-break: break-word; }
+  .runs td:first-child { color: var(--fg); font-weight: 500; width: 40%; }
+  .runs td:last-child { color: var(--muted); }
+  .runs .y { color: var(--good); font-weight: 600; } .runs .m { color: var(--warn); font-weight: 600; } .runs .n { color: var(--bad); font-weight: 600; }
+  .section { min-width: 0; }
+  button { font: inherit; font-weight: 600; color: var(--bg); background: var(--accent); border: 0; border-radius: 8px; padding: 12px 18px; min-height: 48px; cursor: pointer; }
+  button:focus-visible { outline: 3px solid var(--fg); outline-offset: 2px; }
+  button[disabled] { opacity: 0.55; cursor: default; }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .status { font-family: var(--font-mono); font-size: 0.85rem; color: var(--muted); }
+  canvas { width: 100%; max-width: 100%; aspect-ratio: 16 / 9; display: block; background: #000; border-radius: 8px; border: 1px solid var(--line); }
+  textarea { width: 100%; min-height: 220px; font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.45; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px; box-sizing: border-box; resize: vertical; }
+  .pad { font-family: var(--font-mono); font-size: 0.88rem; }
+  .note { color: var(--muted); font-size: 0.9rem; margin-top: 10px; }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Device Check</h1>
+    <p class="lede">What can this tablet or phone run? Open it on the device. It reads what the hardware reports, runs a short render test, and rates it for emulators, games, and the Marrowmark builds.</p>
+  </header>
+
+  <section class="section" aria-labelledby="t">
+    <h2 id="t">Where it lands</h2>
+    <div class="tier" id="tier">
+      <div class="name">Reading the device…</div>
+      <div class="why">Run the render test below for a measured number as well.</div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="e">
+    <h2 id="e">What it can run</h2>
+    <table class="runs"><tbody id="runs"></tbody></table>
+    <p class="note" id="runs-note"></p>
+  </section>
+
+  <section class="section" aria-labelledby="v">
+    <h2 id="v">Marrowmark</h2>
+    <div class="verdicts" id="verdicts"></div>
+  </section>
+
+  <section class="section" aria-labelledby="b">
+    <h2 id="b">Render test</h2>
+    <div class="row">
+      <button id="run" type="button">Run the render test</button>
+      <span class="status" id="bench-status">About ten seconds. Keep the page in front.</span>
+    </div>
+    <canvas id="gl" width="640" height="360" style="margin-top:12px"></canvas>
+    <table class="readings" style="margin-top:8px"><tbody id="bench"></tbody></table>
+  </section>
+
+  <section class="section" aria-labelledby="c">
+    <h2 id="c">Controller</h2>
+    <p class="pad" id="pad">No controller seen yet. Plug one in or pair it, then press any button on it.</p>
+  </section>
+
+  <section class="section" aria-labelledby="d">
+    <h2 id="d">Device</h2>
+    <table class="readings"><tbody id="device"></tbody></table>
+  </section>
+
+  <section class="section" aria-labelledby="g">
+    <h2 id="g">Graphics</h2>
+    <table class="readings"><tbody id="graphics"></tbody></table>
+  </section>
+
+  <section class="section" aria-labelledby="r">
+    <h2 id="r">Report</h2>
+    <div class="row" style="margin-bottom:10px">
+      <button id="copy" type="button">Copy report</button>
+      <span class="status" id="copy-status">Or select the text below and copy it.</span>
+    </div>
+    <textarea id="report" readonly aria-label="Report text"></textarea>
+  </section>
+</main>
+
+<script>
+(function () {
+  var R = {}, rows = {};
+
+  function row(tbody, key, value) {
+    var t = document.getElementById(tbody), tr = rows[tbody + '/' + key];
+    if (!tr) {
+      tr = document.createElement('tr'); tr.innerHTML = '<td></td><td></td>';
+      tr.children[0].textContent = key; t.appendChild(tr); rows[tbody + '/' + key] = tr;
+    }
+    tr.children[1].textContent = value; R[key] = value; writeReport();
+  }
+
+  // ── Device ─────────────────────────────────────────────────────────
+  var ua = navigator.userAgent || '', touch = navigator.maxTouchPoints || 0;
+  var os = 'unknown', family = 'other';
+  if (/Android/i.test(ua)) { os = 'Android'; family = 'android'; }
+  else if (/iPad|iPhone|iPod/.test(ua)) { os = 'iOS / iPadOS'; family = 'apple'; }
+  else if (/Macintosh/.test(ua) && touch > 1) { os = 'iPadOS (reports as Mac)'; family = 'apple'; }
+  else if (/Windows/.test(ua)) { os = 'Windows'; family = 'desktop'; }
+  else if (/CrOS/.test(ua)) { os = 'ChromeOS'; family = 'android'; }
+  else if (/Macintosh/.test(ua)) { os = 'macOS'; family = 'desktop'; }
+  else if (/Linux/.test(ua)) { os = 'Linux'; family = 'desktop'; }
+  var androidVersion = (ua.match(/Android\s([\d.]+)/) || [])[1] || '';
+  var browser = 'unknown';
+  if (/EdgA?\//.test(ua)) browser = 'Edge'; else if (/SamsungBrowser\//.test(ua)) browser = 'Samsung Internet';
+  else if (/Firefox\//.test(ua)) browser = 'Firefox'; else if (/CriOS\//.test(ua)) browser = 'Chrome (iOS)';
+  else if (/Chrome\//.test(ua)) browser = 'Chrome'; else if (/Safari\//.test(ua)) browser = 'Safari';
+  var model = (ua.match(/Android[^;]*;\s*([^;)]+)\)/) || [])[1] || '';
+  var cores = navigator.hardwareConcurrency || 0;
+  var mem = navigator.deviceMemory || 0;   // Chrome only, and capped at 8
+
+  row('device', 'Operating system', os + (androidVersion ? ' ' + androidVersion : ''));
+  if (model) row('device', 'Model string', model.trim());
+  row('device', 'Browser', browser);
+  row('device', 'Screen (device px)', Math.round(screen.width * devicePixelRatio) + ' × ' + Math.round(screen.height * devicePixelRatio));
+  row('device', 'Viewport (CSS px)', innerWidth + ' × ' + innerHeight + ' at ' + devicePixelRatio + '×');
+  row('device', 'Touch points', String(touch));
+  row('device', 'CPU threads', cores ? String(cores) : 'not reported');
+  row('device', 'Memory (approx.)', mem ? (mem >= 8 ? '8 GB or more' : mem + ' GB') : 'not reported by this browser');
+  row('device', 'User agent', ua);
+
+  (function () {
+    var n = 0, t0 = 0;
+    function f(t) { if (!t0) t0 = t; n++; if (t - t0 < 1000) requestAnimationFrame(f); else row('device', 'Refresh rate', Math.round(n * 1000 / (t - t0)) + ' Hz'); }
+    requestAnimationFrame(f);
+  })();
+
+  // ── Graphics ───────────────────────────────────────────────────────
+  var canvas = document.getElementById('gl');
+  var gl = canvas.getContext('webgl2', { antialias: false, powerPreference: 'high-performance' });
+  var gl1 = gl ? null : canvas.getContext('webgl');
+  row('graphics', 'WebGL 2', gl ? 'yes' : 'NO');
+  if (!gl && gl1) row('graphics', 'WebGL 1', 'yes');
+  var ctx = gl || gl1, renderer = '';
+  if (ctx) {
+    var dbg = ctx.getExtension('WEBGL_debug_renderer_info');
+    renderer = String(dbg ? ctx.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : ctx.getParameter(ctx.RENDERER));
+    row('graphics', 'GPU', renderer);
+    row('graphics', 'GPU vendor', String(dbg ? ctx.getParameter(dbg.UNMASKED_VENDOR_WEBGL) : ctx.getParameter(ctx.VENDOR)));
+    row('graphics', 'Max texture size', ctx.getParameter(ctx.MAX_TEXTURE_SIZE) + ' px');
+    var astc = !!ctx.getExtension('WEBGL_compressed_texture_astc'), etc2 = !!(gl && gl.getExtension('WEBGL_compressed_texture_etc')), s3tc = !!ctx.getExtension('WEBGL_compressed_texture_s3tc');
+    row('graphics', 'Compressed textures', [astc ? 'ASTC' : '', etc2 ? 'ETC2' : '', s3tc ? 'S3TC' : ''].filter(Boolean).join(', ') || 'none reported');
+  }
+  row('graphics', 'WebGPU', ('gpu' in navigator) ? 'available' : 'not available');
+  row('graphics', 'SharedArrayBuffer', (typeof SharedArrayBuffer !== 'undefined') ? 'yes' : 'no (needs cross-origin isolation; a "no" here says nothing about the device)');
+
+  // ── GPU tier from the name ─────────────────────────────────────────
+  // 0 entry, 1 mid, 2 upper-mid, 3 flagship. Estimates: the name says
+  // what it is, not how it is cooled or which driver it got.
+  function tierFromName(r) {
+    var m;
+    if ((m = r.match(/Adreno[^0-9]*(\d{3})/i))) {
+      var n = +m[1];
+      if (n >= 730) return 3;              // 730, 740, 750, 8xx
+      if (n >= 640) return 2;              // 640, 650, 660, 690
+      if (n >= 610) return 1;              // 610–630
+      if (n >= 530) return 1;              // 530, 540: old flagships
+      return 0;
+    }
+    if (/Immortalis/i.test(r)) return 3;   // G715/G720/G925 with ray tracing: flagship MediaTek
+    if ((m = r.match(/Mali-G(\d{2,3})/i))) {
+      var g = +m[1];
+      if (g >= 715) return 2;              // G715/G720 without the Immortalis badge: upper-mid
+      if (g === 710 || g === 78 || g === 77 || g === 76) return 2;
+      if (g === 68 || g === 57 || g === 615 || g === 610) return 1;
+      return 0;                            // G52, G51, G31, G72, G71
+    }
+    if (/Mali-T/i.test(r)) return 0;
+    if ((m = r.match(/Xclipse\s*(\d{3})/i))) return +m[1] >= 940 ? 3 : 2;
+    if (/PowerVR/i.test(r)) return /GE9|GM9|BXM|CXT/i.test(r) ? 1 : 0;
+    if (/Apple/i.test(r)) return cores >= 8 ? 3 : 2;   // M-series and recent A-series report 8+ threads
+    if (/RTX|Radeon RX|Arc/i.test(r)) return 3;
+    if (/Iris|GTX|Radeon/i.test(r)) return 2;
+    if (/Intel|UHD|HD Graphics/i.test(r)) return 1;
+    return -1;
+  }
+  var namedTier = renderer ? tierFromName(renderer) : -1;
+  var measuredTier = -1, measuredChunks = 0, cpuMs = 0;
+  var tierNames = ['Entry', 'Mid-range', 'Upper mid-range', 'Flagship'];
+
+  function tier() {
+    if (measuredTier >= 0 && namedTier >= 0) return Math.min(namedTier, Math.max(measuredTier, namedTier - 1));
+    if (measuredTier >= 0) return measuredTier;
+    return namedTier;
+  }
+
+  // ── What runs ──────────────────────────────────────────────────────
+  // Y: full speed is the normal case. M: many titles, or with settings
+  // turned down. N: not realistic. By tier 0..3, per platform family.
+  var EMU = {
+    android: [
+      ['PSP (PPSSPP)',                    ['Y', 'Y', 'Y', 'Y'], 'Light. Runs well on almost anything made in the last six years.'],
+      ['PS1, N64, DS, GBA, SNES (RetroArch, DraStic, melonDS)', ['Y', 'Y', 'Y', 'Y'], 'Light.'],
+      ['3DS (Azahar, Lime3DS)',           ['M', 'Y', 'Y', 'Y'], 'Most titles full speed from mid-range up.'],
+      ['GameCube and Wii (Dolphin)',      ['N', 'M', 'Y', 'Y'], 'Mid-range runs many games at native resolution; upper-mid and up can upscale.'],
+      ['PS2 (NetherSX2, AetherSX2)',      ['N', 'M', 'Y', 'Y'], 'Mid-range handles many games at 1×; flagship upscales most.'],
+      ['PS Vita (Vita3K)',                ['N', 'N', 'M', 'M'], 'Experimental everywhere; a strong GPU helps but compatibility decides.'],
+      ['Switch (Eden, Sudachi, Ryujinx forks)', ['N', 'N', 'M', 'M'], 'Flagship with 8 GB or more plays many titles; lighter titles on upper-mid. Driver quality matters more than anywhere else.'],
+      ['Windows games (Winlator, GameHub)', ['N', 'N', 'M', 'M'], 'Older and indie titles. Adreno gets the best drivers; Mali trails.'],
+      ['PS3, Xbox 360, Wii U',            ['N', 'N', 'N', 'N'], 'No usable Android emulator. Desktop only.'],
+      ['Big native Android games (Genshin, Wuthering Waves, CoD Mobile)', ['M', 'M', 'Y', 'Y'], 'Entry runs them low; upper-mid runs them high; flagship runs them maxed, subject to heat.'],
+      ['Cloud gaming (GeForce Now, Xbox Cloud)', ['Y', 'Y', 'Y', 'Y'], 'Any tier. It is the connection that decides, not the device.'],
+    ],
+    apple: [
+      ['PSP, PS1, N64, DS, GBA, SNES (Delta, PPSSPP, RetroArch, Provenance)', ['Y', 'Y', 'Y', 'Y'], 'On the App Store since 2024. Run well on any recent iPad.'],
+      ['3DS (Azahar via sideloading)',    ['M', 'Y', 'Y', 'Y'], 'Not on the App Store.'],
+      ['GameCube, Wii, PS2, Switch',      ['N', 'N', 'N', 'N'], 'Not realistic on iPadOS. The chip is fast enough; Apple does not allow the just-in-time compilation these emulators need without sideloading and a developer workaround.'],
+      ['Big native iPad games (Genshin, Resident Evil, Assassin’s Creed Mirage)', ['M', 'Y', 'Y', 'Y'], 'The AAA ports want an M-series or A17 Pro.'],
+      ['Cloud gaming (GeForce Now, Xbox Cloud, in the browser)', ['Y', 'Y', 'Y', 'Y'], 'Any tier. The connection decides.'],
+    ],
+    desktop: [
+      ['PSP, PS1, N64, DS, 3DS, GameCube, Wii, PS2', ['Y', 'Y', 'Y', 'Y'], 'Desktop emulators; any recent machine.'],
+      ['Switch (Ryujinx forks, Eden)',    ['N', 'M', 'Y', 'Y'], 'Wants a real GPU and 8 GB or more.'],
+      ['PS3 (RPCS3)',                     ['N', 'M', 'M', 'Y'], 'CPU-bound: wants six fast cores or more.'],
+      ['Xbox 360 (Xenia)',                ['N', 'M', 'Y', 'Y'], 'Wants a discrete GPU for most titles.'],
+      ['Wii U (Cemu)',                    ['N', 'M', 'Y', 'Y'], 'Fine on integrated graphics for many titles.'],
+      ['Windows games natively',          ['M', 'M', 'Y', 'Y'], 'By GPU tier; integrated graphics means low settings.'],
+    ],
+    other: [
+      ['Light emulators (PSP and older)', ['Y', 'Y', 'Y', 'Y'], ''],
+      ['Heavy emulators (PS2, GameCube, Switch)', ['N', 'M', 'Y', 'Y'], 'Depends on the platform as much as the chip.'],
+    ],
+  };
+  var memGate = { 'Switch (Eden, Sudachi, Ryujinx forks)': 8, 'Switch (Ryujinx forks, Eden)': 8, 'PS2 (NetherSX2, AetherSX2)': 4, 'GameCube and Wii (Dolphin)': 4 };
+
+  function renderRuns() {
+    var t = tier(), body = document.getElementById('runs'), note = document.getElementById('runs-note');
+    body.innerHTML = '';
+    var list = EMU[family] || EMU.other;
+    var ratings = [];
+    list.forEach(function (e) {
+      var r = t < 0 ? '?' : e[1][t];
+      if (r !== 'N' && memGate[e[0]] && mem && mem < memGate[e[0]]) r = 'M';
+      var tr = document.createElement('tr');
+      var cls = r === 'Y' ? 'y' : r === 'M' ? 'm' : r === 'N' ? 'n' : '';
+      var word = r === 'Y' ? 'Yes' : r === 'M' ? 'Some' : r === 'N' ? 'No' : 'Run the test';
+      tr.innerHTML = '<td></td><td><span class="' + cls + '"></span> <span></span></td>';
+      tr.children[0].textContent = e[0];
+      tr.children[1].children[0].textContent = word;
+      tr.children[1].children[1].textContent = e[2] ? '· ' + e[2] : '';
+      body.appendChild(tr);
+      ratings.push(e[0] + ': ' + word);
+    });
+    R['What it can run'] = ratings.join(' | ');
+    note.textContent = t < 0
+      ? 'The GPU name was not recognised, so the render test decides. Run it.'
+      : 'Estimates from the GPU family' + (measuredTier >= 0 ? ' and the render test' : '') + '. The specific game, its settings, the driver and how hot the device gets all move these. Nothing here measures a connection.';
+    writeReport();
+  }
+
+  function renderTier() {
+    var t = tier(), el = document.getElementById('tier');
+    var why = [];
+    if (renderer) why.push('GPU: ' + renderer + (namedTier >= 0 ? ' (' + tierNames[namedTier].toLowerCase() + ' family)' : ' (not recognised)'));
+    if (cores) why.push(cores + ' CPU threads');
+    if (mem) why.push((mem >= 8 ? '8 GB or more' : mem + ' GB') + ' of memory');
+    if (measuredTier >= 0) why.push('render test: ' + measuredChunks + ' chunks at full rate (' + tierNames[measuredTier].toLowerCase() + ')');
+    el.querySelector('.name').textContent = t < 0 ? 'Not placed yet' : tierNames[t] + (family === 'android' ? ' Android' : family === 'apple' ? ' iPad' : family === 'desktop' ? ' PC' : '');
+    el.querySelector('.why').textContent = why.length ? why.join(' · ') : 'Run the render test for a measured number.';
+    R['Tier'] = t < 0 ? 'unplaced' : tierNames[t];
+    renderRuns();
+    verdicts();
+    writeReport();
+  }
+
+  // ── Controller ─────────────────────────────────────────────────────
+  var padEl = document.getElementById('pad');
+  function scanPads() {
+    var pads = navigator.getGamepads ? navigator.getGamepads() : [];
+    for (var i = 0; i < pads.length; i++) {
+      var p = pads[i]; if (!p) continue;
+      var pressed = p.buttons.some(function (b) { return b.pressed; });
+      padEl.textContent = p.id + ' · ' + p.buttons.length + ' buttons, ' + p.axes.length + ' axes' + (pressed ? ' · button down' : '');
+      if (R['Controller'] !== p.id) { R['Controller'] = p.id + ' (' + p.buttons.length + ' buttons, ' + p.axes.length + ' axes)'; verdicts(); writeReport(); }
+      return;
+    }
+  }
+  if (!navigator.getGamepads) { padEl.textContent = 'This browser has no Gamepad API.'; R['Controller'] = 'no Gamepad API'; }
+  else { R['Controller'] = 'none seen'; window.addEventListener('gamepadconnected', scanPads); setInterval(scanPads, 250); }
+
+  // ── Render test ────────────────────────────────────────────────────
+  var runBtn = document.getElementById('run'), benchStatus = document.getElementById('bench-status');
+
+  function buildChunk(gl) {
+    var N = 65, pos = new Float32Array(N * N * 3), nrm = new Float32Array(N * N * 3);
+    for (var z = 0; z < N; z++) for (var x = 0; x < N; x++) {
+      var i = (z * N + x) * 3;
+      pos[i] = x - 32; pos[i + 1] = Math.sin(x * 0.21) * 2.0 + Math.cos(z * 0.17) * 1.5 + Math.sin((x + z) * 0.05) * 4.0; pos[i + 2] = z - 32;
+      nrm[i] = 0; nrm[i + 1] = 1; nrm[i + 2] = 0;
+    }
+    var idx = new Uint16Array(64 * 64 * 6), k = 0;
+    for (var z2 = 0; z2 < 64; z2++) for (var x2 = 0; x2 < 64; x2++) {
+      var a = z2 * N + x2, b = a + 1, c = a + N, d = c + 1;
+      idx[k++] = a; idx[k++] = c; idx[k++] = b; idx[k++] = b; idx[k++] = c; idx[k++] = d;
+    }
+    function buf(target, data) { var o = gl.createBuffer(); gl.bindBuffer(target, o); gl.bufferData(target, data, gl.STATIC_DRAW); return o; }
+    return { pos: buf(gl.ARRAY_BUFFER, pos), nrm: buf(gl.ARRAY_BUFFER, nrm), idx: buf(gl.ELEMENT_ARRAY_BUFFER, idx), count: idx.length };
+  }
+  function program(gl, vs, fs) {
+    function sh(type, src) { var s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return s; }
+    var p = gl.createProgram(); gl.attachShader(p, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(p, sh(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(p); return p;
+  }
+  var VS = '#version 300 es\nlayout(location=0) in vec3 p; layout(location=1) in vec3 n; uniform mat4 vp; uniform vec3 off; out float l; out float h;' +
+    'void main(){ vec3 w = p + off; l = 0.4 + 0.6*max(0.0, dot(normalize(n), normalize(vec3(0.4,1.0,0.3)))); h = w.y; gl_Position = vp * vec4(w, 1.0); }';
+  var FS = '#version 300 es\nprecision mediump float; in float l; in float h; out vec4 o;' +
+    'void main(){ vec3 g = mix(vec3(0.36,0.42,0.22), vec3(0.55,0.52,0.36), clamp(h*0.08+0.5,0.0,1.0)); o = vec4(g*l, 1.0); }';
+  function perspective(fov, aspect, near, far) { var f = 1 / Math.tan(fov / 2), nf = 1 / (near - far); return new Float32Array([f / aspect, 0, 0, 0, 0, f, 0, 0, 0, 0, (far + near) * nf, -1, 0, 0, 2 * far * near * nf, 0]); }
+  function lookDown(cy, cz) { var len = Math.hypot(cy, cz), fy = -cy / len, fz = -cz / len, uy = -fz, uz = fy; return new Float32Array([1, 0, 0, 0, 0, uy, -fy, 0, 0, uz, -fz, 0, 0, -(uy * cy + uz * cz), (fy * cy + fz * cz), 1]); }
+  function mul(a, b) { var o = new Float32Array(16); for (var i = 0; i < 4; i++) for (var j = 0; j < 4; j++) { var s = 0; for (var k = 0; k < 4; k++) s += a[k * 4 + j] * b[i * 4 + k]; o[i * 4 + j] = s; } return o; }
+
+  function cpuChunk() {
+    function hash(x, z) { var h = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return h - Math.floor(h); }
+    function noise(x, z) { var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi; var a = hash(xi, zi), b = hash(xi + 1, zi), c = hash(xi, zi + 1), d = hash(xi + 1, zi + 1); var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf); var top = a + (b - a) * u; return top + ((c + (d - c) * u) - top) * v; }
+    var t0 = performance.now(), acc = 0;
+    for (var z = 0; z < 67; z++) for (var x = 0; x < 67; x++) { var p = x * 0.011, q = z * 0.011; acc += noise(p, q) * 60 + noise(p * 4, q * 4) * 15 + noise(p * 16, q * 16) * 4; }
+    for (var z2 = 0; z2 < 65; z2++) for (var x2 = 0; x2 < 65; x2++) acc += noise(x2 * 0.003 + 9, z2 * 0.003 + 9);
+    return { ms: performance.now() - t0, acc: acc };
+  }
+
+  function runBench() {
+    if (!gl) { benchStatus.textContent = 'No WebGL 2, so no render test.'; return; }
+    runBtn.disabled = true; benchStatus.textContent = 'Running…';
+    document.getElementById('bench').innerHTML = '';
+    Object.keys(rows).forEach(function (k) { if (k.indexOf('bench/') === 0) delete rows[k]; });
+    var best = Infinity; for (var i = 0; i < 3; i++) best = Math.min(best, cpuChunk().ms);
+    cpuMs = best; row('bench', 'Heightfield (JS) per chunk', best.toFixed(1) + ' ms');
+
+    var chunk = buildChunk(gl), prog = program(gl, VS, FS);
+    var uVP = gl.getUniformLocation(prog, 'vp'), uOff = gl.getUniformLocation(prog, 'off');
+    gl.enable(gl.DEPTH_TEST); gl.enable(gl.CULL_FACE);
+    var dpr = Math.min(devicePixelRatio || 1, 2);
+    canvas.width = Math.round(canvas.clientWidth * dpr); canvas.height = Math.round(canvas.clientHeight * dpr);
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.useProgram(prog); gl.uniformMatrix4fv(uVP, false, mul(perspective(1.0, canvas.width / canvas.height, 1, 4000), lookDown(260, 420)));
+    gl.bindBuffer(gl.ARRAY_BUFFER, chunk.pos); gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, chunk.nrm); gl.enableVertexAttribArray(1); gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, chunk.idx);
+
+    var steps = [25, 81, 169, 289, 441, 625, 841, 1089], phase = 0, count = steps[0], frames = 0, t0 = 0, results = [], maxGood = 0;
+    function draw(t) {
+      gl.clearColor(0.55, 0.62, 0.75, 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+      var side = Math.round(Math.sqrt(count)), half = (side - 1) / 2;
+      for (var i = 0; i < count; i++) { gl.uniform3f(uOff, ((i % side) - half) * 64, 0, (Math.floor(i / side) - half) * 64); gl.drawElements(gl.TRIANGLES, chunk.count, gl.UNSIGNED_SHORT, 0); }
+      if (!t0) t0 = t; frames++;
+      if (t - t0 >= 1200) {
+        var fps = frames * 1000 / (t - t0);
+        results.push(count + ':' + fps.toFixed(0));
+        row('bench', side + '×' + side + ' chunks (' + count + ')', fps.toFixed(0) + ' fps');
+        if (fps >= 55) maxGood = count;
+        phase++;
+        if (phase < steps.length && fps >= 30) { count = steps[phase]; frames = 0; t0 = 0; requestAnimationFrame(draw); return; }
+        finish(); return;
+      }
+      requestAnimationFrame(draw);
+    }
+    function finish() {
+      measuredChunks = maxGood;
+      measuredTier = maxGood >= 625 ? 3 : maxGood >= 289 ? 2 : maxGood >= 81 ? 1 : 0;
+      row('bench', 'Chunks at 55 fps or better', maxGood ? maxGood + ' (radius ' + Math.floor((Math.sqrt(maxGood) - 1) / 2) + ')' : 'fewer than 25');
+      R['Render test'] = results.join(' ');
+      benchStatus.textContent = 'Done.'; runBtn.disabled = false;
+      renderTier();
+    }
+    requestAnimationFrame(draw);
+  }
+  runBtn.addEventListener('click', runBench);
+
+  // ── Marrowmark verdicts ────────────────────────────────────────────
+  function verdicts() {
+    var v = document.getElementById('verdicts'); v.innerHTML = '';
+    function add(cls, head, body) {
+      var d = document.createElement('div'); d.className = 'verdict ' + cls;
+      d.innerHTML = '<div class="dot"></div><div><strong></strong><span></span></div>';
+      d.querySelector('strong').textContent = head; d.querySelector('span').textContent = body; v.appendChild(d);
+      R['Marrowmark: ' + head] = body;
+    }
+    if (gl) add('good', 'Browser build: yes', 'WebGL 2 is here, which is what the Godot web export needs.');
+    else add('bad', 'Browser build: no', 'No WebGL 2. Try Chrome if this is not Chrome.');
+    if (family === 'android') add('good', 'APK: yes', 'Android, so the playtest APK installs directly. That is the build with the pad scheme.');
+    else add('warn', 'APK: no', 'The APK is Android only. Here the browser build is the route, with a Bluetooth controller.');
+    var c = R['Controller'];
+    if (c && c !== 'none seen' && c !== 'no Gamepad API') add('good', 'Controller: seen', c);
+    else add('warn', 'Controller: not seen yet', 'Pair or plug one in and press a button. The combat scheme that matters is the pad.');
+    if (measuredTier >= 0) {
+      if (measuredChunks >= 289) add('good', 'Generated world: should hold', measuredChunks + ' chunks at full rate. Thornfield streams radius 8, which is 289.');
+      else if (measuredChunks >= 81) add('warn', 'Generated world: marginal', measuredChunks + ' chunks at full rate against 289 wanted. The threaded build and a smaller radius are the levers.');
+      else add('bad', 'Generated world: will not hold as built', 'Fewer than 81 chunks at full rate.');
+      add(cpuMs < 60 ? 'good' : cpuMs < 150 ? 'warn' : 'bad', 'Chunk building: ' + cpuMs.toFixed(0) + ' ms of JavaScript', 'The container does the real thing in about 42 ms; a phone-class CPU is usually two to four times slower.');
+    } else add('', 'Generated world: run the render test', 'The verdict needs the test.');
+  }
+
+  // ── Report ─────────────────────────────────────────────────────────
+  var report = document.getElementById('report');
+  function writeReport() {
+    var lines = ['Device check, ' + new Date().toISOString().slice(0, 10)];
+    Object.keys(R).forEach(function (k) { lines.push(k + ': ' + R[k]); });
+    report.value = lines.join('\n');
+  }
+  document.getElementById('copy').addEventListener('click', function () {
+    var s = document.getElementById('copy-status'), text = report.value;
+    function fallback() { report.focus(); report.select(); s.textContent = 'Selected. Copy it with the usual gesture.'; }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function () { s.textContent = 'Copied. Paste it into the chat.'; }, fallback);
+    else fallback();
+  });
+
+  renderTier();
+})();
+</script>
+</body>
+</html>
