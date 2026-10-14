@@ -85,6 +85,19 @@ right, fought in scheduled battles, with stakes posted up front.**
    recorded — named battles enter the server's living history (L23),
    and war dead feed the crafting economy's demand (§2.6 brainstorm).
 
+> **Built 2026-10-14** — `sim/Marrowmark.Sim/Society/`, 34 tests.
+> Charters and the one-banner-one-house rule (§1), rights held for a
+> season (§2), and the war contract above (§3): stake escrowed at
+> declaration, lead time, per-side enrolment caps, battles counted only
+> in the window, war rules only for the enrolled, best-of resolution
+> and a record for history. Three things §3 left unsaid were decided
+> and are now rules: **a tie holds** (the defender was never beaten);
+> **a treaty returns the challenger's stake** and moves only the
+> tribute, where a withdrawal forfeits it; and **an unheld right is
+> claimed, not declared on**, since there is nobody to fight. Not
+> built: battle objectives, councils as challengers, the cost of a
+> claim, Circle exposure.
+
 ## 4. Why this shape
 
 - **Consent + stakes coexist.** The founding page demands real loss

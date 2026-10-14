@@ -12,7 +12,7 @@ of each working session.
 Design is **94 locked decisions** and **complete** — every structural
 question locked, every missing document written. Every system a player
 touches in their first hundred hours is specified, and most of it is
-**written, tested and running** as engine-free C# — 408 tests.
+**written, tested and running** as engine-free C# — 470 tests.
 
 **Stage 1 is built and playable in any browser**: a character who walks
 and runs, a dodge with invulnerability frames, a sword, a training
@@ -37,6 +37,50 @@ push on country instead of on the one result that can end it.
 **The engine is Godot** (L54, revised 2026-09-14 from Unity). Decided
 on the evidence in `tech.md` §2a, not on preference — see the L54
 section below.
+
+## Done 2026-10-14 — the shop, and declared wars
+
+Asked for, with L94 freshly locked: *"keep growing `sim/`: economy, war,
+charters."* Two systems, pure logic, 62 tests, every rule mutation-
+proven the way the harnesses are — remove the rule, watch exactly one
+test fail, put it back.
+
+**The shop** (`Economy/`, economy.md §2 and §4). The owner stocks and
+prices from the counter; NPC staff sell while the owner is away and
+follow standing orders — "buy ore under 2, up to 20" — and **never set
+a price**: what they buy lands on the shelf unpriced and waits. That
+one rule is what makes the companion app's "read-and-manage only"
+(L31) true in the rules rather than in a policy, because everything a
+phone can do to a shop is a thing staff could have been told. Wages
+and rent fall due daily from the till whether anyone is there or not;
+unpaid staff leave after two days and the shop closes behind them. The
+ledger says what sold, to whom, at what price, and cannot be edited.
+Coin moves between `Purse`s and refuses when one cannot pay, so no
+rule hands back a number and trusts its caller to debit somebody —
+the bug class the town port found three times.
+
+**Charters, rights and wars** (`Society/`, war-society.md §1–§3). One
+Company or Order, one House, any Circles; Circles are absent from the
+register and their roster is empty to anyone asking. A right is held
+for a season and challengeable only when it turns. **No stake, no
+war** — escrowed at declaration or refused. Lead time, then a window;
+battles count only inside it; enrolment capped per side at what was
+negotiated; war rules apply only to the enrolled, only in the window,
+so bystanders keep L17. Best-of takes the right and the stake, and the
+war becomes a record.
+
+**Three things §3 left unsaid were decided in the building**, and are
+written into `war-society.md` so they are not re-decided by the next
+reader: a tie holds (the defender was never beaten); a treaty returns
+the stake and moves only the tribute, where walking away forfeits it;
+and an unheld right is claimed rather than declared on.
+
+**Not built, on purpose:** what a battle is, councils as challengers,
+what a claim costs, Circle exposure, commissions, the shopfront.
+`shared/tuning/economy.json` and `society.json` carry the numbers,
+guarded like the others — but with no prototype copy, because L88
+mirrors only what the prototype exercises and Thornfield has neither
+a shop nor a war.
 
 ## Done 2026-09-27 — where a chunk's 56 ms actually go
 
@@ -2958,7 +3002,7 @@ art beside them is the art a rule depends on.** So the queue below is
 read with that filter: the four Mixamo clips and the night darkness
 are in, because `combat.md` §6 needs them to be learnable; palettes,
 real characters, town looks and the generated country's dressing wait.
-`.github/workflows/sim-tests.yml` now runs the 408 tests on every push,
+`.github/workflows/sim-tests.yml` now runs the tests (470 today) on every push,
 so a rule drifting between `sim/` and `prototype/rules/` fails on
 GitHub rather than when somebody remembers.
 

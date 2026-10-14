@@ -1,0 +1,10 @@
+{
+  "war": {
+    "leadTimeHours": 72.0,
+    "windowHours": 168.0,
+    "seasonHours": 2160.0,
+    "minEnrolment": 30,
+    "maxEnrolment": 150,
+    "stakeMinimum": 200
+  }
+}

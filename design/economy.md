@@ -36,6 +36,15 @@ are the primary way goods reach buyers:
   companion — the asynchronous half of shopkeeping. Read-and-manage
   only; nothing gameplay-critical lives there.
 
+> **Built 2026-10-14** — `sim/Marrowmark.Sim/Economy/Shop.cs`, 26
+> tests. Stock, prices, holds, standing orders, NPC staff who sell
+> while the owner is away and never set a price, the ledger, and wages
+> and rent as daily sinks from the till. Not built: the shopfront,
+> commissions, and the building itself. Two rules were decided in the
+> building and are recorded here: **staff never price what they buy**
+> (it lands unpriced and waits for the owner), and **unpaid staff leave
+> after two days**, closing the shop behind them.
+
 ## 3. Markets are local — goods must travel
 
 **No global auction house.** Each town has a **market board** listing

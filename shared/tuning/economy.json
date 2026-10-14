@@ -1,0 +1,8 @@
+{
+  "shop": {
+    "hoursPerDay": 24.0,
+    "staffWagePerDay": 6,
+    "rentPerDay": 4,
+    "staffQuitAfterUnpaidDays": 2
+  }
+}

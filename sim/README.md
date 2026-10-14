@@ -2,7 +2,8 @@
 
 The rules of Marrowmark as plain C#, with **no engine dependency at
 all**. Stamina, damage, crafting properties, durability, skill curves —
-anything that is logic rather than rendering lives here.
+anything that is logic rather than rendering lives here — now including
+the shop, charters and declared wars.
 
 ## Why this exists separately
 
@@ -72,6 +73,12 @@ Expected: all tests pass, in well under a second.
 | Crafting: materials, stages, marks | `Crafting/` | `design/crafting.md`, L4, L38, L66–L68 |
 | Skill-by-use & the ascension gate | `Progression/` | L18, L40, L71 |
 | Recipe discovery & schematics | `Crafting/Knowledge.cs`, `Crafting/Schematic.cs` | L4, L72, L73 |
+| The town: boards, work, rumour, shrine, apprenticeship | `Town/` | `design/content.md` §3, `onboarding.md` §1, L92 |
+| The latency contract | `Net/` | `design/combat.md` §7, L39 — see `NETWORKING.md` |
+| The one clock | `World/WorldClock.cs` | L89 |
+| **The shop**: stock, prices, staff, standing orders, the books, wages and rent | `Economy/Shop.cs`, `Economy/Ledger.cs`, `Economy/Purse.cs` | `design/economy.md` §2, §4; L26, L31 |
+| **Charters**: one banner, one house, any circles; the register | `Society/Charter.cs` | `design/war-society.md` §1; L24 |
+| **Rights and declared wars**: stake, lead time, enrolment, the window, resolution, history | `Society/Right.cs`, `Society/War.cs` | `design/war-society.md` §2–§3; L11, L17, L25 |
 
 ### Progression pacing
 
@@ -142,6 +149,58 @@ the tests fail, naming the matchup and the number. The drift usually
 happens somewhere other than where it shows, which is the reason this
 exists.
 
+### The shop, and what it costs to keep open
+
+`Economy/Shop.cs` is economy.md §2 as rules. The owner stocks and
+prices from the counter; NPC staff sell while the owner is away and
+follow standing orders ("buy iron under 2, up to 20"), and **never set
+a price** — stock they buy lands on the shelf unpriced and waits for
+the owner. That is what makes the companion app (L31) read-and-manage
+in the rules rather than by policy: everything a phone can do to a
+shop is a thing staff could have been told.
+
+Wages and rent fall due daily from the till whether or not anyone is
+there (economy.md §4's sinks). Unpaid staff leave after two days and
+the shop closes behind them; unpaid rent goes into arrears and is
+collected when it can be. The ledger records what sold, to whom, at
+what price, and nothing in it can be edited — §6 calls good books a
+smuggler's liability, which only holds if they are true.
+
+Coin moves between `Purse`s and refuses when one cannot pay, so no
+rule returns a number and trusts its caller to debit somebody. That
+is the bug class the town port found three times.
+
+### Charters, rights and wars
+
+`Society/` is war-society.md §1–§3 as rules, built 2026-10-14 with 34
+tests, each one mutation-proven (remove the rule, watch the test fail).
+
+- One Company OR Order, one House, any Circles. Circles are absent
+  from the register and their roster is empty to anyone asking.
+- A right is held for a season and challengeable only when the season
+  turns. An unheld right is claimed, not fought over.
+- No stake, no war: the stake is escrowed at declaration or the
+  declaration is refused. Lead time precedes the window; battles count
+  only inside it; enrolment is capped per side at what was negotiated,
+  clamped to the profile's range.
+- War rules apply only to the enrolled, only inside the window.
+  Everyone else keeps ordinary death (L17).
+- Best-of takes the right for a fresh season and the stake. **A tie
+  holds** — the defender was never beaten. Walking away forfeits the
+  stake; a defender who concedes loses the right and the stake goes
+  home; **a treaty returns the stake** and moves the tribute, because a
+  treaty is a settlement and a withdrawal is a default. Those three
+  readings of §3 were not spelt out there and are recorded here as
+  the choices made.
+- Every finished war is archived as a record (L23).
+
+Not here, on purpose: what a battle is (§3 leaves objective types
+open), councils as challengers on town grants, what claiming an unheld
+right costs, and Circle exposure. `shared/tuning/society.json` and
+`economy.json` carry the numbers, guarded like the others but with no
+prototype copy — L88 mirrors only what the prototype exercises.
+
 Next candidates, all pure logic and none of them needing an engine:
-crafting material properties and rolled stats (L4) — the flagship
-system — and the skill-by-use curve (L18/L40).
+local markets and the price spread between towns (economy.md §3),
+caravans as shipments that take time and carry risk, commissions and
+their escrow, and charter-owned property.
