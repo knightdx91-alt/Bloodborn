@@ -1,0 +1,56 @@
+{
+  "swordAndShield": {
+    "overhead": true, "upperCuts": true, "lowerCuts": true, "thrust": true,
+    "primaryDamage": "cut",
+    "windupMultiplier": 1.0, "recoveryMultiplier": 1.0,
+    "staminaCostMultiplier": 1.0, "damageMultiplier": 1.0,
+    "reach": 2.1, "minReach": 0.0, "insideReachMultiplier": 1.0,
+    "guardBreak": 0.1, "shieldBattery": true, "ranged": false
+  },
+  "twoHanded": {
+    "overhead": true, "upperCuts": true, "lowerCuts": false, "thrust": false,
+    "primaryDamage": "cut",
+    "windupMultiplier": 1.4, "recoveryMultiplier": 1.3,
+    "staminaCostMultiplier": 1.3, "damageMultiplier": 1.6,
+    "reach": 2.5, "minReach": 0.0, "insideReachMultiplier": 1.0,
+    "guardBreak": 0.6, "shieldBattery": false, "ranged": false
+  },
+  "spearAndPolearm": {
+    "overhead": true, "upperCuts": false, "lowerCuts": true, "thrust": true,
+    "primaryDamage": "pierce",
+    "windupMultiplier": 1.1, "recoveryMultiplier": 1.1,
+    "staminaCostMultiplier": 1.1, "damageMultiplier": 1.1,
+    "reach": 3.2, "minReach": 1.2, "insideReachMultiplier": 0.5,
+    "guardBreak": 0.2, "shieldBattery": false, "ranged": false
+  },
+  "daggerAndShortBlade": {
+    "overhead": true, "upperCuts": true, "lowerCuts": true, "thrust": true,
+    "primaryDamage": "pierce",
+    "windupMultiplier": 0.7, "recoveryMultiplier": 0.6,
+    "staminaCostMultiplier": 0.7, "damageMultiplier": 0.6,
+    "reach": 1.3, "minReach": 0.0, "insideReachMultiplier": 1.0,
+    "guardBreak": 0.0, "shieldBattery": false, "ranged": false
+  },
+  "axeAndMace": {
+    "overhead": true, "upperCuts": true, "lowerCuts": true, "thrust": false,
+    "primaryDamage": "blunt",
+    "windupMultiplier": 1.2, "recoveryMultiplier": 1.4,
+    "staminaCostMultiplier": 1.2, "damageMultiplier": 1.3,
+    "reach": 2.0, "minReach": 0.0, "insideReachMultiplier": 1.0,
+    "guardBreak": 0.7, "shieldBattery": false, "ranged": false
+  },
+  "bowAndCrossbow": {
+    "overhead": false, "upperCuts": false, "lowerCuts": false, "thrust": true,
+    "primaryDamage": "pierce",
+    "windupMultiplier": 1.5, "recoveryMultiplier": 0.8,
+    "staminaCostMultiplier": 1.2, "damageMultiplier": 1.2,
+    "reach": 40.0, "minReach": 3.0, "insideReachMultiplier": 0.4,
+    "guardBreak": 0.0, "shieldBattery": false, "ranged": true
+  },
+  "technique": {
+    "unskilledCostMultiplier": 1.6,
+    "unskilledWindupMultiplier": 1.5,
+    "perFamily": 3,
+    "maxDistance": 4.0
+  }
+}

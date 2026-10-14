@@ -354,8 +354,11 @@ numbers.**
 Skill-by-use raises:
 - **Stamina efficiency** — the same fight costs a veteran less.
 - **Recovery frames** — veterans return to neutral sooner.
-- **Technique access** — new moves per weapon family, unlocked by use.
-  This is where progression is *felt*: a new verb, not a bigger number.
+- **Technique access** — new moves per weapon family, ~~unlocked by
+  use~~ **taught by a person (L95, 2026-10-14)**: you are shown a move
+  by someone who knows it, and skill decides how well you do it rather
+  than whether you may. This is where progression is *felt*: a new
+  verb, not a bigger number.
   **Techniques are primarily how you move** (L56): a dash-thrust that
   closes distance, a spinning step-through that puts you behind someone,
   a leaping overhead that crosses a gap, a pivot-cut that carries you
@@ -420,6 +423,18 @@ Each is a distinct set of verbs, not a damage number with a skin.
 
 **Every family is viable unarmoured and unskilled** — L38's crafting
 floor rule applied to combat: no weapon may hard-fail a beginner.
+
+> **Built 2026-10-14** — `sim/Marrowmark.Sim/Combat/WeaponFamily.cs`
+> and `Technique.cs`, 31 tests. Each family is a profile against the
+> baseline cut: its direction set (§1b's mitigation, held as data — a
+> dagger has all six, a maul no thrust, the bow only the shot), its
+> place on §4's triangle, its pace, reach and guard-break, the shield
+> as battery, the spear weak inside its reach. The viability floor
+> above is a test: every family kills an unarmoured fighter inside
+> §4's window and gets through plate eventually. Techniques: three per
+> family, eighteen named placeholders, each with a bearing and a
+> distance under L56's ceiling, taught per **L95** and paid for per
+> family skill. `shared/tuning/weapons.json` carries the numbers.
 
 ## 6. Enemy design vocabulary **[core]**
 
@@ -542,11 +557,11 @@ first, and be willing to hear the answer.
 
 - [ ] Exact stamina costs, recovery frames, and parry window widths —
       numbers come from the prototype, not from paper.
-- [ ] How many techniques per weapon family, and their unlock pacing
-      against skill-by-use. Now heavier than it looks: L56 makes
-      techniques the main expression of progression, so this is a
-      content-volume question as well as a design one — and animation
-      volume is a real burden solo (`tech.md` §1).
+- [x] ~~How many techniques per weapon family, and their unlock pacing
+      against skill-by-use.~~ → **L95** (2026-10-14): three per family,
+      taught by a person and never gated, with unskilled hands paying
+      more and telegraphing longer. Eighteen clips, which `tech.md` §1
+      can carry.
 - [ ] **Does the 5–15s time-to-kill window apply per archetype or
       overall?** A shield-and-plate mirror match is a stamina war and
       will run longer than a duellist mirror by design. **Deferred to

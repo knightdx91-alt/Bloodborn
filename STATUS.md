@@ -9,10 +9,10 @@ of each working session.
 
 ## The one-line version
 
-Design is **94 locked decisions** and **complete** — every structural
+Design is **95 locked decisions** and **complete** — every structural
 question locked, every missing document written. Every system a player
 touches in their first hundred hours is specified, and most of it is
-**written, tested and running** as engine-free C# — 470 tests.
+**written, tested and running** as engine-free C# — 502 tests.
 
 **Stage 1 is built and playable in any browser**: a character who walks
 and runs, a dodge with invulnerability frames, a sword, a training
@@ -37,6 +37,49 @@ push on country instead of on the one result that can end it.
 **The engine is Godot** (L54, revised 2026-09-14 from Unity). Decided
 on the evidence in `tech.md` §2a, not on preference — see the L54
 section below.
+
+## Done 2026-10-14 — weapon families and techniques, and L95
+
+Asked for: *"let's do techniques and weapon families."* Three
+questions put to the phone, three answers, one of them against my
+recommendation and taken as the decision it is.
+
+**Three per family, eighteen in all.** One shown first, one in the
+middle, one a master's. Eighteen clips is a budget L85 can carry;
+thirty is not.
+
+**Taught by a person only — no skill gate, no unlock by use.** This
+amends `combat.md` §3, which said "unlocked by use". I flagged the
+L19 risk (a newcomer with a teacher holds mastery moves on day one)
+and the answer was to take it; so the safeguard moved from the
+knowing to the doing. **A technique in hands that have not practised
+the family costs more stamina and winds up longer**, falling to its
+true price at mastery. A day-one student shown a master's leap can
+attempt it, and everyone watching sees it coming. Skill buys
+consistency, exactly as §3 always said; it no longer buys access.
+
+**The bow moves like everyone else** — a backstep draw, a snap on the
+move, a roll-and-loose — so there is one rule for six families and
+archers are not turrets.
+
+**What was built** (`Combat/WeaponFamily.cs`, `Combat/Technique.cs`,
+31 tests, every rule mutation-proven): the six families of §5 as
+profiles against the baseline cut, with §1b's direction sets held as
+data (a dagger has all six, a maul no thrust, the bow only the shot),
+the spear weak inside its reach, axes and mauls bleeding a block
+harder, the shield as the one battery. **L38's floor is a test**:
+every family kills an unarmoured fighter inside the time-to-kill
+window and gets through plate eventually, and the triangle still
+decides who fears whom. Eighteen techniques with a bearing and a
+distance each, none past L56's ceiling, every strike one its family
+can throw. An empty bar refuses a technique, as it refuses the dodge.
+`shared/tuning/weapons.json` carries the numbers; names and distances
+are placeholders.
+
+**Not built:** what the prototype does with a bearing (that is the
+engine's), momentum feeding attacks, the thrust's pad input, and who
+in Thornfield knows what — Odo's drill yard is where the first one
+should be shown, per L70, and that is content.
 
 ## Done 2026-10-14 — the shop, and declared wars
 

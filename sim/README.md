@@ -70,6 +70,8 @@ Expected: all tests pass, in well under a second.
 | Durability, wear, repair & breakage | `Items/Durability.cs`, `Items/DurabilityProfile.cs` | L3, L32, L59–L62 |
 | Per-slot armour | `Items/ArmorSet.cs` | L63 |
 | Directional targeting & guards | `Combat/Targeting.cs`, `Combat/AttackDirection.cs` | L64, L65 |
+| **Weapon families**: direction sets, the triangle, pace, reach, guard-break, the viability floor | `Combat/WeaponFamily.cs` | `design/combat.md` §1b, §5; L38 |
+| **Techniques**: three per family, taught not unlocked, priced by skill | `Combat/Technique.cs` | `design/combat.md` §3; L56, L95 |
 | Crafting: materials, stages, marks | `Crafting/` | `design/crafting.md`, L4, L38, L66–L68 |
 | Skill-by-use & the ascension gate | `Progression/` | L18, L40, L71 |
 | Recipe discovery & schematics | `Crafting/Knowledge.cs`, `Crafting/Schematic.cs` | L4, L72, L73 |
@@ -199,6 +201,25 @@ open), councils as challengers on town grants, what claiming an unheld
 right costs, and Circle exposure. `shared/tuning/society.json` and
 `economy.json` carry the numbers, guarded like the others but with no
 prototype copy — L88 mirrors only what the prototype exercises.
+
+### Weapon families and techniques
+
+`Combat/WeaponFamily.cs` holds §5's six families as profiles against
+the baseline cut, and the part §1b made load-bearing is data: which
+arcs each family can throw. A dagger has all six, a maul has no
+thrust, the bow only the shot. L38's floor is a test — every family
+kills an unarmoured fighter inside the time-to-kill window and gets
+through plate eventually — and the triangle still decides who fears
+whom (a mace beats plate faster than a dagger does).
+
+`Combat/Technique.cs` is L56 and L95: eighteen techniques, three per
+family, each a committed move that carries the body somewhere under a
+human ceiling and lands a blow the family can throw. **Taught, never
+unlocked** — a `Repertoire` learns only from one that knows, never
+from itself — and **priced by skill**: at zero family skill a move
+costs more and winds up longer, falling to its true price at mastery.
+An empty bar refuses it, as it refuses the dodge. Names and distances
+are placeholders; the structure is the lock.
 
 Next candidates, all pure logic and none of them needing an engine:
 local markets and the price spread between towns (economy.md §3),
