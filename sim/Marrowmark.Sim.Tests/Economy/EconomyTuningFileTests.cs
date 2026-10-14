@@ -8,11 +8,13 @@ using Xunit;
 namespace Marrowmark.Sim.Tests.Economy
 {
     /// <summary>
-    /// Guards shared/tuning/economy.json against drifting from ShopProfile.
+    /// Guards shared/tuning/economy.json against drifting from the shop,
+    /// market and travel profiles.
     ///
     /// There is deliberately NO prototype copy to compare against: L88
     /// mirrors only what the prototype exercises, and the prototype has no
-    /// shop. When it gets one, the copy and its check come with it.
+    /// shop, market or road. When it gets one, the copy and its check
+    /// come with it.
     /// </summary>
     public class EconomyTuningFileTests
     {
@@ -28,45 +30,41 @@ namespace Marrowmark.Sim.Tests.Economy
         }
 
         [Fact]
-        public void Shop_tuning_matches_the_shared_file()
+        public void Shop_tuning_matches_the_shared_file() => AssertSection(ShopProfile.Default, "shop");
+
+        [Fact]
+        public void Market_tuning_matches_the_shared_file() => AssertSection(MarketProfile.Default, "market");
+
+        [Fact]
+        public void Travel_tuning_matches_the_shared_file() => AssertSection(TravelProfile.Default, "travel");
+
+        /// <summary>Every field in the section with the same value, and
+        /// nothing in the section that is not a field.</summary>
+        private static void AssertSection<T>(T profile, string sectionName) where T : struct
         {
             var root = JsonDocument
                 .Parse(File.ReadAllText(Path.Combine(RepoRoot(), Canonical)))
                 .RootElement;
-            var profile = ShopProfile.Default;
+            Assert.True(root.TryGetProperty(sectionName, out var section),
+                $"{Canonical} has no \"{sectionName}\"");
 
-            foreach (var field in typeof(ShopProfile).GetFields(
-                         BindingFlags.Public | BindingFlags.Instance))
+            var known = new System.Collections.Generic.HashSet<string>();
+            foreach (var field in typeof(T).GetFields(BindingFlags.Public | BindingFlags.Instance))
             {
                 var key = char.ToLowerInvariant(field.Name[0]) + field.Name.Substring(1);
-                JsonElement found = default;
-                var hits = 0;
-                foreach (var section in root.EnumerateObject())
-                    if (section.Value.TryGetProperty(key, out var v)) { found = v; hits++; }
-
-                Assert.True(hits == 1,
-                    $"{key} appears {hits} times in {Canonical}; expected exactly 1");
+                known.Add(key);
+                Assert.True(section.TryGetProperty(key, out var found),
+                    $"{Canonical} is missing \"{sectionName}.{key}\"");
 
                 var expected = field.GetValue(profile);
                 if (expected is float f) Assert.Equal(f, found.GetSingle(), 4);
                 else if (expected is int i) Assert.Equal(i, found.GetInt32());
                 else Assert.Fail($"Unhandled field type for {key}: {field.FieldType}");
             }
-        }
 
-        [Fact]
-        public void The_shared_file_carries_no_numbers_nobody_owns()
-        {
-            var root = JsonDocument
-                .Parse(File.ReadAllText(Path.Combine(RepoRoot(), Canonical)))
-                .RootElement;
-            var known = new System.Collections.Generic.HashSet<string>();
-            foreach (var f in typeof(ShopProfile).GetFields(BindingFlags.Public | BindingFlags.Instance))
-                known.Add(char.ToLowerInvariant(f.Name[0]) + f.Name.Substring(1));
-
-            foreach (var property in root.GetProperty("shop").EnumerateObject())
+            foreach (var property in section.EnumerateObject())
                 Assert.True(known.Contains(property.Name),
-                    $"{Canonical} has \"shop.{property.Name}\", which is not a field on ShopProfile.");
+                    $"{Canonical} has \"{sectionName}.{property.Name}\", which is not a field on {typeof(T).Name}.");
         }
     }
 }

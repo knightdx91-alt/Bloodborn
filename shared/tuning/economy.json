@@ -4,5 +4,16 @@
     "staffWagePerDay": 6,
     "rentPerDay": 4,
     "staffQuitAfterUnpaidDays": 2
+  },
+  "market": {
+    "elasticity": 0.5,
+    "floorMultiplier": 0.4,
+    "ceilingMultiplier": 3.0
+  },
+  "travel": {
+    "footMetresPerSecond": 3.0,
+    "mountedMultiplier": 2.5,
+    "ownerGraceSeconds": 600.0,
+    "despawnSeconds": 3600.0
   }
 }

@@ -79,6 +79,7 @@ Expected: all tests pass, in well under a second.
 | The latency contract | `Net/` | `design/combat.md` §7, L39 — see `NETWORKING.md` |
 | The one clock | `World/WorldClock.cs` | L89 |
 | **The shop**: stock, prices, staff, standing orders, the books, wages and rent | `Economy/Shop.cs`, `Economy/Ledger.cs`, `Economy/Purse.cs` | `design/economy.md` §2, §4; L26, L31 |
+| **Local markets, the road, and what falls on it**: scarce is dear, goods travel, wrecks are owner-only then open then gone; armour and cargo on one budget | `Economy/Market.cs`, `Economy/Shipment.cs`, `Economy/Cargo.cs` | `design/economy.md` §3, §3.5; L17, L32, L57 |
 | **Charters**: one banner, one house, any circles; the register | `Society/Charter.cs` | `design/war-society.md` §1; L24 |
 | **Rights and declared wars**: stake, lead time, enrolment, the window, resolution, history | `Society/Right.cs`, `Society/War.cs` | `design/war-society.md` §2–§3; L11, L17, L25 |
 
@@ -172,6 +173,28 @@ Coin moves between `Purse`s and refuses when one cannot pay, so no
 rule returns a number and trusts its caller to debit somebody. That
 is the bug class the town port found three times.
 
+### Markets are local, and the road is the risk
+
+`Economy/Market.cs` is a town's board: it lists only what is in the
+warehouse, and prices scarce dear and glutted cheap, bounded both
+ends. Two towns can disagree about iron, and that disagreement is the
+caravaner's living — a test buys in iron country, carries it to a
+town that has none, and asserts the trip pays and the spread narrows
+behind it.
+
+`Economy/Shipment.cs` is economy.md §3's "no mail, no teleporting
+goods" as a rule: a shipment is in its origin, on the road, or in its
+destination, never two of those. The road takes distance over speed
+(a horse is 2.5× a walk), and a shipment lost on the road leaves a
+`Wreck` where it fell: owner-only for L32's grace, anyone's after,
+gone after an hour. Goods that despawn leave the world, which is
+L17's death ladder feeding crafting demand with something that
+actually went.
+
+`Economy/Cargo.cs` holds L57: armour and cargo on one encumbrance
+budget, so a fighter in plate hauls almost nothing and a loaded
+hauler has a smaller bar.
+
 ### Charters, rights and wars
 
 `Society/` is war-society.md §1–§3 as rules, built 2026-10-14 with 34
@@ -222,6 +245,6 @@ An empty bar refuses it, as it refuses the dodge. Names and distances
 are placeholders; the structure is the lock.
 
 Next candidates, all pure logic and none of them needing an engine:
-local markets and the price spread between towns (economy.md §3),
-caravans as shipments that take time and carry risk, commissions and
-their escrow, and charter-owned property.
+commissions and their escrow (economy.md §2), charter-owned property
+and councils (L5, war-society.md §1), the monster ecology behind boar
+pressure (content.md §2), and magic (L7–L10).

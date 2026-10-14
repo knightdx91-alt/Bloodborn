@@ -12,7 +12,7 @@ of each working session.
 Design is **95 locked decisions** and **complete** — every structural
 question locked, every missing document written. Every system a player
 touches in their first hundred hours is specified, and most of it is
-**written, tested and running** as engine-free C# — 502 tests.
+**written, tested and running** as engine-free C# — 523 tests.
 
 **Stage 1 is built and playable in any browser**: a character who walks
 and runs, a dodge with invulnerability frames, a sword, a training
@@ -37,6 +37,35 @@ push on country instead of on the one result that can end it.
 **The engine is Godot** (L54, revised 2026-09-14 from Unity). Decided
 on the evidence in `tech.md` §2a, not on preference — see the L54
 section below.
+
+## Done 2026-10-14 — markets are local, and the road is the risk
+
+*"Keep going."* The half of the economy that was still on paper:
+economy.md §3 and §3.5, with L17, L32 and L57. `Economy/Market.cs`,
+`Shipment.cs`, `Cargo.cs`, 20 tests, seven mutations each caught.
+
+**A market lists only what is warehoused in it**, and prices scarce
+dear and glutted cheap, bounded both ends. Two towns disagree about
+iron, and **the spread is a profession**: a test buys in iron country,
+carries it to a town with none, and asserts the trip pays and the
+spread narrows behind it — every cart sold lowers the next price,
+which is what keeps arbitrage a trade rather than a faucet.
+
+**A shipment is in its origin, on the road, or in its destination,
+and never two of those.** The road takes distance over speed, a horse
+is 2.5× a walk, and **a shipment lost on the road leaves a wreck
+where it fell**: owner-only for ten minutes, anyone's for an hour,
+then gone. Goods that despawn leave the world — L17's death ladder
+feeding crafting demand with something that really went.
+
+**Armour and cargo weigh on one budget** (L57): a fighter in plate
+has room for almost nothing, and a loaded hauler's bar is smaller
+until the load is dropped. The encumbrance channel already existed in
+`Stamina`; this is the first thing that puts a real weight on it.
+
+**Not built:** who buys from a town (its coin is a faucet's far end
+for now), insurance, warehouse robbery, barges and coaches, and the
+ecology that should set a town's demand.
 
 ## Done 2026-10-14 — weapon families and techniques, and L95
 

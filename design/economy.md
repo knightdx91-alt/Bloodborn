@@ -60,6 +60,18 @@ abstract; **items are physical** — no mail, no teleporting goods.
 - The capitol's Concourse is the deep market — highest volume, highest
   stall fees — but still local: goods must get there.
 
+> **Built 2026-10-14** — `sim/Marrowmark.Sim/Economy/Market.cs`,
+> `Shipment.cs`, `Cargo.cs`, 20 tests. A market lists only what is
+> warehoused in it and prices scarce dear and glutted cheap, bounded
+> both ends, so the spread between towns exists and working it narrows
+> it. A shipment is in its origin, on the road, or in its destination
+> and never two of those; the road takes distance over speed, and a
+> horse is 2.5× a walk. A shipment lost on the road leaves a wreck
+> where it fell — owner-only for ten minutes, anyone's for an hour,
+> then gone (L17, L32). Armour and cargo weigh on one budget (L57).
+> Not built: who buys from a town (its coin is a faucet's far end),
+> insurance, warehouse robbery, barges and coaches.
+
 ### 3.5 No fast travel, no teleportation (DECIDED 2026-07-26)
 People are as physical as goods — player teleportation with inventory
 would *be* item mail, so it doesn't exist. The rules:
