@@ -82,6 +82,7 @@ Expected: all tests pass, in well under a second.
 | **The order book**: escrow at posting, bids under budget, delivery signed and on time, a cancel fee, nothing to dispute | `Economy/Commission.cs` | `design/economy.md` §2; L49, L68 |
 | **Local markets, the road, and what falls on it**: scarce is dear, goods travel, wrecks are owner-only then open then gone; armour and cargo on one budget | `Economy/Market.cs`, `Economy/Shipment.cs`, `Economy/Cargo.cs` | `design/economy.md` §3, §3.5; L17, L32, L57 |
 | **The monster ecology**: populations that grow unculled and spill, culls as maintenance and supply, named horrors with bounties and history | `Ecology/Wilds.cs` | `design/content.md` §2; L4, L23 |
+| **Magic**: ranks, teaching slots, lineage, the Incarnate seats and the Succession Trial, the awakening valve | `Magic/Spellcraft.cs`, `Magic/Mage.cs` | `design/brainstorm.md` §5; L7–L10, L22, L33–L36 |
 | **Charters**: one banner, one house, any circles; the register | `Society/Charter.cs` | `design/war-society.md` §1; L24 |
 | **Property and councils**: deeds, leases, upkeep that forfeits, one seat per owner, a tax by majority of all seats | `Society/Property.cs` | `design/brainstorm.md` §3; L5, L24 |
 | **Rights and declared wars**: stake, lead time, enrolment, the window, resolution, history | `Society/Right.cs`, `Society/War.cs` | `design/war-society.md` §2–§3; L11, L17, L25 |
@@ -223,6 +224,29 @@ from its birth and a line of history when it dies. The traits are
 broken rules, not bigger numbers, because combat.md §6 says the
 warped things break the grammar on purpose.
 
+### The hidden system
+
+`Magic/Spellcraft.cs` is brainstorm.md §5 as rules, and nothing in it
+is a spell's effect: it is who may cast, who taught them, whose name
+the spell carries, and who holds its seat. The ladder climbs by use;
+Grandmaster wants graduated disciples as well; Incarnate is never XP.
+Teaching unlocks at Master with L33's slots, a graduation frees a
+slot at once, a dismissal locks one for a week, and a disciple has
+one master per spell, so every spell traces back to its discoverer.
+Lineage XP is a capped trickle and a rank-up windfall, and stops at
+Grandmaster. Teaching a never-awakened player is their awakening, and
+does not touch the valve.
+
+The seats are L10 to the letter: one per spell per server, one per
+character ever, decline for a permanent extra slot, lapse after
+thirty days unseen, a regency holding it to sixty once. A fall, a
+lapse or a forsaking opens the seat with an announcement that reaches
+the public only from the Unveiling (L22), and a Trial three days on
+that only grandmasters enter: one claims by walkover, several leave
+exactly one, none leaves it open. L36's valve is a dial — seeded
+awakenings per day by epoch — and the slow reliable path is never
+throttled, which is the casual guard rail from the feasibility review.
+
 ### Charters, rights and wars
 
 `Society/` is war-society.md §1–§3 as rules, built 2026-10-14 with 34
@@ -281,5 +305,5 @@ An empty bar refuses it, as it refuses the dodge. Names and distances
 are placeholders; the structure is the lock.
 
 Next candidates, all pure logic and none of them needing an engine:
-magic (L7–L10), the arena and its book (L6, L35), and
+the arena and its book (L6, L35), and
 epochs (L23, L36).

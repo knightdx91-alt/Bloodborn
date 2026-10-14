@@ -1,0 +1,26 @@
+{
+  "magic": {
+    "adeptAt": 100.0,
+    "expertAt": 300.0,
+    "masterAt": 700.0,
+    "grandmasterAt": 1500.0,
+    "graduatesForGrandmaster": 2,
+    "slotsAtMaster": 3,
+    "extraSlotAtGrandmaster": 1,
+    "extraSlotForDeclining": 1,
+    "dismissalCooldownHours": 168.0,
+    "lineageRankUpXp": 60.0,
+    "lineageTrickleXp": 1.0,
+    "lineageTrickleDailyCap": 20.0,
+    "seatLapseHours": 720.0,
+    "regencyHours": 1440.0,
+    "trialLeadHours": 72.0,
+    "awakeningsPerDayMyth": 1,
+    "awakeningsPerDayWhispers": 3,
+    "awakeningsPerDayUnveiling": 10,
+    "awakeningsPerDayScouring": 20,
+    "awakeningsPerDayWonder": 50,
+    "extinctionBelowMasters": 2,
+    "hoursPerDay": 24.0
+  }
+}

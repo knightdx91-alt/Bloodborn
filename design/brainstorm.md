@@ -279,8 +279,10 @@ institutions, not a courtroom.
     disciple per day.
 - Aligned incentives: scarce slots + XP-paying students = masters
   recruit talented, active players, not warm bodies.
-- Open tuning question: can tithe XP alone carry a master to the top
-  rank, or is personal casting required for the final rank?
+- ~~Open tuning question: can tithe XP alone carry a master to the top
+  rank, or is personal casting required for the final rank?~~ L33
+  answers it, and the rules now hold it: lineage XP counts fully up to
+  Grandmaster, and Grandmaster also wants graduated disciples.
 
 ### 5.4 Tiers and Incarnates (DECIDED — structure; tuning TBD)
 
@@ -358,6 +360,24 @@ institutions, not a courtroom.
   teeth.
 - Enchanting = mage + crafter collaboration: the smith forges the
   vessel, the mage binds the spell.
+
+> **Built 2026-10-14** — `sim/Marrowmark.Sim/Magic/`, 28 tests, every
+> rule mutation-proven. The structure above as rules, with no spell
+> effects in it: the ladder by use with Grandmaster wanting graduates
+> too and Incarnate never XP; teaching at Master with L33's slots,
+> graduation freeing a slot at once and dismissal locking it a week;
+> one master per spell per disciple and every spell tracing to its
+> discoverer; lineage XP as a capped trickle and a rank-up windfall,
+> stopping at Grandmaster; teaching a never-awakened player as their
+> awakening, outside the valve. The seats: one per spell, one per
+> character, decline for a permanent slot, lapse at thirty days unseen,
+> regency to sixty once, a fall or a forsaking opening the seat; the
+> announcement reaching the public only from the Unveiling; the Trial
+> three days on, grandmasters only, walkover for one, open for none.
+> L36's valve as a dial: seeded awakenings per day by epoch, and the
+> slow reliable path never throttled. Not built: what any spell does,
+> the true forms (L34), the shadow book, academies behind fronts,
+> echoes, the secret institutions.
 
 ## 6. War **[core]**
 - Large-scale town-vs-town or faction wars over wedge territory and

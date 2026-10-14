@@ -12,7 +12,7 @@ of each working session.
 Design is **95 locked decisions** and **complete** — every structural
 question locked, every missing document written. Every system a player
 touches in their first hundred hours is specified, and most of it is
-**written, tested and running** as engine-free C# — 568 tests.
+**written, tested and running** as engine-free C# — 596 tests.
 
 **Stage 1 is built and playable in any browser**: a character who walks
 and runs, a dodge with invulnerability frames, a sword, a training
@@ -37,6 +37,37 @@ push on country instead of on the one result that can end it.
 **The engine is Godot** (L54, revised 2026-09-14 from Unity). Decided
 on the evidence in `tech.md` §2a, not on preference — see the L54
 section below.
+
+## Done 2026-10-14 — the hidden system
+
+`Magic/`, 28 tests, twelve mutations each caught. The largest unbuilt
+pillar, and the one the pitch is built on. Nothing in it is a spell's
+effect; all of it is who may cast, who taught them, whose name the
+spell carries, and who holds its seat.
+
+**Ranks** (L8) climb by use; Grandmaster wants graduated disciples as
+well as XP; Incarnate is never XP. **Teaching** (L9, L33) unlocks at
+Master with three slots, one more at Grandmaster, one more for
+declining the seat; graduation frees a slot at once, dismissal locks
+it for a week; one master per spell per disciple, so every spell
+traces to its discoverer. **Lineage XP** is a trickle under a daily
+cap and a windfall on a rank-up, and stops at Grandmaster. Teaching a
+never-awakened player is their awakening, outside the valve.
+
+**The seats** (L10, L35): one per spell, one per character ever;
+decline for quiet power; lapse after thirty days unseen, regency to
+sixty once; a fall, a lapse or a forsaking opens the seat with an
+announcement that **reaches the public only from the Unveiling**
+(L22), and a Trial three days on that only grandmasters enter. One
+claims by walkover; none leaves it open for the next.
+
+**The valve** (L36, built as the dial L79 asks for): seeded
+awakenings per day by epoch, loosening as the Arc advances, and the
+slow reliable path never throttled — the casual guard rail.
+
+**Not built:** what any spell does, the true forms (L34), the shadow
+book and betting, academies behind fronts, echoes, the three
+institutions, enchanting.
 
 ## Done 2026-10-14 — the supply chain with teeth
 
