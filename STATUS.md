@@ -12,7 +12,7 @@ of each working session.
 Design is **95 locked decisions** and **complete** — every structural
 question locked, every missing document written. Every system a player
 touches in their first hundred hours is specified, and most of it is
-**written, tested and running** as engine-free C# — 537 tests.
+**written, tested and running** as engine-free C# — 552 tests.
 
 **Stage 1 is built and playable in any browser**: a character who walks
 and runs, a dodge with invulnerability frames, a sword, a training
@@ -37,6 +37,26 @@ push on country instead of on the one result that can end it.
 **The engine is Godot** (L54, revised 2026-09-14 from Unity). Decided
 on the evidence in `tech.md` §2a, not on preference — see the L54
 section below.
+
+## Done 2026-10-14 — deeds, leases, and the council
+
+`Society/Property.cs`, 15 tests, six mutations each caught. L5 and
+brainstorm.md §3. A deed is bought from the town (coin leaves the
+world) or sold on (coin changes hands); a lease pays rent tenant to
+landlord daily, which is what makes landlord gameplay real; upkeep
+and tax are daily sinks. **Upkeep unpaid for seven days forfeits the
+deed to the town**, which is the churn §3 asks for so new players can
+buy in — the tenant goes with the landlord who could not keep the
+roof on. A House may own; **a Circle may not be the owner of
+record**, because the register is public and a Circle's property is
+a front held by somebody else. **The council is everybody with a
+deed, one seat each** — a charter with three buildings has one seat,
+like a person with one — and it sets the tax within bounds by a
+majority of all seats, where **silence is a no**. That closes the
+"council tax-setting bounds" question in economy.md as a tuning file.
+
+**Not built:** guard funding and town projects, what each building
+use permits, councils granting town rights (war-society.md §2).
 
 ## Done 2026-10-14 — the order book, and nothing to dispute
 

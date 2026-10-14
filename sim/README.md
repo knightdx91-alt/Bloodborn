@@ -82,6 +82,7 @@ Expected: all tests pass, in well under a second.
 | **The order book**: escrow at posting, bids under budget, delivery signed and on time, a cancel fee, nothing to dispute | `Economy/Commission.cs` | `design/economy.md` §2; L49, L68 |
 | **Local markets, the road, and what falls on it**: scarce is dear, goods travel, wrecks are owner-only then open then gone; armour and cargo on one budget | `Economy/Market.cs`, `Economy/Shipment.cs`, `Economy/Cargo.cs` | `design/economy.md` §3, §3.5; L17, L32, L57 |
 | **Charters**: one banner, one house, any circles; the register | `Society/Charter.cs` | `design/war-society.md` §1; L24 |
+| **Property and councils**: deeds, leases, upkeep that forfeits, one seat per owner, a tax by majority of all seats | `Society/Property.cs` | `design/brainstorm.md` §3; L5, L24 |
 | **Rights and declared wars**: stake, lead time, enrolment, the window, resolution, history | `Society/Right.cs`, `Society/War.cs` | `design/war-society.md` §2–§3; L11, L17, L25 |
 
 ### Progression pacing
@@ -232,6 +233,14 @@ tests, each one mutation-proven (remove the rule, watch the test fail).
   the choices made.
 - Every finished war is archived as a record (L23).
 
+`Society/Property.cs` is L5: a deed is bought from the town (a sink)
+or sold on (a transfer), a lease pays rent tenant to landlord daily,
+upkeep and tax are daily sinks, and upkeep unpaid for a week forfeits
+the deed back to the town — the churn brainstorm.md §3 asks for. A
+House may own; a Circle may not be the owner of record. The council is
+everybody with a deed, one seat each, and sets the tax within bounds
+by a majority of all seats: silence is a no.
+
 Not here, on purpose: what a battle is (§3 leaves objective types
 open), councils as challengers on town grants, what claiming an unheld
 right costs, and Circle exposure. `shared/tuning/society.json` and
@@ -258,6 +267,5 @@ An empty bar refuses it, as it refuses the dodge. Names and distances
 are placeholders; the structure is the lock.
 
 Next candidates, all pure logic and none of them needing an engine:
-charter-owned property
-and councils (L5, war-society.md §1), the monster ecology behind boar
+the monster ecology behind boar
 pressure (content.md §2), and magic (L7–L10).

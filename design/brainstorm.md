@@ -175,6 +175,17 @@ enchant. Each stage:
   to carry it.
 - Upkeep costs so property churns and new players can eventually buy in.
 
+> **Built 2026-10-14** — `sim/Marrowmark.Sim/Society/Property.cs`,
+> 15 tests. Deeds bought from the town (a sink) or sold on (a
+> transfer); leases paying rent tenant to landlord daily; upkeep and
+> tax as daily sinks; **upkeep unpaid for seven days forfeits the deed
+> to the town**, which is the churn. A House may own; **a Circle may
+> not be the owner of record**. The council is everybody with a deed,
+> one seat each, and it sets the tax within bounds by **a majority of
+> all seats — silence is a no**. Not built: guard funding, town
+> projects, what each building use permits, and councils granting
+> town rights.
+
 ## 4. The Arena **[core]**
 - PvP and PvM brackets; scheduled fight nights per server.
 - **Betting** by players on outcomes **[core]** — odds move with the

@@ -6,5 +6,12 @@
     "minEnrolment": 30,
     "maxEnrolment": 150,
     "stakeMinimum": 200
+  },
+  "property": {
+    "upkeepForfeitDays": 7,
+    "taxMin": 0,
+    "taxMax": 5,
+    "defaultTax": 1,
+    "hoursPerDay": 24.0
   }
 }

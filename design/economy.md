@@ -242,7 +242,7 @@ scripted ambush.
 
 ## Open tuning questions
 - [ ] Currency name; denominations; starting coin.
-- [ ] Rent/tax/wage numbers per town tier; council tax-setting bounds.
+- [ ] Rent/tax/wage numbers per town tier. ~~Council tax-setting bounds~~ → `shared/tuning/society.json` "property" (built 2026-10-14; the bounds are 0–5 a day per building as placeholders).
 - [x] ~~Commission escrow rules; dispute handling.~~ Built 2026-10-14 (§2 note): escrow at posting, mark-checked delivery, a hard deadline, a cancel fee. Nothing is left to adjudicate.
 - [ ] Warehouse robbery: full system (war objective? Circle heist?) or
       flavor-only at launch?
