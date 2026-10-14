@@ -39,6 +39,21 @@ pooled blood. They are not spawn-timer decorations:
   bounty. Server-history material (L23): the year the Hollow Sow broke
   the Thornfield hedges gets remembered.
 
+> **Built 2026-10-14** — `sim/Marrowmark.Sim/Ecology/Wilds.cs`, 16
+> tests. A warped population around each pooling grows logistically
+> toward what the land will hold and is never quite empty; pressure is
+> read off the population and capped at the board's scale; at enough
+> pressure the territory spills toward the roads. A cull is real
+> maintenance and a supply run (parts per kill), and it resets the
+> pooling's clock. **A pooling unculled for a week births a named
+> horror** — epithet, beast and traits a pure function of world seed
+> and pooling, traits drawn from a pool of broken rules (`combat.md`
+> §6) — whose bounty grows by the day from its birth and which enters
+> history with the slayer's name when it dies. The town board now reads
+> pressure from this rather than from a seeded number. Not built:
+> delves, floors and depth; beast capture for the Ring; which parts
+> come from which beast.
+
 ## 3. Quests — paper and rumor, not exclamation marks
 
 **Call: no quest-hub filler; no markers over heads.** Three content
@@ -80,7 +95,7 @@ part of the wonder. (`feasibility-review.md` §4.3.)
 
 ## Open tuning questions
 - [ ] Delve count/size at launch per wedge; respawn ecology pacing.
-- [ ] Named-horror generation rules and trait pools.
+- [~] Named-horror generation rules and trait pools. The rules exist (2026-10-14: a week unculled, seed-deterministic name and traits, a bounty by the day); the pools are eight epithets, eight beasts and seven broken rules, and want writing properly.
 - [ ] Rumor system data model (epoch + history + noise mixing).
 - [ ] **Group scaling in deep delves without instancing (soft caps?
       chokepoint design?) — flagged in `feasibility-review.md` §4.3

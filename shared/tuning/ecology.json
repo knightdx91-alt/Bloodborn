@@ -1,0 +1,13 @@
+{
+  "ecology": {
+    "growthPerHour": 0.02,
+    "carryingCapacity": 60,
+    "populationPerPressure": 10,
+    "maxPressure": 5,
+    "spillPressure": 3,
+    "horrorAfterHours": 168.0,
+    "horrorBountyPerDay": 6,
+    "partsPerKill": 2,
+    "hoursPerDay": 24.0
+  }
+}

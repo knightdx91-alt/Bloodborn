@@ -12,7 +12,7 @@ of each working session.
 Design is **95 locked decisions** and **complete** — every structural
 question locked, every missing document written. Every system a player
 touches in their first hundred hours is specified, and most of it is
-**written, tested and running** as engine-free C# — 552 tests.
+**written, tested and running** as engine-free C# — 568 tests.
 
 **Stage 1 is built and playable in any browser**: a character who walks
 and runs, a dodge with invulnerability frames, a sword, a training
@@ -37,6 +37,34 @@ push on country instead of on the one result that can end it.
 **The engine is Godot** (L54, revised 2026-09-14 from Unity). Decided
 on the evidence in `tech.md` §2a, not on preference — see the L54
 section below.
+
+## Done 2026-10-14 — the supply chain with teeth
+
+`Ecology/Wilds.cs`, 16 tests, seven mutations each caught. content.md
+§2: monsters are not spawn-timer decorations. **A warped population
+grows if unculled**, logistically, toward what the land will hold,
+and is never quite empty; pressure is read off it and capped at the
+board's scale, and **the town's board now reads its boar pressure
+from this** rather than from a seeded number. At enough pressure the
+territory **spills toward the roads and farms**. A cull is real
+maintenance and a supply run, and resets the pooling's clock.
+
+**A pooling left alone for a week births something specific**: an
+epithet, a beast and two traits, all a pure function of world seed
+and pooling id so the same pooling births the same horror on any
+server sharing the seed. The traits are broken rules — "its heavy has
+no weight shift", "it charges twice" — because combat.md §6 says the
+warped things break the grammar on purpose. Its bounty grows by the
+day from its birth, and slaying it enters history with the slayer's
+name: the year the Hollow Sow broke the Thornfield hedges.
+
+**One real bug found by its own test:** the bounty was credited for
+the whole tick that birthed the horror, so a horror appearing at the
+end of a quiet week was born owing a week's bounty. It counts from
+the birth now.
+
+**Not built:** delves, floors and depth; beast capture for the Ring;
+which parts come from which beast; the trait pools as real content.
 
 ## Done 2026-10-14 — deeds, leases, and the council
 

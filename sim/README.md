@@ -81,6 +81,7 @@ Expected: all tests pass, in well under a second.
 | **The shop**: stock, prices, staff, standing orders, the books, wages and rent | `Economy/Shop.cs`, `Economy/Ledger.cs`, `Economy/Purse.cs` | `design/economy.md` §2, §4; L26, L31 |
 | **The order book**: escrow at posting, bids under budget, delivery signed and on time, a cancel fee, nothing to dispute | `Economy/Commission.cs` | `design/economy.md` §2; L49, L68 |
 | **Local markets, the road, and what falls on it**: scarce is dear, goods travel, wrecks are owner-only then open then gone; armour and cargo on one budget | `Economy/Market.cs`, `Economy/Shipment.cs`, `Economy/Cargo.cs` | `design/economy.md` §3, §3.5; L17, L32, L57 |
+| **The monster ecology**: populations that grow unculled and spill, culls as maintenance and supply, named horrors with bounties and history | `Ecology/Wilds.cs` | `design/content.md` §2; L4, L23 |
 | **Charters**: one banner, one house, any circles; the register | `Society/Charter.cs` | `design/war-society.md` §1; L24 |
 | **Property and councils**: deeds, leases, upkeep that forfeits, one seat per owner, a tax by majority of all seats | `Society/Property.cs` | `design/brainstorm.md` §3; L5, L24 |
 | **Rights and declared wars**: stake, lead time, enrolment, the window, resolution, history | `Society/Right.cs`, `Society/War.cs` | `design/war-society.md` §2–§3; L11, L17, L25 |
@@ -209,6 +210,19 @@ leaves the crafter a fee, backing out reopens the order, and a test
 asserts coin is conserved through every path — escrow is a place, not
 a sink.
 
+### The supply chain with teeth
+
+`Ecology/Wilds.cs` is content.md §2. A warped population around a
+pooling grows toward what the land will hold, pressure is read off it
+(and the town board now reads pressure from here), and at enough
+pressure it spills toward the roads. Culls thin it and bring back
+parts. A pooling left unculled for a week births a named horror whose
+name and traits are a pure function of the world seed and the pooling
+— the generator's rule, kept — with a bounty that grows by the day
+from its birth and a line of history when it dies. The traits are
+broken rules, not bigger numbers, because combat.md §6 says the
+warped things break the grammar on purpose.
+
 ### Charters, rights and wars
 
 `Society/` is war-society.md §1–§3 as rules, built 2026-10-14 with 34
@@ -267,5 +281,5 @@ An empty bar refuses it, as it refuses the dodge. Names and distances
 are placeholders; the structure is the lock.
 
 Next candidates, all pure logic and none of them needing an engine:
-the monster ecology behind boar
-pressure (content.md §2), and magic (L7–L10).
+magic (L7–L10), the arena and its book (L6, L35), and
+epochs (L23, L36).
