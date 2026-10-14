@@ -79,6 +79,7 @@ Expected: all tests pass, in well under a second.
 | The latency contract | `Net/` | `design/combat.md` §7, L39 — see `NETWORKING.md` |
 | The one clock | `World/WorldClock.cs` | L89 |
 | **The shop**: stock, prices, staff, standing orders, the books, wages and rent | `Economy/Shop.cs`, `Economy/Ledger.cs`, `Economy/Purse.cs` | `design/economy.md` §2, §4; L26, L31 |
+| **The order book**: escrow at posting, bids under budget, delivery signed and on time, a cancel fee, nothing to dispute | `Economy/Commission.cs` | `design/economy.md` §2; L49, L68 |
 | **Local markets, the road, and what falls on it**: scarce is dear, goods travel, wrecks are owner-only then open then gone; armour and cargo on one budget | `Economy/Market.cs`, `Economy/Shipment.cs`, `Economy/Cargo.cs` | `design/economy.md` §3, §3.5; L17, L32, L57 |
 | **Charters**: one banner, one house, any circles; the register | `Society/Charter.cs` | `design/war-society.md` §1; L24 |
 | **Rights and declared wars**: stake, lead time, enrolment, the window, resolution, history | `Society/Right.cs`, `Society/War.cs` | `design/war-society.md` §2–§3; L11, L17, L25 |
@@ -195,6 +196,18 @@ actually went.
 budget, so a fighter in plate hauls almost nothing and a loaded
 hauler has a smaller bar.
 
+### The order book
+
+`Economy/Commission.cs` is economy.md §2's commissions, and the
+escrow question is answered by leaving no room for a dispute: the
+budget is escrowed at posting or the order does not exist; a bid is
+under the budget and before the deadline or it is not a bid; the
+thing delivered carries the crafter's own mark (L68) or it is not
+their work; the deadline passed or it did not. Cancelling agreed work
+leaves the crafter a fee, backing out reopens the order, and a test
+asserts coin is conserved through every path — escrow is a place, not
+a sink.
+
 ### Charters, rights and wars
 
 `Society/` is war-society.md §1–§3 as rules, built 2026-10-14 with 34
@@ -245,6 +258,6 @@ An empty bar refuses it, as it refuses the dodge. Names and distances
 are placeholders; the structure is the lock.
 
 Next candidates, all pure logic and none of them needing an engine:
-commissions and their escrow (economy.md §2), charter-owned property
+charter-owned property
 and councils (L5, war-society.md §1), the monster ecology behind boar
 pressure (content.md §2), and magic (L7–L10).

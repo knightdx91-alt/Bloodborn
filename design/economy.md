@@ -45,6 +45,19 @@ are the primary way goods reach buyers:
 > (it lands unpriced and waits for the owner), and **unpaid staff leave
 > after two days**, closing the shop behind them.
 
+> **Built 2026-10-14** — `sim/Marrowmark.Sim/Economy/Commission.cs`,
+> 13 tests. The order book: a buyer posts a want, a deadline and a
+> budget, and **the budget is escrowed at posting or the order is not
+> posted**; crafters bid under the budget and before the deadline; the
+> buyer accepts one and the surplus goes home at once. **Delivery must
+> carry the crafter's own mark** (L68) and arrive before the deadline;
+> then the escrow is the crafter's and the thing is the buyer's. The
+> open question on disputes is answered by leaving nothing to dispute:
+> cancelling agreed work leaves the crafter a fee, a crafter backing
+> out reopens the order and is owed nothing, and a deadline passed
+> with nothing delivered lets the buyer reclaim. Every outcome keys
+> off something the server can prove (`feasibility-review.md` §2.6).
+
 ## 3. Markets are local — goods must travel
 
 **No global auction house.** Each town has a **market board** listing
@@ -230,7 +243,7 @@ scripted ambush.
 ## Open tuning questions
 - [ ] Currency name; denominations; starting coin.
 - [ ] Rent/tax/wage numbers per town tier; council tax-setting bounds.
-- [ ] Commission escrow rules; dispute handling.
+- [x] ~~Commission escrow rules; dispute handling.~~ Built 2026-10-14 (§2 note): escrow at posting, mark-checked delivery, a hard deadline, a cancel fee. Nothing is left to adjudicate.
 - [ ] Warehouse robbery: full system (war objective? Circle heist?) or
       flavor-only at launch?
 - [ ] Insurance as a House product: moral hazard tuning. **Constraint

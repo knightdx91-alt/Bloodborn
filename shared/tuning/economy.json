@@ -15,5 +15,8 @@
     "mountedMultiplier": 2.5,
     "ownerGraceSeconds": 600.0,
     "despawnSeconds": 3600.0
+  },
+  "commission": {
+    "cancelFeeFraction": 0.25
   }
 }

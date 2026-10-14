@@ -38,6 +38,9 @@ namespace Marrowmark.Sim.Tests.Economy
         [Fact]
         public void Travel_tuning_matches_the_shared_file() => AssertSection(TravelProfile.Default, "travel");
 
+        [Fact]
+        public void Commission_tuning_matches_the_shared_file() => AssertSection(CommissionProfile.Default, "commission");
+
         /// <summary>Every field in the section with the same value, and
         /// nothing in the section that is not a field.</summary>
         private static void AssertSection<T>(T profile, string sectionName) where T : struct

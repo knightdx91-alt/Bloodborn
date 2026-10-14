@@ -12,7 +12,7 @@ of each working session.
 Design is **95 locked decisions** and **complete** — every structural
 question locked, every missing document written. Every system a player
 touches in their first hundred hours is specified, and most of it is
-**written, tested and running** as engine-free C# — 523 tests.
+**written, tested and running** as engine-free C# — 537 tests.
 
 **Stage 1 is built and playable in any browser**: a character who walks
 and runs, a dodge with invulnerability frames, a sword, a training
@@ -37,6 +37,22 @@ push on country instead of on the one result that can end it.
 **The engine is Godot** (L54, revised 2026-09-14 from Unity). Decided
 on the evidence in `tech.md` §2a, not on preference — see the L54
 section below.
+
+## Done 2026-10-14 — the order book, and nothing to dispute
+
+`Economy/Commission.cs`, 13 tests, six mutations each caught. The
+place crafting careers start (economy.md §2), and the answer to the
+open question on commission escrow and disputes — which is to leave
+no room for one. **The budget is escrowed at posting or the order is
+not posted.** A bid is under the budget and before the deadline or it
+is not a bid. The buyer accepts one and the surplus goes home at
+once. **Delivery must carry the crafter's own mark** (L68) and arrive
+before the deadline; then the coin is the crafter's and the thing is
+the buyer's. Cancel agreed work and the crafter keeps a fee; back out
+as the crafter and the order reopens with nothing owed; let the
+deadline pass and the buyer reclaims. Coin is conserved through every
+path — escrow is a place, not a sink. Every outcome keys off something
+the server can prove, which `feasibility-review.md` §2.6 asked for.
 
 ## Done 2026-10-14 — markets are local, and the road is the risk
 
