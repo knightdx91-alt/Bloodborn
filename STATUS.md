@@ -12,7 +12,7 @@ of each working session.
 Design is **95 locked decisions** and **complete** — every structural
 question locked, every missing document written. Every system a player
 touches in their first hundred hours is specified, and most of it is
-**written, tested and running** as engine-free C# — 596 tests.
+**written, tested and running** as engine-free C# — 610 tests.
 
 **Stage 1 is built and playable in any browser**: a character who walks
 and runs, a dodge with invulnerability frames, a sword, a training
@@ -37,6 +37,25 @@ push on country instead of on the one result that can end it.
 **The engine is Godot** (L54, revised 2026-09-14 from Unity). Decided
 on the evidence in `tech.md` §2a, not on preference — see the L54
 section below.
+
+## Done 2026-10-14 — the Ring and its books
+
+`Arena/Arena.cs`, 14 tests, eight mutations each caught. L6 and
+brainstorm.md §4. **The odds are the money**: one pool per bout, the
+rake off the top as a sink, winners sharing the rest in proportion to
+their stakes, so there are no odds to post wrongly and coin is
+conserved less the rake. A licensed book needs its licence, which is
+a purchasable right; the Veiled Ring's shadow book takes wagers from
+the awakened only (L35) and charges more. No wagers after the bell;
+nothing dropped on the sand (L6); the Succession Trial is never on
+the public card (L22). A season table that clears, and fame on the
+maker's mark of the winning blade that never does — arena fame
+feeding crafter fame. **An echo will not cast in public before the
+Unveiling**, which closes the one sentence content.md §5 said was
+needed so the arena does not break the myth.
+
+**Not built:** brackets and fight-night scheduling, beast capture,
+the echo's reconstruction of a dead demigod, spectating.
 
 ## Done 2026-10-14 — the hidden system
 

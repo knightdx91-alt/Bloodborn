@@ -203,6 +203,19 @@ enchant. Each stage:
 - Spectator mode with wagering from the stands — console-friendly,
   low-intensity play session.
 
+> **Built 2026-10-14** — `sim/Marrowmark.Sim/Arena/Arena.cs`, 14
+> tests. Bouts on the public card and bouts in the Veiled Ring; a
+> pari-mutuel book where **the odds are the money** — one pool, the
+> rake off the top as a sink, winners sharing the rest in proportion —
+> so there are no odds to post wrongly; a licensed book that needs its
+> licence and a shadow book that takes wagers **from the awakened
+> only** (L35) at a dearer rake; no wagers after the bell; no equipment
+> on the sand (L6); a season table that clears and maker's-mark fame
+> that does not; and **an echo that will not cast in public before the
+> Unveiling**, or the arena breaks the myth (§5 of content.md). Not
+> built: brackets and scheduling, beast capture, the echo's
+> reconstruction, spectating.
+
 ## 5. Magic — hidden, earned, mastered, taught **[core]**
 
 ### 5.1 Magic is a secret

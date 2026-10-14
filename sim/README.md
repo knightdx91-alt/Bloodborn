@@ -83,6 +83,7 @@ Expected: all tests pass, in well under a second.
 | **Local markets, the road, and what falls on it**: scarce is dear, goods travel, wrecks are owner-only then open then gone; armour and cargo on one budget | `Economy/Market.cs`, `Economy/Shipment.cs`, `Economy/Cargo.cs` | `design/economy.md` §3, §3.5; L17, L32, L57 |
 | **The monster ecology**: populations that grow unculled and spill, culls as maintenance and supply, named horrors with bounties and history | `Ecology/Wilds.cs` | `design/content.md` §2; L4, L23 |
 | **Magic**: ranks, teaching slots, lineage, the Incarnate seats and the Succession Trial, the awakening valve | `Magic/Spellcraft.cs`, `Magic/Mage.cs` | `design/brainstorm.md` §5; L7–L10, L22, L33–L36 |
+| **The Ring**: bouts, a pari-mutuel book, the rake, the shadow book for the awakened, seasons, maker fame, echoes that keep the myth | `Arena/Arena.cs` | `design/brainstorm.md` §4; L6, L14, L35 |
 | **Charters**: one banner, one house, any circles; the register | `Society/Charter.cs` | `design/war-society.md` §1; L24 |
 | **Property and councils**: deeds, leases, upkeep that forfeits, one seat per owner, a tax by majority of all seats | `Society/Property.cs` | `design/brainstorm.md` §3; L5, L24 |
 | **Rights and declared wars**: stake, lead time, enrolment, the window, resolution, history | `Society/Right.cs`, `Society/War.cs` | `design/war-society.md` §2–§3; L11, L17, L25 |
@@ -247,6 +248,19 @@ exactly one, none leaves it open. L36's valve is a dial — seeded
 awakenings per day by epoch — and the slow reliable path is never
 throttled, which is the casual guard rail from the feasibility review.
 
+### The Ring and its books
+
+`Arena/Arena.cs` is L6. The book is pari-mutuel: every wager goes
+into one pool, the house takes its rake (economy.md §4's sink), and
+the winners share the rest in proportion to what they staked — so
+the odds move with the money and there is nothing to post wrongly. A
+licensed book needs the licence, a purchasable right; the Veiled
+Ring's shadow book takes wagers from the awakened only (L35) and
+charges more. No wagers after the bell, nothing dropped on the sand,
+a season table that clears, and fame on the maker's mark of the
+winning blade that does not. An echo will not cast in public before
+the Unveiling, or the arena breaks the myth.
+
 ### Charters, rights and wars
 
 `Society/` is war-society.md §1–§3 as rules, built 2026-10-14 with 34
@@ -305,5 +319,6 @@ An empty bar refuses it, as it refuses the dodge. Names and distances
 are placeholders; the structure is the lock.
 
 Next candidates, all pure logic and none of them needing an engine:
-the arena and its book (L6, L35), and
-epochs (L23, L36).
+epochs and the Revelation Arc as state that flips (L23, L36), the
+Monument (L13), the Interior's rings (L12, L30), and the companion
+app's read model (L31).

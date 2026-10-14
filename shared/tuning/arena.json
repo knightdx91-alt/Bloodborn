@@ -1,0 +1,7 @@
+{
+  "arena": {
+    "rakeFraction": 0.05,
+    "shadowRakeFraction": 0.1,
+    "seasonHours": 2160.0
+  }
+}
