@@ -169,6 +169,15 @@ stating plainly rather than discovering late:
 > the channel every refused interface element depends on. Buy the
 > world; author or heavily rework the fighting.
 
+> **And the order, decided 2026-10-14 (L94): systems first, and the
+> only art that goes in beside them is the art a rule depends on.**
+> Palettes, the grade, real characters and the six towns' own looks
+> all wait, because this section says they can be applied late and
+> once. The attack shapes, the guard pose, the arcs landing visibly
+> and the darkness of night do not wait, because `combat.md` §6 makes
+> them the readability half of combat — placeholders on a mannequin,
+> built with the rules rather than after them.
+
 ## 6. Magic has no visual language yet — deliberately
 
 **Nothing in the launch presentation depicts magic** (L7, L36). No

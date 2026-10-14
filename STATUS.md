@@ -9,7 +9,7 @@ of each working session.
 
 ## The one-line version
 
-Design is **93 locked decisions** and **complete** — every structural
+Design is **94 locked decisions** and **complete** — every structural
 question locked, every missing document written. Every system a player
 touches in their first hundred hours is specified, and most of it is
 **written, tested and running** as engine-free C# — 408 tests.
@@ -2952,6 +2952,15 @@ the correction.
 **The design side is complete.** Every document identified as missing
 has been written, and every structural question is locked. What remains
 falls into three piles, and none of it is design:
+
+**The order is settled (L94, 2026-10-14): systems first, and the only
+art beside them is the art a rule depends on.** So the queue below is
+read with that filter: the four Mixamo clips and the night darkness
+are in, because `combat.md` §6 needs them to be learnable; palettes,
+real characters, town looks and the generated country's dressing wait.
+`.github/workflows/sim-tests.yml` now runs the 408 tests on every push,
+so a rule drifting between `sim/` and `prototype/rules/` fails on
+GitHub rather than when somebody remembers.
 
 1. **Stage 1 is DONE.** `tech.md` §6's six steps: move and look,
    dodge, attack and hit, an enemy that fights back, the parry, and

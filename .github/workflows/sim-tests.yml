@@ -1,0 +1,43 @@
+# Marrowmark — the rules, tested on every push.
+#
+# sim/ is the authority for every rule in the game (L88) and
+# TuningFileTests fails the build if shared/tuning/*.json and the
+# GDScript mirror in prototype/rules/ drift apart. Until 2026-10-14
+# both ran only when somebody remembered to run them: the Android
+# workflow was the only one, so a rule could change in one place and
+# not the other and nothing on GitHub would say so.
+#
+# This is the whole of it: restore, build, test. No Godot, no export.
+# The Godot harnesses (prototype/*check.tscn) still run by hand — they
+# need a display and ten minutes each under a software rasteriser.
+
+name: Sim tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      DOTNET_NOLOGO: 1
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Test
+        run: dotnet test sim/Marrowmark.Sim.sln --nologo -v q
