@@ -5,6 +5,7 @@
     "masterAt": 700.0,
     "grandmasterAt": 1500.0,
     "graduatesForGrandmaster": 2,
+    "soloGrandmasterAt": 2500.0,
     "slotsAtMaster": 3,
     "extraSlotAtGrandmaster": 1,
     "extraSlotForDeclining": 1,

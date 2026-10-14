@@ -229,8 +229,11 @@ warped things break the grammar on purpose.
 
 `Magic/Spellcraft.cs` is brainstorm.md §5 as rules, and nothing in it
 is a spell's effect: it is who may cast, who taught them, whose name
-the spell carries, and who holds its seat. The ladder climbs by use;
-Grandmaster wants graduated disciples as well; Incarnate is never XP.
+the spell carries, and who holds its seat. The ladder climbs by use.
+Grandmaster has two roads (L96): the teacher's, the threshold plus two
+graduated disciples with lineage XP counting; or the hermit's, own
+casting alone at a higher bar with lineage XP never counted. Incarnate
+is never XP.
 Teaching unlocks at Master with L33's slots, a graduation frees a
 slot at once, a dismissal locks one for a week, and a disciple has
 one master per spell, so every spell traces back to its discoverer.

@@ -113,7 +113,10 @@ namespace Marrowmark.Sim.Magic
             var s = m.Standing(spell);
             if (s == null) return SpellRank.Novice;
             if (m.IncarnateOf == spell) return SpellRank.Incarnate;
+            // Two roads to Grandmaster (L96): the teacher's, power and
+            // lineage both; or the hermit's, own hands only, further on.
             if (s.Xp >= _p.GrandmasterAt && s.Graduates >= _p.GraduatesForGrandmaster) return SpellRank.Grandmaster;
+            if (s.OwnXp >= _p.SoloGrandmasterAt) return SpellRank.Grandmaster;
             if (s.Xp >= _p.MasterAt) return SpellRank.Master;
             if (s.Xp >= _p.ExpertAt) return SpellRank.Expert;
             if (s.Xp >= _p.AdeptAt) return SpellRank.Adept;
@@ -194,7 +197,7 @@ namespace Marrowmark.Sim.Magic
             RollDay(nowHour);
 
             var before = RankOf(m, spell);
-            s.Xp += xp;
+            s.OwnXp += xp;
             var after = RankOf(m, spell);
 
             var master = s.Master.Length > 0 ? Find(s.Master) : null;
@@ -203,9 +206,9 @@ namespace Marrowmark.Sim.Magic
             {
                 var room = _p.LineageTrickleDailyCap - ms.TrickleToday;
                 var trickle = Math.Min(Math.Max(0f, room), _p.LineageTrickleXp);
-                ms.Xp += trickle;
+                ms.LineageXp += trickle;
                 ms.TrickleToday += trickle;
-                if (after > before) ms.Xp += _p.LineageRankUpXp;
+                if (after > before) ms.LineageXp += _p.LineageRankUpXp;
             }
 
             if (after >= SpellRank.Master && before < SpellRank.Master && master != null && ms != null)

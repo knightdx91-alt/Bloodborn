@@ -22,8 +22,15 @@ namespace Marrowmark.Sim.Magic
         public float GrandmasterAt;
 
         /// <summary>Disciples who reached Master under you, required for
-        /// Grandmaster — "proven both power and lineage".</summary>
+        /// Grandmaster by the teacher's road — "proven both power and
+        /// lineage".</summary>
         public int GraduatesForGrandmaster;
+
+        /// <summary>L96: the hermit's road. Grandmaster by personal use
+        /// alone, with no graduates and no lineage XP counted, at this
+        /// higher bar. Decided 2026-10-14: somebody who never teaches must
+        /// still be able to reach the top.</summary>
+        public float SoloGrandmasterAt;
 
         /// <summary>L33: disciple slots per spell at Master.</summary>
         public int SlotsAtMaster;
@@ -81,6 +88,7 @@ namespace Marrowmark.Sim.Magic
             MasterAt = 700f,
             GrandmasterAt = 1500f,
             GraduatesForGrandmaster = 2,
+            SoloGrandmasterAt = 2500f,
             SlotsAtMaster = 3,
             ExtraSlotAtGrandmaster = 1,
             ExtraSlotForDeclining = 1,

@@ -7,7 +7,15 @@ namespace Marrowmark.Sim.Magic
     public sealed class SpellStanding
     {
         public string Spell = "";
-        public float Xp;
+
+        /// <summary>Earned by this character's own casting.</summary>
+        public float OwnXp;
+
+        /// <summary>Earned through disciples (L33). Counts toward the
+        /// teacher's road and never toward the hermit's (L96).</summary>
+        public float LineageXp;
+
+        public float Xp => OwnXp + LineageXp;
 
         /// <summary>Who taught it. Empty for a discoverer. One master per
         /// spell — this is the lineage (brainstorm.md §5.3).</summary>

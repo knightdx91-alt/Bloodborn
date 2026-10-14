@@ -9,10 +9,10 @@ of each working session.
 
 ## The one-line version
 
-Design is **95 locked decisions** and **complete** — every structural
+Design is **96 locked decisions** and **complete** — every structural
 question locked, every missing document written. Every system a player
 touches in their first hundred hours is specified, and most of it is
-**written, tested and running** as engine-free C# — 610 tests.
+**written, tested and running** as engine-free C# — 614 tests.
 
 **Stage 1 is built and playable in any browser**: a character who walks
 and runs, a dodge with invulnerability frames, a sword, a training
@@ -37,6 +37,20 @@ push on country instead of on the one result that can end it.
 **The engine is Godot** (L54, revised 2026-09-14 from Unity). Decided
 on the evidence in `tech.md` §2a, not on preference — see the L54
 section below.
+
+## Decided 2026-10-14 — two roads to Grandmaster (L96)
+
+Discussed from the phone: *"there needs to be a path for someone who
+doesn't teach to be able to be the grandmaster."* Built the same
+hour. **The teacher's road** stands as §5.4 proposed it: the XP
+threshold plus two graduated disciples, with lineage XP counting
+fully (L33). **The hermit's road** is new: Grandmaster by personal
+casting alone, at a higher bar, with no graduates and **no lineage
+XP counted** — otherwise a master with a full roster would be a
+hermit by arithmetic. Own XP and lineage XP are now kept apart on
+every standing, which also makes the tithe inspectable. Both roads
+reach the same rank and the same seat. Four tests, two mutations
+caught; 614 in all.
 
 ## Done 2026-10-14 — the Ring and its books
 

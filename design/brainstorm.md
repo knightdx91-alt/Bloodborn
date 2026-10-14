@@ -305,9 +305,12 @@ institutions, not a courtroom.
 - **Master** is where teaching unlocks — you can only teach a spell
   you have mastered. A disciple *graduates* (freeing their slot, §5.3)
   when they reach Master themselves.
-- **Grandmaster** sits above Master. Proposed requirement: deep
+- **Grandmaster** sits above Master. ~~Proposed requirement: deep
   personal use **plus** graduated disciples — a grandmaster has proven
-  both power and lineage. (Numbers TBD.)
+  both power and lineage. (Numbers TBD.)~~ **Decided 2026-10-14 (L96):
+  two roads.** The teacher's: the threshold plus two graduated
+  disciples, lineage XP counting. The hermit's: personal casting alone,
+  further on, nothing counted but your own hands.
 
 **The Incarnate**
 - On reaching Grandmaster of a spell, the character is **offered
@@ -376,8 +379,10 @@ institutions, not a courtroom.
 
 > **Built 2026-10-14** — `sim/Marrowmark.Sim/Magic/`, 28 tests, every
 > rule mutation-proven. The structure above as rules, with no spell
-> effects in it: the ladder by use with Grandmaster wanting graduates
-> too and Incarnate never XP; teaching at Master with L33's slots,
+> effects in it: the ladder by use, with **two roads to Grandmaster
+> (L96)** — the teacher's, XP plus two graduates with lineage XP
+> counting, or the hermit's, own casting alone at a higher bar — and
+> Incarnate never XP; teaching at Master with L33's slots,
 > graduation freeing a slot at once and dismissal locking it a week;
 > one master per spell per disciple and every spell tracing to its
 > discoverer; lineage XP as a capped trickle and a rank-up windfall,

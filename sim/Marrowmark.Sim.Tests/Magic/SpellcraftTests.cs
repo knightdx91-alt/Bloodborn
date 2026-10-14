@@ -19,7 +19,7 @@ namespace Marrowmark.Sim.Tests.Magic
             var f = c.Enrol("Quill");
             c.Awaken(f, 0f, guaranteedPath: true);
             c.Discover(f, "mending");
-            f.Standing("mending")!.Xp = P.MasterAt;
+            f.Standing("mending")!.OwnXp = P.MasterAt;
             return (c, f);
         }
 
@@ -28,7 +28,7 @@ namespace Marrowmark.Sim.Tests.Magic
             var m = c.Enrol(name);
             m.Awakened = true;
             var s = m.StandingOrNew(spell);
-            s.Xp = P.GrandmasterAt;
+            s.OwnXp = P.GrandmasterAt;
             s.Graduates = P.GraduatesForGrandmaster;
             return m;
         }
@@ -54,17 +54,65 @@ namespace Marrowmark.Sim.Tests.Magic
         public void Grandmaster_wants_power_and_lineage_both()
         {
             var (c, f) = Server();
-            f.Standing("mending")!.Xp = P.GrandmasterAt;
+            f.Standing("mending")!.OwnXp = P.GrandmasterAt;
             Assert.Equal(SpellRank.Master, c.RankOf(f, "mending"));      // no graduates yet
             f.Standing("mending")!.Graduates = P.GraduatesForGrandmaster;
             Assert.Equal(SpellRank.Grandmaster, c.RankOf(f, "mending"));
         }
 
         [Fact]
+        public void The_hermits_road_reaches_grandmaster_by_their_own_hand()
+        {
+            // L96: somebody who never teaches can still reach the top,
+            // further on, and with nothing but their own casting.
+            var (c, f) = Server();
+            var s = f.Standing("mending")!;
+            Assert.Equal(0, s.Graduates);
+            s.OwnXp = P.SoloGrandmasterAt - 1f;
+            Assert.Equal(SpellRank.Master, c.RankOf(f, "mending"));
+            s.OwnXp = P.SoloGrandmasterAt;
+            Assert.Equal(SpellRank.Grandmaster, c.RankOf(f, "mending"));
+            Assert.Equal(SeatResult.Taken, c.AcceptSeat(f, "mending"));
+        }
+
+        [Fact]
+        public void The_hermits_bar_is_higher_than_the_teachers()
+        {
+            Assert.True(P.SoloGrandmasterAt > P.GrandmasterAt);
+        }
+
+        [Fact]
+        public void Lineage_xp_never_carries_anyone_down_the_hermits_road()
+        {
+            var (c, f) = Server();
+            var s = f.Standing("mending")!;
+            s.OwnXp = P.MasterAt;
+            s.LineageXp = P.SoloGrandmasterAt * 10f;
+            Assert.Equal(SpellRank.Master, c.RankOf(f, "mending"));    // no graduates, so not the teacher's road either
+            s.Graduates = P.GraduatesForGrandmaster;
+            Assert.Equal(SpellRank.Grandmaster, c.RankOf(f, "mending")); // but it does count on the teacher's
+        }
+
+        [Fact]
+        public void Practice_is_own_xp_and_tithe_is_lineage_xp()
+        {
+            var (c, f) = Server();
+            var d = c.Enrol("d0");
+            c.Teach(f, d, "mending", 0f);
+            var own = f.Standing("mending")!.OwnXp;
+
+            c.Practice(d, "mending", P.AdeptAt, 1f);
+
+            Assert.Equal(own, f.Standing("mending")!.OwnXp);
+            Assert.True(f.Standing("mending")!.LineageXp > 0f);
+            Assert.Equal(P.AdeptAt, d.Standing("mending")!.OwnXp);
+        }
+
+        [Fact]
         public void Incarnate_is_never_xp()
         {
             var (c, f) = Server();
-            f.Standing("mending")!.Xp = P.GrandmasterAt * 100f;
+            f.Standing("mending")!.OwnXp = P.GrandmasterAt * 100f;
             f.Standing("mending")!.Graduates = 100;
             Assert.Equal(SpellRank.Grandmaster, c.RankOf(f, "mending"));
         }
@@ -76,7 +124,7 @@ namespace Marrowmark.Sim.Tests.Magic
         {
             var (c, f) = Server();
             var expert = c.Enrol("Pell"); expert.Awakened = true;
-            expert.StandingOrNew("mending").Xp = P.ExpertAt;
+            expert.StandingOrNew("mending").OwnXp = P.ExpertAt;
             Assert.Equal(TeachResult.MasterDoesNotMaster, c.Teach(expert, c.Enrol("Chris"), "mending", 0f));
             Assert.Equal(TeachResult.Taught, c.Teach(f, c.Enrol("Chris"), "mending", 0f));
         }
@@ -200,7 +248,7 @@ namespace Marrowmark.Sim.Tests.Magic
             var (c, f) = Server();
             var d = c.Enrol("d0");
             c.Teach(f, d, "mending", 0f);
-            d.Standing("mending")!.Xp = P.MasterAt;
+            d.Standing("mending")!.OwnXp = P.MasterAt;
             var e = c.Enrol("e0");
             c.Teach(d, e, "mending", 1f);
 
