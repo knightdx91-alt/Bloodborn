@@ -38,6 +38,29 @@ push on country instead of on the one result that can end it.
 on the evidence in `tech.md` §2a, not on preference — see the L54
 section below.
 
+## New machine 2026-10-15 — a flagship tablet, and the spike answered
+
+A device-check page (`docs/device-check.html`, also an artifact) was
+built because the hardware changed. It reads what a browser can read,
+draws chunks the generator's shape at the streamer's radii, and
+reports a tier and what the device can run. The tablet's report:
+Mali-G1-Ultra MC12, eight threads, 8 GB or more, **1,089 chunks at 55
+fps or better** against Thornfield's 289. The generated world holds.
+"Known constraints" carries the device now.
+
+**Two things the page got wrong on first contact, both fixed:** it
+believed Chrome's desktop-site user agent and called the tablet a
+Linux PC (a touch screen on a mobile GPU is a tablet whatever the
+string says), and it did not know ARM's 2025 GPU names.
+
+**Flagged, not decided:** L88's exit is "when the developer can
+routinely run native builds". A tablet that runs the APK natively is
+most of that sentence. What it does not change is that the web build
+is still the only route with no install, and the tablet cannot run
+the Godot editor. Whether the GDScript mirror has earned its deletion
+is a decision to make on purpose, with the APK as the daily build,
+not one to drift into.
+
 ## Decided 2026-10-14 — two roads to Grandmaster (L96)
 
 Discussed from the phone: *"there needs to be a path for someone who
@@ -3293,7 +3316,18 @@ Roughly 25 remain. The ones that unblock the most:
 
 ## Known constraints
 
-- **Hardware.** MacBook Air 2017, Monterey 12.7.6, dual-core i5, 8GB,
+- **A flagship Android tablet, new 2026-10-15.** Mali-G1-Ultra MC12
+  (ARM's 2025 flagship GPU, Dimensity 9500 class), eight CPU threads,
+  8 GB or more, 1752 × 2800 at 2×, Chrome 155 asking for desktop sites
+  by default. Measured with `docs/device-check.html`: **1,089 chunks
+  at full frame rate in the browser**, where Thornfield streams 289,
+  and the heightfield's order of work in 3.5 ms of JavaScript. It
+  runs the APK natively and sees a Bluetooth pad. **This answers the
+  streaming spike that has been open since 2026-09-27: the generated
+  world holds on this device with room to spare**, and the threaded
+  build is a nicety rather than a rescue. What the tablet does not do
+  is run the Godot editor or `dotnet test`; the Mac still does those.
+- **Hardware, the old entry.** MacBook Air 2017, Monterey 12.7.6, dual-core i5, 8GB,
   Intel HD Graphics 6000. **Godot 4 runs comfortably on it** — ~100MB,
   no compile cycle — but in practice nothing has needed it: Stage 1
   steps 1–3 were built without that machine being switched on. A better

@@ -150,6 +150,7 @@
   else if (/Macintosh/.test(ua)) { os = 'macOS'; family = 'desktop'; }
   else if (/Linux/.test(ua)) { os = 'Linux'; family = 'desktop'; }
   var androidVersion = (ua.match(/Android\s([\d.]+)/) || [])[1] || '';
+  var desktopModeGuess = false;
   var browser = 'unknown';
   if (/EdgA?\//.test(ua)) browser = 'Edge'; else if (/SamsungBrowser\//.test(ua)) browser = 'Samsung Internet';
   else if (/Firefox\//.test(ua)) browser = 'Firefox'; else if (/CriOS\//.test(ua)) browser = 'Chrome (iOS)';
@@ -190,6 +191,13 @@
     var astc = !!ctx.getExtension('WEBGL_compressed_texture_astc'), etc2 = !!(gl && gl.getExtension('WEBGL_compressed_texture_etc')), s3tc = !!ctx.getExtension('WEBGL_compressed_texture_s3tc');
     row('graphics', 'Compressed textures', [astc ? 'ASTC' : '', etc2 ? 'ETC2' : '', s3tc ? 'S3TC' : ''].filter(Boolean).join(', ') || 'none reported');
   }
+  // Chrome on a large Android tablet asks for desktop sites by default
+  // and then calls itself "Linux x86_64". A touch screen driving a
+  // mobile GPU is a tablet whatever the user agent says.
+  if (family === 'desktop' && os === 'Linux' && touch > 1 && /Mali|Immortalis|Adreno|Xclipse|PowerVR/i.test(renderer)) {
+    os = 'Android (Chrome in desktop-site mode)'; family = 'android'; desktopModeGuess = true;
+    row('device', 'Operating system', os);
+  }
   row('graphics', 'WebGPU', ('gpu' in navigator) ? 'available' : 'not available');
   row('graphics', 'SharedArrayBuffer', (typeof SharedArrayBuffer !== 'undefined') ? 'yes' : 'no (needs cross-origin isolation; a "no" here says nothing about the device)');
 
@@ -207,6 +215,7 @@
       return 0;
     }
     if (/Immortalis/i.test(r)) return 3;   // G715/G720/G925 with ray tracing: flagship MediaTek
+    if ((m = r.match(/Mali-G1-(Ultra|Premium|Pro)/i))) return /Ultra/i.test(m[1]) ? 3 : /Premium/i.test(m[1]) ? 2 : 1;   // ARM's 2025 names
     if ((m = r.match(/Mali-G(\d{2,3})/i))) {
       var g = +m[1];
       if (g >= 715) return 2;              // G715/G720 without the Immortalis badge: upper-mid
